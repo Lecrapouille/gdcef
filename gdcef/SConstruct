@@ -110,6 +110,7 @@ env.Append(LIBPATH=[cpp_bindings_path + 'bin/'])
 env.Append(LIBS=[cpp_library])
 
 # CEF INCLUDES
+env.Append(CPPPATH = ['thirdparty/cef_binary'])
 env.Append(CPPPATH = ['thirdparty/cef_binary/include'])
 env.Append(CPPPATH = ['thirdparty/cef_binary/include/base'])
 env.Append(CPPPATH = ['thirdparty/cef_binary/include/base/internal'])

@@ -24,7 +24,6 @@ This folder should be placed under the godot installation folder (where godot ha
 📦gdcef
  ┣ 📂demo                       <== GODOT DEMO PROJECT using this module, see next section
  ┃ 📂godot-cpp                  <== (NOT INCLUDED IN THIS REPO, SEE PREREQUISITES) clone of the godot cpp bindings repository
- ┃ 📂include                    <== (NOT INCLUDED IN THIS REPO, SEE PREREQUISITES) copy of include files of the CEF (not really needed, could use those in thirdparty instead)
  ┃ 📂src                        <== source files of the module
  ┃ ┣ 📜apphandler.cpp
  ┃ ┣ 📜apphandler.h
@@ -91,13 +90,6 @@ and add the 2 following preprocessor flags
 
 * _ITERATOR_DEBUG_LEVEL = 0;                 under C/C++ >> Preprocessor >> PreprocessorDefinitions. 
 * _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH       under C/C++ >> Preprocessor >> PreprocessorDefinitions. 
-
-
-### ./include
-
-copy the *./thirdparty/cef_binary/include* header files into this subfolder
-
-
 
 ## Building the GDCef gdnative library
 
