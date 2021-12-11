@@ -124,7 +124,7 @@ env.Append(CPPPATH = ['thirdparty/cef_binary/include/wrapper'])
 
 # CEF LIBS FOR LINKING
 env.Append(LIBS = 'libcef', LIBPATH = ['thirdparty/cef_binary/Release'])
-env.Append(LIBS = 'libcef_dll_wrapper', LIBPATH = ['thirdparty/cef_binary/libcef_dll_wrapper/Release'])
+env.Append(LIBS = 'libcef_dll_wrapper', LIBPATH = ['thirdparty/cef_binary/build/libcef_dll_wrapper'])
 
 # tweak this if you want to use different folders, or more folders, to store your source code in.
 env.Append(CPPPATH=['src/'])
