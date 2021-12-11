@@ -10,10 +10,10 @@ GDNative module for CEF integration into Godot, including a demo project
 
 My environment was set as described below. Please adapt the below commands to your own environment
 ```
-D:\Stigmee\godot-native                        <= godot installation root (compile godot from here)
-D:\Stigmee\godot-native\gdcef                  <= gdnative module root (compile the module from here)
-D:\Stigmee\godot-native\gdcef\godot-cpp        <= godot c++ bindings clone (compile the c++ bindings from here)
-D:\Stigmee\godot-native\gdcef\thirdparty\cef_binary        <= CEF distribution used to build the dependencies
+D:\godot-modules                        <= godot installation root (compile godot from here)
+D:\godot-modules\gdcef                  <= gdnative module root (compile the module from here)
+D:\godot-modules\godot-cpp              <= godot c++ bindings clone (compile the c++ bindings from here)
+D:\godot-modules\thirdparty\cef_binary  <= CEF distribution used to build the dependencies
 ```
 
 ## Module folder (./gdcef)
@@ -96,17 +96,17 @@ and add the 2 following preprocessor flags
 To build the library, use the below command from the module root (only tested on Windows at the moment, might need some changes on Linux to build the corresponding .so) :
  
 ```
-D:\Stigmee\godot-native\gdcef>scons platform=windows target=release -j4
+D:\godot-modules\gdcef>scons platform=windows target=release -j4
 scons: Reading SConscript files ...
 scons: done reading SConscript files.
 scons: Building targets ...
-cl /Fosrc\browser.obj /c src\browser.cpp /TP /std:c++17 /nologo -W3 -GR -O2 -EHsc -MD /DWIN32 /D_WIN32 /D_WINDOWS /D_CRT_SECURE_NO_WARNINGS /DNDEBUG /I. /Igodot-cpp\godot-headers /Igodot-cpp\include /Igodot-cpp\include\core /Igodot-cpp\include\gen /I. /Igodot-cpp\godot-headers /ID:\Stigmee\godot-native\godot-cpp\include /ID:\Stigmee\godot-native\godot-cpp\include\core /ID:\Stigmee\godot-native\godot-cpp\include\gen /Ithirdparty\cef_binary\include /Ithirdparty\cef_binary\include\base /Ithirdparty\cef_binary\include\base\internal /Ithirdparty\cef_binary\include\capi /Ithirdparty\cef_binary\include\capi\test /Ithirdparty\cef_binary\include\capi\views /Ithirdparty\cef_binary\include\internal /Ithirdparty\cef_binary\include\test /Ithirdparty\cef_binary\include\views /Ithirdparty\cef_binary\include\wrapper /Isrc
-cl /Fosrc\gdcef.obj /c src\gdcef.cpp /TP /std:c++17 /nologo -W3 -GR -O2 -EHsc -MD /DWIN32 /D_WIN32 /D_WINDOWS /D_CRT_SECURE_NO_WARNINGS /DNDEBUG /I. /Igodot-cpp\godot-headers /Igodot-cpp\include /Igodot-cpp\include\core /Igodot-cpp\include\gen /I. /Igodot-cpp\godot-headers /ID:\Stigmee\godot-native\godot-cpp\include /ID:\Stigmee\godot-native\godot-cpp\include\core /ID:\Stigmee\godot-native\godot-cpp\include\gen /Ithirdparty\cef_binary\include /Ithirdparty\cef_binary\include\base /Ithirdparty\cef_binary\include\base\internal /Ithirdparty\cef_binary\include\capi /Ithirdparty\cef_binary\include\capi\test /Ithirdparty\cef_binary\include\capi\views /Ithirdparty\cef_binary\include\internal /Ithirdparty\cef_binary\include\test /Ithirdparty\cef_binary\include\views /Ithirdparty\cef_binary\include\wrapper /Isrc
+cl /Fosrc\browser.obj /c src\browser.cpp /TP /std:c++17 /nologo -W3 -GR -O2 -EHsc -MD /DWIN32 /D_WIN32 /D_WINDOWS /D_CRT_SECURE_NO_WARNINGS /DNDEBUG /I. /Igodot-cpp\godot-headers /Igodot-cpp\include /Igodot-cpp\include\core /Igodot-cpp\include\gen /I. /Igodot-cpp\godot-headers /ID:\godot-modules\godot-cpp\include /ID:\godot-modules\godot-cpp\include\core /ID:\godot-modules\godot-cpp\include\gen /Ithirdparty\cef_binary\include /Ithirdparty\cef_binary\include\base /Ithirdparty\cef_binary\include\base\internal /Ithirdparty\cef_binary\include\capi /Ithirdparty\cef_binary\include\capi\test /Ithirdparty\cef_binary\include\capi\views /Ithirdparty\cef_binary\include\internal /Ithirdparty\cef_binary\include\test /Ithirdparty\cef_binary\include\views /Ithirdparty\cef_binary\include\wrapper /Isrc
+cl /Fosrc\gdcef.obj /c src\gdcef.cpp /TP /std:c++17 /nologo -W3 -GR -O2 -EHsc -MD /DWIN32 /D_WIN32 /D_WINDOWS /D_CRT_SECURE_NO_WARNINGS /DNDEBUG /I. /Igodot-cpp\godot-headers /Igodot-cpp\include /Igodot-cpp\include\core /Igodot-cpp\include\gen /I. /Igodot-cpp\godot-headers /ID:\godot-modules\godot-cpp\include /ID:\godot-modules\godot-cpp\include\core /ID:\godot-modules\godot-cpp\include\gen /Ithirdparty\cef_binary\include /Ithirdparty\cef_binary\include\base /Ithirdparty\cef_binary\include\base\internal /Ithirdparty\cef_binary\include\capi /Ithirdparty\cef_binary\include\capi\test /Ithirdparty\cef_binary\include\capi\views /Ithirdparty\cef_binary\include\internal /Ithirdparty\cef_binary\include\test /Ithirdparty\cef_binary\include\views /Ithirdparty\cef_binary\include\wrapper /Isrc
 browser.cpp
-cl /Fosrc\gdlibrary.obj /c src\gdlibrary.cpp /TP /std:c++17 /nologo -W3 -GR -O2 -EHsc -MD /DWIN32 /D_WIN32 /D_WINDOWS /D_CRT_SECURE_NO_WARNINGS /DNDEBUG /I. /Igodot-cpp\godot-headers /Igodot-cpp\include /Igodot-cpp\include\core /Igodot-cpp\include\gen /I. /Igodot-cpp\godot-headers /ID:\Stigmee\godot-native\godot-cpp\include /ID:\Stigmee\godot-native\godot-cpp\include\core /ID:\Stigmee\godot-native\godot-cpp\include\gen /Ithirdparty\cef_binary\include /Ithirdparty\cef_binary\include\base /Ithirdparty\cef_binary\include\base\internal /Ithirdparty\cef_binary\include\capi /Ithirdparty\cef_binary\include\capi\test /Ithirdparty\cef_binary\include\capi\views /Ithirdparty\cef_binary\include\internal /Ithirdparty\cef_binary\include\test /Ithirdparty\cef_binary\include\views /Ithirdparty\cef_binary\include\wrapper /Isrc
+cl /Fosrc\gdlibrary.obj /c src\gdlibrary.cpp /TP /std:c++17 /nologo -W3 -GR -O2 -EHsc -MD /DWIN32 /D_WIN32 /D_WINDOWS /D_CRT_SECURE_NO_WARNINGS /DNDEBUG /I. /Igodot-cpp\godot-headers /Igodot-cpp\include /Igodot-cpp\include\core /Igodot-cpp\include\gen /I. /Igodot-cpp\godot-headers /ID:\godot-modules\godot-cpp\include /ID:\godot-modules\godot-cpp\include\core /ID:\godot-modules\godot-cpp\include\gen /Ithirdparty\cef_binary\include /Ithirdparty\cef_binary\include\base /Ithirdparty\cef_binary\include\base\internal /Ithirdparty\cef_binary\include\capi /Ithirdparty\cef_binary\include\capi\test /Ithirdparty\cef_binary\include\capi\views /Ithirdparty\cef_binary\include\internal /Ithirdparty\cef_binary\include\test /Ithirdparty\cef_binary\include\views /Ithirdparty\cef_binary\include\wrapper /Isrc
 gdcef.cpp
 gdlibrary.cpp
-D:\Stigmee\godot-native\gdcef\godot-cpp\include\core\Godot.hpp(163) : warning C4172: retourne l'adresse d'une variable locale ou  temporaire
+D:\godot-modules\gdcef\godot-cpp\include\core\Godot.hpp(163) : warning C4172: retourne l'adresse d'une variable locale ou  temporaire
 link /nologo /dll /out:demo\bin\win64\libgdcef.dll /implib:demo\bin\win64\libgdcef.lib /LIBPATH:godot-cpp\bin /LIBPATH:thirdparty\cef_binary\Release /LIBPATH:thirdparty\cef_binary\libcef_dll_wrapper\Release libgodot-cpp.windows.release.64.lib libcef.lib libcef_dll_wrapper.lib src\apphandler.obj src\browser.obj src\gdcef.obj src\gdlibrary.obj
    Création de la bibliothèque demo\bin\win64\libgdcef.lib et de l'objet demo\bin\win64\libgdcef.exp
 scons: done building targets.
