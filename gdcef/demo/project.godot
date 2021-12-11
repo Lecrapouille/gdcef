@@ -1,0 +1,49 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=4
+
+_global_script_classes=[ {
+"base": "Node",
+"class": "AppHandler",
+"language": "NativeScript",
+"path": "res://bin/apphandler.gdns"
+}, {
+"base": "Node",
+"class": "BrowserView",
+"language": "NativeScript",
+"path": "res://bin/browserview.gdns"
+}, {
+"base": "GDScript",
+"class": "GDCef",
+"language": "NativeScript",
+"path": "res://bin/gdcef.gdns"
+} ]
+_global_script_class_icons={
+"AppHandler": "",
+"BrowserView": "",
+"GDCef": ""
+}
+
+[application]
+
+config/name="Demo"
+run/main_scene="res://main.tscn"
+config/icon="res://icon.png"
+
+[autoload]
+
+GLOBAL="res://global.gd"
+
+[physics]
+
+common/enable_pause_aware_picking=true
+
+[rendering]
+
+environment/default_environment="res://default_env.tres"
