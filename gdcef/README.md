@@ -1,10 +1,10 @@
 # gdcef (GDNative module)
 
-GDNative module for CEF integration into Godot, including a demo project
+GDNative module for Chromium Embedded Framework (CEF) integration into Godot, including a demo project.
 
 * Tested successfully with Godot 3.4.1-rc
 * Along with the following CEF version : cef_binary_96.0.16+g89c902b+chromium-96.0.4664.55_windows64.tar.bz2
-* IMPORTANT : Use a non-experimental version of godot. This module likely conflicts with previous experimental versions.
+* IMPORTANT : Use a non-experimental version of Godot. This module likely conflicts with previous experimental versions.
 
 ## Environment
 
@@ -18,7 +18,7 @@ D:\godot-modules\thirdparty\cef_binary  <= CEF distribution used to build the de
 
 ## Module folder (./gdcef)
 
-This folder should be placed under the godot installation folder (where godot has been cloned). if contains various sulfolders and files detailed below
+This folder should be placed under the Godot installation folder (where Godot has been cloned). if contains various sulfolders and files detailed below
 
 ```
 📦gdcef
@@ -88,13 +88,13 @@ make -j8
 You might also want to use VS to compile in Release mode, in which case you will need to change the compiler mode of the Release version from /MT to /MD,
 and add the 2 following preprocessor flags
 
-* _ITERATOR_DEBUG_LEVEL = 0;                 under C/C++ >> Preprocessor >> PreprocessorDefinitions. 
-* _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH       under C/C++ >> Preprocessor >> PreprocessorDefinitions. 
+* _ITERATOR_DEBUG_LEVEL = 0;                 under C/C++ >> Preprocessor >> PreprocessorDefinitions.
+* _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH       under C/C++ >> Preprocessor >> PreprocessorDefinitions.
 
 ## Building the GDCef gdnative library
 
 To build the library, use the below command from the module root (only tested on Windows at the moment, might need some changes on Linux to build the corresponding .so) :
- 
+
 ```
 D:\godot-modules\gdcef>scons platform=windows target=release -j4
 scons: Reading SConscript files ...
@@ -122,13 +122,13 @@ C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.
 C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.30.30705\include\type_traits(1619): note: voir la déclaration de 'std::result_of'
 ```
 
-When implementing additional CEF features, it will only be needed to change those sources and recompile the lib. Just close the demo project before doing so, or scons will complain that access to the dll file is denied. 
+When implementing additional CEF features, it will only be needed to change those sources and recompile the lib. Just close the demo project before doing so, or scons will complain that access to the dll file is denied.
 
 ## CefSubProcess.exe - Sub-Process Executable
 
-Whenever CEF is instanced by something else than the Main of the program, if will use the corresponding handle to spawn its subprocesses. 
-This means that if CEF is started from a GUI, it will duplicate it indefinitely. To workaround this behavior in situations where changing the main of a program is 
-not acceptable, if's advised to use a subprocess executable as described in : 
+Whenever CEF is instanced by something else than the Main of the program, if will use the corresponding handle to spawn its subprocesses.
+This means that if CEF is started from a GUI, it will duplicate it indefinitely. To workaround this behavior in situations where changing the main of a program is
+not acceptable, if's advised to use a subprocess executable as described in :
 [https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage#markdown-header-separate-sub-process-executable]
 
 in order to create this executable, use the sources contained in *cefSubProcess.zip* (located in ./demo/bin/win64) along with the CEF sources
@@ -163,7 +163,7 @@ GODOT's demo project using the library that we've just compiled:
  ┃ ┃ ┃ ┗ 📜en-US.pak
  ┃ ┃ ┣ 📜cefSubProcess.exe      <== See CefSubProcess Section
  ┃ ┃ ┣ 📜cefSubProcess.pdb
- ┃ ┃ ┣ 📜cefSubProcess.zip            
+ ┃ ┃ ┣ 📜cefSubProcess.zip
  ┃ ┃ ┣ 📜chrome_100_percent.pak   <== (NOT INCLUDED IN THIS REPO, SEE BELOW TO ADD THIS DEPENDENCY)
  ┃ ┃ ┣ 📜chrome_200_percent.pak   <== (NOT INCLUDED IN THIS REPO, SEE BELOW TO ADD THIS DEPENDENCY)
  ┃ ┃ ┣ 📜chrome_elf.dll           <== (NOT INCLUDED IN THIS REPO, SEE BELOW TO ADD THIS DEPENDENCY)
@@ -171,12 +171,12 @@ GODOT's demo project using the library that we've just compiled:
  ┃ ┃ ┣ 📜icudtl.dat               <== (NOT INCLUDED IN THIS REPO, SEE BELOW TO ADD THIS DEPENDENCY)
  ┃ ┃ ┣ 📜libcef.dll               <== (NOT INCLUDED IN THIS REPO, SEE BELOW TO ADD THIS DEPENDENCY)
  ┃ ┃ ┣ 📜libEGL.dll               <== (NOT INCLUDED IN THIS REPO, SEE BELOW TO ADD THIS DEPENDENCY)
- ┃ ┃ ┣ 📜libgdcef.dll             <== Shared library used by GDNative module 
+ ┃ ┃ ┣ 📜libgdcef.dll             <== Shared library used by GDNative module
  ┃ ┃ ┣ 📜libgdcef.exp             <== (NOT INCLUDED IN THIS REPO, SEE BELOW TO ADD THIS DEPENDENCY)
  ┃ ┃ ┣ 📜libgdcef.lib             <== (NOT INCLUDED IN THIS REPO, SEE BELOW TO ADD THIS DEPENDENCY)
  ┃ ┃ ┣ 📜libGLESv2.dll            <== (NOT INCLUDED IN THIS REPO, SEE BELOW TO ADD THIS DEPENDENCY)
  ┃ ┃ ┣ 📜resources.pak            <== (NOT INCLUDED IN THIS REPO, SEE BELOW TO ADD THIS DEPENDENCY)
- ┃ ┃ ┣ 📜snapshot_blob.bin        <== (NOT INCLUDED IN THIS REPO, SEE BELOW TO ADD THIS DEPENDENCY) 
+ ┃ ┃ ┣ 📜snapshot_blob.bin        <== (NOT INCLUDED IN THIS REPO, SEE BELOW TO ADD THIS DEPENDENCY)
  ┃ ┃ ┗ 📜v8_context_snapshot.bin  <== (NOT INCLUDED IN THIS REPO, SEE BELOW TO ADD THIS DEPENDENCY)
  ┃ ┣ 📜apphandler.gdns          <== CefApp Test
  ┃ ┣ 📜browserview.gdns         <== BrowserView class for use in GDScript (Browser management)
@@ -207,7 +207,3 @@ chrome_200_percent.pak    <- from thirdparty\cef_binary\Resources
 icudtl.dat      <- from thirdparty\cef_binary\Resources
 resources.pak   <- from thirdparty\cef_binary\Resources
  ```
-
-
-
-
