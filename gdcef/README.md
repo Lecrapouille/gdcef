@@ -81,8 +81,8 @@ And extract it into ./thirdparty/cef_binary, then compile it like so.
 cd ./thirdparty/cef_binary
 mkdir build
 cd build
-cmake ..
-cmake --build .
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j8
 ```
 
 You might also want to use VS to compile in Release mode, in which case you will need to change the compiler mode of the Release version from /MT to /MD,
