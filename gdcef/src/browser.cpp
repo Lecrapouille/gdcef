@@ -42,19 +42,16 @@ enum ButtonList
     BUTTON_MASK_XBUTTON2 = (1 << (BUTTON_XBUTTON2 - 1))
 };
 
-
-using namespace godot;
-
 // in a GDNative module, "_bind_methods" is replaced by the "_register_methods" method
 // this is used to expose various methods of this class to Godot
 void BrowserView::_register_methods()
 {
-    register_method("load_url", &BrowserView::load_url);
-    register_method("get_texture", &BrowserView::get_texture);
-    register_method("reshape", &BrowserView::reshape);
-    register_method("on_key_pressed", &BrowserView::keyPress);
-    register_method("on_mouse_moved", &BrowserView::mouseMove);
-    register_method("on_mouse_click", &BrowserView::mouseClick);
+    godot::register_method("load_url", &BrowserView::load_url);
+    godot::register_method("get_texture", &BrowserView::get_texture);
+    godot::register_method("reshape", &BrowserView::reshape);
+    godot::register_method("on_key_pressed", &BrowserView::keyPress);
+    godot::register_method("on_mouse_moved", &BrowserView::mouseMove);
+    godot::register_method("on_mouse_click", &BrowserView::mouseClick);
 }
 
 
@@ -151,18 +148,18 @@ void BrowserView::RenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintEle
 
     m_data.resize(size);
     //PoolVector<uint8_t>::Write w = m_data.write();
-    PoolByteArray::Write w = m_data.write();
+    godot::PoolByteArray::Write w = m_data.write();
     memcpy(&w[0], buffer, size);
 
     // create can be replaced by create_from_data, taking an additional argument
     // void create_from_data(const int64_t width, const int64_t height, const bool use_mipmaps, const int64_t format, const PoolByteArray data);
-    m_owner.m_image->create_from_data(width, height, false, Image::FORMAT_RGBA8, m_data); // STILLNEEDTOFIXME BGRA8
-    m_owner.m_texture->create_from_image(m_owner.m_image, Texture::FLAG_VIDEO_SURFACE);
+    m_owner.m_image->create_from_data(width, height, false, godot::Image::FORMAT_RGBA8, m_data); // STILLNEEDTOFIXME BGRA8
+    m_owner.m_texture->create_from_image(m_owner.m_image, godot::Texture::FLAG_VIDEO_SURFACE);
 
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::load_url(const String& url)
+void BrowserView::load_url(const godot::String& url)
 {
     m_browser->GetMainFrame()->LoadURL(url.utf8().get_data());
 }

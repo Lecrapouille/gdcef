@@ -21,7 +21,6 @@
 #ifndef GDCEF_H
 #define GDCEF_H
 
-
 #include <Godot.hpp>
 #include <GDScript.hpp>
 #include <iostream>
@@ -34,8 +33,6 @@
 #include <cef_app.h>
 #include <cef_helpers.h>
 #include "apphandler.h"
-
-namespace godot {
 
 // This class must be instantiated prior to the browser view node
 // In theory, this should be started after the main UI thread of the game, to avoid duplicating the window for each CEF subprocess.
@@ -50,12 +47,12 @@ namespace godot {
 //     - The ONLY workaround is to use CEF Subprocesses, see:
 //         https://youtu.be/q4TRdCHe_oc
 
-class GDCef : public GDScript
+class GDCef : public godot::GDScript
 {
     // I chose to extend GDScript for testing, but could as well use Node (Node.hpp)
 private:
 
-    GODOT_CLASS(GDCef, GDScript); // mapping to parent class during registration.
+    GODOT_CLASS(GDCef, godot::GDScript); // mapping to parent class during registration.
 
 private:
 
@@ -121,7 +118,5 @@ public:
 
     */
 };
-
-}
 
 #endif

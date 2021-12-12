@@ -21,9 +21,6 @@
 #ifndef BROWSERVIEW_H
 #define BROWSERVIEW_H
 
-
-// Godot
-
 // ****************************************************************************
 // previously we derived from ImageTexture the core .h files from godot.
 // in GDNative we can directly use the corresponding .hpp file is the class has
@@ -48,13 +45,11 @@
 #include <iostream>
 #include <algorithm>
 
-namespace godot {
-
-class BrowserView : public Node
+class BrowserView : public godot::Node
 {
 private:
 
-    GODOT_CLASS(BrowserView, Node);
+    GODOT_CLASS(BrowserView, godot::Node);
 
 public:
 
@@ -68,10 +63,10 @@ public:
 
     void _init(); // our initializer called by Godot
 
-    Ref<ImageTexture> get_texture() { return m_texture; }
+    godot::Ref<godot::ImageTexture> get_texture() { return m_texture; }
 
     //! \brief Load the given web page
-    void load_url(const String& url);
+    void load_url(const godot::String& url);
 
     //! \brief Set the windows size
     void reshape(int w, int h);
@@ -124,7 +119,7 @@ private:
 
         //! \brief
         //PoolVector<uint8_t> m_data;
-        PoolByteArray m_data;
+        godot::PoolByteArray m_data;
     };
 
     // *************************************************************************
@@ -189,9 +184,8 @@ private:
     int m_mouse_y;
 
     //! \brief Godot's temporary image (CEF => Godot)
-    Ref<ImageTexture> m_texture;
-    Ref<Image> m_image;
+    godot::Ref<godot::ImageTexture> m_texture;
+    godot::Ref<godot::Image> m_image;
 };
 
-}
 #endif

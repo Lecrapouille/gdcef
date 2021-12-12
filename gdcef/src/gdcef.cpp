@@ -36,19 +36,17 @@ HMODULE getThisModuleHandle()
     return hModule;
 }
 
-using namespace godot;
-
 // in a GDNative module, "_bind_methods" is replaced by the "_register_methods" method
 // this is used to expose various methods of this class to Godot
 void GDCef::_register_methods()
 {
-    register_method("do_message_loop_work", &GDCef::do_message_loop_work);
-    register_method("run_message_loop", &GDCef::run_message_loop);
-    register_method("cef_stop", &GDCef::cef_stop);
-    register_method("cef_start", &GDCef::cef_start);
-    register_method("cef_execute_process", &GDCef::cef_execute_process);
-    register_method("cef_initialize", &GDCef::cef_initialize);
-    register_method("set_app_handler", &GDCef::set_app_handler);
+    godot::register_method("do_message_loop_work", &GDCef::do_message_loop_work);
+    godot::register_method("run_message_loop", &GDCef::run_message_loop);
+    godot::register_method("cef_stop", &GDCef::cef_stop);
+    godot::register_method("cef_start", &GDCef::cef_start);
+    godot::register_method("cef_execute_process", &GDCef::cef_execute_process);
+    godot::register_method("cef_initialize", &GDCef::cef_initialize);
+    godot::register_method("set_app_handler", &GDCef::set_app_handler);
 }
 
 GDCef::GDCef()
