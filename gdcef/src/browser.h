@@ -177,7 +177,7 @@ private:
     CefRefPtr<CefBrowser> m_browser;
     CefRefPtr<BrowserClient> m_client;
     RenderHandler* m_render_handler = nullptr;
-    HWND m_handle;
+    //QQ HWND m_handle;
 
     //! \brief Mouse cursor position on the main window
     int m_mouse_x;

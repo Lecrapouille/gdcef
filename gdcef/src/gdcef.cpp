@@ -24,6 +24,7 @@
 #include <cef_app.h>
 #include <cef_helpers.h>
 
+#if 0 //QQ
 // Returns module handle where this function is running in: EXE or DLL
 // Not really needed but that might be useful in the future
 HMODULE getThisModuleHandle()
@@ -35,6 +36,7 @@ HMODULE getThisModuleHandle()
 
     return hModule;
 }
+#endif
 
 // in a GDNative module, "_bind_methods" is replaced by the "_register_methods" method
 // this is used to expose various methods of this class to Godot
@@ -46,7 +48,7 @@ void GDCef::_register_methods()
     godot::register_method("cef_start", &GDCef::cef_start);
     godot::register_method("cef_execute_process", &GDCef::cef_execute_process);
     godot::register_method("cef_initialize", &GDCef::cef_initialize);
-    godot::register_method("set_app_handler", &GDCef::set_app_handler);
+    //QQ godot::register_method("set_app_handler", &GDCef::set_app_handler);
 }
 
 GDCef::GDCef()
@@ -59,7 +61,7 @@ GDCef::~GDCef()
 {
     // add your cleanup here
     cef_stop();
-    m_app = nullptr; // m_app is unused as of now
+    //QQ m_app = nullptr; // m_app is unused as of now
 }
 
 void GDCef::_init()
@@ -96,8 +98,8 @@ void GDCef::cef_start()
     // /!\ TODO: Depending on the system, initialize the args
     //CefMainArgs args(::GetModuleHandle(NULL));
     //CefMainArgs cefArgs;
-    HMODULE hModule = getThisModuleHandle();
-    CefMainArgs args(hModule);
+    //QQ HMODULE hModule = getThisModuleHandle();
+    CefMainArgs args;//QQ h(Module);
 
     std::cerr << "[CEF_start] CefExecuteProcess(): Starting a process" << std::endl;
     int exit_code = CefExecuteProcess(args, nullptr, nullptr);
@@ -146,7 +148,7 @@ bool GDCef::cef_initialize() //int argc, char* argv[])
     // /!\ I'm leaving this exposed for testing purpose but use cef_start instead
 
     std::cout << "[GDCef::cef_initialize()] gettings module handle args" << std::endl;
-    CefMainArgs args(::GetModuleHandle(NULL));
+    CefMainArgs args;//QQ (::GetModuleHandle(NULL));
     std::cout << "[GDCef::cef_initialize()] Configuring settings" << std::endl;
     CefSettings settings;
     // TODO CefString(&settings.locales_dir_path) = "cef/linux/lib/locales";
@@ -162,6 +164,7 @@ bool GDCef::cef_initialize() //int argc, char* argv[])
     return result;
 }
 
+#if 0 // QQ
 void GDCef::set_app_handler(AppHandler* hnd)
 {
     // Alain: Mostly for testing purpose, optional implementation of the CefApp
@@ -170,6 +173,7 @@ void GDCef::set_app_handler(AppHandler* hnd)
     // /!\ I'm leaving this exposed for testing purpose, but use cef_start instead
     m_app = hnd;
 }
+#endif
 
 int GDCef::cef_execute_process()
 {
@@ -178,8 +182,8 @@ int GDCef::cef_execute_process()
     // /!\ I'm leaving this exposed for testing purpose, but use cef_start instead
     std::cout << "[GDCef::cef_execute_process()] running with args" << std::endl;
     std::cout << "[GDCef::cef_execute_process()]   state of the handler app :" << std::endl;
-    std::cout << m_app << std::endl;
-    CefMainArgs args(::GetModuleHandle(NULL));
-    int t = CefExecuteProcess(args, m_app, nullptr);
+    //std::cout << m_app << std::endl;
+    CefMainArgs args;//QQ (::GetModuleHandle(NULL));
+    int t = CefExecuteProcess(args, nullptr/*QQ m_app*/, nullptr);
     return t;
 }

@@ -46,7 +46,7 @@ enum ButtonList
 // this is used to expose various methods of this class to Godot
 void BrowserView::_register_methods()
 {
-    godot::register_method("load_url", &BrowserView::load_url);
+    //QQ godot::register_method("load_url", &BrowserView::load_url);
     godot::register_method("get_texture", &BrowserView::get_texture);
     godot::register_method("reshape", &BrowserView::reshape);
     godot::register_method("on_key_pressed", &BrowserView::keyPress);

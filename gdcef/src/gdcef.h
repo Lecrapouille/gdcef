@@ -32,7 +32,7 @@
 #include <cef_client.h>
 #include <cef_app.h>
 #include <cef_helpers.h>
-#include "apphandler.h"
+//QQ #include "apphandler.h"
 
 // This class must be instantiated prior to the browser view node
 // In theory, this should be started after the main UI thread of the game, to avoid duplicating the window for each CEF subprocess.
@@ -56,7 +56,7 @@ private:
 
 private:
 
-    AppHandler* m_app; // /!\ TESTING : Used along with AppHandler class below.
+    //QQ AppHandler* m_app; // /!\ TESTING : Used along with AppHandler class below.
 
 public:
 
@@ -73,7 +73,7 @@ public:
 
 
     // --- Testing purpose only, splits up cef_start -----
-    void set_app_handler(AppHandler* hnd);	// /!\ TESTING
+    //QQ void set_app_handler(AppHandler* hnd);	// /!\ TESTING
     int cef_execute_process();				// /!\ TESTING
     bool cef_initialize();					// /!\ TESTING
 
