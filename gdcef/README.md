@@ -8,7 +8,7 @@ GDNative module for Chromium Embedded Framework (CEF) integration into Godot, in
 
 ## Environment
 
-My environment was set as described below. Please adapt the below commands to your own environment
+My environment was set as described below. Please adapt the below commands to your own environment:
 ```
 D:\godot-modules                        <= godot installation root (compile godot from here)
 D:\godot-modules\gdcef                  <= gdnative module root (compile the module from here)
@@ -21,19 +21,23 @@ D:\godot-modules\thirdparty\cef_binary  <= CEF distribution used to build the de
 This folder should be placed under the Godot installation folder (where Godot has been cloned). if contains various sulfolders and files detailed below
 
 ```
-📦gdcef
- ┣ 📂demo                       <== GODOT DEMO PROJECT using this module, see next section
- ┃ 📂godot-cpp                  <== (NOT INCLUDED IN THIS REPO, SEE PREREQUISITES) clone of the godot cpp bindings repository
- ┃ 📂src                        <== source files of the module
- ┃ ┣ 📜apphandler.cpp
- ┃ ┣ 📜apphandler.h
- ┃ ┣ 📜browser.cpp
- ┃ ┣ 📜browser.h
- ┃ ┣ 📜gdcef.cpp
- ┃ ┣ 📜gdcef.h
- ┃ ┗ 📜gdlibrary.cpp
- ┃ 📂thirdparty                 <== (NOT INCLUDED IN THIS REPO, SEE PREREQUISITES) contains the CEF distribution extracted in a cef_binary subfolder
- ┗ 📜SConstruct                 <== Used by scons to build the libgdcef.dll
+📦godot-modules
+ ┣ 📂demo                  <== GODOT DEMO PROJECT using this module, see next section
+ ┣ 📂gdcef                 <== CEF module we want to include for the main project
+ ┃ ┣ 📜SConstruct          <== Used by scons to build the libgdcef.dll
+ ┃ ┗ 📂src                 <== source files of the module
+ ┃   ┣ 📜apphandler.cpp
+ ┃   ┣ 📜apphandler.h
+ ┃   ┣ 📜browser.cpp
+ ┃   ┣ 📜browser.h
+ ┃   ┣ 📜gdcef.cpp
+ ┃   ┣ 📜gdcef.h
+ ┃   ┗ 📜gdlibrary.cpp
+ ┣ 📂godot-cpp             <== (NOT INCLUDED IN THIS REPO, SEE PREREQUISITES) clone of the godot cpp bindings repository
+ ┣ 📂thirdparty            <== (NOT INCLUDED IN THIS REPO, SEE PREREQUISITES) contains all external projects
+ ┃ ┗ 📂cef_binary          <== (NOT INCLUDED IN THIS REPO, SEE PREREQUISITES) contains the CEF distribution extracted in a cef_binary subfolder
+ ┣ 📂build                 <== (NOT INCLUDED IN THIS REPO) Generated holding compiled assets for the demo project
+ ┗ 📜build.sh              <== Entry point shell to compile all modules
 ```
 
 ## Prerequisites
@@ -42,7 +46,7 @@ the following 3 prerequisite subfolders are NOT included in this repository and 
 
 ### ./godot-cpp
 
-First of all, clone the godot-cpp repository into 'godot-cpp' subfolder, using the appropriate branch (do not clone the master as you would end up with headers for the 4.0 version.
+First of all, clone the godot-cpp repository into 'godot-cpp' subfolder. Beware of using the appropriate branch 3.4 (do not clone the master as you would end up with headers for the 4.0 version).
 Recursive cloning will also include the appropriate godot-headers used to generate the c++ bindings.
 
 ```
