@@ -36,79 +36,83 @@
 
 namespace godot {
 
+class AppHandler : public CefApp, public Node
+{
+    GODOT_CLASS(AppHandler, Node);
 
-	class AppHandler : public CefApp, public Node {
-		GODOT_CLASS(AppHandler, Node)
+public:
 
-	public:
+    void SetArgs(int argc, char* argv[])
+    {
+        _argc = argc;
+        _argv = argv;
+    }
 
-		void SetArgs(int argc, char* argv[]) {
-			_argc = argc;
-			_argv = argv;
-		}
+    void OnBeforeCommandLineProcessing(const CefString& processType,
+                                       CefRefPtr<CefCommandLine> commandLine)
+    {
+        (void)processType;
 
-		void OnBeforeCommandLineProcessing(const CefString& processType, CefRefPtr<CefCommandLine> commandLine) {
-			(void)processType;
+        std::cout << "[AppHandler] OnBeforeCommandLineProcessing Arguments : Setting up arguments" << std::endl;
 
-			std::cout << "[AppHandler] OnBeforeCommandLineProcessing Arguments : Setting up arguments" << std::endl;
+        // Testing some static settings
+        std::cout << "[AppHandler] off-screen-renderiong-enabled" << std::endl;
+        commandLine->AppendSwitch("off-screen-rendering-enabled");
 
-			// Testing some static settings
-			std::cout << "[AppHandler] off-screen-renderiong-enabled" << std::endl;
-			commandLine->AppendSwitch("off-screen-rendering-enabled");
+        std::cout << "[AppHandler] off-screen-frame-rate : 60" << std::endl;
+        commandLine->AppendSwitchWithValue("off-screen-frame-rate", "60");
 
-			std::cout << "[AppHandler] off-screen-frame-rate : 60" << std::endl;
-			commandLine->AppendSwitchWithValue("off-screen-frame-rate", "60");
+        std::cout << "[AppHandler] enable-anti-aliasing" << std::endl;
+        commandLine->AppendSwitch("enable-font-antialiasing");
 
-			std::cout << "[AppHandler] enable-anti-aliasing" << std::endl;
-			commandLine->AppendSwitch("enable-font-antialiasing");
+        std::cout << "[AppHandler] enable-media-stream" << std::endl;
+        commandLine->AppendSwitch("enable-media-stream");
 
-			std::cout << "[AppHandler] enable-media-stream" << std::endl;
-			commandLine->AppendSwitch("enable-media-stream");
+        // OPTION 1 :settings that use less CPU
+        std::cout << "[AppHandler] disable-gpu" << std::endl;
+        commandLine->AppendSwitch("disable-gpu");
 
-			// OPTION 1 :settings that use less CPU
-			std::cout << "[AppHandler] disable-gpu" << std::endl;
-			commandLine->AppendSwitch("disable-gpu");
+        std::cout << "[AppHandler] disable-gpu-compositing" << std::endl;
+        commandLine->AppendSwitch("disable-gpu-compositing");
 
-			std::cout << "[AppHandler] disable-gpu-compositing" << std::endl;
-			commandLine->AppendSwitch("disable-gpu-compositing");
+        std::cout << "[AppHandler] enable-begin-frame-scheduling" << std::endl;
+        commandLine->AppendSwitch("enable-begin-frame-scheduling");
 
-			std::cout << "[AppHandler] enable-begin-frame-scheduling" << std::endl;
-			commandLine->AppendSwitch("enable-begin-frame-scheduling");
+        // OPTION 2 : untested, probably not working in OSR mode. Enables things like CSS3 and WebGL
+        //	CommandLine->AppendSwitch("enable-gpu-rasterization");
+        //	CommandLine->AppendSwitch("enable-webgl");
+        //	CommandLine->AppendSwitch("disable-web-security");
 
-			// OPTION 2 : untested, probably not working in OSR mode. Enables things like CSS3 and WebGL
-			//	CommandLine->AppendSwitch("enable-gpu-rasterization");
-			//	CommandLine->AppendSwitch("enable-webgl");
-			//	CommandLine->AppendSwitch("disable-web-security");
+        /*
+        // Testing some argument parsing method
+        std::string temp;
 
-			/*
-			// Testing some argument parsing method
-			std::string temp;
+        for (int i = 0; i < _argc; i++) {
+        if (i > 0) temp = temp.append(" ");
+        temp = temp.append(_argv[i]);
+        std::cout << temp << std::endl;
+        }
 
-			for (int i = 0; i < _argc; i++) {
-				if (i > 0) temp = temp.append(" ");
-				temp = temp.append(_argv[i]);
-				std::cout << temp << std::endl;
-			}
+        CefString allArgs(temp);
+        std::cout << "[AppHandler] setting up command line" << std::endl;
+        commandLine->InitFromString(allArgs);
+        */
+    }
 
-			CefString allArgs(temp);
-			std::cout << "[AppHandler] setting up command line" << std::endl;
-			commandLine->InitFromString(allArgs);
-			*/
-		}
+    static void _register_methods();
 
-		static void _register_methods();
+    AppHandler();
+    ~AppHandler();
 
-		AppHandler();
-		~AppHandler();
+    void _init(); // our initializer called by Godot
 
-		void _init(); // our initializer called by Godot
+private:
 
-	private:
-		int    _argc;
-		char** _argv;
+    int    _argc;
+    char** _argv;
 
-		IMPLEMENT_REFCOUNTING(AppHandler);
-	};
+    IMPLEMENT_REFCOUNTING(AppHandler);
+};
 
 }
 

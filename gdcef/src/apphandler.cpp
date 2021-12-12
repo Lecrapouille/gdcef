@@ -32,31 +32,33 @@ using namespace godot;
 
 
 //Returns module handle where this function is running in: EXE or DLL
-HMODULE getStaticModuleHandle() {
-	HMODULE hModule = NULL;
-	::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
-		GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-		(LPCTSTR)getStaticModuleHandle, &hModule);
-		return hModule;
+HMODULE getStaticModuleHandle()
+{
+    HMODULE hModule = NULL;
+    ::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+                        GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                        (LPCTSTR)getStaticModuleHandle, &hModule);
+    return hModule;
 }
 
-AppHandler::AppHandler() {
-
-	std::cout << "[AppHandler::AppHandler()]" << std::endl;
-	std::cout << "Setting up new AppHandler and handing it to godot" << std::endl;
-	//m_app = new AppHandler();
-
+AppHandler::AppHandler()
+{
+    std::cout << "[AppHandler::AppHandler()]" << std::endl;
+    std::cout << "Setting up new AppHandler and handing it to godot" << std::endl;
+    //m_app = new AppHandler();
 }
 
-AppHandler::~AppHandler() {
-	// add your cleanup here
-
+AppHandler::~AppHandler()
+{
+    // add your cleanup here
 }
 
-void AppHandler::_init() {
-	// initialize any variables here
+void AppHandler::_init()
+{
+    // initialize any variables here
 }
 
-void AppHandler::_register_methods() {
-	// Not exposing anything yet
+void AppHandler::_register_methods()
+{
+    // Not exposing anything yet
 }

@@ -35,7 +35,6 @@
 #include <cef_helpers.h>
 #include "apphandler.h"
 
-
 namespace godot {
 
 // This class must be instantiated prior to the browser view node
@@ -51,76 +50,77 @@ namespace godot {
 //     - The ONLY workaround is to use CEF Subprocesses, see:
 //         https://youtu.be/q4TRdCHe_oc
 
-	class GDCef : public GDScript{
-	// I chose to extend GDScript for testing, but could as well use Node (Node.hpp)
-	private:
-		GODOT_CLASS(GDCef, GDScript) // mapping to parent class during registration.
+class GDCef : public GDScript
+{
+    // I chose to extend GDScript for testing, but could as well use Node (Node.hpp)
+private:
 
-	private:
+    GODOT_CLASS(GDCef, GDScript); // mapping to parent class during registration.
 
-		AppHandler* m_app; // /!\ TESTING : Used along with AppHandler class below. 
+private:
 
-	public:
+    AppHandler* m_app; // /!\ TESTING : Used along with AppHandler class below.
 
-		static void _register_methods(); // This is mandatory to expose the below methods to GDScript
-		void _init(); // our initializer called by Godot. Empty, use cef_start afterwards
+public:
 
-		GDCef(); 
-		~GDCef(); // Kill!Kill!DIEEE!MUERTE 
+    static void _register_methods(); // This is mandatory to expose the below methods to GDScript
+    void _init(); // our initializer called by Godot. Empty, use cef_start afterwards
 
-		void cef_start(); // exposed, should be called to start cef
-		void run_message_loop(); // create the message pump after cef initialization
-		void do_message_loop_work(); // loop runner (should be using the UIT)
-		void cef_stop(); // exposed, should be called to stop cef
+    GDCef();
+    ~GDCef(); // Kill!Kill!DIEEE!MUERTE
 
-
-		// --- Testing purpose only, splits up cef_start -----
-		void set_app_handler(AppHandler* hnd);	// /!\ TESTING
-		int cef_execute_process();				// /!\ TESTING
-		bool cef_initialize();					// /!\ TESTING
+    void cef_start(); // exposed, should be called to start cef
+    void run_message_loop(); // create the message pump after cef initialization
+    void do_message_loop_work(); // loop runner (should be using the UIT)
+    void cef_stop(); // exposed, should be called to stop cef
 
 
-	/* NOTE : Optional CefApp implementation, used for testing
-	private :
+    // --- Testing purpose only, splits up cef_start -----
+    void set_app_handler(AppHandler* hnd);	// /!\ TESTING
+    int cef_execute_process();				// /!\ TESTING
+    bool cef_initialize();					// /!\ TESTING
 
-		class AppHandler : public CefApp {
-		public:
 
-			void SetArgs(int argc, char* argv[]) {
-				_argc = argc;
-				_argv = argv;
-			}
+    /* NOTE : Optional CefApp implementation, used for testing
+       private :
 
-			void OnBeforeCommandLineProcessing(const CefString& processType, CefRefPtr<CefCommandLine> commandLine) {
-				(void)processType;
+       class AppHandler : public CefApp {
+       public:
 
-				std::cout << "[AppHandler] OnBeforeCommandLineProcessing Arguments :" << std::endl;
-				std::string temp;
-				for (int i = 0; i < _argc; i++) {
-					if (i > 0) temp = temp.append(" ");
-					temp = temp.append(_argv[i]);
-					std::cout << temp << std::endl;
-				}
+       void SetArgs(int argc, char* argv[]) {
+       _argc = argc;
+       _argv = argv;
+       }
 
-				CefString allArgs(temp);
-				std::cout << "[AppHandler] setting up command line" << std::endl;
-				commandLine->InitFromString(allArgs);
-			}
+       void OnBeforeCommandLineProcessing(const CefString& processType, CefRefPtr<CefCommandLine> commandLine) {
+       (void)processType;
 
-		private:
-			int    _argc;
-			char** _argv;
+       std::cout << "[AppHandler] OnBeforeCommandLineProcessing Arguments :" << std::endl;
+       std::string temp;
+       for (int i = 0; i < _argc; i++) {
+       if (i > 0) temp = temp.append(" ");
+       temp = temp.append(_argv[i]);
+       std::cout << temp << std::endl;
+       }
 
-			IMPLEMENT_REFCOUNTING(AppHandler);
-		};
+       CefString allArgs(temp);
+       std::cout << "[AppHandler] setting up command line" << std::endl;
+       commandLine->InitFromString(allArgs);
+       }
 
-	public :
+       private:
+       int    _argc;
+       char** _argv;
 
-		void create_app_handler();
+       IMPLEMENT_REFCOUNTING(AppHandler);
+       };
 
-	*/
+       public :
 
-	};
+       void create_app_handler();
+
+    */
+};
 
 }
 

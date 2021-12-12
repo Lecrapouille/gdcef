@@ -29,7 +29,7 @@
 // in GDNative we can directly use the corresponding .hpp file is the class has
 // been exposed (most of them are). so simply include ImageTexture.hpp
 // PoolVector doe not seem to be exposed but we can use PoolByteArray native type instead.
-// Most of the code replicates what's been done previously by @lecrapouille in the 
+// Most of the code replicates what's been done previously by @lecrapouille in the
 // ****************************************************************************
 
 #include <Godot.hpp>
@@ -50,147 +50,148 @@
 
 namespace godot {
 
+class BrowserView : public Node
+{
+private:
 
-	class BrowserView : public Node {
-	private:
-		GODOT_CLASS(BrowserView, Node)
+    GODOT_CLASS(BrowserView, Node);
 
-	public:
+public:
 
-		static void _register_methods();
+    static void _register_methods();
 
-		//! \brief Default Constructor.
-		BrowserView(/*const String &url*/);
+    //! \brief Default Constructor.
+    BrowserView(/*const String &url*/);
 
-		//! \brief
-		~BrowserView();
+    //! \brief
+    ~BrowserView();
 
-		void _init(); // our initializer called by Godot
+    void _init(); // our initializer called by Godot
 
-		Ref<ImageTexture> get_texture() { return m_texture; }
+    Ref<ImageTexture> get_texture() { return m_texture; }
 
-		//! \brief Load the given web page
-		void load_url(const String& url);
+    //! \brief Load the given web page
+    void load_url(const String& url);
 
-		//! \brief Set the windows size
-		void reshape(int w, int h);
+    //! \brief Set the windows size
+    void reshape(int w, int h);
 
-		//! \brief TODO
-		// void executeJS(const std::string &cmd);
+    //! \brief TODO
+    // void executeJS(const std::string &cmd);
 
-		//! \brief Set the new mouse position.
-		void mouseMove(int x, int y);
+    //! \brief Set the new mouse position.
+    void mouseMove(int x, int y);
 
-		//! \brief Set the new mouse state (clicked ...)
-		void mouseClick(int button, bool mouse_up);
+    //! \brief Set the new mouse state (clicked ...)
+    void mouseClick(int button, bool mouse_up);
 
-		//! \brief Set the new keyboard state (char typed ...)
-		void keyPress(int key, bool pressed);
+    //! \brief Set the new keyboard state (char typed ...)
+    void keyPress(int key, bool pressed);
 
-	private:
+private:
 
-		// *************************************************************************
-		//! \brief Private implementation to handle CEF events to draw the web page.
-		// *************************************************************************
-		class RenderHandler : public CefRenderHandler
-		{
-		public:
+    // *************************************************************************
+    //! \brief Private implementation to handle CEF events to draw the web page.
+    // *************************************************************************
+    class RenderHandler : public CefRenderHandler
+    {
+    public:
 
-			RenderHandler(BrowserView& owner);
+        RenderHandler(BrowserView& owner);
 
-			//! \brief Resize the browser's view
-			void reshape(int w, int h);
+        //! \brief Resize the browser's view
+        void reshape(int w, int h);
 
-			//! \brief CefRenderHandler interface. Get the view port.
-			virtual void GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) override;
+        //! \brief CefRenderHandler interface. Get the view port.
+        virtual void GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) override;
 
-			//! \brief CefRenderHandler interface. Update the Godot's texture.
-			virtual void OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type,
-				const RectList& dirtyRects, const void* buffer,
-				int width, int height) override;
+        //! \brief CefRenderHandler interface. Update the Godot's texture.
+        virtual void OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type,
+                             const RectList& dirtyRects, const void* buffer,
+                             int width, int height) override;
 
-			//! \brief CefBase interface
-			IMPLEMENT_REFCOUNTING(RenderHandler);
+        //! \brief CefBase interface
+        IMPLEMENT_REFCOUNTING(RenderHandler);
 
-		private:
+    private:
 
-			//! \brief Browser's view dimension
-			int m_width;
-			int m_height;
+        //! \brief Browser's view dimension
+        int m_width;
+        int m_height;
 
-			//! \brief Access to BrowserView::m_image
-			BrowserView& m_owner;
+        //! \brief Access to BrowserView::m_image
+        BrowserView& m_owner;
 
-			//! \brief
-			//PoolVector<uint8_t> m_data;
-			PoolByteArray m_data;
-		};
+        //! \brief
+        //PoolVector<uint8_t> m_data;
+        PoolByteArray m_data;
+    };
 
-		// *************************************************************************
-		//! \brief Provide access to browser-instance-specific callbacks. A single
-		//! CefClient instance can be shared among any number of browsers.
-		// *************************************************************************
-		class BrowserClient : public CefClient//, public CefLifeSpanHandler
-		{
-		public:
+    // *************************************************************************
+    //! \brief Provide access to browser-instance-specific callbacks. A single
+    //! CefClient instance can be shared among any number of browsers.
+    // *************************************************************************
+    class BrowserClient : public CefClient//, public CefLifeSpanHandler
+    {
+    public:
 
-			BrowserClient(CefRefPtr<CefRenderHandler> ptr)
-				: m_renderHandler(ptr)
-			{}
+        BrowserClient(CefRefPtr<CefRenderHandler> ptr)
+            : m_renderHandler(ptr)
+        {}
 
-			// CefClient
-			virtual CefRefPtr<CefRenderHandler> GetRenderHandler() override
-			{
-				return m_renderHandler;
-			}
+        // CefClient
+        virtual CefRefPtr<CefRenderHandler> GetRenderHandler() override
+        {
+            return m_renderHandler;
+        }
 
 #if 0
-			// CefLifeSpanHandler
-			virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override
-			{
-				return this;
-			}
+        // CefLifeSpanHandler
+        virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override
+        {
+            return this;
+        }
 
-			// CefLifeSpanHandler
-			virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) override
-			{
-				CEF_REQUIRE_UI_THREAD();
-				m_browser = browser;
-			}
+        // CefLifeSpanHandler
+        virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) override
+        {
+            CEF_REQUIRE_UI_THREAD();
+            m_browser = browser;
+        }
 
-			// CefLifeSpanHandler
-			virtual bool DoClose(CefRefPtr<CefBrowser> browser) override
-			{
-				CEF_REQUIRE_UI_THREAD();
-				return true;
-			}
+        // CefLifeSpanHandler
+        virtual bool DoClose(CefRefPtr<CefBrowser> browser) override
+        {
+            CEF_REQUIRE_UI_THREAD();
+            return true;
+        }
 
-			// CefLifeSpanHandler
-			virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) override
-			{}
+        // CefLifeSpanHandler
+        virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) override
+        {}
 #endif
 
-			CefRefPtr<CefRenderHandler> m_renderHandler;
+        CefRefPtr<CefRenderHandler> m_renderHandler;
 
-			IMPLEMENT_REFCOUNTING(BrowserClient);
-		};
+        IMPLEMENT_REFCOUNTING(BrowserClient);
+    };
 
-	private:
+private:
 
-		//! \brief Chromium Embedded Framework elements
-		CefRefPtr<CefBrowser> m_browser;
-		CefRefPtr<BrowserClient> m_client;
-		RenderHandler* m_render_handler = nullptr;
-		HWND m_handle;
+    //! \brief Chromium Embedded Framework elements
+    CefRefPtr<CefBrowser> m_browser;
+    CefRefPtr<BrowserClient> m_client;
+    RenderHandler* m_render_handler = nullptr;
+    HWND m_handle;
 
-		//! \brief Mouse cursor position on the main window
-		int m_mouse_x;
-		int m_mouse_y;
+    //! \brief Mouse cursor position on the main window
+    int m_mouse_x;
+    int m_mouse_y;
 
-		//! \brief Godot's temporary image (CEF => Godot)
-		Ref<ImageTexture> m_texture;
-		Ref<Image> m_image;
-	};
+    //! \brief Godot's temporary image (CEF => Godot)
+    Ref<ImageTexture> m_texture;
+    Ref<Image> m_image;
+};
 
 }
 #endif
