@@ -64,6 +64,7 @@ elif env['platform'] in ('x11', 'linux'):
         env.Append(CCFLAGS=['-g3', '-Og'])
     else:
         env.Append(CCFLAGS=['-g', '-O3'])
+    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DNDEBUG', '-D_FILE_OFFSET_BITS=64', '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
 
 elif env['platform'] == "windows":
     cpp_library += '.windows'
