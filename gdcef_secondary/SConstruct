@@ -1,0 +1,137 @@
+#!python
+import os
+
+opts = Variables([], ARGUMENTS)
+
+# Gets the standard flags CC, CCX, etc.
+env = DefaultEnvironment()
+
+# Define our options
+opts.Add(EnumVariable('target', "Compilation target", 'debug', ['d', 'debug', 'r', 'release']))
+opts.Add(EnumVariable('platform', "Compilation platform", '', ['', 'windows', 'x11', 'linux', 'osx']))
+opts.Add(EnumVariable('p', "Compilation target, alias for 'platform'", '', ['', 'windows', 'x11', 'linux', 'osx']))
+opts.Add(BoolVariable('use_llvm', "Use the LLVM / Clang compiler", 'no'))
+opts.Add(PathVariable('target_path', 'The path where the lib is installed.', '../build'))
+opts.Add(PathVariable('target_name', 'The library name.', 'godotcefsimple', PathVariable.PathAccept))
+
+# Local dependency paths, adapt them to your setup
+godot_headers_path = "../godot-cpp/godot-headers/"
+cpp_bindings_path = "../godot-cpp/"
+cpp_library = "libgodot-cpp"
+
+# only support 64 at this time..
+bits = 64
+
+# Updates the environment with the option variables.
+opts.Update(env)
+
+# Process some arguments
+if env['use_llvm']:
+    env['CC'] = 'clang'
+    env['CXX'] = 'clang++'
+
+if env['p'] != '':
+    env['platform'] = env['p']
+
+if env['platform'] == '':
+    print("No valid target platform selected.")
+    quit();
+
+# For the reference:
+# - CCFLAGS are compilation flags shared between C and C++
+# - CFLAGS are for C-specific compilation flags
+# - CXXFLAGS are for C++-specific compilation flags
+# - CPPFLAGS are for pre-processor flags
+# - CPPDEFINES are for pre-processor defines
+# - LINKFLAGS are for linking flags
+
+# Check our platform specifics
+if env['platform'] == "osx":
+    cpp_library += '.osx'
+    env.Append(CCFLAGS=['-arch', 'x86_64'])
+    env.Append(CXXFLAGS=['-std=c++17'])
+    env.Append(LINKFLAGS=['-arch', 'x86_64'])
+    if env['target'] in ('debug', 'd'):
+        env.Append(CCFLAGS=['-g', '-O2'])
+    else:
+        env.Append(CCFLAGS=['-g', '-O3'])
+
+elif env['platform'] in ('x11', 'linux'):
+    cpp_library += '.linux'
+    env.Append(CCFLAGS=['-fPIC'])
+    env.Append(CXXFLAGS=['-std=c++17'])
+    if env['target'] in ('debug', 'd'):
+        env.Append(CCFLAGS=['-g3', '-Og'])
+    else:
+        env.Append(CCFLAGS=['-g', '-O3'])
+    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DNDEBUG', '-D_FILE_OFFSET_BITS=64', '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
+
+elif env['platform'] == "windows":
+    cpp_library += '.windows'
+    # This makes sure to keep the session environment variables on windows,
+    # that way you can run scons in a vs 2017 prompt and it will find all the required tools
+    env.Append(ENV=os.environ)
+
+    env.Append(CPPDEFINES=['WIN32', '_WIN32', '_WINDOWS', '_CRT_SECURE_NO_WARNINGS'])
+    env.Append(CCFLAGS=['-W3', '-GR'])
+    env.Append(CXXFLAGS='/std:c++17')
+    if env['target'] in ('debug', 'd'):
+        env.Append(CPPDEFINES=['_DEBUG'])
+        env.Append(CCFLAGS=['-EHsc', '-MDd', '-ZI'])
+        env.Append(LINKFLAGS=['-DEBUG'])
+    else:
+        env.Append(CPPDEFINES=['NDEBUG'])
+        env.Append(CCFLAGS=['-O2', '-EHsc', '-MD'])
+
+if env['target'] in ('debug', 'd'):
+    cpp_library += '.debug'
+else:
+    cpp_library += '.release'
+
+cpp_library += '.' + str(bits)
+
+# NOTE : First of all download and extract the CEF distribution in thirdparty/cef_binary
+#    available at : https://cef-builds.spotifycdn.com/index.html#windows64 (care for your target OS)
+# Compile the CEF in RELEASE mode (use cmake to generate the solution and to compile the libs)
+# On windows compiling for RELEASE from VS might require to add the following preprocessor flags to compile libcef.dll / libcef_dll_wrapper.dll
+#    _ITERATOR_DEBUG_LEVEL = 0; dans le précompilateur de libwrapper
+#    _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH sous C/C++ >> Preprocessor >> PreprocessorDefinitions.
+
+# make sure our binding library is properly includes
+env.Append(CPPPATH=['.', godot_headers_path, cpp_bindings_path + 'include/', cpp_bindings_path + 'include/core/', cpp_bindings_path + 'include/gen/'])
+env.Append(CPPPATH=['.', godot_headers_path, '../' + cpp_bindings_path + 'include/', '../' + cpp_bindings_path + 'include/core/', '../' + cpp_bindings_path + 'include/gen/'])
+
+#env.Append(CPPPATH=['include/', 'include/base', 'include/base/internal', 'include/capi', 'include/capi/test', 'include/capi/views',
+#                    'include/internal', 'include/test', 'include/views', 'include/wrapper' ])
+
+env.Append(LIBPATH=[cpp_bindings_path + 'bin/'])
+env.Append(LIBS=[cpp_library])
+
+# CEF INCLUDES
+env.Append(CPPPATH = ['../thirdparty/cef_binary'])
+env.Append(CPPPATH = ['../thirdparty/cef_binary/include'])
+env.Append(CPPPATH = ['../thirdparty/cef_binary/include/base'])
+env.Append(CPPPATH = ['../thirdparty/cef_binary/include/base/internal'])
+env.Append(CPPPATH = ['../thirdparty/cef_binary/include/capi'])
+env.Append(CPPPATH = ['../thirdparty/cef_binary/include/capi/test'])
+env.Append(CPPPATH = ['../thirdparty/cef_binary/include/capi/views'])
+env.Append(CPPPATH = ['../thirdparty/cef_binary/include/internal'])
+env.Append(CPPPATH = ['../thirdparty/cef_binary/include/test'])
+env.Append(CPPPATH = ['../thirdparty/cef_binary/include/views'])
+env.Append(CPPPATH = ['../thirdparty/cef_binary/include/wrapper'])
+
+# CEF LIBS FOR LINKING
+env.Append(LIBS = 'libcef', LIBPATH = ['../thirdparty/cef_binary/Release'])
+env.Append(LIBS = 'libcef_dll_wrapper', LIBPATH = ['../thirdparty/cef_binary/build/libcef_dll_wrapper'])
+
+# tweak this if you want to use different folders, or more folders, to store your source code in.
+env.Append(CPPPATH=['src/'])
+sources = Glob('src/*.cpp')
+
+# OUTPUT DLL / SO (see on top of this file for the target_name
+library = env.Program(target=env['target_path'] + '/' + env['target_name'], source=sources)
+
+Default(library)
+
+# Generates help for the -h scons option.
+Help(opts.GenerateHelpText(env))
