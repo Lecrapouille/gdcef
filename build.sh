@@ -85,7 +85,7 @@ function install_godotcpp
 function install_stigmee_modules
 {
     msg "Installing Godot modules needed for Stigmee ..."
-    (cd gdcef && ./build.sh)
+    (cd gdcef_primary && ./build.sh)
 }
 
 ### Script entry point
