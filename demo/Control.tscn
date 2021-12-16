@@ -1,0 +1,22 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://gdcef.gdns" type="Script" id=1]
+[ext_resource path="res://Control.gd" type="Script" id=2]
+
+[node name="Control" type="Control"]
+margin_right = 330.0
+margin_bottom = 177.0
+script = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="texture1" type="TextureRect" parent="."]
+margin_right = 40.0
+margin_bottom = 40.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="cef1" type="Node" parent="."]
+script = ExtResource( 1 )

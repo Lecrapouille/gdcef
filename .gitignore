@@ -2,6 +2,8 @@
 godot-cpp/
 thirdparty/
 build/
+GPUCache
+demo/build
 
 # Backup files
 *~
