@@ -1,6 +1,7 @@
 //*************************************************************************
 // Stigmee: A 3D browser and decentralized social network.
 // Copyright 2021 Alain Duron <duron.alain@gmail.com>
+// Copyright 2021 Quentin Quadrat <lecrapouille@gmail.com>
 //
 // This file is part of Stigmee.
 //
@@ -18,105 +19,189 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //*************************************************************************
 
-#ifndef GDCEF_H
-#define GDCEF_H
+#ifndef STIGMEE_CEF_BROWSER_HPP
+#  define STIGMEE_CEF_BROWSER_HPP
 
+// ****************************************************************************
+// previously we derived from ImageTexture the core .h files from godot.
+// in GDNative we can directly use the corresponding .hpp file is the class has
+// been exposed (most of them are). so simply include ImageTexture.hpp
+// PoolVector doe not seem to be exposed but we can use PoolByteArray native type instead.
+// Most of the code replicates what's been done previously by @lecrapouille in the
+// ****************************************************************************
+
+// Godot
 #include <Godot.hpp>
 #include <GDScript.hpp>
-#include <iostream>
+#include <Node.hpp>
+#include <ImageTexture.hpp>
 
 // Chromium Embedded Framework
-//#include <cef_render_handler.h>
-//#include <cef_client.h>
-#include <cef_app.h>
-#include <cef_client.h>
-#include <cef_app.h>
-#include <cef_helpers.h>
-//QQ #include "apphandler.h"
+#include "cef_render_handler.h"
+#include "cef_client.h"
+#include "cef_app.h"
 
-// This class must be instantiated prior to the browser view node
-// In theory, this should be started after the main UI thread of the game, to avoid duplicating the window for each CEF subprocess.
-// I have tested several instanciation methods from godot that would avoid modifying the main.cpp of godot.
-//     - autoloads (suggestion from gdnative connoisseurs in godot's discord) are of no use, they extend Node and therefore are started from the main UI
-// 	   - static variable in the DLL to instantiate CEF is dangerous (leakage) and non functional, see:
-//         https://magpcss.org/ceforum/viewtopic.php?f=6&t=12065&sid=ac9bb443238c0cd5f5b994131734a0fa&start=10#p22628
-//     - changing the project's MainLoop (project settings) is also useless, as it's also started after the autoloads, also from the main UI
-// 	   - I tried implementing CefApp just like BLUI. But it seems they finaly resolved the issue in Unreal with the same subprocess exe idea, see:
-//         https://github.com/oivio/BLUI/blob/master/Source/Blu/Private/Blu.cpp
-// 	   - I tried extending other classes in the hope that it would start before the main UI (GDScript, Reference...) to no avail.
-//     - The ONLY workaround is to use CEF Subprocesses, see:
-//         https://youtu.be/q4TRdCHe_oc
+#include <string>
+#include <vector>
+#include <memory>
+#include <iostream>
+#include <algorithm>
 
-class GDCef : public godot::GDScript
+// ****************************************************************************
+//! \brief Class deriving from Godot's Node and interfacing Chromium Embedded
+//! Framework.
+// ****************************************************************************
+class GDCef : public godot::Node
 {
-    // I chose to extend GDScript for testing, but could as well use Node (Node.hpp)
-private:
-
-    GODOT_CLASS(GDCef, godot::GDScript); // mapping to parent class during registration.
-
-private:
-
-    //QQ AppHandler* m_app; // /!\ TESTING : Used along with AppHandler class below.
+    GODOT_CLASS(GDCef, godot::Node);
 
 public:
 
-    static void _register_methods(); // This is mandatory to expose the below methods to GDScript
-    void _init(); // our initializer called by Godot. Empty, use cef_start afterwards
+    //! \brief Default Constructor.
+    GDCef(/*const String &url*/);
 
-    GDCef();
-    ~GDCef(); // Kill!Kill!DIEEE!MUERTE
+    //! \brief
+    ~GDCef();
 
-    void cef_start(); // exposed, should be called to start cef
-    void run_message_loop(); // create the message pump after cef initialization
-    void do_message_loop_work(); // loop runner (should be using the UIT)
-    void cef_stop(); // exposed, should be called to stop cef
+    godot::Ref<godot::ImageTexture> get_texture()
+    {
+        return m_texture;
+    }
 
+/*FIXME static*/ void DoMessageLoop();
 
-    // --- Testing purpose only, splits up cef_start -----
-    //QQ void set_app_handler(AppHandler* hnd);	// /!\ TESTING
-    int cef_execute_process();				// /!\ TESTING
-    bool cef_initialize();					// /!\ TESTING
+    //! \brief Load the given web page
+    void load_url(godot::String url); // FIXME mmmh by copy really ? Not godot::String const& url ?
 
+    //! \brief Set the windows size
+    void reshape(int w, int h);
 
-    /* NOTE : Optional CefApp implementation, used for testing
-       private :
+    //! \brief TODO
+    // void executeJS(const std::string &cmd);
 
-       class AppHandler : public CefApp {
-       public:
+    //! \brief Set the new mouse position.
+    void mouseMove(int x, int y);
 
-       void SetArgs(int argc, char* argv[]) {
-       _argc = argc;
-       _argv = argv;
-       }
+    //! \brief Set the new mouse state (clicked ...)
+    void mouseClick(int button, bool mouse_up);
 
-       void OnBeforeCommandLineProcessing(const CefString& processType, CefRefPtr<CefCommandLine> commandLine) {
-       (void)processType;
+    //! \brief Set the new keyboard state (char typed ...)
+    void keyPress(int key, bool pressed);
 
-       std::cout << "[AppHandler] OnBeforeCommandLineProcessing Arguments :" << std::endl;
-       std::string temp;
-       for (int i = 0; i < _argc; i++) {
-       if (i > 0) temp = temp.append(" ");
-       temp = temp.append(_argv[i]);
-       std::cout << temp << std::endl;
-       }
+    //! \brief Our initializer called by Godot
+    void _init();
 
-       CefString allArgs(temp);
-       std::cout << "[AppHandler] setting up command line" << std::endl;
-       commandLine->InitFromString(allArgs);
-       }
+    //! \brief Static function that Godot will call to find out which methods can be called on our NativeScript and which properties it exposes.
+    static void _register_methods();
 
-       private:
-       int    _argc;
-       char** _argv;
+private:
 
-       IMPLEMENT_REFCOUNTING(AppHandler);
-       };
+    // *************************************************************************
+    //! \brief Private implementation to handle CEF events to draw the web page.
+    // *************************************************************************
+    class RenderHandler : public CefRenderHandler
+    {
+    public:
 
-       public :
+        RenderHandler(GDCef& owner);
 
-       void create_app_handler();
+        //! \brief Resize the browser's view
+        void reshape(int w, int h);
 
-    */
+        //! \brief CefRenderHandler interface. Get the view port.
+        virtual void GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) override;
+
+        //! \brief CefRenderHandler interface. Update the Godot's texture.
+        virtual void OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type,
+                             const RectList& dirtyRects, const void* buffer,
+                             int width, int height) override;
+
+        //! \brief CefBase interface
+        IMPLEMENT_REFCOUNTING(RenderHandler);
+
+    private:
+
+        //! \brief Browser's view dimension
+        int m_width;
+        int m_height;
+
+        //! \brief Access to GDCef::m_image
+        GDCef& m_owner;
+
+        //! \brief
+        godot::PoolByteArray m_data;
+    };
+
+    // *************************************************************************
+    //! \brief Provide access to browser-instance-specific callbacks. A single
+    //! CefClient instance can be shared among any number of browsers.
+    // *************************************************************************
+    class BrowserClient : public CefClient, public CefLifeSpanHandler
+    {
+    public:
+
+        BrowserClient(CefRefPtr<CefRenderHandler> ptr)
+            : m_renderHandler(ptr)
+        {}
+
+        // CefClient
+        virtual CefRefPtr<CefRenderHandler> GetRenderHandler() override
+        {
+            return m_renderHandler;
+        }
+
+        // CefLifeSpanHandler
+        virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) override
+        {
+            // CEF_REQUIRE_UI_THREAD();
+
+            if (!m_browser.get())
+            {
+                // Keep a reference to the main browser.
+                m_browser = browser;
+                m_browser_id = browser->GetIdentifier();
+            }
+        }
+
+        // CefLifeSpanHandler
+        virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) override
+        {
+            // CEF_REQUIRE_UI_THREAD();
+
+            if (m_browser_id == browser->GetIdentifier())
+            {
+                m_browser = nullptr;
+            }
+        }
+
+        CefRefPtr<CefBrowser> GetCEFBrowser()
+        {
+            return m_browser;
+        }
+
+        IMPLEMENT_REFCOUNTING(BrowserClient);
+
+    private:
+
+        CefRefPtr<CefRenderHandler> m_renderHandler;
+        CefRefPtr<CefBrowser> m_browser;
+        int m_browser_id;
+    };
+
+private:
+
+    //! \brief Chromium Embedded Framework elements
+    CefRefPtr<CefBrowser> m_browser;
+    CefRefPtr<BrowserClient> m_client;
+    RenderHandler* m_render_handler = nullptr;
+
+    //! \brief Mouse cursor position on the main window
+    int m_mouse_x;
+    int m_mouse_y;
+
+    //! \brief Godot's temporary image (CEF => Godot)
+    godot::Ref<godot::ImageTexture> m_texture;
+    godot::Ref<godot::Image> m_image;
 };
 
 #endif

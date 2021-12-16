@@ -3,16 +3,22 @@
 
 #include "blu_handler.h"
 
-#include "include/base/cef_bind.h"
-#include "include/base/cef_callback.h"
-#include "include/cef_app.h"
-#include "include/cef_parser.h"
-#include "include/views/cef_browser_view.h"
-#include "include/views/cef_window.h"
-#include "include/wrapper/cef_closure_task.h"
-#include "include/wrapper/cef_helpers.h"
+// CEF
+#include <cef_app.h>
+#include <cef_client.h>
+#include <cef_render_handler.h>
+#include <cef_life_span_handler.h>
+#include <cef_load_handler.h>
+#include <cef_parser.h>
+#include <views/cef_browser_view.h>
+#include <views/cef_window.h>
+#include <wrapper/cef_helpers.h>
+#include <wrapper/cef_closure_task.h>
+#include <base/cef_bind.h>
+#include <base/cef_callback.h>
 
 #include <sstream>
+#include <iostream>
 #include <string>
 
 static BluHandler* g_instance = nullptr;
@@ -28,12 +34,14 @@ static std::string GetDataURI(const std::string& data, const std::string& mime_t
 BluHandler::BluHandler()
     : m_is_closing(false)
 {
+    std::cout << "SECONDARY BluHandler::BluHandler" << std::endl;
     DCHECK(!g_instance);
     g_instance = this;
 }
 
 BluHandler::~BluHandler()
 {
+    std::cout << "SECONDARY BluHandler::~BluHandler" << std::endl;
     g_instance = nullptr;
 }
 
@@ -45,6 +53,7 @@ BluHandler* BluHandler::GetInstance()
 
 void BluHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 {
+    std::cout << "SECONDARY BluHandler::OnAfterCreated" << std::endl;
     CEF_REQUIRE_UI_THREAD();
 
     // Add to the list of existing browsers.
@@ -53,6 +62,7 @@ void BluHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 
 bool BluHandler::DoClose(CefRefPtr<CefBrowser> browser)
 {
+    std::cout << "SECONDARY BluHandler::DoClose" << std::endl;
     CEF_REQUIRE_UI_THREAD();
 
     // Closing the main window requires special handling. See the DoClose()
@@ -71,6 +81,7 @@ bool BluHandler::DoClose(CefRefPtr<CefBrowser> browser)
 
 void BluHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser)
 {
+    std::cout << "SECONDARY BluHandler::OnBeforeClose" << std::endl;
     CEF_REQUIRE_UI_THREAD();
 
     // Remove from the list of existing browsers.
@@ -97,6 +108,7 @@ void BluHandler::OnLoadError(CefRefPtr<CefBrowser> browser,
                              const CefString& errorText,
                              const CefString& failedUrl)
 {
+    std::cout << "SECONDARY BluHandler::OnLoadError" << std::endl;
     // Don't display an error for downloaded files.
     if (errorCode == ERR_ABORTED)
         return;
@@ -115,6 +127,7 @@ void BluHandler::OnLoadError(CefRefPtr<CefBrowser> browser,
 
 void BluHandler::CloseAllBrowsers(bool force_close)
 {
+    std::cout << "SECONDARY BluHandler::CloseAllBrowsers" << std::endl;
     if (m_browser_list.empty())
         return;
 

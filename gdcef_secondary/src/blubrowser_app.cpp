@@ -3,15 +3,19 @@
 
 #include "blubrowser_app.h"
 #include "blu_handler.h"
-#include "include/cef_browser.h"
-#include "include/cef_command_line.h"
-#include "include/wrapper/cef_helpers.h"
 //#include "script_handler.h"
 
+// CEF
+#include "cef_browser.h"
+#include "cef_command_line.h"
+#include "wrapper/cef_helpers.h"
+
 #include <string>
+#include <iostream>
 
 void BluBrowser::OnContextInitialized()
 {
+    std::cout << "SECONDARY BluBrowser::OnContextInitialized" << std::endl;
     CEF_REQUIRE_UI_THREAD();
 
     // Information used when creating the native window.
@@ -51,7 +55,7 @@ void BluBrowser::OnContextCreated(CefRefPtr<CefBrowser> browser,
                                   CefRefPtr<CefFrame> frame,
                                   CefRefPtr<CefV8Context> context)
 {
-
+    std::cout << "SECONDARY BluBrowser::OnContextCreated" << std::endl;
     // no handler yet, we need to create it first
     //FIXME handler = new BluScriptHandler(browser);
 
