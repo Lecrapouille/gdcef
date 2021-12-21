@@ -19,102 +19,48 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ###############################################################################
 
+### Green color message
 function msg
 {
     echo -e "\033[32m*** $*\033[00m"
 }
 
-# Red color message
+### Red color message
 function err
 {
     echo -e "\033[31m*** $*\033[00m"
 }
 
-### Clone prebuild Chromium Embedded Framework and compile it
-function install_cef
-{
-    pwd
-    # Download and decompress if folder is not present
-    if [ ! -d ../thirdparty/cef_binary ]; then
-        msg "Downloading Chromium Embedded Framework ..."
-        UNAMEM=`uname -m`
-        if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-            if [[ "$UNAMEM" == "x86_64" ]]; then
-                ARCHI="linux64"
-            else
-                ARCHI="linuxarm"
-            fi
-        elif [[ "$OSTYPE" == "freebsd"* ]]; then
-            if [[ "$UNAMEM" == "x86_64" ]]; then
-                ARCHI="linux64"
-            else
-                ARCHI="linuxarm"
-            fi
-        elif [[ "$OSTYPE" == "darwin"* ]]; then
-            if [[ "$UNAMEM" == "x86_64" ]]; then
-                ARCHI="macosx64"
-            else
-                ARCHI="macosarm64"
-            fi
-        else
-            err "Unknown archi. Cannot download Chromium Embedded Framework"
-            exit 1
-        fi
-
-        msg "Downloading Chromium Embedded Framework $ARCHI ..."
-        WEBSITE=https://cef-builds.spotifycdn.com
-        CEF_TARBALL=cef_binary_96.0.14%2Bg28ba5c8%2Bchromium-96.0.4664.55_$ARCHI.tar.bz2
-
-        mkdir -p ../thirdparty
-        (cd ../thirdparty
-         wget -c $WEBSITE/$CEF_TARBALL -O - | tar -xj
-         mv cef_binary* cef_binary
-        )
-    fi
-
-    ### Compile Chromium Embedded Framework if not already made
-    if [ ! -f ../thirdparty/cef_binary/build/tests/cefsimple/Release/cefsimple ]; then
-        msg "Compiling Chromium Embedded Framework ..."
-        (cd ../thirdparty/cef_binary
-         mkdir build
-         cd build
-         cmake -DCMAKE_BUILD_TYPE=Release ..
-         make -j$(nproc) cefsimple
-        )
-    fi
-}
+### Number of CPU cores
+NPROC=1
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    NPROC=`sysctl -n hw.logicalcpu`
+else
+    NPROC=`nproc`
+fi
 
 ### Compile Godot CEF module named GDCef
-function compile_gdcef
+function compile_secondary_gdcef
 {
     if [ ! -f libgdcef* ]; then
-        msg "Compiling Godot CEF_secondary module ..."
+        msg "Compiling Godot CEF_secondary module (secondary) ..."
 
         if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-            scons platform=linux target=release -j$(nproc)
+            scons platform=linux target=release -j$NPROC
         elif [[ "$OSTYPE" == "freebsd"* ]]; then
-            scons platform=linux target=release -j$(nproc)
+            scons platform=linux target=release -j$NPROC
         elif [[ "$OSTYPE" == "darwin"* ]]; then
             ARCHI=`uname -m`
             if [[ "$ARCHI" == "x86_64" ]]; then
-                scons platform=osx arch=x86_64 --jobs=$(sysctl -n hw.logicalcpu)
+                scons platform=osx arch=x86_64 --jobs=$NPROC
             else
-                scons platform=osx arch=arm64 --jobs=$(sysctl -n hw.logicalcpu)
+                scons platform=osx arch=arm64 --jobs=$NPROC
             fi
         else
-            scons platform=windows target=release -j$(nproc)
+            scons platform=windows target=release -j$NPROC
         fi
     fi
 }
 
-### Get all CEF compiled stuffs needed
-function get_compiled_assets
-{
-    D=../build
-    S=../thirdparty/cef_binary/build/tests/cefsimple/Release/
-    cp -r $S/*.pak $S/*.so* $S/locales $S/v8_context_snapshot.bin $S/icudtl.dat $D
-}
-
-install_cef
-compile_gdcef
-get_compiled_assets
+### Main (depends on success obtained from ../gdcef_primary/build.sh)
+compile_secondary_gdcef

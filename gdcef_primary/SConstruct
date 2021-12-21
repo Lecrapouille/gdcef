@@ -20,7 +20,8 @@ cpp_bindings_path = "../godot-cpp/"
 cpp_library = "libgodot-cpp"
 
 # only support 64 at this time..
-bits = 64
+# FIXME ARM
+archi = 'x86_64'
 
 # Updates the environment with the option variables.
 opts.Update(env)
@@ -55,6 +56,9 @@ if env['platform'] == "osx":
         env.Append(CCFLAGS=['-g', '-O2'])
     else:
         env.Append(CCFLAGS=['-g', '-O3'])
+    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DNDEBUG',
+                         '-DWRAPPING_CEF_SHARED', '-D__STDC_CONSTANT_MACROS',
+                         '-D__STDC_FORMAT_MACROS'])
 
 elif env['platform'] in ('x11', 'linux'):
     cpp_library += '.linux'
@@ -64,7 +68,8 @@ elif env['platform'] in ('x11', 'linux'):
         env.Append(CCFLAGS=['-g3', '-Og'])
     else:
         env.Append(CCFLAGS=['-g', '-O3'])
-    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DNDEBUG', '-D_FILE_OFFSET_BITS=64', '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
+    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DNDEBUG', '-D_FILE_OFFSET_BITS=64',
+                         '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
 
 elif env['platform'] == "windows":
     cpp_library += '.windows'
@@ -88,7 +93,7 @@ if env['target'] in ('debug', 'd'):
 else:
     cpp_library += '.release'
 
-cpp_library += '.' + str(bits)
+cpp_library += '.' + archi
 
 # NOTE : First of all download and extract the CEF distribution in thirdparty/cef_binary
 #    available at : https://cef-builds.spotifycdn.com/index.html#windows64 (care for your target OS)
@@ -121,7 +126,8 @@ env.Append(CPPPATH = ['../thirdparty/cef_binary/include/views'])
 env.Append(CPPPATH = ['../thirdparty/cef_binary/include/wrapper'])
 
 # CEF LIBS FOR LINKING
-env.Append(LIBS = 'libcef', LIBPATH = ['../thirdparty/cef_binary/Release'])
+if env['platform'] != "osx":
+    env.Append(LIBS = 'libcef', LIBPATH = ['../thirdparty/cef_binary/Release'])
 env.Append(LIBS = 'libcef_dll_wrapper', LIBPATH = ['../thirdparty/cef_binary/build/libcef_dll_wrapper'])
 
 # tweak this if you want to use different folders, or more folders, to store your source code in.

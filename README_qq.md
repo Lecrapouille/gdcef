@@ -23,3 +23,10 @@ GDCef::DoMessageLoop()
 [1216/041347.748935:ERROR:network_service_instance_impl.cc(638)] Network service crashed, restarting service.
 ```
 => Pensez a changer le path vers godotcefsimple
+
+
+OS X: prerequis
+Installer Xcode (12 Go). L'ouvrir au moins une fois pour finaliser l'installation.
+Faire: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+TODO: penser a linker avec cef_sandbox.a
+FIXME: comment creer les 4 sous applications mac ?

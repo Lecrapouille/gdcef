@@ -43,7 +43,7 @@ function install_prerequisite
         sudo pkg install py37-scons pkgconf xorg-libraries libXcursor libXrandr libXi xorgproto libGLU \
              alsa-lib pulseaudio yasm
     elif [[ "$OSTYPE" == "darwin"* ]]; then
-        brew install scons yasm
+        brew install scons yasm cmake
     else
         err "Unknown architecture. Install needed packages for Stigmee by yourself"
         return
@@ -70,9 +70,9 @@ function install_godotcpp
          elif [[ "$OSTYPE" == "darwin"* ]]; then
              ARCHI=`uname -m`
              if [[ "$ARCHI" == "x86_64" ]]; then
-                 scons platform=osx arch=x86_64 --jobs=$(sysctl -n hw.logicalcpu)
+                 scons platform=osx macos_arch=x86_64 --jobs=$(sysctl -n hw.logicalcpu)
              else
-                 scons platform=osx arch=arm64 --jobs=$(sysctl -n hw.logicalcpu)
+                 scons platform=osx macos_arch=arm64 --jobs=$(sysctl -n hw.logicalcpu)
              fi
          else
              scons platform=windows target=release -j$(nproc)
