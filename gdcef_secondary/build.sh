@@ -36,51 +36,51 @@ function install_cef
     pwd
     # Download and decompress if folder is not present
     if [ ! -d ../thirdparty/cef_binary ]; then
-	msg "Downloading Chromium Embedded Framework ..."
-	UNAMEM=`uname -m`
-	if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-	    if [[ "$UNAMEM" == "x86_64" ]]; then
-		ARCHI="linux64"
-            else
-		ARCHI="linuxarm"
-            fi
-	elif [[ "$OSTYPE" == "freebsd"* ]]; then
-	    if [[ "$UNAMEM" == "x86_64" ]]; then
-		ARCHI="linux64"
-            else
-		ARCHI="linuxarm"
-            fi
-	elif [[ "$OSTYPE" == "darwin"* ]]; then
+        msg "Downloading Chromium Embedded Framework ..."
+        UNAMEM=`uname -m`
+        if [[ "$OSTYPE" == "linux-gnu"* ]]; then
             if [[ "$UNAMEM" == "x86_64" ]]; then
-		ARCHI="macosx64"
+                ARCHI="linux64"
             else
-		ARCHI="macosarm64"
+                ARCHI="linuxarm"
             fi
-	else
+        elif [[ "$OSTYPE" == "freebsd"* ]]; then
+            if [[ "$UNAMEM" == "x86_64" ]]; then
+                ARCHI="linux64"
+            else
+                ARCHI="linuxarm"
+            fi
+        elif [[ "$OSTYPE" == "darwin"* ]]; then
+            if [[ "$UNAMEM" == "x86_64" ]]; then
+                ARCHI="macosx64"
+            else
+                ARCHI="macosarm64"
+            fi
+        else
             err "Unknown archi. Cannot download Chromium Embedded Framework"
             exit 1
-	fi
+        fi
 
-	msg "Downloading Chromium Embedded Framework $ARCHI ..."
-	WEBSITE=https://cef-builds.spotifycdn.com
-	CEF_TARBALL=cef_binary_96.0.14%2Bg28ba5c8%2Bchromium-96.0.4664.55_$ARCHI.tar.bz2
+        msg "Downloading Chromium Embedded Framework $ARCHI ..."
+        WEBSITE=https://cef-builds.spotifycdn.com
+        CEF_TARBALL=cef_binary_96.0.14%2Bg28ba5c8%2Bchromium-96.0.4664.55_$ARCHI.tar.bz2
 
-	mkdir -p ../thirdparty
-	(cd ../thirdparty
-	 wget -c $WEBSITE/$CEF_TARBALL -O - | tar -xj
-	 mv cef_binary* cef_binary
-	)
+        mkdir -p ../thirdparty
+        (cd ../thirdparty
+         wget -c $WEBSITE/$CEF_TARBALL -O - | tar -xj
+         mv cef_binary* cef_binary
+        )
     fi
 
     ### Compile Chromium Embedded Framework if not already made
     if [ ! -f ../thirdparty/cef_binary/build/tests/cefsimple/Release/cefsimple ]; then
-	msg "Compiling Chromium Embedded Framework ..."
-	(cd ../thirdparty/cef_binary
-	 mkdir build
-	 cd build
-	 cmake -DCMAKE_BUILD_TYPE=Release ..
-	 make -j$(nproc) cefsimple
-	)
+        msg "Compiling Chromium Embedded Framework ..."
+        (cd ../thirdparty/cef_binary
+         mkdir build
+         cd build
+         cmake -DCMAKE_BUILD_TYPE=Release ..
+         make -j$(nproc) cefsimple
+        )
     fi
 }
 
@@ -88,22 +88,22 @@ function install_cef
 function compile_gdcef
 {
     if [ ! -f libgdcef* ]; then
-	msg "Compiling Godot CEF_secondary module ..."
+        msg "Compiling Godot CEF_secondary module ..."
 
-	if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        if [[ "$OSTYPE" == "linux-gnu"* ]]; then
             scons platform=linux target=release -j$(nproc)
-	elif [[ "$OSTYPE" == "freebsd"* ]]; then
+        elif [[ "$OSTYPE" == "freebsd"* ]]; then
             scons platform=linux target=release -j$(nproc)
-	elif [[ "$OSTYPE" == "darwin"* ]]; then
+        elif [[ "$OSTYPE" == "darwin"* ]]; then
             ARCHI=`uname -m`
             if [[ "$ARCHI" == "x86_64" ]]; then
-		scons platform=osx arch=x86_64 --jobs=$(sysctl -n hw.logicalcpu)
+                scons platform=osx arch=x86_64 --jobs=$(sysctl -n hw.logicalcpu)
             else
-		scons platform=osx arch=arm64 --jobs=$(sysctl -n hw.logicalcpu)
+                scons platform=osx arch=arm64 --jobs=$(sysctl -n hw.logicalcpu)
             fi
-	else
+        else
             scons platform=windows target=release -j$(nproc)
-	fi
+        fi
     fi
 }
 

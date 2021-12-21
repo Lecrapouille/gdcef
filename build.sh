@@ -62,21 +62,21 @@ function install_godotcpp
     # Compile godot-cpp if not already made
     (cd godot-cpp
      if [ ! -f bin/libgodot-cpp* ]; then
-	 msg "Compiling Godot-cpp ..."
-	 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+         msg "Compiling Godot-cpp ..."
+         if [[ "$OSTYPE" == "linux-gnu"* ]]; then
              scons platform=linux target=release -j$(nproc)
-	 elif [[ "$OSTYPE" == "freebsd"* ]]; then
+         elif [[ "$OSTYPE" == "freebsd"* ]]; then
              scons platform=linux target=release -j$(nproc)
-	 elif [[ "$OSTYPE" == "darwin"* ]]; then
+         elif [[ "$OSTYPE" == "darwin"* ]]; then
              ARCHI=`uname -m`
              if [[ "$ARCHI" == "x86_64" ]]; then
-		 scons platform=osx arch=x86_64 --jobs=$(sysctl -n hw.logicalcpu)
+                 scons platform=osx arch=x86_64 --jobs=$(sysctl -n hw.logicalcpu)
              else
-		 scons platform=osx arch=arm64 --jobs=$(sysctl -n hw.logicalcpu)
+                 scons platform=osx arch=arm64 --jobs=$(sysctl -n hw.logicalcpu)
              fi
-	 else
+         else
              scons platform=windows target=release -j$(nproc)
-	 fi
+         fi
      fi
     )
 }
