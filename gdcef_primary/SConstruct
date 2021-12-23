@@ -90,8 +90,10 @@ elif env['platform'] == "windows":
 
 if env['target'] in ('debug', 'd'):
     cpp_library += '.debug'
+    cef_target = 'Debug'
 else:
     cpp_library += '.release'
+    cef_target = 'Release'
 
 cpp_library += '.' + archi
 
@@ -126,8 +128,10 @@ env.Append(CPPPATH = ['../thirdparty/cef_binary/include/views'])
 env.Append(CPPPATH = ['../thirdparty/cef_binary/include/wrapper'])
 
 # CEF LIBS FOR LINKING
-if env['platform'] != "osx":
-    env.Append(LIBS = 'libcef', LIBPATH = ['../thirdparty/cef_binary/Release'])
+if env['platform'] == "osx":
+    env.Append(LIBS = 'cef_sandbox.a', LIBPATH = ['../thirdparty/cef_binary/' + cef_target])
+else:
+    env.Append(LIBS = 'libcef', LIBPATH = ['../thirdparty/cef_binary/' + cef_target])
 env.Append(LIBS = 'libcef_dll_wrapper', LIBPATH = ['../thirdparty/cef_binary/build/libcef_dll_wrapper'])
 
 # tweak this if you want to use different folders, or more folders, to store your source code in.

@@ -31,8 +31,24 @@ function err
     echo -e "\033[31m*** $*\033[00m"
 }
 
+### Debug or release ?
+TARGET="$1"
+if [ "$TARGET" == "debug" ]; then
+   GODOT_TARGET=debug
+   CEF_TARGET=Debug
+elif [ "$TARGET" == "release" -o "$TARGET" == "" ]; then
+   GODOT_TARGET=release
+   CEF_TARGET=Release
+elif [ "$TARGET" == "clean" ]; then
+   rm -fr src/*.o
+   exit 0
+else
+   err "Invalid target. Shall be clean or debug or release or shall be empty for release"
+   exit 1
+fi
+
 ### Number of CPU cores
-NPROC=1
+NPROC=
 if [[ "$OSTYPE" == "darwin"* ]]; then
     NPROC=`sysctl -n hw.logicalcpu`
 else
@@ -46,21 +62,22 @@ function compile_secondary_gdcef
         msg "Compiling Godot CEF_secondary module (secondary) ..."
 
         if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-            scons platform=linux target=release -j$NPROC
+            scons platform=linux target=$GODOT_TARGET --jobs=$NPROC
         elif [[ "$OSTYPE" == "freebsd"* ]]; then
-            scons platform=linux target=release -j$NPROC
+            scons platform=linux target=$GODOT_TARGET --jobs=$NPROC
         elif [[ "$OSTYPE" == "darwin"* ]]; then
             ARCHI=`uname -m`
             if [[ "$ARCHI" == "x86_64" ]]; then
-                scons platform=osx arch=x86_64 --jobs=$NPROC
+                scons platform=osx arch=x86_64 target=$GODOT_TARGET --jobs=$NPROC
             else
-                scons platform=osx arch=arm64 --jobs=$NPROC
+                scons platform=osx arch=arm64 target=$GODOT_TARGET --jobs=$NPROC
             fi
         else
-            scons platform=windows target=release -j$NPROC
+            scons platform=windows target=$GODOT_TARGET --jobs=$NPROC
         fi
     fi
 }
 
 ### Main (depends on success obtained from ../gdcef_primary/build.sh)
 compile_secondary_gdcef
+msg "Cool! gdcef_secondary compiled with success"

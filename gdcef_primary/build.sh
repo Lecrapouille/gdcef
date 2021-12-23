@@ -31,8 +31,25 @@ function err
     echo -e "\033[31m*** $*\033[00m"
 }
 
+### Debug or release ?
+TARGET="$1"
+if [ "$TARGET" == "debug" ]; then
+   GODOT_TARGET=debug
+   CEF_TARGET=Debug
+elif [ "$TARGET" == "release" -o "$TARGET" == "" ]; then
+   GODOT_TARGET=release
+   CEF_TARGET=Release
+elif [ "$TARGET" == "clean" ]; then
+   rm -fr ../thirdparty/cef_binary/build
+   rm -f src/*.o
+   exit 0
+else
+   err "Invalid target. Shall be clean or debug or release or shall be empty for release"
+   exit 1
+fi
+
 ### Number of CPU cores
-NPROC=1
+NPROC=
 if [[ "$OSTYPE" == "darwin"* ]]; then
     NPROC=`sysctl -n hw.logicalcpu`
 else
@@ -81,14 +98,20 @@ function install_cef
     fi
 
     ### Compile Chromium Embedded Framework if not already made
-    if [ ! -f ../thirdparty/cef_binary/build/tests/cefsimple/Release/cefsimple ]; then
-        msg "Compiling Chromium Embedded Framework ..."
+    if [ ! -f ../thirdparty/cef_binary/build/tests/cefsimple/$CEF_TARGET/cefsimple ]; then
+        msg "Compiling Chromium Embedded Framework $CEF_TARGET ..."
         (cd ../thirdparty/cef_binary
          mkdir -p build
          cd build
-         cmake -DCMAKE_BUILD_TYPE=Release ..
+         cmake -DCMAKE_BUILD_TYPE=$CEF_TARGET ..
          VERBOSE=1 make -j$NPROC cefsimple
         )
+    fi
+
+    ### For Mac OS X rename cef_sandbox.a to libcef_sandbox.a
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+	(cd ../thirdparty/cef_binary/Debug && cp cef_sandbox.a libcef_sandbox.a)
+	(cd ../thirdparty/cef_binary/Release && cp cef_sandbox.a libcef_sandbox.a)
     fi
 }
 
@@ -99,18 +122,18 @@ function compile_primary_gdcef
         msg "Compiling Godot CEF module (primary process) ..."
 
         if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-            scons platform=linux target=release -j$NPROC
+            scons platform=linux target=$GODOT_TARGET --jobs=$NPROC
         elif [[ "$OSTYPE" == "freebsd"* ]]; then
-            scons platform=linux target=release -j$NPROC
+            scons platform=linux target=$GODOT_TARGET --jobs=$NPROC
         elif [[ "$OSTYPE" == "darwin"* ]]; then
             ARCHI=`uname -m`
             if [[ "$ARCHI" == "x86_64" ]]; then
-                scons platform=osx arch=x86_64 --jobs=$NPROC
+                scons platform=osx arch=x86_64 target=$GODOT_TARGET --jobs=$NPROC
             else
-                scons platform=osx arch=arm64 --jobs=$NPROC
+                scons platform=osx arch=arm64 target=$GODOT_TARGET --jobs=$NPROC
             fi
         else
-            scons platform=windows target=release -j$NPROC
+            scons platform=windows target=$GODOT_TARGET --jobs=$NPROC
         fi
     fi
 }
@@ -120,14 +143,14 @@ function get_compiled_assets
 {
     if [[ "$OSTYPE" == "darwin"* ]]; then
         D=../build
-        S="../thirdparty/cef_binary/Release/Chromium Embedded Framework.framework/Libraries"
+        S="../thirdparty/cef_binary/$CEF_TARGET/Chromium Embedded Framework.framework/Libraries"
         cp -R "$S/"*.dylib $D
 
-        S="../thirdparty/cef_binary/Release/Chromium Embedded Framework.framework/Resources"
+        S="../thirdparty/cef_binary/$CEF_TARGET/Chromium Embedded Framework.framework/Resources"
         cp -R "$S/" $D
     else
         D=../build
-        S=../thirdparty/cef_binary/build/tests/cefsimple/Release
+        S=../thirdparty/cef_binary/build/tests/cefsimple/$CEF_TARGET
         cp -r $S/*.pak $S/*.so* $S/*.dll $S/locales $S/v8_context_snapshot.bin $S/icudtl.dat $D
     fi
 }
@@ -136,3 +159,4 @@ function get_compiled_assets
 install_cef
 compile_primary_gdcef
 get_compiled_assets
+msg "Cool! gdcef_primary compiled with success"

@@ -31,6 +31,33 @@ function err
     echo -e "\033[31m*** $*\033[00m"
 }
 
+### Debug or release ?
+TARGET="$1"
+if [ "$TARGET" == "debug" ]; then
+   msg "Compilation in debug mode"
+   GODOT_TARGET=debug
+elif [ "$TARGET" == "release" -o "$TARGET" == "" ]; then
+   msg "Compilation in release mode"
+   GODOT_TARGET=release
+elif [ "$TARGET" == "clean" ]; then
+   # TODO clean godot-cpp
+   rm -fr build
+   (cd gdcef_primary && ./build.sh $TARGET)
+   (cd gdcef_secondary && ./build.sh $TARGET)
+   exit 0
+else
+   err "Invalid target. Shall be debug or release or shall be empty for release"
+   exit 1
+fi
+
+### Number of CPU cores
+NPROC=
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    NPROC=`sysctl -n hw.logicalcpu`
+else
+    NPROC=`nproc`
+fi
+
 ### Instal system packages needed for compiling Godot
 function install_prerequisite
 {
@@ -61,21 +88,21 @@ function install_godotcpp
 
     # Compile godot-cpp if not already made
     (cd godot-cpp
-     if [ ! -f bin/libgodot-cpp* ]; then
+     if [ ! -f bin/libgodot-cpp*$GODOT_TARGET* ]; then
          msg "Compiling Godot-cpp ..."
          if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-             scons platform=linux target=release -j$(nproc)
+             scons platform=linux target=$GODOT_TARGET --jobs=$NPROC
          elif [[ "$OSTYPE" == "freebsd"* ]]; then
-             scons platform=linux target=release -j$(nproc)
+             scons platform=linux target=$GODOT_TARGET --jobs=$NPROC
          elif [[ "$OSTYPE" == "darwin"* ]]; then
              ARCHI=`uname -m`
              if [[ "$ARCHI" == "x86_64" ]]; then
-                 scons platform=osx macos_arch=x86_64 --jobs=$(sysctl -n hw.logicalcpu)
+                 scons platform=osx macos_arch=x86_64 target=$GODOT_TARGET --jobs=$NPROC
              else
-                 scons platform=osx macos_arch=arm64 --jobs=$(sysctl -n hw.logicalcpu)
+                 scons platform=osx macos_arch=arm64 target=$GODOT_TARGET --jobs=$NPROC
              fi
          else
-             scons platform=windows target=release -j$(nproc)
+             scons platform=windows target=$GODOT_TARGET --jobs=$NPROC
          fi
      fi
     )
@@ -85,8 +112,8 @@ function install_godotcpp
 function install_stigmee_modules
 {
     msg "Installing Godot modules needed for Stigmee ..."
-    (cd gdcef_primary && ./build.sh)
-    (cd gdcef_secondary && ./build.sh)
+    (cd gdcef_primary && ./build.sh $TARGET)
+    (cd gdcef_secondary && ./build.sh $TARGET)
 }
 
 ### Script entry point
@@ -94,3 +121,4 @@ mkdir -p build
 install_prerequisite
 install_godotcpp
 install_stigmee_modules
+msg "Cool! All Godot modules compiled with success"

@@ -52,23 +52,20 @@ if env['platform'] == "osx":
     env.Append(CXXFLAGS=['-std=c++17'])
     env.Append(LINKFLAGS=['-arch', 'x86_64'])
     if env['target'] in ('debug', 'd'):
-        env.Append(CCFLAGS=['-g', '-O2'])
+        env.Append(CCFLAGS=['-g', '-O0', '-fasynchronous-unwind-tables', '-UNDEBUG', '-D_GLIBCXX_ASSERTIONS'])
     else:
-        env.Append(CCFLAGS=['-g', '-O3'])
-    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DNDEBUG',
-                         '-DWRAPPING_CEF_SHARED', '-D__STDC_CONSTANT_MACROS',
-                         '-D__STDC_FORMAT_MACROS'])
+        env.Append(CCFLAGS=['-g', '-O3', '-DNDEBUG'])
+    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DWRAPPING_CEF_SHARED', '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
 
 elif env['platform'] in ('x11', 'linux'):
     cpp_library += '.linux'
     env.Append(CCFLAGS=['-fPIC'])
     env.Append(CXXFLAGS=['-std=c++17'])
     if env['target'] in ('debug', 'd'):
-        env.Append(CCFLAGS=['-g3', '-Og'])
+        env.Append(CCFLAGS=['-g3', '-Og', '-fasynchronous-unwind-tables', '-UNDEBUG', '-D_GLIBCXX_ASSERTIONS'])
     else:
-        env.Append(CCFLAGS=['-g', '-O3'])
-    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DNDEBUG', '-D_FILE_OFFSET_BITS=64',
-                         '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
+        env.Append(CCFLAGS=['-g', '-O3', '-DNDEBUG'])
+    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-D_FILE_OFFSET_BITS=64', '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
 
 elif env['platform'] == "windows":
     cpp_library += '.windows'
@@ -89,8 +86,10 @@ elif env['platform'] == "windows":
 
 if env['target'] in ('debug', 'd'):
     cpp_library += '.debug'
+    cef_target = 'Debug'
 else:
     cpp_library += '.release'
+    cef_target = 'Release'
 
 cpp_library += '.' + archi
 
@@ -125,8 +124,10 @@ env.Append(CPPPATH = ['../thirdparty/cef_binary/include/views'])
 env.Append(CPPPATH = ['../thirdparty/cef_binary/include/wrapper'])
 
 # CEF LIBS FOR LINKING
-if env['platform'] != "osx":
-    env.Append(LIBS = 'libcef', LIBPATH = ['../thirdparty/cef_binary/Release'])
+if env['platform'] == "osx":
+    env.Append(LIBS = 'cef_sandbox.a', LIBPATH = ['../thirdparty/cef_binary/' + cef_target])
+else:
+    env.Append(LIBS = 'libcef', LIBPATH = ['../thirdparty/cef_binary/' + cef_target])
 env.Append(LIBS = 'libcef_dll_wrapper', LIBPATH = ['../thirdparty/cef_binary/build/libcef_dll_wrapper'])
 
 # tweak this if you want to use different folders, or more folders, to store your source code in.
