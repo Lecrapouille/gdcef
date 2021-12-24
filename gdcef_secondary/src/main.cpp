@@ -5,6 +5,10 @@
 #include "blubrowser_app.h"
 #include <iostream>
 
+#ifdef __APPLE__
+#  include "include/wrapper/cef_library_loader.h"
+#endif
+
 // Entry point function for all processes.
 int main(int argc, char* argv[])
 {
@@ -14,6 +18,14 @@ int main(int argc, char* argv[])
     {
         std::cout << "SECONDARY arg " << i << ": " << argv[i] << std::endl;
     }
+
+#ifdef __APPLE__
+    // Load the CEF framework library at runtime instead of linking directly
+    // as required by the macOS sandbox implementation.
+    CefScopedLibraryLoader library_loader;
+    if (!library_loader.LoadInMain())
+        return 1;
+#endif
 
     // Provide CEF with command-line arguments.
     CefMainArgs main_args(argc, argv);
