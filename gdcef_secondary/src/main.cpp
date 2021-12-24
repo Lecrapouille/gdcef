@@ -10,11 +10,9 @@ int main(int argc, char* argv[])
 {
     std::cout << ::getpid() << "::" << ::getppid() << ": SECONDARY "
               << __FILE__ << ": " << __PRETTY_FUNCTION__ << std::endl;
-    std::vector<std::string> backup_args;
     for (int i = 0; i < argc; ++i)
     {
         std::cout << "SECONDARY arg " << i << ": " << argv[i] << std::endl;
-        backup_args.push_back(argv[i]);
     }
 
     // Provide CEF with command-line arguments.
