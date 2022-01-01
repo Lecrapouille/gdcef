@@ -19,9 +19,6 @@ godot_headers_path = "../godot-cpp/godot-headers/"
 cpp_bindings_path = "../godot-cpp/"
 cpp_library = "libgodot-cpp"
 
-# only support 64 at this time.
-archi = 'x86_64' # FIXME ARM
-
 # Updates the environment with the option variables.
 opts.Update(env)
 
@@ -36,6 +33,12 @@ if env['p'] != '':
 if env['platform'] == '':
     print("No valid target platform selected.")
     quit();
+
+# only support 64 at this time..
+if env['platform'] == "osx":
+    archi = 'x86_64' # FIXME ARM
+else:
+    archi = '64'
 
 # For the reference:
 # - CCFLAGS are compilation flags shared between C and C++

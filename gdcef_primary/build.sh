@@ -151,7 +151,8 @@ function get_compiled_assets
     else
         D=../build
         S=../thirdparty/cef_binary/build/tests/cefsimple/$CEF_TARGET
-        cp -r $S/*.pak $S/*.so* $S/*.dll $S/locales $S/v8_context_snapshot.bin $S/icudtl.dat $D
+        cp -r $S/*.pak $S/*.so* $S/locales $S/v8_context_snapshot.bin $S/icudtl.dat $D
+        cp $S/*.dll $D || echo ""
     fi
 }
 
