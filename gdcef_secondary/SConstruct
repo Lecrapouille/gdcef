@@ -133,6 +133,9 @@ else:
     env.Append(LIBS = 'libcef', LIBPATH = ['../thirdparty/cef_binary/' + cef_target])
 env.Append(LIBS = 'libcef_dll_wrapper', LIBPATH = ['../thirdparty/cef_binary/build/libcef_dll_wrapper'])
 
+if env['platform'] in ('x11', 'linux'):
+    env.Append(LIBS = '-lpthread')
+
 # tweak this if you want to use different folders, or more folders, to store your source code in.
 env.Append(CPPPATH=['src/'])
 sources = Glob('src/*.cpp')
