@@ -1,7 +1,7 @@
 #!/bin/bash -e
 ###############################################################################
-## Stigmee: A 3D browser and decentralized social network.
-## Copyright 2021 Quentin Quadrat <lecrapouille@gmail.com>
+## Stigmee: The art to sanctuarize knowledge exchanges.
+## Copyright 2021-2022 Quentin Quadrat <lecrapouille@gmail.com>
 ##
 ## This file is part of Stigmee.
 ##
