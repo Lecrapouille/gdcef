@@ -31,12 +31,12 @@ function err
     echo -e "\033[31m*** $*\033[00m"
 }
 
-### Debug or release ?
+### Debug or release or cleaning ?
 TARGET="$1"
 if [ "$TARGET" == "debug" ]; then
    GODOT_TARGET=debug
    CEF_TARGET=Debug
-elif [ "$TARGET" == "release" -o "$TARGET" == "" ]; then
+elif [ "$TARGET" == "release" ]; then
    GODOT_TARGET=release
    CEF_TARGET=Release
 elif [ "$TARGET" == "clean" ]; then
@@ -44,7 +44,7 @@ elif [ "$TARGET" == "clean" ]; then
    rm -f src/*.o
    exit 0
 else
-   err "Invalid target. Shall be clean or debug or release or shall be empty for release"
+   err "Invalid target. Shall be clean or debug or release"
    exit 1
 fi
 
@@ -81,18 +81,25 @@ function install_cef
             else
                 ARCHI="macosarm64"
             fi
+        elif [[ "$OSTYPE" == "msys"* ]]; then
+            if [[ "$UNAMEM" == "x86_64" ]]; then
+                ARCHI="windows64"
+            else
+                ARCHI="windowsarm64"
+            fi
         else
-            err "Unknown archi. Cannot download Chromium Embedded Framework"
+            err "Unknown archi $$OSTYPE: Cannot download Chromium Embedded Framework"
             exit 1
         fi
 
+        # https://cef-builds.spotifycdn.com/index.html
         msg "Downloading Chromium Embedded Framework v96 for $ARCHI ..."
         WEBSITE=https://cef-builds.spotifycdn.com
         CEF_TARBALL=cef_binary_96.0.14%2Bg28ba5c8%2Bchromium-96.0.4664.55_$ARCHI.tar.bz2
 
         mkdir -p ../thirdparty
         (cd ../thirdparty
-         wget -c $WEBSITE/$CEF_TARBALL -O - | tar -xj
+         wget -c $WEBSITE/$CEF_TARBALL -O- | tar -xj
          mv cef_binary* cef_binary
         )
     fi
@@ -103,15 +110,15 @@ function install_cef
         (cd ../thirdparty/cef_binary
          mkdir -p build
          cd build
-         cmake -DCMAKE_BUILD_TYPE=$CEF_TARGET ..
-         VERBOSE=1 make -j$NPROC cefsimple
+         cmake -G "Ninja" -DCMAKE_BUILD_TYPE=$CEF_TARGET ..
+         VERBOSE=1 ninja -j$NPROC cefsimple
         )
     fi
 
     ### For Mac OS X rename cef_sandbox.a to libcef_sandbox.a
     if [[ "$OSTYPE" == "darwin"* ]]; then
-	(cd ../thirdparty/cef_binary/Debug && cp cef_sandbox.a libcef_sandbox.a)
-	(cd ../thirdparty/cef_binary/Release && cp cef_sandbox.a libcef_sandbox.a)
+        (cd ../thirdparty/cef_binary/Debug && cp cef_sandbox.a libcef_sandbox.a)
+        (cd ../thirdparty/cef_binary/Release && cp cef_sandbox.a libcef_sandbox.a)
     fi
 }
 
@@ -132,8 +139,11 @@ function compile_primary_gdcef
             else
                 scons platform=osx arch=arm64 target=$GODOT_TARGET --jobs=$NPROC
             fi
-        else
+        elif [[ "$OSTYPE" == "msys"* ]]; then
             scons platform=windows target=$GODOT_TARGET --jobs=$NPROC
+        else
+            err "Unknown archi $$OSTYPE: I dunno how to compile CEF module primary process"
+            exit 1
         fi
     fi
 }

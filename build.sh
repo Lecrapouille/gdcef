@@ -31,12 +31,12 @@ function err
     echo -e "\033[31m*** $*\033[00m"
 }
 
-### Debug or release ?
+### Debug or release or cleaning ?
 TARGET="$1"
 if [ "$TARGET" == "debug" ]; then
    msg "Compilation in debug mode"
    GODOT_TARGET=debug
-elif [ "$TARGET" == "release" -o "$TARGET" == "" ]; then
+elif [ "$TARGET" == "release" ]; then
    msg "Compilation in release mode"
    GODOT_TARGET=release
 elif [ "$TARGET" == "clean" ]; then
@@ -46,7 +46,7 @@ elif [ "$TARGET" == "clean" ]; then
    (cd gdcef_secondary && ./build.sh $TARGET)
    exit 0
 else
-   err "Invalid target. Shall be debug or release or shall be empty for release"
+   err "Invalid target. Shall be debug or release"
    exit 1
 fi
 
@@ -64,16 +64,22 @@ function install_prerequisite
     msg "Installing prerequesite packages on your system ..."
 
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        sudo apt-get install build-essential scons pkg-config libx11-dev libxcursor-dev libxinerama-dev \
-             libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm
+        sudo apt-get install build-essential yasm scons pkg-config libx11-dev \
+             libxcursor-dev libxinerama-dev libgl1-mesa-dev libglu-dev \
+             libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev ninja-build
     elif [[ "$OSTYPE" == "freebsd"* ]]; then
-        sudo pkg install py37-scons pkgconf xorg-libraries libXcursor libXrandr libXi xorgproto libGLU \
-             alsa-lib pulseaudio yasm
+        sudo pkg install py37-scons pkgconf xorg-libraries libXcursor libXrandr \
+             libXi xorgproto libGLU alsa-lib pulseaudio yasm ninja-build
     elif [[ "$OSTYPE" == "darwin"* ]]; then
-        brew install scons yasm cmake
+        brew install scons yasm cmake ninja
+    elif [[ "$OSTYPE" == "msys"* ]]; then
+        pacman -S --noconfirm --needed tar git make mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake \
+               mingw-w64-x86_64-ninja mingw-w64-x86_64-python3-pip mingw-w64-x86_64-scons \
+               mingw-w64-x86_64-gcc
+        python -m pip install scons
     else
-        err "Unknown architecture. Install needed packages for Stigmee by yourself"
-        return
+        err "Unknown architecture $OSTYPE: I dunno what to install as system packages"
+        exit 1
     fi
 }
 
@@ -83,7 +89,7 @@ function install_godotcpp
     # Git clone godot-cpp if the folder is not present
     if [ ! -d godot-cpp ]; then
         msg "Downloading Godot-cpp ..."
-        git clone https://github.com/godotengine/godot-cpp -b 3.4 --recurse
+        git clone https://github.com/godotengine/godot-cpp -b godot-3.4.2-stable --recurse
     fi
 
     # Compile godot-cpp if not already made
@@ -101,8 +107,11 @@ function install_godotcpp
              else
                  scons platform=osx macos_arch=arm64 target=$GODOT_TARGET --jobs=$NPROC
              fi
+         elif [[ "$OSTYPE" == "msys"* ]]; then
+             scons platform=windows use_mingw=True target=$GODOT_TARGET --jobs=$NPROC
          else
-             scons platform=windows target=$GODOT_TARGET --jobs=$NPROC
+             err "Unknown architecture $OSTYPE: I dunno how install Godot-cpp"
+             exit 1
          fi
      fi
     )

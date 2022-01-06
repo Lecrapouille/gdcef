@@ -31,19 +31,19 @@ function err
     echo -e "\033[31m*** $*\033[00m"
 }
 
-### Debug or release ?
+### Debug or release or cleaning ?
 TARGET="$1"
 if [ "$TARGET" == "debug" ]; then
    GODOT_TARGET=debug
    CEF_TARGET=Debug
-elif [ "$TARGET" == "release" -o "$TARGET" == "" ]; then
+elif [ "$TARGET" == "release" ]; then
    GODOT_TARGET=release
    CEF_TARGET=Release
 elif [ "$TARGET" == "clean" ]; then
    rm -fr src/*.o
    exit 0
 else
-   err "Invalid target. Shall be clean or debug or release or shall be empty for release"
+   err "Invalid target. Shall be clean or debug or release"
    exit 1
 fi
 
