@@ -1,15 +1,33 @@
-// This code is a modification of the original projects that can be found at
-// https://github.com/ashea-code/BluBrowser
+//*************************************************************************
+// Stigmee: The art to sanctuarize knowledge exchanges.
+// Copyright 2021-2022 Alain Duron <duron.alain@gmail.com>
+// Copyright 2021-2022 Quentin Quadrat <lecrapouille@gmail.com>
+//
+// This file is part of Stigmee.
+//
+// Stigmee is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//*************************************************************************
 
 #ifndef CEF_TESTS_CEFSIMPLE_SIMPLE_APP_H_
 #define CEF_TESTS_CEFSIMPLE_SIMPLE_APP_H_
 
 //#include "script_handler.h"
-#include "include/cef_app.h"
+#include <cef_app.h>
 
-class BluBrowser : public CefApp,
-                   public CefBrowserProcessHandler,
-                   public CefRenderProcessHandler
+class GDCefBrowser : public CefApp,
+                     public CefBrowserProcessHandler,
+                     public CefRenderProcessHandler
 {
 public:
 
@@ -33,9 +51,7 @@ private:
                                   CefRefPtr<CefFrame> frame,
                                   CefRefPtr<CefV8Context> context) override;
 
-    // BluScriptHandler* handler;
-
-    IMPLEMENT_REFCOUNTING(BluBrowser);
+    IMPLEMENT_REFCOUNTING(GDCefBrowser);
 };
 
 #endif // CEF_TESTS_CEFSIMPLE_SIMPLE_APP_H_

@@ -1,21 +1,38 @@
-// This code is a modification of the original projects that can be found at
-// https://github.com/ashea-code/BluBrowser
+//*************************************************************************
+// Stigmee: The art to sanctuarize knowledge exchanges.
+// Copyright 2021-2022 Alain Duron <duron.alain@gmail.com>
+// Copyright 2021-2022 Quentin Quadrat <lecrapouille@gmail.com>
+//
+// This file is part of Stigmee.
+//
+// Stigmee is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//*************************************************************************
 
-#include "blubrowser_app.h"
-#include "blu_handler.h"
-//#include "script_handler.h"
+#include "gdcef_browser_app.hpp"
+#include "gdcef_client.hpp"
 
 // CEF
-#include "cef_browser.h"
-#include "cef_command_line.h"
-#include "wrapper/cef_helpers.h"
+#include <cef_browser.h>
+#include <cef_command_line.h>
+#include <wrapper/cef_helpers.h>
 
 #include <string>
 #include <iostream>
 
-void BluBrowser::OnContextInitialized()
+void GDCefBrowser::OnContextInitialized()
 {
-    std::cout << "SECONDARY BluBrowser::OnContextInitialized" << std::endl;
+    std::cout << "[SubProcess] [GDCefBrowser::OnContextInitialized] begin" << std::endl;
     CEF_REQUIRE_UI_THREAD();
 
     // Information used when creating the native window.
@@ -27,8 +44,9 @@ void BluBrowser::OnContextInitialized()
     window_info.SetAsPopup(NULL, "BLUI");
 #endif
 
-    // BluHandler implements browser-level callbacks.
-    CefRefPtr<BluHandler> handler(new BluHandler());
+    // GDCefClient implements browser-level callbacks.
+    std::cout << "[SubProcess] [GDCefBrowser::OnContextInitialized] Create client handler" << std::endl;
+    CefRefPtr<GDCefClient> handler(new GDCefClient());
 
     // Specify CEF browser settings here.
     CefBrowserSettings browser_settings;
@@ -37,25 +55,26 @@ void BluBrowser::OnContextInitialized()
 
     // Check if a "--url=" value was provided via the command-line. If so, use
     // that instead of the default URL.
-    CefRefPtr<CefCommandLine> command_line =
-            CefCommandLine::GetGlobalCommandLine();
+    std::cout << "[SubProcess] [GDCefBrowser::OnContextInitialized] Setting up command line" << std::endl;
+    CefRefPtr<CefCommandLine> command_line = CefCommandLine::GetGlobalCommandLine();
     std::string url(command_line->GetSwitchValue("url"));
     if (url.empty())
     {
-        url = "http://www.google.com";
+        url = "https://labo.stigmee.fr";
     }
 
     // Create the first browser window.
+    std::cout << "[SubProcess] [GDCefBrowser::OnContextInitialized] Create the browser" << std::endl;
     CefBrowserHost::CreateBrowser(window_info, handler.get(), url,
                                   browser_settings, nullptr, nullptr);
 
 }
 
-void BluBrowser::OnContextCreated(CefRefPtr<CefBrowser> browser,
-                                  CefRefPtr<CefFrame> frame,
-                                  CefRefPtr<CefV8Context> context)
+void GDCefBrowser::OnContextCreated(CefRefPtr<CefBrowser> browser,
+                                    CefRefPtr<CefFrame> frame,
+                                    CefRefPtr<CefV8Context> context)
 {
-    std::cout << "SECONDARY BluBrowser::OnContextCreated" << std::endl;
+    std::cout << "[SubProcess] [GDCefBrowser::OnContextCreated]" << std::endl;
     // no handler yet, we need to create it first
     //FIXME handler = new BluScriptHandler(browser);
 

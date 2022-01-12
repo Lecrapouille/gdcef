@@ -12,7 +12,7 @@ opts.Add(EnumVariable('platform', "Compilation platform", '', ['', 'windows', 'x
 opts.Add(EnumVariable('p', "Compilation target, alias for 'platform'", '', ['', 'windows', 'x11', 'linux', 'osx']))
 opts.Add(BoolVariable('use_llvm', "Use the LLVM / Clang compiler", 'no'))
 opts.Add(PathVariable('target_path', 'The path where the lib is installed.', '../../../../stigmee/stigmee/build'))
-opts.Add(PathVariable('target_name', 'The library name.', 'godotcefsimple', PathVariable.PathAccept))
+opts.Add(PathVariable('target_name', 'The library name.', 'gdcefSubProcess', PathVariable.PathAccept))
 
 # Local dependency paths, adapt them to your setup
 godot_headers_path = "../../../3.4.2-stable/cpp/godot-headers/"
@@ -131,7 +131,7 @@ if env['platform'] == "osx":
     env.Append(LIBS = 'cef_sandbox.a', LIBPATH = ['../thirdparty/cef_binary/' + cef_target])
 else:
     env.Append(LIBS = 'libcef', LIBPATH = ['../thirdparty/cef_binary/' + cef_target])
-env.Append(LIBS = 'libcef_dll_wrapper', LIBPATH = ['../thirdparty/cef_binary/build/libcef_dll_wrapper'])
+env.Append(LIBS = 'libcef_dll_wrapper', LIBPATH = ['../thirdparty/cef_binary/build/libcef_dll_wrapper','../thirdparty/cef_binary/libcef_dll_wrapper/Release'])
 
 if env['platform'] in ('x11', 'linux'):
     env.Append(LIBS = '-lpthread')

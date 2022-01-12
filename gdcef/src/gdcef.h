@@ -19,8 +19,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //*************************************************************************
 
-#ifndef STIGMEE_CEF_BROWSER_HPP
-#  define STIGMEE_CEF_BROWSER_HPP
+#ifndef STIGMEE_GDCEF_HPP
+#define STIGMEE_GDCEF_HPP
 
 // ****************************************************************************
 // previously we derived from ImageTexture the core .h files from godot.
@@ -68,10 +68,16 @@ public:
         return m_texture;
     }
 
-/*FIXME static*/ void DoMessageLoop();
+    void DoMessageLoopWork();
 
     //! \brief Load the given web page
     void load_url(godot::String url); // FIXME mmmh by copy really ? Not godot::String const& url ?
+
+    //! \brief Navigate back to the previous page if possible
+    void navigate_back();
+
+    //! \brief Navigate forward if possible
+    void navigate_forward();
 
     //! \brief Set the windows size
     void reshape(int w, int h);
@@ -85,13 +91,17 @@ public:
     //! \brief Set the new mouse state (clicked ...)
     void mouseClick(int button, bool mouse_up);
 
+    //! \brief run Mouse Wheel
+    void mouseWheel(const int wDelta);
+
     //! \brief Set the new keyboard state (char typed ...)
-    void keyPress(int key, bool pressed);
+    void keyPress(int key, bool pressed, bool up);
 
     //! \brief Our initializer called by Godot
     void _init();
 
-    //! \brief Static function that Godot will call to find out which methods can be called on our NativeScript and which properties it exposes.
+    //! \brief Static function that Godot will call to find out which methods
+    //! can be called on our NativeScript and which properties it exposes.
     static void _register_methods();
 
 private:

@@ -1,24 +1,42 @@
-// This code is a modification of the original projects that can be found at
-// https://github.com/ashea-code/BluBrowser
+//*************************************************************************
+// Stigmee: The art to sanctuarize knowledge exchanges.
+// Copyright 2021-2022 Alain Duron <duron.alain@gmail.com>
+// Copyright 2021-2022 Quentin Quadrat <lecrapouille@gmail.com>
+//
+// This file is part of Stigmee.
+//
+// Stigmee is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//*************************************************************************
 
-#ifndef CEF_TESTS_CEFSIMPLE_SIMPLE_HANDLER_H_
-#define CEF_TESTS_CEFSIMPLE_SIMPLE_HANDLER_H_
+#ifndef GDCEF_SUBPROCESS_CLIENT_HPP
+#define GDCEF_SUBPROCESS_CLIENT_HPP
 
-#include "include/cef_client.h"
+#include <cef_client.h>
 #include <list>
 
-class BluHandler : public CefClient,
-                   public CefDisplayHandler,
-                   public CefLifeSpanHandler,
-                   public CefLoadHandler
+class GDCefClient : public CefClient,
+                    public CefDisplayHandler,
+                    public CefLifeSpanHandler,
+                    public CefLoadHandler
 {
 public:
 
-    BluHandler();
-    ~BluHandler();
+    GDCefClient();
+    ~GDCefClient();
 
     // Provide access to the single global instance of this object.
-    static BluHandler* GetInstance();
+    static GDCefClient* GetInstance();
 
     // CefClient methods:
     virtual CefRefPtr<CefDisplayHandler> GetDisplayHandler() override
@@ -65,7 +83,7 @@ private:
     bool m_is_closing;
 
     // Include the default reference counting implementation.
-    IMPLEMENT_REFCOUNTING(BluHandler);
+    IMPLEMENT_REFCOUNTING(GDCefClient);
 };
 
-#endif  // CEF_TESTS_CEFSIMPLE_SIMPLE_HANDLER_H_
+#endif // GDCEF_SUBPROCESS_CLIENT_HPP

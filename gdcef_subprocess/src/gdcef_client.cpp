@@ -1,7 +1,25 @@
-// This code is a modification of the original projects that can be found at
-// https://github.com/ashea-code/BluBrowser
+//*************************************************************************
+// Stigmee: The art to sanctuarize knowledge exchanges.
+// Copyright 2021-2022 Alain Duron <duron.alain@gmail.com>
+// Copyright 2021-2022 Quentin Quadrat <lecrapouille@gmail.com>
+//
+// This file is part of Stigmee.
+//
+// Stigmee is free software: you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//*************************************************************************
 
-#include "blu_handler.h"
+#include "gdcef_client.hpp"
 
 // CEF
 #include <cef_app.h>
@@ -14,6 +32,7 @@
 #include <views/cef_window.h>
 #include <wrapper/cef_helpers.h>
 #include <wrapper/cef_closure_task.h>
+#include <internal/cef_types.h>
 #include <base/cef_bind.h>
 #include <base/cef_callback.h>
 
@@ -21,7 +40,7 @@
 #include <iostream>
 #include <string>
 
-static BluHandler* g_instance = nullptr;
+static GDCefClient* g_instance = nullptr;
 
 // Returns a data: URI with the specified contents.
 static std::string GetDataURI(const std::string& data, const std::string& mime_type)
@@ -31,38 +50,38 @@ static std::string GetDataURI(const std::string& data, const std::string& mime_t
             .ToString();
 }
 
-BluHandler::BluHandler()
+GDCefClient::GDCefClient()
     : m_is_closing(false)
 {
-    std::cout << "SECONDARY BluHandler::BluHandler" << std::endl;
+    std::cout << "[SubProcess] [GDCefClient::GDCefClient]" << std::endl;
     DCHECK(!g_instance);
     g_instance = this;
 }
 
-BluHandler::~BluHandler()
+GDCefClient::~GDCefClient()
 {
-    std::cout << "SECONDARY BluHandler::~BluHandler" << std::endl;
+    std::cout << "[SubProcess] [GDCefClient::~GDCefClient]" << std::endl;
     g_instance = nullptr;
 }
 
 // static
-BluHandler* BluHandler::GetInstance()
+GDCefClient* GDCefClient::GetInstance()
 {
     return g_instance;
 }
 
-void BluHandler::OnAfterCreated(CefRefPtr<CefBrowser> browser)
+void GDCefClient::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 {
-    std::cout << "SECONDARY BluHandler::OnAfterCreated" << std::endl;
+    std::cout << "[SubProcess] [GDCefClient::OnAfterCreated]" << std::endl;
     CEF_REQUIRE_UI_THREAD();
 
     // Add to the list of existing browsers.
     m_browser_list.push_back(browser);
 }
 
-bool BluHandler::DoClose(CefRefPtr<CefBrowser> browser)
+bool GDCefClient::DoClose(CefRefPtr<CefBrowser> browser)
 {
-    std::cout << "SECONDARY BluHandler::DoClose" << std::endl;
+    std::cout << "[SubProcess] [GDCefClient::DoClose]" << std::endl;
     CEF_REQUIRE_UI_THREAD();
 
     // Closing the main window requires special handling. See the DoClose()
@@ -79,9 +98,9 @@ bool BluHandler::DoClose(CefRefPtr<CefBrowser> browser)
     return false;
 }
 
-void BluHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser)
+void GDCefClient::OnBeforeClose(CefRefPtr<CefBrowser> browser)
 {
-    std::cout << "SECONDARY BluHandler::OnBeforeClose" << std::endl;
+    std::cout << "[SubProcess] [GDCefClient::OnBeforeClose]" << std::endl;
     CEF_REQUIRE_UI_THREAD();
 
     // Remove from the list of existing browsers.
@@ -102,13 +121,13 @@ void BluHandler::OnBeforeClose(CefRefPtr<CefBrowser> browser)
     }
 }
 
-void BluHandler::OnLoadError(CefRefPtr<CefBrowser> browser,
-                             CefRefPtr<CefFrame> frame,
-                             ErrorCode errorCode,
-                             const CefString& errorText,
-                             const CefString& failedUrl)
+void GDCefClient::OnLoadError(CefRefPtr<CefBrowser> browser,
+                              CefRefPtr<CefFrame> frame,
+                              ErrorCode errorCode,
+                              const CefString& errorText,
+                              const CefString& failedUrl)
 {
-    std::cout << "SECONDARY BluHandler::OnLoadError" << std::endl;
+    std::cout << "[SubProcess] [GDCefClient::OnLoadError]" << std::endl;
     // Don't display an error for downloaded files.
     if (errorCode == ERR_ABORTED)
         return;
@@ -125,16 +144,16 @@ void BluHandler::OnLoadError(CefRefPtr<CefBrowser> browser,
     frame->LoadURL(GetDataURI(ss.str(), "text/html"));
 }
 
-void BluHandler::CloseAllBrowsers(bool force_close)
+void GDCefClient::CloseAllBrowsers(bool force_close)
 {
-    std::cout << "SECONDARY BluHandler::CloseAllBrowsers" << std::endl;
+    std::cout << "[SubProcess] [GDCefClient::CloseAllBrowsers]" << std::endl;
     if (m_browser_list.empty())
         return;
 
     if (!CefCurrentlyOn(TID_UI))
     {
         // Execute on the UI thread.
-        CefPostTask(TID_UI, base::BindOnce(&BluHandler::CloseAllBrowsers, this,
+        CefPostTask(TID_UI, base::BindOnce(&GDCefClient::CloseAllBrowsers, this,
                                            force_close));
         return;
     }
