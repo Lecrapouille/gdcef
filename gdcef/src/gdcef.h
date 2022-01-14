@@ -107,6 +107,24 @@ public:
 private:
 
     // *************************************************************************
+    //! \brief Manager.
+    // *************************************************************************
+    class Manager : public CefApp
+    {
+    public:
+
+        virtual void OnBeforeCommandLineProcessing(
+            const CefString& ProcessType, CefRefPtr<CefCommandLine> CommandLine) override;
+
+        static CefSettings Settings;
+        static CefMainArgs MainArgs;
+        static bool CPURenderSettings;
+        static bool AutoPlay;
+
+        IMPLEMENT_REFCOUNTING(GDCef::Manager);
+    };
+
+    // *************************************************************************
     //! \brief Private implementation to handle CEF events to draw the web page.
     // *************************************************************************
     class RenderHandler : public CefRenderHandler

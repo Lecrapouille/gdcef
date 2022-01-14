@@ -30,73 +30,64 @@
 #include <iostream>
 #include <filesystem>
 
-//=============================================================================
-// Manager
-//=============================================================================
-class GDCefMgr : public CefApp
+//------------------------------------------------------------------------------
+// Init Manager static members
+CefSettings GDCef::Manager::Settings;
+CefMainArgs GDCef::Manager::MainArgs;
+bool GDCef::Manager::CPURenderSettings;
+bool GDCef::Manager::AutoPlay;
+
+//------------------------------------------------------------------------------
+void GDCef::Manager::OnBeforeCommandLineProcessing(
+    const CefString& ProcessType, CefRefPtr<CefCommandLine> CommandLine)
 {
-public:
+    std::cout << "[GDCEF] [GDCef::Manager::OnBeforeCommandLineProcessing]" << std::endl;
 
-    virtual void OnBeforeCommandLineProcessing(
-        const CefString& ProcessType, CefRefPtr<CefCommandLine> CommandLine) override
+    /**
+     * Used to pick command line switches:
+     * - If set to "true": CEF will use less CPU, but rendering performance will
+     *   be lower. CSS3 and WebGL will not be usable.
+     * - If set to "false": CEF will use more CPU, but rendering will be better,
+     *   CSS3 and WebGL will also be usable.
+     */
+    GDCef::Manager::CPURenderSettings = false;
+    GDCef::Manager::AutoPlay = false;
+
+    CommandLine->AppendSwitch("off-screen-rendering-enabled");
+    CommandLine->AppendSwitchWithValue("off-screen-frame-rate", "60");
+    CommandLine->AppendSwitch("enable-font-antialiasing");
+    CommandLine->AppendSwitch("enable-media-stream");
+
+    // Should we use the render settings that use less CPU?
+    if (CPURenderSettings)
     {
-        std::cout << "[GDCEF] [GDCefMgr::OnBeforeCommandLineProcessing]" << std::endl;
-
-        /**
-         * Used to pick command line switches
-         * If set to "true": CEF will use less CPU, but rendering performance will be lower. CSS3 and WebGL will not be usable
-         * If set to "false": CEF will use more CPU, but rendering will be better, CSS3 and WebGL will also be usable
-         */
-        GDCefMgr::CPURenderSettings = false;
-        GDCefMgr::AutoPlay = false;
-
-        CommandLine->AppendSwitch("off-screen-rendering-enabled");
-        CommandLine->AppendSwitchWithValue("off-screen-frame-rate", "60");
-        CommandLine->AppendSwitch("enable-font-antialiasing");
-        CommandLine->AppendSwitch("enable-media-stream");
-
-        // Should we use the render settings that use less CPU?
-        if (CPURenderSettings)
-        {
-            CommandLine->AppendSwitch("disable-gpu");
-            CommandLine->AppendSwitch("disable-gpu-compositing");
-            CommandLine->AppendSwitch("enable-begin-frame-scheduling");
-        }
-        else
-        {
-            // Enables things like CSS3 and WebGL
-            CommandLine->AppendSwitch("enable-gpu-rasterization");
-            CommandLine->AppendSwitch("enable-webgl");
-            CommandLine->AppendSwitch("disable-web-security");
-        }
-
-        CommandLine->AppendSwitchWithValue("enable-blink-features", "HTMLImports");
-
-        if (AutoPlay)
-        {
-            CommandLine->AppendSwitchWithValue("autoplay-policy", "no-user-gesture-required");
-        }
-
-        // Append more command line options here if you want
-        // Visit Peter Beverloo's site: http://peter.sh/experiments/chromium-command-line-switches/ for more info on the switches
+        CommandLine->AppendSwitch("disable-gpu");
+        CommandLine->AppendSwitch("disable-gpu-compositing");
+        CommandLine->AppendSwitch("enable-begin-frame-scheduling");
+    }
+    else
+    {
+        // Enables things like CSS3 and WebGL
+        CommandLine->AppendSwitch("enable-gpu-rasterization");
+        CommandLine->AppendSwitch("enable-webgl");
+        CommandLine->AppendSwitch("disable-web-security");
     }
 
-    static CefSettings Settings;
-    static CefMainArgs MainArgs;
-    static bool CPURenderSettings;
-    static bool AutoPlay;
+    CommandLine->AppendSwitchWithValue("enable-blink-features", "HTMLImports");
 
-    IMPLEMENT_REFCOUNTING(GDCefMgr);
-};
+    if (AutoPlay)
+    {
+        CommandLine->AppendSwitchWithValue("autoplay-policy", "no-user-gesture-required");
+    }
 
-// Init static members
-CefSettings GDCefMgr::Settings;
-CefMainArgs GDCefMgr::MainArgs;
-bool GDCefMgr::CPURenderSettings;
-bool GDCefMgr::AutoPlay;
+    // Append more command line options here if you want Visit Peter Beverloo's
+    // site: http://peter.sh/experiments/chromium-command-line-switches/ for
+    // more info on the switches
+}
 
-// in a GDNative module, "_bind_methods" is replaced by the "_register_methods" method
-// this is used to expose various methods of this class to Godot
+//------------------------------------------------------------------------------
+// in a GDNative module, "_bind_methods" is replaced by the "_register_methods"
+// method this is used to expose various methods of this class to Godot
 void GDCef::_register_methods()
 {
     std::cout << "[GDCEF] [GDCef::_register_methods]" << std::endl;
@@ -131,23 +122,23 @@ void GDCef::_init()
               << std::filesystem::absolute(p) << std::endl;
     std::string p_str = std::filesystem::absolute(p).string();
 
-    // Setup the default settings for GDCefMgr
-    GDCefMgr::Settings.windowless_rendering_enabled = true;
-    GDCefMgr::Settings.no_sandbox = true;
-    GDCefMgr::Settings.remote_debugging_port = 7777;
-    GDCefMgr::Settings.uncaught_exception_stack_size = 5;
+    // Setup the default settings for GDCef::Manager
+    GDCef::Manager::Settings.windowless_rendering_enabled = true;
+    GDCef::Manager::Settings.no_sandbox = true;
+    GDCef::Manager::Settings.remote_debugging_port = 7777;
+    GDCef::Manager::Settings.uncaught_exception_stack_size = 5;
 
     // Set the sub-process path
-    CefString(&GDCefMgr::Settings.browser_subprocess_path).FromString(p_str);
+    CefString(&GDCef::Manager::Settings.browser_subprocess_path).FromString(p_str);
 
     // TODO : Set the cache path
-    //CefString(&GDCefMgr::Settings.cache_path).FromString(GameDirCef);
+    //CefString(&GDCef::Manager::Settings.cache_path).FromString(GameDirCef);
 
-    // Make a new GDCefMgr instance
-    std::cout << "[GDCEF] [GDCef::_init] Creating the CefApp (GDCefMgr) instance"
+    // Make a new GDCef::Manager instance
+    std::cout << "[GDCEF] [GDCef::_init] Creating the CefApp (GDCef::Manager) instance"
               << std::endl;
-    CefRefPtr<GDCefMgr> GDCefApp = new GDCefMgr();
-    CefInitialize(GDCefMgr::MainArgs, GDCefMgr::Settings, GDCefApp, nullptr);
+    CefRefPtr<GDCef::Manager> GDCefApp = new GDCef::Manager();
+    CefInitialize(GDCef::Manager::MainArgs, GDCef::Manager::Settings, GDCefApp, nullptr);
     std::cout << "[GDCEF] [GDCef::_init] CefInitialize done" << std::endl;
 
     // FIXME: ideally this code should go to GDCef::GDCef() but that does not work
@@ -164,7 +155,7 @@ void GDCef::_init()
     // TODO : test DPI settings
     CefBrowserSettings settings;
     settings.windowless_frame_rate = 60; // 30 is default
-    if (!GDCefMgr::CPURenderSettings)
+    if (!GDCef::Manager::CPURenderSettings)
     {
         settings.webgl = STATE_ENABLED;
     }
@@ -226,17 +217,15 @@ void GDCef::RenderHandler::reshape(int w, int h)
 //------------------------------------------------------------------------------
 void GDCef::RenderHandler::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
 {
-    std::cout << "[GDCEF] [GDCef::RenderHandler::GetViewRect]" << std::endl;
     rect = CefRect(0, 0, m_width, m_height);
 }
 
 //------------------------------------------------------------------------------
-// FIXME find a less naive algorithm
+// FIXME find a less naive algorithm et utiliser dirtyRects
 void GDCef::RenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type,
                                    const RectList& dirtyRects, const void* buffer,
                                    int width, int height)
 {
-    std::cout << "[GDCEF] [GDCef::RenderHandler::OnPaint]" << std::endl;
     // Sanity check
     if ((width <= 0) || (height <= 0) || (buffer == nullptr))
         return ;
@@ -265,7 +254,7 @@ void GDCef::RenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementTy
 //------------------------------------------------------------------------------
 void GDCef::load_url(godot::String url)
 {
-    std::cout << "[GDCEF] [GDCef::load_url]" << std::endl;
+    std::cout << "[GDCEF] [GDCef::load_url] " << url.utf8().get_data() << std::endl;
     m_browser->GetMainFrame()->LoadURL(url.utf8().get_data());
 }
 
@@ -302,7 +291,6 @@ void GDCef::reshape(int w, int h)
 //------------------------------------------------------------------------------
 void GDCef::mouseMove(int x, int y)
 {
-
     m_mouse_x = x;
     m_mouse_y = y;
 
@@ -398,5 +386,4 @@ void GDCef::keyPress(int key, bool pressed, bool isup)
             m_browser->GetHost()->SendKeyEvent(evtdown);
         }
     }
-
 }
