@@ -31,6 +31,17 @@
 #include <filesystem>
 
 //------------------------------------------------------------------------------
+#if defined(_WIN32)
+#  define SUBPROCESS_NAME "gdcefSubProcess.exe"
+#elif defined(__linux__)
+#  define SUBPROCESS_NAME "gdcefSubProcess"
+#elif defined(__APPLE__)
+#  define SUBPROCESS_NAME "gdcefSubProcess"
+#else
+#  error "Undefined path for the Godot's CEF sub process for this architecture"
+#endif
+
+//------------------------------------------------------------------------------
 // Init Manager static members
 CefSettings GDCef::Manager::Settings;
 CefMainArgs GDCef::Manager::MainArgs;
@@ -104,23 +115,52 @@ void GDCef::_register_methods()
     godot::register_method("on_mouse_wheel", &GDCef::mouseWheel);
 }
 
+//------------------------------------------------------------------------------
+static bool sanity_files(std::filesystem::path const& path)
+{
+    const std::vector<std::string> files = {
+        SUBPROCESS_NAME, "icudtl.dat",
+        "chrome_100_percent.pak", "chrome_200_percent.pak",
+    };
+
+    bool failure = false;
+    for (auto const& it: files)
+    {
+        std::filesystem::path f = { path / it };
+        if (!std::filesystem::exists(f))
+        {
+            std::cout << "[GDCEF] [sanity_files] File "
+                      << f << " does not exist"
+                      << std::endl;
+            failure = true;
+        }
+    }
+
+    return failure;
+}
+
+//------------------------------------------------------------------------------
 void GDCef::_init()
 {
     std::cout << "[GDCEF] [GDCef::_init] start" << std::endl;
 
-#if defined(_WIN32)
-    std::filesystem::path p("stigmee\\stigmee\\build\\gdcefSubProcess.exe");
-#elif defined(__linux__)
-    std::filesystem::path p("stigmee/stigmee/build/gdcefSubProcess");
-#elif defined(__APPLE__)
-    std::filesystem::path p("stigmee/stigmee/build/gdcefSubProcess");
-#else
-#  error "Undefined path for the Godot's CEF sub process for this architecture"
-#endif
-
+    // Create the path of the CEF sub process which shall be next to Stigmee
+    // binary.
+    // TODO Call std::filesystem::cannonical(argv[0]) to get the real path and
+    // remove symlinks.
+    std::filesystem::path sub_process_path = {
+        std::filesystem::current_path() / SUBPROCESS_NAME
+    };
     std::cout << "[GDCEF] [GDCef::_init] Looking for SubProcess at : "
-              << std::filesystem::absolute(p) << std::endl;
-    std::string p_str = std::filesystem::absolute(p).string();
+              << sub_process_path.string() << std::endl;
+
+    // Check if important CEF assets exist
+    if (sanity_files(std::filesystem::current_path()))
+    {
+        std::cout << "Aborting because of missing necessary files"
+                  << std::endl;
+        exit(1);
+    }
 
     // Setup the default settings for GDCef::Manager
     GDCef::Manager::Settings.windowless_rendering_enabled = true;
@@ -129,7 +169,8 @@ void GDCef::_init()
     GDCef::Manager::Settings.uncaught_exception_stack_size = 5;
 
     // Set the sub-process path
-    CefString(&GDCef::Manager::Settings.browser_subprocess_path).FromString(p_str);
+    CefString(&GDCef::Manager::Settings.browser_subprocess_path)
+            .FromString(sub_process_path.string());
 
     // TODO : Set the cache path
     //CefString(&GDCef::Manager::Settings.cache_path).FromString(GameDirCef);
