@@ -1,31 +1,36 @@
-# gdcef (GDNative module)
+# Chromium Embedded Framework as Godot native module
 
-GDNative module for CEF integration into Godot, including a demo project
+This document explains how is compiled for Window, the Godot native module (GDNative) for Chromium Embedded Framework (CEF).
+This module is used by the Stigmee [project](https://github.com/stigmee/stigmee) and compiled automatically by
+this [install](https://github.com/stigmee/install) for Linux while, for the moment, you will have to do some
+manual steps for Windows.
 
-* Tested successfully with Godot 3.4.2-stable
-* Along with the following CEF version : cef_binary_96.0.16+g89c902b+chromium-96.0.4664.55_windows64.tar.bz2
+* Tested successfully with Godot 3.4.2-stable, Linux and Windows environments. MacOS X compiles but does not work yet.
+* Tested with the following CEF version : cef_binary_96.0.16+g89c902b+chromium-96.0.4664.55 that can be downloaded at
+https://cef-builds.spotifycdn.com/index.html
 
 ## Environment
 
 Example of installation :
 
 ```
-<Godot_Home>\                                     <= godot installation root (compile godot from here)
-<Godot_Home>\godot-native\                        <= base of all native modules
-<Godot_Home>\godot-native\gdcef                   <= Main code of the module
-<Godot_Home>\godot-native\gdcef_subprocess        <= Code of the sub-process executable
-<Godot_Home>\godot-native\godot-cpp               <= godot c++ bindings clone (compile the c++ bindings from here)
-<Godot_Home>\godot-native\thirdparty\cef_binary   <= CEF distribution used to build the dependencies
+<Project>\                                     <= Godot installation root (compile godot from here)
+<Project>\godot-native\                        <= Base folder holding native modules
+<Project>\godot-native\gdcef                   <= Code for the CEF module
+<Project>\godot-native\gdcef_subprocess        <= Code of the sub-process CEF executable
+<Project>\godot-native\godot-cpp               <= Godot C++ API and bindings (git cloned and to be compiled from here)
+<Project>\godot-native\thirdparty\cef_binary   <= CEF distribution used to build the dependencies (downloaded  and to be compiled from here)
 ```
 
 ## Prerequisites
 
-the following 2 prerequisite components are NOT included in this repository and must be added to the project before any compilation attempt
+The following 2 prerequisite components *are NOT included* in this repository and must be added to the project before any compilation attempt:
+- godot-native\godot-cpp
+- godot-native\thirdparty\cef_binary
 
-### ./godot-cpp
+### godot-cpp: Godot C++ API
 
-First of all, clone the godot-cpp repository into 'godot-cpp' subfolder, using the appropriate branch (do not clone the master as you would end up with headers for the 4.0 version.
-Recursive cloning will also include the appropriate godot-headers used to generate the c++ bindings.
+First of all, clone **recursively** the godot-cpp repository into `godot-native\godot-cpp` subfolder, using the appropriate branch (do not clone the master as you would end up with headers for the 4.0 version. Recursive cloning will include the appropriate godot-headers used to generate the C++ bindings.
 
 ```
 git clone --recursive -b 3.4 https://github.com/godotengine/godot-cpp
@@ -37,7 +42,7 @@ remote: Total 4763 (delta 562), reused 598 (delta 531), pack-reused 3808
 Receiving objects: 100% (4763/4763), 3.56 MiB | 15.24 MiB/s, done.
 Resolving deltas: 100% (3083/3083), done.
 Submodule 'godot-headers' (https://github.com/godotengine/godot-headers) registered for path 'godot-headers'
-Cloning into '<Godot_Home>\godot-native\godot-cpp/godot-headers'...
+Cloning into '<Project>\godot-native\godot-cpp/godot-headers'...
 remote: Enumerating objects: 801, done.
 remote: Counting objects: 100% (144/144), done.
 remote: Compressing objects: 100% (111/111), done.
@@ -53,11 +58,10 @@ scons platform=windows target=release -j8
 (use release_debug in rc distributions)
 (use release in stable distributions)
 
-### ./thirdparty/cef_binary
+### cef_binary: prebuilt Chromium Embedded Framework
 
-Download the appropriate release (depending on your OS) from here :
-https://cef-builds.spotifycdn.com/index.html#windows64
-And extract it into ./thirdparty/cef_binary, then compile it like so.
+Download the appropriate release (depending on your OS) from https://cef-builds.spotifycdn.com/index.html
+and extract it into `godot-native/thirdparty/cef_binary`, then compile it like so.
 
 ```
 cd ./thirdparty/cef_binary
@@ -67,16 +71,16 @@ cmake ..
 cmake --build .
 ```
 
-Actual builds are using dynamic library, and default VS solutions is configured for static compilation. Therefore need to use VS to compile in Release mode, and you will need to change the compiler mode of the Release mode from /MT to /MD,
+For Windows64, actual builds are using dynamic library, and default VS solutions is configured for static compilation. Therefore need to use VS to compile in Release mode, and you will need to change the compiler mode of the Release mode from `/MT` to `/MD`,
 and add the 2 following preprocessor flags
 
-* _ITERATOR_DEBUG_LEVEL = 0;                 under C/C++ >> Preprocessor >> PreprocessorDefinitions. 
-* _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH       under C/C++ >> Preprocessor >> PreprocessorDefinitions. 
+* `_ITERATOR_DEBUG_LEVEL = 0;`                 under `C/C++ >> Preprocessor >> PreprocessorDefinitions`.
+* `_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH`       under `C/C++ >> Preprocessor >> PreprocessorDefinitions`.
 
 
 ## Sub-Process executable compilation (./gdcef_subprocess)
 
-This executable is needed in order for the CEF to spawn the various CEF sub-processes (gpu process, render handler...). The binary path is passed at runtime to the CEF Client. 
+This executable is needed in order for the CEF to spawn the various CEF sub-processes (gpu process, render handler...). The binary path is passed at runtime to the CEF Client.
 
 ```
 📦gdcef_subprocess
@@ -92,18 +96,17 @@ This executable is needed in order for the CEF to spawn the various CEF sub-proc
 To compile this source :
 
 ```
-cd <Godot_Home>\godot-native\
+cd <Project>\godot-native\
 mkdir build
 cd .\gdcef_subprocess
 scons target=release platform=windows -j8
 ```
 
-The executable will be generated into the build directory. It should be placed into the appropriate godot project path (see Module configuration) 
-
+The executable will be generated into the build directory. It should be placed into the appropriate godot project path (see Module configuration).
 
 ## Module compilation (./gdcef)
 
-This directory contains the source of the gdcef library, allowing to generate the libgdcef.dll module.  This dll file can then be loaded by the GDNative module (see Module configuration)
+This directory contains the source of the gdcef library, allowing to generate the libgdcef.dll module. This dll file can then be loaded by the GDNative module (see Module configuration).
 
 ```
 📦gdcef
@@ -117,24 +120,23 @@ This directory contains the source of the gdcef library, allowing to generate th
 To compile this source :
 
 ```
-cd <Godot_Home>\godot-native\
+cd <Project>\godot-native\
 mkdir build
 cd .\gdcef
 scons target=release platform=windows -j8
 ```
 
-
 ## Module configuration
 
 In order to configure the module :
-- place the libgdcef.dll file and gdcefSubProcess.exe into the project root (main game directory)
-- create the following 2 files under the ./lib directory
+- place the `libgdcef.dll` file and `gdcefSubProcess.exe` into the project root (main game directory)
+- create the following 2 files under the `./build` directory
 
-gdcef.gdns
+- gdcef.gdns:
 ```
 [gd_resource type="NativeScript" load_steps=2 format=2]
 
-[ext_resource path="res://lib/gdcef.gdnlib" type="GDNativeLibrary" id=1]
+[ext_resource path="res://build/gdcef.gdnlib" type="GDNativeLibrary" id=1]
 
 [resource]
 resource_name = "gdcef"
@@ -143,7 +145,7 @@ library = ExtResource( 1 )
 script_class_name = "GDCef"
 ```
 
-gdcef.gdnlib
+- gdcef.gdnlib:
 ```
 [general]
 
@@ -154,35 +156,34 @@ reloadable=false
 
 [entry]
 
-OSX.64="res://libgdcef.dylib"
-Windows.64="res://libgdcef.dll"
-X11.64="res://libgdcef.so"
+OSX.64="res://build/libgdcef.dylib"
+Windows.64="res://build/libgdcef.dll"
+X11.64="res://build/libgdcef.so"
 
 [dependencies]
 
-OSX.64=[  ]
-Windows.64=[ "res://libcef.dll" ]
-X11.64=[  ]
+OSX.64=[ "res://build/libcef.dylib" ]
+Windows.64=[ "res://build/libcef.dll" ]
+X11.64=[ "res://build/libcef.so" ]
 ```
 
-Ensure the lib is correctly loaded into your project (open the lib in the godot editor, make sur GDCef can be instanciated in GDScript)
-
+Ensure the lib is correctly loaded into your project (open the lib in the godot editor, make sur GDCef can be instanciated in GDScript).
 
 ## Exposed methods (as of 13/01/2022)
 
 The following methods are part of the library at the moment, all in the GDCef class :
 
 ```
-    load_url
-    navigate_back
-    navigate_forward
-    do_message_loop_work
-    get_texture
-    reshape
-    on_key_pressed
-    on_mouse_moved
-    on_mouse_click
-    on_mouse_wheel
+    void load_url(String url)
+    void navigate_back()
+    void navigate_forward()
+    void do_message_loop_work()
+    Ref<ImageTexture> get_texture()
+    void reshape(int w, int h)
+    void on_key_pressed(int key, bool pressed, bool up)
+    void on_mouse_moved(int x, int y)
+    void on_mouse_click(int button, bool mouse_up)
+    void on_mouse_wheel(const int wDelta)
 ```
 
 *IMPORTANT:* The following dependencies are not included in the repository and need to be copied into your godot project root (res://) along with the sub-process executable binary (they should be available in ./thirdparty/cef_binary), otherwise godot will complain about not being able to load the module dependancies at project startup. Those files are mandatory to correctly startup CEF :
