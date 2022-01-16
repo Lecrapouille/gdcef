@@ -127,7 +127,7 @@ scons target=release platform=windows -j8
 ## Module configuration
 
 In order to configure the module :
-- place the libgdcef.dll file and gdcefSubProcess.exe into the ./lib/win64 subdirectory under your project root 
+- place the libgdcef.dll file and gdcefSubProcess.exe into the project root (main game directory)
 - create the following 2 files under the ./lib directory
 
 gdcef.gdns
@@ -154,14 +154,14 @@ reloadable=false
 
 [entry]
 
-OSX.64="res://lib/osx/libgdcef.dylib"
-Windows.64="res://lib/win64/libgdcef.dll"
-X11.64="res://lib/x11/libgdcef.so"
+OSX.64="res://libgdcef.dylib"
+Windows.64="res://libgdcef.dll"
+X11.64="res://libgdcef.so"
 
 [dependencies]
 
 OSX.64=[  ]
-Windows.64=[ "res://lib/win64/libcef.dll" ]
+Windows.64=[ "res://libcef.dll" ]
 X11.64=[  ]
 ```
 
@@ -185,7 +185,7 @@ The following methods are part of the library at the moment, all in the GDCef cl
     on_mouse_wheel
 ```
 
-*IMPORTANT:* The following dependencies are not included in the repository and need to be copied into ./lib/win64 next to the sub-process executable binary (they should be available in ./thirdparty/cef_binary), otherwise godot will complain about not being able to load the module at project startup. Those files are mandatory to correctly startup CEF :
+*IMPORTANT:* The following dependencies are not included in the repository and need to be copied into your godot project root (res://) along with the sub-process executable binary (they should be available in ./thirdparty/cef_binary), otherwise godot will complain about not being able to load the module dependancies at project startup. Those files are mandatory to correctly startup CEF :
 
 ```
 chrome_elf.dll       <- thirdparty\cef_binary\Release
