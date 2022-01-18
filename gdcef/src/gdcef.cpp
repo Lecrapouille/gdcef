@@ -182,34 +182,35 @@ void GDCef::_init()
     CefInitialize(GDCef::Manager::MainArgs, GDCef::Manager::Settings, GDCefApp, nullptr);
     std::cout << "[GDCEF] [GDCef::_init] CefInitialize done" << std::endl;
 
-    // FIXME: ideally this code should go to GDCef::GDCef() but that does not work
-    // Browser Setup
-    CefWindowInfo window_info;
-    window_info.SetAsWindowless(0);
-    std::cout << "[GDCEF] [GDCef::_init] Creating render handler" << std::endl;
-    m_render_handler = new RenderHandler(*this);
-    // initial browser's view size. we expose it to godot which can set the
-    // desired size depending on its viewport size.
-    m_render_handler->reshape(128, 128);
-
     // Various cef settings.
     // TODO : test DPI settings
-    CefBrowserSettings settings;
-    settings.windowless_frame_rate = 60; // 30 is default
+    m_window_info.SetAsWindowless(0);
+    m_settings.windowless_frame_rate = 60; // 30 is default
     if (!GDCef::Manager::CPURenderSettings)
     {
-        settings.webgl = STATE_ENABLED;
+        m_settings.webgl = STATE_ENABLED;
     }
 
-    // TODO manage the browser class separately to avoid loading google every time
-    std::cout << "[GDCEF] [GDCef::_init] Creating the client" << std::endl;
+    std::cout << "[GDCEF] [GDCef::_init] Creating render handler" << std::endl;
+    m_render_handler = new RenderHandler(*this);
     m_client = new BrowserClient(m_render_handler);
-    m_browser = CefBrowserHost::CreateBrowserSync(window_info, m_client.get(),
-                                                 "https://www.google.com/", settings,
-                                                  nullptr, nullptr);
-    std::cout << "[GDCEF] [GDCef::_init] CreateBrowserSync has been called !" << std::endl;
     std::cout << "[GDCEF] [GDCef::_init] done" << std::endl;
-    // FIXME: here should be the end of GDCef::GDCef()
+}
+
+//------------------------------------------------------------------------------
+CefRefPtr<CefBrowser> GDCef::browser(godot::String url)
+{
+    if (m_browser == nullptr)
+    {
+        std::cout << "[GDCEF] [GDCef::browser] CreateBrowserSync" << std::endl;
+        m_browser = CefBrowserHost::CreateBrowserSync(
+            m_window_info, m_client.get(), url.utf8().get_data(),
+            m_settings, nullptr, nullptr);
+        std::cout << "[GDCEF] [GDCef::browser] CreateBrowserSync has been called !"
+                  << std::endl;
+        m_browser->GetHost()->WasResized();
+    }
+    return m_browser;
 }
 
 //------------------------------------------------------------------------------
@@ -300,8 +301,7 @@ void GDCef::RenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementTy
 void GDCef::load_url(godot::String url)
 {
     std::cout << "[GDCEF] [GDCef::load_url] " << url.utf8().get_data() << std::endl;
-    if (m_browser != nullptr)
-        m_browser->GetMainFrame()->LoadURL(url.utf8().get_data());
+    browser(url)->GetMainFrame()->LoadURL(url.utf8().get_data());
 }
 
 //------------------------------------------------------------------------------
