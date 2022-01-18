@@ -22,10 +22,10 @@
 #include "gdcef.h"
 
 // Godot
-#include "GlobalConstants.hpp"
+#include <GlobalConstants.hpp>
 
 // CEF
-#include "wrapper/cef_helpers.h"
+#include <wrapper/cef_helpers.h>
 
 #include <iostream>
 #include <filesystem>
