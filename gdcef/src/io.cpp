@@ -23,9 +23,126 @@
 #include <GlobalConstants.hpp> // Godot
 
 //------------------------------------------------------------------------------
+void GDCef::leftClick()
+{
+    leftMouseDown();
+    leftMouseUp();
+}
+
+//------------------------------------------------------------------------------
+void GDCef::rightClick()
+{
+    rightMouseDown();
+    rightMouseUp();
+}
+
+//------------------------------------------------------------------------------
+void GDCef::middleClick()
+{
+    middleMouseDown();
+    middleMouseUp();
+}
+
+//------------------------------------------------------------------------------
+void GDCef::leftMouseDown()
+{
+    if (!m_browser)
+        return;
+
+    CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_LEFT;
+    std::cout << "[GDCEF] [GDCef::leftMouseDown] mouse event occured" << std::endl;
+    CefMouseEvent evt;
+    std::cout << "[GDCEF] [GDCef::leftMouseDown] x,y" << m_mouse_x << "," << m_mouse_y << std::endl;
+    evt.x = m_mouse_x;
+    evt.y = m_mouse_y;
+
+    m_browser->GetHost()->SendMouseClickEvent(evt, btn, false, 1);
+}
+
+//------------------------------------------------------------------------------
+void GDCef::rightMouseDown()
+{
+    if (!m_browser)
+        return;
+
+    CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_RIGHT;
+    std::cout << "[GDCEF] [GDCef::rightMouseDown] mouse event occured" << std::endl;
+    CefMouseEvent evt;
+    std::cout << "[GDCEF] [GDCef::rightMouseDown] x,y" << m_mouse_x << "," << m_mouse_y << std::endl;
+    evt.x = m_mouse_x;
+    evt.y = m_mouse_y;
+
+    m_browser->GetHost()->SendMouseClickEvent(evt, btn, false, 1);
+}
+
+//------------------------------------------------------------------------------
+void GDCef::leftMouseUp()
+{
+    if (!m_browser)
+        return;
+
+    CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_LEFT;
+    std::cout << "[GDCEF] [GDCef::leftMouseUp] mouse event occured" << std::endl;
+    CefMouseEvent evt;
+    std::cout << "[GDCEF] [GDCef::leftMouseUp] x,y" << m_mouse_x << "," << m_mouse_y << std::endl;
+    evt.x = m_mouse_x;
+    evt.y = m_mouse_y;
+
+    m_browser->GetHost()->SendMouseClickEvent(evt, btn, true, 1);
+}
+
+//------------------------------------------------------------------------------
+void GDCef::rightMouseUp()
+{
+    if (!m_browser)
+        return;
+
+    CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_RIGHT;
+    std::cout << "[GDCEF] [GDCef::rightMouseUp] mouse event occured" << std::endl;
+    CefMouseEvent evt;
+    std::cout << "[GDCEF] [GDCef::rightMouseUp] x,y" << m_mouse_x << "," << m_mouse_y << std::endl;
+    evt.x = m_mouse_x;
+    evt.y = m_mouse_y;
+
+    m_browser->GetHost()->SendMouseClickEvent(evt, btn, true, 1);
+}
+
+//------------------------------------------------------------------------------
+void GDCef::middleMouseDown()
+{
+    if (!m_browser)
+        return;
+
+    CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_MIDDLE;
+    std::cout << "[GDCEF] [GDCef::middleMouseDown] mouse event occured" << std::endl;
+    CefMouseEvent evt;
+    std::cout << "[GDCEF] [GDCef::middleMouseDown] x,y" << m_mouse_x << "," << m_mouse_y << std::endl;
+    evt.x = m_mouse_x;
+    evt.y = m_mouse_y;
+
+    m_browser->GetHost()->SendMouseClickEvent(evt, btn, false, 1);
+}
+
+//------------------------------------------------------------------------------
+void GDCef::middleMouseUp()
+{
+    if (!m_browser)
+        return;
+
+    CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_MIDDLE;
+    std::cout << "[GDCEF] [GDCef::middleMouseUp] mouse event occured" << std::endl;
+    CefMouseEvent evt;
+    std::cout << "[GDCEF] [GDCef::middleMouseUp] x,y" << m_mouse_x << "," << m_mouse_y << std::endl;
+    evt.x = m_mouse_x;
+    evt.y = m_mouse_y;
+
+    m_browser->GetHost()->SendMouseClickEvent(evt, btn, true, 1);
+}
+
+//------------------------------------------------------------------------------
 void GDCef::mouseMove(int x, int y)
 {
-    if (m_browser == nullptr)
+    if (!m_browser)
         return ;
 
     m_mouse_x = x;
@@ -40,43 +157,6 @@ void GDCef::mouseMove(int x, int y)
     auto host = m_browser->GetHost();
     host->SetFocus(true);
     host->SendMouseMoveEvent(evt, mouse_leave);
-}
-
-//------------------------------------------------------------------------------
-void GDCef::mouseClick(int button, bool mouse_up)
-{
-    if (m_browser == nullptr)
-        return ;
-
-    std::cout << "[GDCEF] [GDCef::mouseClick] mouse event occured" << std::endl;
-    CefMouseEvent evt;
-    std::cout << "[GDCEF] [GDCef::mouseClick] x,y" << m_mouse_x << "," << m_mouse_y << std::endl;
-    evt.x = m_mouse_x;
-    evt.y = m_mouse_y;
-
-    std::cout << "[GDCEF] [GDCef::mouseClick]" << std::endl;
-
-    CefBrowserHost::MouseButtonType btn;
-    switch (button)
-    {
-    case godot::GlobalConstants::BUTTON_LEFT:
-        btn = CefBrowserHost::MouseButtonType::MBT_LEFT;
-        std::cout << "[GDCEF] [GDCef::mouseClick] Left " << mouse_up << std::endl;
-        break;
-    case godot::GlobalConstants::BUTTON_RIGHT:
-        btn = CefBrowserHost::MouseButtonType::MBT_RIGHT;
-        std::cout << "[GDCEF] [GDCef::mouseClick] Right " << mouse_up << std::endl;
-        break;
-    case godot::GlobalConstants::BUTTON_MIDDLE:
-        btn = CefBrowserHost::MouseButtonType::MBT_MIDDLE;
-        std::cout << "[GDCEF] [GDCef::mouseClick] Middle " << mouse_up << std::endl;
-        break;
-    default:
-        return;
-    }
-
-    int click_count = 1; // TODO
-    m_browser->GetHost()->SendMouseClickEvent(evt, btn, mouse_up, click_count);
 }
 
 //------------------------------------------------------------------------------
@@ -97,41 +177,109 @@ void GDCef::mouseWheel(const int wDelta)
 }
 
 //------------------------------------------------------------------------------
-void GDCef::keyPress(int key, bool pressed, bool isup)
+static int getKeyboardModifiers(bool shift, bool alt, bool ctrl)
 {
-    if (m_browser == nullptr)
-        return ;
+    int modifiers = 0;
 
-    // Not working yet, need some focus implementation
-    CefKeyEvent evtdown;
-    CefKeyEvent evtup;
+    if (shift == true)
+        modifiers |= EVENTFLAG_SHIFT_DOWN;
+    if (ctrl == true)
+        modifiers |= EVENTFLAG_CONTROL_DOWN;
+    if (alt == true)
+        modifiers |= EVENTFLAG_ALT_DOWN;
 
-    evtdown.character = key;
-    evtdown.windows_key_code = key;
-    evtdown.native_key_code = key;
-    evtdown.type = pressed ? KEYEVENT_CHAR : KEYEVENT_KEYDOWN;
+    return modifiers;
+}
 
-    evtup.character = key;
-    evtup.windows_key_code = key;
-    evtup.native_key_code = key;
-    evtup.type = KEYEVENT_KEYUP;
+//------------------------------------------------------------------------------
+void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
+{
+    if (!m_browser)
+        return;
 
-    auto host = m_browser->GetHost();
-    // host->SetFocus(true);
-    if (pressed)
+    CefKeyEvent event;
+    if (pressed == true)
     {
-        host->SendKeyEvent(evtdown);
-        host->SendKeyEvent(evtup);
+        // set the event modifier if they are activated
+        event.modifiers = getKeyboardModifiers(shift, alt, ctrl);
+
+        if ((key >= 65 && key <= 90)) // CHAR SMALL
+        {
+            event.windows_key_code = key;
+            event.type = KEYEVENT_RAWKEYDOWN;
+            m_browser->GetHost()->SendKeyEvent(event);
+            event.type = KEYEVENT_CHAR;
+            m_browser->GetHost()->SendKeyEvent(event);
+
+        }
+        else if (key == 46) // PERIOD
+        {
+            event.windows_key_code = 46;
+            event.character = 46;
+            event.unmodified_character = 46;
+            event.type = KEYEVENT_CHAR;
+            m_browser->GetHost()->SendKeyEvent(event);
+        }
+        else if (key == godot::GlobalConstants::KEY_SPACE ||
+                 key == godot::GlobalConstants::KEY_TAB)
+        {
+            event.windows_key_code = key;
+            event.type = KEYEVENT_RAWKEYDOWN;
+            m_browser->GetHost()->SendKeyEvent(event);
+            event.type = KEYEVENT_CHAR;
+            m_browser->GetHost()->SendKeyEvent(event);
+        }
+        else if (key == godot::GlobalConstants::KEY_BACKSPACE ||
+                 key == godot::GlobalConstants::KEY_ENTER ||
+                 key == godot::GlobalConstants::KEY_KP_ENTER ||
+                 key == godot::GlobalConstants::KEY_DELETE)
+        {
+            // TODO : FIXME, Not working yet, duno why
+            if (key == godot::GlobalConstants::KEY_BACKSPACE) {
+                event.windows_key_code = 8;
+                event.character = 8;
+                event.unmodified_character = 8;
+            }
+            else if (key == godot::GlobalConstants::KEY_ENTER) {
+                event.windows_key_code = 13;
+                event.character = 13;
+                event.unmodified_character = 13;
+            }
+            else if (key == godot::GlobalConstants::KEY_KP_ENTER) {
+                event.windows_key_code = 13;
+                event.character = 13;
+                event.unmodified_character = 13;
+            }
+            else {
+                event.windows_key_code = 127;
+                event.character = 127;
+                event.unmodified_character = 127;
+            }
+
+            //event.native_key_code = key ;
+            event.type = KEYEVENT_KEYDOWN;
+            m_browser->GetHost()->SendKeyEvent(event);
+            event.type = KEYEVENT_CHAR;
+            m_browser->GetHost()->SendKeyEvent(event);
+        }
+        else if ((key >= 48 && key <= 57) ||
+                 (key <= 320 && key <= 329)) // NUMBERS & NUMPAD
+        {
+            event.windows_key_code = key;
+
+            event.type = KEYEVENT_KEYDOWN;
+            m_browser->GetHost()->SendKeyEvent(event);
+            event.type = KEYEVENT_CHAR;
+            m_browser->GetHost()->SendKeyEvent(event);
+
+        }
+
     }
-    else
+    else if (pressed == false)
     {
-        if (isup)
-        {
-            host->SendKeyEvent(evtup);
-        }
-        else
-        {
-            host->SendKeyEvent(evtdown);
-        }
+        std::cout << "[GDCEF] [GDCef::KeyPressed] PRESSED FALSE" << std::endl;
+        event.native_key_code |= 0xC0000000;
+        event.type = KEYEVENT_KEYUP;
+        m_browser->GetHost()->SendKeyEvent(event);
     }
 }

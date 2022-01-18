@@ -110,7 +110,15 @@ void GDCef::_register_methods()
     godot::register_method("reshape", &GDCef::reshape);
     godot::register_method("on_key_pressed", &GDCef::keyPress);
     godot::register_method("on_mouse_moved", &GDCef::mouseMove);
-    godot::register_method("on_mouse_click", &GDCef::mouseClick);
+    godot::register_method("on_mouse_left_click", &GDCef::leftClick);
+    godot::register_method("on_mouse_right_click", &GDCef::rightClick);
+    godot::register_method("on_mouse_middle_click", &GDCef::middleClick);
+    godot::register_method("on_mouse_left_down", &GDCef::leftMouseDown);
+    godot::register_method("on_mouse_left_up", &GDCef::leftMouseUp);
+    godot::register_method("on_mouse_right_down", &GDCef::rightMouseDown);
+    godot::register_method("on_mouse_right_up", &GDCef::rightMouseUp);
+    godot::register_method("on_mouse_middle_down", &GDCef::middleMouseDown);
+    godot::register_method("on_mouse_middle_up", &GDCef::middleMouseUp);
     godot::register_method("on_mouse_wheel", &GDCef::mouseWheel);
 }
 

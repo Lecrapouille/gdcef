@@ -85,17 +85,41 @@ public:
     //! \brief TODO
     // void executeJS(const std::string &cmd);
 
+    //! \brief Down then up on Left button
+    void leftClick();
+
+    //! \brief Down then up on Right button
+    void rightClick();
+
+    //! \brief Down then up on middle button
+    void middleClick();
+
+    //! \brief Left Mouse button up
+    void leftMouseUp();
+
+    //! \brief Right Mouse button up
+    void rightMouseUp();
+
+    //! \brief Middle Mouse button up
+    void middleMouseUp();
+
+    //! \brief Left Mouse button down
+    void leftMouseDown();
+
+    //! \brief Right Mouse button down
+    void rightMouseDown();
+
+    //! \brief Middle Mouse button down
+    void middleMouseDown();
+
     //! \brief Set the new mouse position.
     void mouseMove(int x, int y);
-
-    //! \brief Set the new mouse state (clicked ...)
-    void mouseClick(int button, bool mouse_up);
 
     //! \brief run Mouse Wheel
     void mouseWheel(const int wDelta);
 
     //! \brief Set the new keyboard state (char typed ...)
-    void keyPress(int key, bool pressed, bool up);
+    void keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl);
 
     //! \brief Our initializer called by Godot
     void _init();
