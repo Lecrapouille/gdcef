@@ -106,6 +106,9 @@ public:
 
 private:
 
+    //! \brief Return the browser or create one if needed. This allows to postponed
+    CefRefPtr<CefBrowser> browser(godot::String url = "https://labo.stigmee.fr");
+
     // *************************************************************************
     //! \brief Manager.
     // *************************************************************************
@@ -149,9 +152,11 @@ private:
 
     private:
 
-        //! \brief Browser's view dimension
-        int m_width;
-        int m_height;
+        //! \brief Browser's view dimension.
+        //! Initial browser's view size. We expose it to Godot which can set the
+        //! desired size depending on its viewport size.
+        int m_width = 128;
+        int m_height = 128;
 
         //! \brief Access to GDCef::m_image
         GDCef& m_owner;
@@ -230,6 +235,10 @@ private:
     //! \brief Godot's temporary image (CEF => Godot)
     godot::Ref<godot::ImageTexture> m_texture;
     godot::Ref<godot::Image> m_image;
+
+    //! \brief Various browser settings.
+    CefBrowserSettings m_settings;
+    CefWindowInfo m_window_info;
 };
 
 #endif

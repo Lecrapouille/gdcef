@@ -232,8 +232,12 @@ GDCef::~GDCef()
 {
     std::cout << "[GDCEF] [GDCef::~GDCef()]" << std::endl;
     CefDoMessageLoopWork();
-    m_browser->GetHost()->CloseDevTools(); // remote_debugging_port
-    m_browser->GetHost()->CloseBrowser(true);
+    if (m_browser != nullptr)
+    {
+        auto host = m_browser->GetHost();
+        host->CloseDevTools(); // remote_debugging_port
+        host->CloseBrowser(true);
+    }
 
     m_browser = nullptr;
     m_client = nullptr;
@@ -296,14 +300,15 @@ void GDCef::RenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementTy
 void GDCef::load_url(godot::String url)
 {
     std::cout << "[GDCEF] [GDCef::load_url] " << url.utf8().get_data() << std::endl;
-    m_browser->GetMainFrame()->LoadURL(url.utf8().get_data());
+    if (m_browser != nullptr)
+        m_browser->GetMainFrame()->LoadURL(url.utf8().get_data());
 }
 
 //------------------------------------------------------------------------------
 void GDCef::navigate_back()
 {
     std::cout << "[GDCEF] [GDCef::navigate_back]" << std::endl;
-    if (m_browser->CanGoBack())
+    if ((m_browser != nullptr) && (m_browser->CanGoBack()))
     {
         m_browser->GoBack();
     }
@@ -313,7 +318,7 @@ void GDCef::navigate_back()
 void GDCef::navigate_forward()
 {
     std::cout << "[GDCEF] [GDCef::navigate_forward]" << std::endl;
-    if (m_browser->CanGoForward())
+    if ((m_browser != nullptr) && (m_browser->CanGoForward()))
     {
         m_browser->GoForward();
     }
@@ -324,6 +329,7 @@ void GDCef::reshape(int w, int h)
 {
     std::cout << "[GDCEF] [GDCef::reshape]" << std::endl;
     std::cout << "[GDCEF] [GDCef::reshape] m_render_handler->reshape" << std::endl;
+
     m_render_handler->reshape(w, h);
     std::cout << "[GDCEF] [GDCef::reshape] m_browser->GetHost()->WasResized" << std::endl;
     m_browser->GetHost()->WasResized();
@@ -332,6 +338,9 @@ void GDCef::reshape(int w, int h)
 //------------------------------------------------------------------------------
 void GDCef::mouseMove(int x, int y)
 {
+    if (m_browser == nullptr)
+        return ;
+
     m_mouse_x = x;
     m_mouse_y = y;
 
@@ -341,13 +350,17 @@ void GDCef::mouseMove(int x, int y)
 
     bool mouse_leave = false; // TODO
     // AD - Adding focus just like what's done in BLUI
-    m_browser->GetHost()->SetFocus(true);
-    m_browser->GetHost()->SendMouseMoveEvent(evt, mouse_leave);
+    auto host = m_browser->GetHost();
+    host->SetFocus(true);
+    host->SendMouseMoveEvent(evt, mouse_leave);
 }
 
 //------------------------------------------------------------------------------
 void GDCef::mouseClick(int button, bool mouse_up)
 {
+    if (m_browser == nullptr)
+        return ;
+
     std::cout << "[GDCEF] [GDCef::mouseClick] mouse event occured" << std::endl;
     CefMouseEvent evt;
     std::cout << "[GDCEF] [GDCef::mouseClick] x,y" << m_mouse_x << "," << m_mouse_y << std::endl;
@@ -382,6 +395,9 @@ void GDCef::mouseClick(int button, bool mouse_up)
 //------------------------------------------------------------------------------
 void GDCef::mouseWheel(const int wDelta)
 {
+    if (m_browser == nullptr)
+        return ;
+
     std::cout << "[GDCEF] [GDCef::mouseWheel] mouse wheel rolled" << std::endl;
     CefMouseEvent evt;
     std::cout << "[GDCEF] [GDCef::mouseWheel] x,y,wDelta : [" << m_mouse_x << ","
@@ -396,6 +412,9 @@ void GDCef::mouseWheel(const int wDelta)
 //------------------------------------------------------------------------------
 void GDCef::keyPress(int key, bool pressed, bool isup)
 {
+    if (m_browser == nullptr)
+        return ;
+
     // Not working yet, need some focus implementation
     CefKeyEvent evtdown;
     CefKeyEvent evtup;
@@ -410,21 +429,22 @@ void GDCef::keyPress(int key, bool pressed, bool isup)
     evtup.native_key_code = key;
     evtup.type = KEYEVENT_KEYUP;
 
-    //m_browser->GetHost()->SetFocus(true);
+    auto host = m_browser->GetHost();
+    // host->SetFocus(true);
     if (pressed)
     {
-        m_browser->GetHost()->SendKeyEvent(evtdown);
-        m_browser->GetHost()->SendKeyEvent(evtup);
+        host->SendKeyEvent(evtdown);
+        host->SendKeyEvent(evtup);
     }
     else
     {
         if (isup)
         {
-            m_browser->GetHost()->SendKeyEvent(evtup);
+            host->SendKeyEvent(evtup);
         }
         else
         {
-            m_browser->GetHost()->SendKeyEvent(evtdown);
+            host->SendKeyEvent(evtdown);
         }
     }
 }
