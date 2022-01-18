@@ -102,11 +102,11 @@ void GDCef::_register_methods()
 {
     std::cout << "[GDCEF] [GDCef::_register_methods]" << std::endl;
 
-    godot::register_method("load_url", &GDCef::load_url); // Compat with existing name
-    godot::register_method("navigate_back", &GDCef::navigate_back);
-    godot::register_method("navigate_forward", &GDCef::navigate_forward);
-    godot::register_method("do_message_loop_work", &GDCef::DoMessageLoopWork); // FIXME should be static, compat with existing name
-    godot::register_method("get_texture", &GDCef::get_texture);
+    godot::register_method("load_url", &GDCef::loadURL); // Compat with existing name
+    godot::register_method("navigate_back", &GDCef::navigateBack);
+    godot::register_method("navigate_forward", &GDCef::navigateForward);
+    godot::register_method("do_message_loop_work", &GDCef::doMessageLoopWork); // FIXME should be static, compat with existing name
+    godot::register_method("get_texture", &GDCef::texture);
     godot::register_method("reshape", &GDCef::reshape);
     godot::register_method("on_key_pressed", &GDCef::keyPress);
     godot::register_method("on_mouse_moved", &GDCef::mouseMove);
@@ -210,7 +210,7 @@ GDCef::GDCef()
 }
 
 //------------------------------------------------------------------------------
-void GDCef::DoMessageLoopWork()
+void GDCef::doMessageLoopWork()
 {
     CefDoMessageLoopWork();
 }
@@ -285,16 +285,16 @@ void GDCef::RenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementTy
 }
 
 //------------------------------------------------------------------------------
-void GDCef::load_url(godot::String url)
+void GDCef::loadURL(godot::String url)
 {
-    std::cout << "[GDCEF] [GDCef::load_url] " << url.utf8().get_data() << std::endl;
+    std::cout << "[GDCEF] [GDCef::loadURL] " << url.utf8().get_data() << std::endl;
     browser(url)->GetMainFrame()->LoadURL(url.utf8().get_data());
 }
 
 //------------------------------------------------------------------------------
-void GDCef::navigate_back()
+void GDCef::navigateBack()
 {
-    std::cout << "[GDCEF] [GDCef::navigate_back]" << std::endl;
+    std::cout << "[GDCEF] [GDCef::navigateBack]" << std::endl;
     if ((m_browser != nullptr) && (m_browser->CanGoBack()))
     {
         m_browser->GoBack();
@@ -302,9 +302,9 @@ void GDCef::navigate_back()
 }
 
 //------------------------------------------------------------------------------
-void GDCef::navigate_forward()
+void GDCef::navigateForward()
 {
-    std::cout << "[GDCEF] [GDCef::navigate_forward]" << std::endl;
+    std::cout << "[GDCEF] [GDCef::navigateForward]" << std::endl;
     if ((m_browser != nullptr) && (m_browser->CanGoForward()))
     {
         m_browser->GoForward();

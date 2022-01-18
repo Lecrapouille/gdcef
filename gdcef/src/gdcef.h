@@ -57,27 +57,35 @@ class GDCef : public godot::Node
 
 public:
 
-    //! \brief Default Constructor.
-    GDCef(/*const String &url*/);
+    //! \brief Default Constructor. Initialize internal states. Nothing else is
+    //! made because Godot engine will automatically call the _init() method.
+    GDCef();
 
-    //! \brief
+    //! \brief Destructor. Release CEF memory and sub CEF processes are notified
+    //! that the application is exiting.
     ~GDCef();
 
-    godot::Ref<godot::ImageTexture> get_texture()
+    //! \brief Return the Godot texture holding the page content to other Godot
+    //! element that needs it for the rendering.
+    //! \fixme FIXME Need mutex ?
+    godot::Ref<godot::ImageTexture> texture()
     {
         return m_texture;
     }
 
-    void DoMessageLoopWork();
+    //! \brief Pomp messages with other sub CEF processes.
+    //! \pre Shall be called periodically.
+    //! \fixme FIXME Need to be a static method ? Can we run it inside a thread ?
+    void doMessageLoopWork();
 
     //! \brief Load the given web page
-    void load_url(godot::String url); // FIXME mmmh by copy really ? Not godot::String const& url ?
+    void loadURL(godot::String url); // FIXME mmmh by copy really ? Not godot::String const& url ?
 
-    //! \brief Navigate back to the previous page if possible
-    void navigate_back();
+    //! \brief Navigate to the previous page if possible
+    void navigateBack();
 
-    //! \brief Navigate forward if possible
-    void navigate_forward();
+    //! \brief Navigate to the next page if possible
+    void navigateForward();
 
     //! \brief Set the windows size
     void reshape(int w, int h);
