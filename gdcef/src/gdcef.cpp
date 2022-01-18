@@ -20,6 +20,7 @@
 //*************************************************************************
 
 #include "gdcef.h"
+#include "helper.hpp"
 
 // Godot
 #include <GlobalConstants.hpp>
@@ -27,16 +28,19 @@
 // CEF
 #include <wrapper/cef_helpers.h>
 
-#include <iostream>
-#include <filesystem>
-
 //------------------------------------------------------------------------------
 #if defined(_WIN32)
 #  define SUBPROCESS_NAME "gdcefSubProcess.exe"
+#  define NEEDED_LIBRARIES "libcef.dll", "libgdcef.dll", "libvulkan.dll", \
+        "libvk_swiftshader.dll", "libGLESv2.dll", "libEGL.dll"
 #elif defined(__linux__)
 #  define SUBPROCESS_NAME "gdcefSubProcess"
+#  define NEEDED_LIBRARIES "libcef.so", "libgdcef.so", "libvulkan.so.1", \
+        "libvk_swiftshader.so", "libGLESv2.so", "libEGL.so"
 #elif defined(__APPLE__)
 #  define SUBPROCESS_NAME "gdcefSubProcess"
+#  define NEEDED_LIBRARIES "libcef.dylib", "libgdcef.dylib", "libvulkan.dylib", \
+        "libvk_swiftshader.dylib", "libGLESv2.dylib", "libEGL.dylib"
 #else
 #  error "Undefined path for the Godot's CEF sub process for this architecture"
 #endif
@@ -116,64 +120,44 @@ void GDCef::_register_methods()
 }
 
 //------------------------------------------------------------------------------
-static bool sanity_files(std::filesystem::path const& path)
-{
-    const std::vector<std::string> files = {
-        SUBPROCESS_NAME, "icudtl.dat",
-        "chrome_100_percent.pak", "chrome_200_percent.pak",
-    };
-
-    bool failure = false;
-    for (auto const& it: files)
-    {
-        std::filesystem::path f = { path / it };
-        if (!std::filesystem::exists(f))
-        {
-            std::cout << "[GDCEF] [sanity_files] File "
-                      << f << " does not exist"
-                      << std::endl;
-            failure = true;
-        }
-    }
-
-    return failure;
-}
-
-//------------------------------------------------------------------------------
 void GDCef::_init()
 {
     std::cout << "[GDCEF] [GDCef::_init] start" << std::endl;
 
-    // Create the path of the CEF sub process which shall be next to Stigmee
-    // binary.
-    // TODO Call std::filesystem::cannonical(argv[0]) to get the real path and
-    // remove symlinks.
-    std::filesystem::path sub_process_path = {
-        std::filesystem::current_path() / SUBPROCESS_NAME
+    const std::vector<std::string> files = {
+        SUBPROCESS_NAME, NEEDED_LIBRARIES,
+        "icudtl.dat", "chrome_100_percent.pak", "chrome_200_percent.pak",
+        "resources.pak", "v8_context_snapshot.bin"
     };
-    std::cout << "[GDCEF] [GDCef::_init] Looking for SubProcess at : "
-              << sub_process_path.string() << std::endl;
 
-    // Check if important CEF assets exist
-    if (sanity_files(std::filesystem::current_path()))
+    // Get the folder path in which Stigmee and CEF assets are present
+    fs::path folder = real_path();
+
+    // Check if important CEF assets exist and are valid.
+    if (!are_valid_files(folder, files))
     {
         std::cout << "Aborting because of missing necessary files"
                   << std::endl;
         exit(1);
     }
 
+    // Set the canonical path of sub CEF process. The path shall be
+    // canonical. For easier management it shall be in the same folder than
+    // Stigmee.
+    fs::path sub_process_path = { folder / SUBPROCESS_NAME };
+    CefString(&GDCef::Manager::Settings.browser_subprocess_path)
+            .FromString(sub_process_path.string());
+    std::cout << "[GDCEF] [GDCef::_init] Looking for SubProcess at : "
+              << sub_process_path.string() << std::endl;
+
+    // TODO Set the cache path
+    // CefString(&GDCef::Manager::Settings.cache_path).FromString(GameDirCef);
+
     // Setup the default settings for GDCef::Manager
     GDCef::Manager::Settings.windowless_rendering_enabled = true;
     GDCef::Manager::Settings.no_sandbox = true;
     GDCef::Manager::Settings.remote_debugging_port = 7777;
     GDCef::Manager::Settings.uncaught_exception_stack_size = 5;
-
-    // Set the sub-process path
-    CefString(&GDCef::Manager::Settings.browser_subprocess_path)
-            .FromString(sub_process_path.string());
-
-    // TODO : Set the cache path
-    //CefString(&GDCef::Manager::Settings.cache_path).FromString(GameDirCef);
 
     // Make a new GDCef::Manager instance
     std::cout << "[GDCEF] [GDCef::_init] Creating the CefApp (GDCef::Manager) instance"
