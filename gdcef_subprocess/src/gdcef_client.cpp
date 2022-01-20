@@ -40,6 +40,18 @@
 #include <iostream>
 #include <string>
 
+#ifdef _WIN32
+
+// No idea why but can't get ERR_ABORTED without this.
+// Namespace issue ?
+typedef enum {
+#define NET_ERROR(label, value) ERR_ ## label = value,
+#include <base/internal/cef_net_error_list.h>
+#undef NET_ERROR
+} cef_app_errorcode_t;
+
+#endif
+
 static GDCefClient* g_instance = nullptr;
 
 // Returns a data: URI with the specified contents.
