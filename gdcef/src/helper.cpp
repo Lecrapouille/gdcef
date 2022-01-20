@@ -23,6 +23,10 @@
 #include <iostream>
 #include <fstream>
 
+#if defined(_WIN32)
+#include <Windows.h>
+#endif
+
 //------------------------------------------------------------------------------
 bool are_valid_files(fs::path const& folder,
                      std::vector<std::string> const& files)
@@ -55,8 +59,9 @@ std::string executable_name()
     return sp;
 
 #elif defined(_WIN32)
-
-    const DWORD MAX_PATH = 64u;
+    // Pragma required for linking + windows.h
+    #pragma comment(lib, "kernel32.lib")
+    //const DWORD MAX_PATH = 64u; // KO - MAX_PATH already defined anyway 
     char buf[MAX_PATH];
     GetModuleFileNameA(nullptr, buf, MAX_PATH);
     return buf;
