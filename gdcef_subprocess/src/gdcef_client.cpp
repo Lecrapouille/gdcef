@@ -40,7 +40,8 @@
 #include <iostream>
 #include <string>
 
-#ifdef _WIN32
+
+#if 0
 
 // No idea why but can't get ERR_ABORTED without this.
 // Namespace issue ?
