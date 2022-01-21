@@ -26,8 +26,8 @@
 //------------------------------------------------------------------------------
 #if defined(_WIN32)
 #  define SUBPROCESS_NAME "gdcefSubProcess.exe"
-#  define NEEDED_LIBRARIES "libcef.dll", "libgdcef.dll", "libvulkan.dll", \
-        "libvk_swiftshader.dll", "libGLESv2.dll", "libEGL.dll"
+#  define NEEDED_LIBRARIES "libcef.dll", "libgdcef.dll", "vulkan-1.dll", \
+        "vk_swiftshader.dll", "libGLESv2.dll", "libEGL.dll"
 #elif defined(__linux__)
 #  define SUBPROCESS_NAME "gdcefSubProcess"
 #  define NEEDED_LIBRARIES "libcef.so", "libgdcef.so", "libvulkan.so.1", \
