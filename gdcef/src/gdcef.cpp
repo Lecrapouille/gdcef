@@ -134,20 +134,35 @@ void GDCef::_init()
     };
 
     // Get the folder path in which Stigmee and CEF assets are present
-    fs::path folder = real_path();
+    fs::path folder;
+    fs::path sub_process_path;
 
-    // Check if important CEF assets exist and are valid.
-    if (!are_valid_files(folder, files))
+    std::cout << "[GDCEF] [GDCef::_init] Executable name: " << executable_name()  << std::endl;
+    // Checking that we are not executing from the editor
+    if (executable_name().find("godot") != std::string::npos)
     {
-        std::cout << "Aborting because of missing necessary files"
-                  << std::endl;
-        exit(1);
+        std::cout << "[GDCEF] [GDCef::_init] launching from godot editor" << std::endl;
+        folder = std::filesystem::current_path();
+        std::cout << "[GDCEF] [GDCef::_init] <current_path> (where your project.godot file is located): " << folder << std::endl;
+        std::cout << "[GDCEF] [GDCef::_init] All CEF libs and sub-process executables should be located in : <current_path>/build" << std::endl;
+        sub_process_path = { folder / "build" / SUBPROCESS_NAME};
     }
-
-    // Set the canonical path of sub CEF process. The path shall be
-    // canonical. For easier management it shall be in the same folder than
-    // Stigmee.
-    fs::path sub_process_path = { folder / SUBPROCESS_NAME };
+    else
+    {
+        std::cout << "[GDCEF] [GDCef::_init] launching from Stigmee executable" << std::endl;
+        folder = real_path();
+        std::cout << "[GDCEF] [GDCef::_init] <current_path> (the Stigmee executable path): " << folder << std::endl;
+        std::cout << "[GDCEF] [GDCef::_init] All CEF libs and sub-process executables should be located here" << std::endl;
+        sub_process_path = { folder / SUBPROCESS_NAME };
+        // Check if important CEF assets exist and are valid.
+        if (!are_valid_files(folder, files))
+        {
+            std::cout << "Aborting because of missing necessary files"
+                << std::endl;
+            exit(1);
+        }
+    }
+    
     CefString(&GDCef::Manager::Settings.browser_subprocess_path)
             .FromString(sub_process_path.string());
     std::cout << "[GDCEF] [GDCef::_init] Looking for SubProcess at : "
