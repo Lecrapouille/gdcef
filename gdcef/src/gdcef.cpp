@@ -314,6 +314,9 @@ void GDCef::navigateForward()
 //------------------------------------------------------------------------------
 void GDCef::reshape(int w, int h)
 {
+    if (!m_browser)
+        return;
+
     std::cout << "[GDCEF] [GDCef::reshape]" << std::endl;
     std::cout << "[GDCEF] [GDCef::reshape] m_render_handler->reshape" << std::endl;
 
