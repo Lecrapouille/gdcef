@@ -81,6 +81,9 @@ public:
     //! \brief Load the given web page
     void loadURL(godot::String url); // FIXME mmmh by copy really ? Not godot::String const& url ?
 
+    //! \brief Get the current url of the browser
+    godot::String getUrl();
+
     //! \brief Navigate to the previous page if possible
     void navigateBack();
 

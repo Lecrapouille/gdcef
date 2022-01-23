@@ -107,6 +107,7 @@ void GDCef::_register_methods()
     godot::register_method("navigate_forward", &GDCef::navigateForward);
     godot::register_method("do_message_loop_work", &GDCef::doMessageLoopWork); // FIXME should be static, compat with existing name
     godot::register_method("get_texture", &GDCef::texture);
+    godot::register_method("get_url", &GDCef::getUrl);
     godot::register_method("reshape", &GDCef::reshape);
     godot::register_method("on_key_pressed", &GDCef::keyPress);
     godot::register_method("on_mouse_moved", &GDCef::mouseMove);
@@ -304,6 +305,12 @@ void GDCef::loadURL(godot::String url)
 {
     std::cout << "[GDCEF] [GDCef::loadURL] " << url.utf8().get_data() << std::endl;
     browser(url)->GetMainFrame()->LoadURL(url.utf8().get_data());
+}
+
+godot::String GDCef::getUrl()
+{
+    std::cout << "[GDCEF] [GDCef::getUrl] Retrieving url: " << m_browser->GetMainFrame()->GetURL().ToString().c_str() << std::endl;
+    return m_browser->GetMainFrame()->GetURL().ToString().c_str();
 }
 
 //------------------------------------------------------------------------------
