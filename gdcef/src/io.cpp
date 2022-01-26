@@ -214,6 +214,7 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
         }
         else if (key == 46) // PERIOD
         {
+            std::cout << "[GDCEF] [GDCef::keyPress] KEY_PERIOD" << std::endl;
             event.windows_key_code = 46;
             event.character = 46;
             event.unmodified_character = 46;
@@ -223,6 +224,7 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
         else if (key == godot::GlobalConstants::KEY_SPACE ||
                  key == godot::GlobalConstants::KEY_TAB)
         {
+            std::cout << "[GDCEF] [GDCef::keyPress] KEY_SPACE / KEY_TAB" << std::endl;
             event.windows_key_code = key;
             event.type = KEYEVENT_RAWKEYDOWN;
             m_browser->GetHost()->SendKeyEvent(event);
@@ -231,29 +233,26 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
         }
         else if (key == godot::GlobalConstants::KEY_BACKSPACE ||
                  key == godot::GlobalConstants::KEY_ENTER ||
-                 key == godot::GlobalConstants::KEY_KP_ENTER ||
-                 key == godot::GlobalConstants::KEY_DELETE)
+                 key == godot::GlobalConstants::KEY_KP_ENTER )
         {
             // TODO : FIXME, Not working yet, duno why
             if (key == godot::GlobalConstants::KEY_BACKSPACE) {
+                std::cout << "[GDCEF] [GDCef::keyPress] KEY_BACKSPACE" << std::endl;
                 event.windows_key_code = 8;
                 event.character = 8;
                 event.unmodified_character = 8;
             }
             else if (key == godot::GlobalConstants::KEY_ENTER) {
+                std::cout << "[GDCEF] [GDCef::keyPress] KEY_ENTER" << std::endl;
                 event.windows_key_code = 13;
                 event.character = 13;
                 event.unmodified_character = 13;
             }
             else if (key == godot::GlobalConstants::KEY_KP_ENTER) {
+                std::cout << "[GDCEF] [GDCef::keyPress] KEY_KP_ENTER" << std::endl;
                 event.windows_key_code = 13;
                 event.character = 13;
                 event.unmodified_character = 13;
-            }
-            else {
-                event.windows_key_code = 127;
-                event.character = 127;
-                event.unmodified_character = 127;
             }
 
             //event.native_key_code = key ;
@@ -265,6 +264,7 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
         else if ((key >= 48 && key <= 57) ||
                  (key <= 320 && key <= 329)) // NUMBERS & NUMPAD
         {
+            std::cout << "[GDCEF] [GDCef::keyPress] NUMBERS and NUMPAD" << std::endl;
             event.windows_key_code = key;
 
             event.type = KEYEVENT_KEYDOWN;
@@ -273,7 +273,69 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
             m_browser->GetHost()->SendKeyEvent(event);
 
         }
+        else if (key == godot::GlobalConstants::KEY_RIGHT ||
+                 key == godot::GlobalConstants::KEY_LEFT ||
+                 key == godot::GlobalConstants::KEY_UP ||
+                 key == godot::GlobalConstants::KEY_DOWN ||
+                 key == godot::GlobalConstants::KEY_PAGEUP ||
+                 key == godot::GlobalConstants::KEY_PAGEDOWN ||
+                 key == godot::GlobalConstants::KEY_HOME ||
+                 key == godot::GlobalConstants::KEY_END ||
+                 key == godot::GlobalConstants::KEY_INSERT ||
+                 key == godot::GlobalConstants::KEY_DELETE) // ARROWS
+        {
+            // https://keycode.info/
 
+            if (key == godot::GlobalConstants::KEY_RIGHT) {
+                std::cout << "[GDCEF] [GDCef::keyPress] KEY_RIGHT" << std::endl;
+                event.windows_key_code = 39;
+            }
+            else if (key == godot::GlobalConstants::KEY_LEFT) {
+                std::cout << "[GDCEF] [GDCef::keyPress] KEY_LEFT" << std::endl;
+                event.windows_key_code = 37;
+            }
+            else if (key == godot::GlobalConstants::KEY_UP) {
+                std::cout << "[GDCEF] [GDCef::keyPress] KEY_UP" << std::endl;
+                event.windows_key_code = 38;
+            }
+            else if (key == godot::GlobalConstants::KEY_DOWN) {
+                std::cout << "[GDCEF] [GDCef::keyPress] KEY_DOWN" << std::endl;
+                event.windows_key_code = 40;
+            }
+            else if (key == godot::GlobalConstants::KEY_PAGEUP) {
+                std::cout << "[GDCEF] [GDCef::keyPress] KEY_PAGEUP" << std::endl;
+                event.windows_key_code = 33;
+            }
+            else if (key == godot::GlobalConstants::KEY_PAGEDOWN) {
+                std::cout << "[GDCEF] [GDCef::keyPress] KEY_PAGEDOWN" << std::endl;
+                event.windows_key_code = 34;
+            }
+            else if (key == godot::GlobalConstants::KEY_HOME) {
+                std::cout << "[GDCEF] [GDCef::keyPress] KEY_HOME" << std::endl;
+                event.windows_key_code = 36; // Debut
+            }
+            else if (key == godot::GlobalConstants::KEY_END) {
+                std::cout << "[GDCEF] [GDCef::keyPress] KEY_END" << std::endl;
+                event.windows_key_code = 35; // Fin
+            }
+            else if (key == godot::GlobalConstants::KEY_INSERT) {
+                std::cout << "[GDCEF] [GDCef::keyPress] KEY_INSERT" << std::endl;
+                event.windows_key_code = 45; // Insert
+            }
+            else if (key == godot::GlobalConstants::KEY_DELETE) {
+                std::cout << "[GDCEF] [GDCef::keyPress] KEY_DELETE" << std::endl;
+                event.windows_key_code = 46; // Del (not dot when no char event)
+            }
+
+
+            //event.type = KEYEVENT_RAWKEYDOWN;
+            //m_browser->GetHost()->SendKeyEvent(event);
+            event.type = KEYEVENT_KEYDOWN;
+            m_browser->GetHost()->SendKeyEvent(event);
+            //event.type = KEYEVENT_CHAR;
+            //m_browser->GetHost()->SendKeyEvent(event);
+
+        }
     }
     else if (pressed == false)
     {
