@@ -1,45 +1,46 @@
 #!python
+###############################################################################
+## Stigmee: The art to sanctuarize knowledge exchanges.
+## Copyright 2021-2022 Quentin Quadrat <lecrapouille@gmail.com>
+## Copyright 2021-2022 Alain Duron <duron.alain@gmail.com>
+##
+## This file is part of Stigmee.
+##
+## Stigmee is free software: you can redistribute it and/or modify it
+## under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful, but
+## WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+## General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
+###############################################################################
+
 import os
 
 opts = Variables([], ARGUMENTS)
-
-# Gets the standard flags CC, CCX, etc.
 env = DefaultEnvironment()
 
 # Define our options
-opts.Add(EnumVariable('target', "Compilation target", 'debug', ['d', 'debug', 'r', 'release']))
-opts.Add(EnumVariable('platform', "Compilation platform", '', ['', 'windows', 'x11', 'linux', 'osx']))
-opts.Add(EnumVariable('p', "Compilation target, alias for 'platform'", '', ['', 'windows', 'x11', 'linux', 'osx']))
-opts.Add(BoolVariable('use_llvm', "Use the LLVM / Clang compiler", 'no'))
-opts.Add(PathVariable('target_path', 'The path where the lib is installed.', '../../../../stigmee/build'))
-opts.Add(PathVariable('target_name', 'The library name.', 'gdcefSubProcess', PathVariable.PathAccept))
+platforms = ['windows', 'x11', 'linux', 'linuxbsd', 'macos', 'osx']
+archis = ['x86_64', 'arm64']
 
-# Local dependency paths, adapt them to your setup
-godot_headers_path = "../../../3.4.2-stable/cpp/godot-headers/"
-cpp_bindings_path = "../../../3.4.2-stable/cpp/"
-cpp_library = "libgodot-cpp"
+# Define our options
+opts.Add(EnumVariable('target', 'Compilation target', '', ['d', 'debug', 'r', 'release']))
+opts.Add(EnumVariable('platform', 'Compilation platform', '', platforms + ['']))
+opts.Add(EnumVariable('arch', 'Platform architecture', 'x86_64', ['x86_64', 'arm64']))
+opts.Add(BoolVariable('use_llvm', 'Use the LLVM / Clang compiler', 'no'))
+opts.Add(PathVariable('workspace', 'The path of Stigmee workspace', '', PathVariable.PathAccept))
+opts.Add(PathVariable('godot_version', 'The Godot version installed in workspace', '3.4.2-stable', PathVariable.PathAccept))
 
 # Updates the environment with the option variables.
 opts.Update(env)
 
-# Process some arguments
-if env['use_llvm']:
-    env['CC'] = 'clang'
-    env['CXX'] = 'clang++'
-
-if env['p'] != '':
-    env['platform'] = env['p']
-
-if env['platform'] == '':
-    print("No valid target platform selected.")
-    quit();
-
-# only support 64 at this time..
-if env['platform'] == "osx":
-    archi = 'x86_64' # FIXME ARM
-else:
-    archi = '64'
-
+# Process some arguments.
 # For the reference:
 # - CCFLAGS are compilation flags shared between C and C++
 # - CFLAGS are for C-specific compilation flags
@@ -47,31 +48,86 @@ else:
 # - CPPFLAGS are for pre-processor flags
 # - CPPDEFINES are for pre-processor defines
 # - LINKFLAGS are for linking flags
+if env['use_llvm']:
+    env['CC'] = 'clang'
+    env['CXX'] = 'clang++'
 
-# Check our platform specifics
-if env['platform'] == "osx":
-    cpp_library += '.osx'
-    env.Append(CCFLAGS=['-arch', 'x86_64'])
+# Process platform arguments. Here we use the same names as GDNative.
+platform = env['platform']
+if platform == 'macos':
+    platform = 'osx'
+elif platform in ('x11', 'linuxbsd'):
+    platform = 'linux'
+elif platform == 'bsd':
+    platform = 'freebsd'
+if platform == '':
+    print('No valid target platform selected.')
+    quit()
+
+# Check if the Stigmee workspace is known
+workspace = env['workspace']
+if workspace == '':
+    print('You shall define the path of the Stigmee workspace.')
+    print('Please pass the content your environement variable WORKSPACE_STIGMEE')
+    quit();
+if not os.path.isdir(workspace):
+    print('The argument workspace ' + workspace + ' path is invalid')
+    print('Please pass the content your environement variable WORKSPACE_STIGMEE')
+    quit();
+
+# Check if Godot exists
+godot_api_path = workspace + '/godot/' + env['godot_version'] + '/cpp'
+if not os.path.isdir(godot_api_path):
+    print('The Godot path ' + godot_api_path + ' is invalid.')
+    print('Please pass the content your environement variable WORKSPACE_STIGMEE')
+    quit();
+
+# Compile either in release or debug mode
+compile_mode = env['target']
+if compile_mode == 'd':
+    compile_mode = 'debug'
+elif compile_mode == 'r':
+    compile_mode = 'release'
+
+# Compile CEF either in 'Release' or 'Debug' mode
+cef_compile_mode = compile_mode.capitalize()
+
+# Only support 64 at this time
+# FIXME manage ARM
+archi = '64'
+if platform == 'osx':
+    archi = 'x86_64'
+
+# The godot library we want to create
+target_path = workspace + '/stigmee/build'
+target_binary = 'gdcefSubProcess'
+
+# Platform specific compilation
+if platform == 'osx':
     env.Append(CXXFLAGS=['-std=c++17'])
-    env.Append(LINKFLAGS=['-arch', 'x86_64'])
-    if env['target'] in ('debug', 'd'):
-        env.Append(CCFLAGS=['-g', '-O0', '-fasynchronous-unwind-tables', '-UNDEBUG', '-D_GLIBCXX_ASSERTIONS'])
+    env.Append(CCFLAGS=['-arch', 'x86_64', '-arch', 'arm64'])
+    env.Append(LINKFLAGS=['-arch', 'x86_64', '-arch', 'arm64'])
+    if compile_mode == 'debug':
+        env.Append(CCFLAGS=['-g', '-O2'])
     else:
-        env.Append(CCFLAGS=['-g', '-O3', '-DNDEBUG'])
-    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DWRAPPING_CEF_SHARED', '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
-
-elif env['platform'] in ('x11', 'linux'):
-    cpp_library += '.linux'
+        env.Append(CCFLAGS=['-g', '-O3'])
     env.Append(CCFLAGS=['-fPIC'])
-    env.Append(CXXFLAGS=['-std=c++17'])
-    if env['target'] in ('debug', 'd'):
-        env.Append(CCFLAGS=['-g3', '-Og', '-fasynchronous-unwind-tables', '-UNDEBUG', '-D_GLIBCXX_ASSERTIONS'])
-    else:
-        env.Append(CCFLAGS=['-g', '-O3', '-DNDEBUG'])
-    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-D_FILE_OFFSET_BITS=64', '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
+    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DNDEBUG',
+                         '-DWRAPPING_CEF_SHARED', '-D__STDC_CONSTANT_MACROS',
+                         '-D__STDC_FORMAT_MACROS'])
 
-elif env['platform'] == "windows":
-    cpp_library += '.windows'
+elif platform == 'linux':
+    env.Append(CXXFLAGS=['-std=c++17'])
+    if compile_mode == 'debug':
+        env.Append(CCFLAGS=['-g3', '-Og'])
+    else:
+        env.Append(CCFLAGS=['-g', '-O3'])
+    env.Append(CCFLAGS=['-fPIC'])
+    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DNDEBUG', '-D_FILE_OFFSET_BITS=64',
+                         '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS',
+                         '-DBACKWARD_HAS_DW=1'])
+
+elif platform == 'windows':
     # This makes sure to keep the session environment variables on windows,
     # that way you can run scons in a vs 2017 prompt and it will find all the required tools
     env.Append(ENV=os.environ)
@@ -79,7 +135,7 @@ elif env['platform'] == "windows":
     env.Append(CPPDEFINES=['WIN32', '_WIN32', '_WINDOWS', '_CRT_SECURE_NO_WARNINGS'])
     env.Append(CCFLAGS=['-W3', '-GR'])
     env.Append(CXXFLAGS='/std:c++17')
-    if env['target'] in ('debug', 'd'):
+    if compile_mode == 'debug':
         env.Append(CPPDEFINES=['_DEBUG'])
         env.Append(CCFLAGS=['-EHsc', '-MDd', '-ZI'])
         env.Append(LINKFLAGS=['-DEBUG'])
@@ -87,63 +143,46 @@ elif env['platform'] == "windows":
         env.Append(CPPDEFINES=['NDEBUG'])
         env.Append(CCFLAGS=['-O2', '-EHsc', '-MD'])
 
-if env['target'] in ('debug', 'd'):
-    cpp_library += '.debug'
-    cef_target = 'Debug'
-else:
-    cpp_library += '.release'
-    cef_target = 'Release'
+# Pathes of Godot header files
+godot_api_path = workspace + '/godot/' + env['godot_version'] + '/cpp'
+env.Append(CPPPATH=['.',
+                    godot_api_path + '/godot-headers',
+                    godot_api_path + '/include',
+                    godot_api_path + '/include/core',
+                    godot_api_path + '/include/gen'])
 
-cpp_library += '.' + archi
+# Godot library that is linked against our library
+libgodot = 'libgodot-cpp.' + platform + '.' + compile_mode + '.' + archi
+env.Append(LIBS=[libgodot], LIBPATH=[godot_api_path + '/bin'])
 
-# NOTE : First of all download and extract the CEF distribution in thirdparty/cef_binary
-#    available at : https://cef-builds.spotifycdn.com/index.html#windows64 (care for your target OS)
-# Compile the CEF in RELEASE mode (use cmake to generate the solution and to compile the libs)
-# On windows compiling for RELEASE from VS might require to add the following preprocessor flags to compile libcef.dll / libcef_dll_wrapper.dll
-#    _ITERATOR_DEBUG_LEVEL = 0; dans le précompilateur de libwrapper
-#    _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH sous C/C++ >> Preprocessor >> PreprocessorDefinitions.
+# Pathes of CEF header files
+cef_folder = '../thirdparty/cef_binary'
+cef_include_folder = cef_folder + '/include'
+env.Append(CPPPATH = [cef_folder,
+                      cef_include_folder,
+                      cef_include_folder + '/base',
+                      cef_include_folder + '/base/internal',
+                      cef_include_folder + '/capi',
+                      cef_include_folder + '/capi/views',
+                      cef_include_folder + '/internal',
+                      cef_include_folder + '/views',
+                      cef_include_folder + '/wrapper'])
 
-# make sure our binding library is properly includes
-env.Append(CPPPATH=['.', godot_headers_path, cpp_bindings_path + 'include/', cpp_bindings_path + 'include/core/', cpp_bindings_path + 'include/gen/'])
-env.Append(CPPPATH=['.', godot_headers_path, '../' + cpp_bindings_path + 'include/', '../' + cpp_bindings_path + 'include/core/', '../' + cpp_bindings_path + 'include/gen/'])
+# CEF libraries that are linked against our application
+libcef = 'libcef' if platform != 'osx' else 'libcef_sandbox'
+env.Append(LIBS = [libcef, 'libcef_dll_wrapper'],
+           LIBPATH = [cef_folder + '/' + cef_compile_mode,
+                      cef_folder + '/build',
+                      cef_folder + '/build/libcef_dll_wrapper',
+                      cef_folder + '/build/libcef_dll_wrapper/' + cef_compile_mode])
 
-#env.Append(CPPPATH=['include/', 'include/base', 'include/base/internal', 'include/capi', 'include/capi/test', 'include/capi/views',
-#                    'include/internal', 'include/test', 'include/views', 'include/wrapper' ])
-
-env.Append(LIBPATH=[cpp_bindings_path + 'bin/'])
-env.Append(LIBS=[cpp_library])
-
-# CEF INCLUDES
-env.Append(CPPPATH = ['../thirdparty/cef_binary'])
-env.Append(CPPPATH = ['../thirdparty/cef_binary/include'])
-env.Append(CPPPATH = ['../thirdparty/cef_binary/include/base'])
-env.Append(CPPPATH = ['../thirdparty/cef_binary/include/base/internal'])
-env.Append(CPPPATH = ['../thirdparty/cef_binary/include/capi'])
-env.Append(CPPPATH = ['../thirdparty/cef_binary/include/capi/test'])
-env.Append(CPPPATH = ['../thirdparty/cef_binary/include/capi/views'])
-env.Append(CPPPATH = ['../thirdparty/cef_binary/include/internal'])
-env.Append(CPPPATH = ['../thirdparty/cef_binary/include/test'])
-env.Append(CPPPATH = ['../thirdparty/cef_binary/include/views'])
-env.Append(CPPPATH = ['../thirdparty/cef_binary/include/wrapper'])
-
-# CEF LIBS FOR LINKING
-if env['platform'] == "osx":
-    env.Append(LIBS = 'cef_sandbox.a', LIBPATH = ['../thirdparty/cef_binary/' + cef_target])
-else:
-    env.Append(LIBS = 'libcef', LIBPATH = ['../thirdparty/cef_binary/' + cef_target])
-env.Append(LIBS = 'libcef_dll_wrapper', LIBPATH = ['../thirdparty/cef_binary/build/libcef_dll_wrapper','../thirdparty/cef_binary/libcef_dll_wrapper/Release'])
-
-if env['platform'] in ('x11', 'linux'):
-    env.Append(LIBS = '-lpthread')
-
-# tweak this if you want to use different folders, or more folders, to store your source code in.
+# Pathes header files of our module
 env.Append(CPPPATH=['src/'])
+
+# Compile the application
 sources = Glob('src/*.cpp')
-
-# OUTPUT DLL / SO (see on top of this file for the target_name
-library = env.Program(target=env['target_path'] + '/' + env['target_name'], source=sources)
-
-Default(library)
+application = env.Program(target=target_path + '/' + target_binary, source=sources)
+Default(application)
 
 # Generates help for the -h scons option.
 Help(opts.GenerateHelpText(env))
