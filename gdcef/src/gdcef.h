@@ -78,6 +78,9 @@ public:
     //! \fixme FIXME Need to be a static method ? Can we run it inside a thread ?
     void doMessageLoopWork();
 
+    //! \brief Set the render zoom level
+    void setZoomLevel(double delta);
+
     //! \brief Load the given web page
     void loadURL(godot::String url); // FIXME mmmh by copy really ? Not godot::String const& url ?
 
