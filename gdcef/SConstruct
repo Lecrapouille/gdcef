@@ -142,7 +142,6 @@ elif platform == 'windows':
         env.Append(CCFLAGS=['-O2', '-EHsc', '-MD'])
 
 # Pathes of Godot header files
-godot_api_path = workspace + '/godot/' + env['godot_version'] + '/cpp'
 env.Append(CPPPATH=['.',
                     godot_api_path + '/godot-headers',
                     godot_api_path + '/include',
