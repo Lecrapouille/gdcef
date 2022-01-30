@@ -172,7 +172,7 @@ env.Append(LIBS = [libcef, 'libcef_dll_wrapper'],
            LIBPATH = [cef_folder + '/' + cef_compile_mode,
                       cef_folder + '/build',
                       cef_folder + '/build/libcef_dll_wrapper',
-                      cef_folder + '/build/libcef_dll_wrapper/' + cef_compile_mode])
+                      cef_folder + '/libcef_dll_wrapper/' + cef_compile_mode])
 
 # Pathes header files of our module
 env.Append(CPPPATH=['src/'])
