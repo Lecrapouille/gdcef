@@ -24,7 +24,9 @@
 #include <fstream>
 
 #if defined(_WIN32)
-#include <Windows.h>
+#  include <Windows.h>
+#else
+#  include <unistd.h>
 #endif
 
 //------------------------------------------------------------------------------
@@ -39,7 +41,7 @@ bool are_valid_files(fs::path const& folder,
         // TODO Compute SHA1 on files to check if they are correct
         if (!fs::exists(f))
         {
-            std::cout << "[GDCEF] [" << __func__ << " File "
+            std::cout << "[GDCEF] [" << __func__ << "] File "
                       << f << " does not exist and is needed for CEF"
                       << std::endl;
             failure = true;
@@ -50,18 +52,23 @@ bool are_valid_files(fs::path const& folder,
 }
 
 //------------------------------------------------------------------------------
+// Posible alternative (but /proc/self/exe will return the canoncial path even
+// from an alias.
+// extern char *__progname;
+// return __progname;
 std::string executable_name()
 {
 #if defined(PLATFORM_POSIX) || defined(__linux__)
 
-    std::string sp;
-    std::ifstream("/proc/self/comm") >> sp;
-    return sp;
+    char path[1024];
+    if (readlink("/proc/self/exe", path, 1024) == -1)
+        return {};
+    return path;
 
 #elif defined(_WIN32)
     // Pragma required for linking + windows.h
     #pragma comment(lib, "kernel32.lib")
-    //const DWORD MAX_PATH = 64u; // KO - MAX_PATH already defined anyway 
+    //const DWORD MAX_PATH = 64u; // KO - MAX_PATH already defined anyway
     char buf[MAX_PATH];
     GetModuleFileNameA(nullptr, buf, MAX_PATH);
     return buf;
@@ -76,11 +83,21 @@ std::string executable_name()
 //------------------------------------------------------------------------------
 fs::path real_path()
 {
+#if defined(PLATFORM_POSIX) || defined(__linux__)
+
+    // Since /proc/self/exe return the canoncial we can return it directly
+    fs::path p(executable_name());
+    return p.parent_path();
+
+#elif defined(_WIN32)
+
     // Step 1: Get the current path and concat the Stigmee executable name.
     //
     // Step 2: Get the canonical path of Stigmee (ie the real path). This allows
     // to remove possible symlink.
     //
     // Step 3: Return the path without the Stigmee name
-    return fs::canonical({ fs::current_path() / executable_name() }).parent_path();;
+    return fs::canonical({ fs::current_path() / executable_name() }).parent_path();
+
+#endif
 }
