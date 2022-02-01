@@ -123,8 +123,7 @@ elif platform == 'linux':
         env.Append(CCFLAGS=['-g', '-O3'])
     env.Append(CCFLAGS=['-fPIC'])
     env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DNDEBUG', '-D_FILE_OFFSET_BITS=64',
-                         '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS',
-                         '-DBACKWARD_HAS_DW=1'])
+                         '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
 
 elif platform == 'windows':
     # This makes sure to keep the session environment variables on windows,
