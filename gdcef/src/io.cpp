@@ -336,6 +336,16 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
             //m_browser->GetHost()->SendKeyEvent(event);
 
         }
+        else 
+        {
+            std::cout << "[GDCEF] [GDCef::keyPress] Any Char" << std::endl;
+            event.windows_key_code = key;
+
+            event.type = KEYEVENT_KEYDOWN;
+            m_browser->GetHost()->SendKeyEvent(event);
+            event.type = KEYEVENT_CHAR;
+            m_browser->GetHost()->SendKeyEvent(event);
+        }
     }
     else if (pressed == false)
     {
