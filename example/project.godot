@@ -20,7 +20,7 @@ _global_script_class_icons={
 
 [application]
 
-config/name="stigmee"
+config/name="helloCEF"
 run/main_scene="res://Control.tscn"
 config/icon="res://icon.png"
 
