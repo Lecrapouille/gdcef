@@ -140,7 +140,7 @@ void GDCef::_init()
     // Get the folder path in which Stigmee and CEF assets are present
     fs::path folder;
     fs::path sub_process_path;
-    fs::path sub_process_folder;
+    fs::path sub_process_cache;
 
     std::cout << "[GDCEF] [GDCef::_init] Executable name: " << executable_name()  << std::endl;
     // Checking that we are not executing from the editor
@@ -151,7 +151,7 @@ void GDCef::_init()
         std::cout << "[GDCEF] [GDCef::_init] <current_path> (where your project.godot file is located): " << folder << std::endl;
         std::cout << "[GDCEF] [GDCef::_init] All CEF libs and sub-process executables should be located in : <current_path>/build" << std::endl;
         sub_process_path = { folder / "build" / SUBPROCESS_NAME};
-        sub_process_folder = { folder / "build" };
+        sub_process_cache = { folder / "build" / "cache" };
     }
     else
     {
@@ -160,7 +160,7 @@ void GDCef::_init()
         std::cout << "[GDCEF] [GDCef::_init] <current_path> (the Stigmee executable path): " << folder << std::endl;
         std::cout << "[GDCEF] [GDCef::_init] All CEF libs and sub-process executables should be located here" << std::endl;
         sub_process_path = { folder / SUBPROCESS_NAME };
-        sub_process_folder = folder;
+        sub_process_cache = { folder / "cache" };
         // Check if important CEF assets exist and are valid.
         if (!are_valid_files(folder, files))
         {
@@ -176,9 +176,9 @@ void GDCef::_init()
               << sub_process_path.string() << std::endl;
 
     // Set the cache path
-    CefString(&GDCef::Manager::Settings.cache_path).FromString(sub_process_folder.string());
+    CefString(&GDCef::Manager::Settings.cache_path).FromString(sub_process_cache.string());
     std::cout << "[GDCEF] [GDCef::_init] Setting cache path to : "
-        << sub_process_folder.string() << std::endl;
+        << sub_process_cache.string() << std::endl;
 
     // Setup the default settings for GDCef::Manager
     GDCef::Manager::Settings.windowless_rendering_enabled = true;
