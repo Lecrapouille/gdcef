@@ -262,7 +262,7 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
             m_browser->GetHost()->SendKeyEvent(event);
         }
         else if ((key >= 48 && key <= 57) ||
-                 (key <= 320 && key <= 329)) // NUMBERS & NUMPAD
+                 (key >= 320 && key <= 329)) // NUMBERS & NUMPAD
         {
             std::cout << "[GDCEF] [GDCef::keyPress] NUMBERS and NUMPAD" << std::endl;
             event.windows_key_code = key;
