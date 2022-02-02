@@ -132,6 +132,9 @@ public:
     //! \brief run Mouse Wheel
     void mouseWheel(const int wDelta);
 
+    //! \brief Stopping CEF
+    void cefStop();
+
     //! \brief Set the new keyboard state (char typed ...)
     void keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl);
 

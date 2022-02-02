@@ -123,6 +123,7 @@ void GDCef::_register_methods()
     godot::register_method("on_mouse_middle_down", &GDCef::middleMouseDown);
     godot::register_method("on_mouse_middle_up", &GDCef::middleMouseUp);
     godot::register_method("on_mouse_wheel", &GDCef::mouseWheel);
+    godot::register_method("cef_stop", &GDCef::cefStop);
 }
 
 //------------------------------------------------------------------------------
@@ -254,7 +255,8 @@ GDCef::~GDCef()
     m_client = nullptr;
 
     // Clean Shutdown of CEF
-    CefShutdown();
+    cefStop();
+    m_render_handler = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -360,4 +362,11 @@ void GDCef::reshape(int w, int h)
     m_render_handler->reshape(w, h);
     std::cout << "[GDCEF] [GDCef::reshape] m_browser->GetHost()->WasResized" << std::endl;
     m_browser->GetHost()->WasResized();
+}
+
+//------------------------------------------------------------------------------
+void GDCef::cefStop() 
+{
+    std::cerr << "[GDCEF][GDCef::cefStop]" << std::endl;
+    CefShutdown();
 }
