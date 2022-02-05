@@ -125,6 +125,12 @@ elif platform == 'linux':
     env.Append(CCFLAGS=['-fPIC'])
     env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DNDEBUG', '-D_FILE_OFFSET_BITS=64',
                          '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
+    # Add compilation flags
+    env.Append(CCFLAGS=['-Wall', '-Wextra'])
+
+    # Remove some important compilation flags because of external libs
+    # does not compile with correct flags
+    env.Append(CCFLAGS=['-Wno-unused-parameter', '-Wno-parentheses'])
 
 elif platform == 'windows':
     # This makes sure to keep the session environment variables on windows,
