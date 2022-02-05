@@ -187,21 +187,12 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
         // set the event modifier if they are activated
         event.modifiers = getKeyboardModifiers(shift, alt, ctrl);
 
-        if ((key >= 65 && key <= 90)) // CHAR SMALL
+        if ((key >= 32) && (key <= 126)) // ASCII
         {
+            std::cout << "[GDCEF] [GDCef::keyPress] ASCII CODE" << std::endl;
             event.windows_key_code = key;
-            event.type = KEYEVENT_RAWKEYDOWN;
-            m_browser->GetHost()->SendKeyEvent(event);
-            event.type = KEYEVENT_CHAR;
-            m_browser->GetHost()->SendKeyEvent(event);
-
-        }
-        else if (key == 46) // PERIOD
-        {
-            std::cout << "[GDCEF] [GDCef::keyPress] KEY_PERIOD" << std::endl;
-            event.windows_key_code = 46;
-            event.character = 46;
-            event.unmodified_character = 46;
+            event.character = key;
+            event.unmodified_character = key;
             event.type = KEYEVENT_CHAR;
             m_browser->GetHost()->SendKeyEvent(event);
         }
@@ -210,6 +201,8 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
         {
             std::cout << "[GDCEF] [GDCef::keyPress] KEY_SPACE / KEY_TAB" << std::endl;
             event.windows_key_code = key;
+            event.character = key;
+            event.native_key_code = key;
             event.type = KEYEVENT_RAWKEYDOWN;
             m_browser->GetHost()->SendKeyEvent(event);
             event.type = KEYEVENT_CHAR;
@@ -219,7 +212,6 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
                  key == godot::GlobalConstants::KEY_ENTER ||
                  key == godot::GlobalConstants::KEY_KP_ENTER )
         {
-            // TODO : FIXME, Not working yet, duno why
             if (key == godot::GlobalConstants::KEY_BACKSPACE) {
                 std::cout << "[GDCEF] [GDCef::keyPress] KEY_BACKSPACE" << std::endl;
                 event.windows_key_code = 8;
@@ -239,23 +231,24 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
                 event.unmodified_character = 13;
             }
 
-            //event.native_key_code = key ;
+            event.character = event.windows_key_code;
+            event.native_key_code = event.windows_key_code;
             event.type = KEYEVENT_KEYDOWN;
             m_browser->GetHost()->SendKeyEvent(event);
             event.type = KEYEVENT_CHAR;
             m_browser->GetHost()->SendKeyEvent(event);
         }
-        else if ((key >= 48 && key <= 57) ||
-                 (key >= 320 && key <= 329)) // NUMBERS & NUMPAD
+        else if (key >= 320 && key <= 329) // NUMBERS & NUMPAD
         {
             std::cout << "[GDCEF] [GDCef::keyPress] NUMBERS and NUMPAD" << std::endl;
             event.windows_key_code = key;
+            event.character = key;
+            event.native_key_code = key;
 
             event.type = KEYEVENT_KEYDOWN;
             m_browser->GetHost()->SendKeyEvent(event);
             event.type = KEYEVENT_CHAR;
             m_browser->GetHost()->SendKeyEvent(event);
-
         }
         else if (key == godot::GlobalConstants::KEY_RIGHT ||
                  key == godot::GlobalConstants::KEY_LEFT ||
@@ -311,23 +304,22 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
                 event.windows_key_code = 46; // Del (not dot when no char event)
             }
 
-
-            //event.type = KEYEVENT_RAWKEYDOWN;
-            //m_browser->GetHost()->SendKeyEvent(event);
             event.type = KEYEVENT_KEYDOWN;
+            event.character = event.windows_key_code;
+            event.native_key_code = event.windows_key_code;
             m_browser->GetHost()->SendKeyEvent(event);
-            //event.type = KEYEVENT_CHAR;
-            //m_browser->GetHost()->SendKeyEvent(event);
-
         }
         else
         {
             std::cout << "[GDCEF] [GDCef::keyPress] Any Char" << std::endl;
             event.windows_key_code = key;
+            event.character = key;
+            event.native_key_code = key;
+            event.unmodified_character = key;
 
             event.type = KEYEVENT_KEYDOWN;
             m_browser->GetHost()->SendKeyEvent(event);
-            event.type = KEYEVENT_CHAR;
+            event.type = pressed ? KEYEVENT_CHAR : KEYEVENT_KEYUP;
             m_browser->GetHost()->SendKeyEvent(event);
         }
     }
