@@ -165,11 +165,11 @@ void GDCef::_init()
         if (!are_valid_files(folder, files))
         {
             std::cout << "Aborting because of missing necessary files"
-                << std::endl;
+                      << std::endl;
             exit(1);
         }
     }
-    
+
     CefString(&GDCef::Manager::Settings.browser_subprocess_path)
             .FromString(sub_process_path.string());
     std::cout << "[GDCEF] [GDCef::_init] Looking for SubProcess at : "
@@ -178,7 +178,7 @@ void GDCef::_init()
     // Set the cache path
     CefString(&GDCef::Manager::Settings.cache_path).FromString(sub_process_cache.string());
     std::cout << "[GDCEF] [GDCef::_init] Setting cache path to : "
-        << sub_process_cache.string() << std::endl;
+              << sub_process_cache.string() << std::endl;
 
     // Setup the default settings for GDCef::Manager
     GDCef::Manager::Settings.windowless_rendering_enabled = true;
@@ -365,7 +365,7 @@ void GDCef::reshape(int w, int h)
 }
 
 //------------------------------------------------------------------------------
-void GDCef::cefStop() 
+void GDCef::cefStop()
 {
     std::cerr << "[GDCEF][GDCef::cefStop]" << std::endl;
     CefShutdown();

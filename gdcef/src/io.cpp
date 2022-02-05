@@ -336,7 +336,7 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
             //m_browser->GetHost()->SendKeyEvent(event);
 
         }
-        else 
+        else
         {
             std::cout << "[GDCEF] [GDCef::keyPress] Any Char" << std::endl;
             event.windows_key_code = key;
