@@ -50,9 +50,7 @@ void GDCef::leftMouseDown()
         return;
 
     CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_LEFT;
-    std::cout << "[GDCEF] [GDCef::leftMouseDown] mouse event occured" << std::endl;
     CefMouseEvent evt;
-    std::cout << "[GDCEF] [GDCef::leftMouseDown] x,y" << m_mouse_x << "," << m_mouse_y << std::endl;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
 
@@ -66,9 +64,7 @@ void GDCef::rightMouseDown()
         return;
 
     CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_RIGHT;
-    std::cout << "[GDCEF] [GDCef::rightMouseDown] mouse event occured" << std::endl;
     CefMouseEvent evt;
-    std::cout << "[GDCEF] [GDCef::rightMouseDown] x,y" << m_mouse_x << "," << m_mouse_y << std::endl;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
 
@@ -82,9 +78,7 @@ void GDCef::leftMouseUp()
         return;
 
     CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_LEFT;
-    std::cout << "[GDCEF] [GDCef::leftMouseUp] mouse event occured" << std::endl;
     CefMouseEvent evt;
-    std::cout << "[GDCEF] [GDCef::leftMouseUp] x,y" << m_mouse_x << "," << m_mouse_y << std::endl;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
 
@@ -98,9 +92,7 @@ void GDCef::rightMouseUp()
         return;
 
     CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_RIGHT;
-    std::cout << "[GDCEF] [GDCef::rightMouseUp] mouse event occured" << std::endl;
     CefMouseEvent evt;
-    std::cout << "[GDCEF] [GDCef::rightMouseUp] x,y" << m_mouse_x << "," << m_mouse_y << std::endl;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
 
@@ -114,9 +106,7 @@ void GDCef::middleMouseDown()
         return;
 
     CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_MIDDLE;
-    std::cout << "[GDCEF] [GDCef::middleMouseDown] mouse event occured" << std::endl;
     CefMouseEvent evt;
-    std::cout << "[GDCEF] [GDCef::middleMouseDown] x,y" << m_mouse_x << "," << m_mouse_y << std::endl;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
 
@@ -130,9 +120,7 @@ void GDCef::middleMouseUp()
         return;
 
     CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_MIDDLE;
-    std::cout << "[GDCEF] [GDCef::middleMouseUp] mouse event occured" << std::endl;
     CefMouseEvent evt;
-    std::cout << "[GDCEF] [GDCef::middleMouseUp] x,y" << m_mouse_x << "," << m_mouse_y << std::endl;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
 
@@ -165,11 +153,7 @@ void GDCef::mouseWheel(const int wDelta)
     if (m_browser == nullptr)
         return ;
 
-    std::cout << "[GDCEF] [GDCef::mouseWheel] mouse wheel rolled" << std::endl;
     CefMouseEvent evt;
-    std::cout << "[GDCEF] [GDCef::mouseWheel] x,y,wDelta : [" << m_mouse_x << ","
-              << m_mouse_y << "," << wDelta << "]" << std::endl;
-
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
 
