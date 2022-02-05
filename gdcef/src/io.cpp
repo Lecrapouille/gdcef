@@ -347,7 +347,7 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
             m_browser->GetHost()->SendKeyEvent(event);
         }
     }
-    else if (pressed == false)
+    else
     {
         std::cout << "[GDCEF] [GDCef::KeyPressed] PRESSED FALSE" << std::endl;
         event.native_key_code |= 0xC0000000;
