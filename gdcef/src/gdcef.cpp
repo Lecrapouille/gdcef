@@ -103,13 +103,20 @@ void GDCef::_register_methods()
 {
     std::cout << "[GDCEF] [GDCef::_register_methods]" << std::endl;
 
-    godot::register_method("set_zoom_level", &GDCef::setZoomLevel); // Compat with existing name
-    godot::register_method("load_url", &GDCef::loadURL); // Compat with existing name
-    godot::register_method("navigate_back", &GDCef::navigateBack);
-    godot::register_method("navigate_forward", &GDCef::navigateForward);
-    godot::register_method("do_message_loop_work", &GDCef::doMessageLoopWork); // FIXME should be static, compat with existing name
+    godot::register_method("id", &GDCef::id);
+    godot::register_method("is_valid", &GDCef::valid);
+    godot::register_method("cef_stop", &GDCef::shutdown);
+    godot::register_method("do_message_loop_work", &GDCef::doMessageLoopWork);
     godot::register_method("get_texture", &GDCef::texture);
-    godot::register_method("get_url", &GDCef::getUrl);
+    godot::register_method("set_zoom_level", &GDCef::setZoomLevel);
+    godot::register_method("load_url", &GDCef::loadURL);
+    godot::register_method("page_loaded", &GDCef::loaded);
+    godot::register_method("get_url", &GDCef::getURL);
+    godot::register_method("stop_loading", &GDCef::stopLoading);
+    godot::register_method("can_navigate_backward", &GDCef::canNavigateBackward);
+    godot::register_method("can_navigate_forward", &GDCef::canNavigateForward);
+    godot::register_method("navigate_back", &GDCef::navigateBackward);
+    godot::register_method("navigate_forward", &GDCef::navigateForward);
     godot::register_method("reshape", &GDCef::reshape);
     godot::register_method("on_key_pressed", &GDCef::keyPress);
     godot::register_method("on_mouse_moved", &GDCef::mouseMove);
@@ -123,7 +130,6 @@ void GDCef::_register_methods()
     godot::register_method("on_mouse_middle_down", &GDCef::middleMouseDown);
     godot::register_method("on_mouse_middle_up", &GDCef::middleMouseUp);
     godot::register_method("on_mouse_wheel", &GDCef::mouseWheel);
-    godot::register_method("cef_stop", &GDCef::cefStop);
 }
 
 //------------------------------------------------------------------------------
@@ -255,7 +261,7 @@ GDCef::~GDCef()
     m_client = nullptr;
 
     // Clean Shutdown of CEF
-    cefStop();
+    shutdown();
     m_render_handler = nullptr;
 }
 
@@ -313,31 +319,81 @@ void GDCef::RenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementTy
 void GDCef::setZoomLevel(double delta)
 {
     std::cout << "[GDCEF] [GDCef::setZoomLevel] delta:" << delta << std::endl;
+    if (!m_browser)
+        return;
+
     m_browser->GetHost()->SetZoomLevel(delta);
 }
 
 //------------------------------------------------------------------------------
 void GDCef::loadURL(godot::String url)
 {
-    std::cout << "[GDCEF] [GDCef::loadURL] " << url.utf8().get_data() << std::endl;
+    std::cout << "[GDCEF] [GDCef::loadURL]" << url.utf8().get_data() << std::endl;
     browser(url)->GetMainFrame()->LoadURL(url.utf8().get_data());
 }
 
 //------------------------------------------------------------------------------
-godot::String GDCef::getUrl()
+bool GDCef::loaded()
 {
-    std::cout << "[GDCEF] [GDCef::getUrl] Retrieving url: " << m_browser->GetMainFrame()->GetURL().ToString().c_str() << std::endl;
-    return m_browser->GetMainFrame()->GetURL().ToString().c_str();
+    std::cout << "[GDCEF] [GDCef::loaded]" << std::endl;
+    if (!m_browser)
+        return false;
+
+    return m_browser->HasDocument();
 }
 
 //------------------------------------------------------------------------------
-void GDCef::navigateBack()
+godot::String GDCef::getURL()
+{
+    std::cout << "[GDCEF] [GDCef::getURL] Retrieving URL: ";
+    if (m_browser && m_browser->GetMainFrame())
+    {
+        const char* str = m_browser->GetMainFrame()->GetURL().ToString().c_str();
+        std::cout << str << std::endl;
+        return str;
+    }
+
+    return {};
+}
+
+//------------------------------------------------------------------------------
+void GDCef::stopLoading()
+{
+    std::cout << "[GDCEF] [GDCef::stopLoading]" << std::endl;
+    if (!m_browser)
+        return;
+
+    m_browser->StopLoad();
+}
+
+//------------------------------------------------------------------------------
+bool GDCef::canNavigateBackward()
+{
+    std::cerr << "[GDCEF] [GDCef::canNavigateBack]" << std::endl;
+    if (!m_browser)
+        return false;
+
+    return m_browser->CanGoBack();
+}
+
+//------------------------------------------------------------------------------
+void GDCef::navigateBackward()
 {
     std::cout << "[GDCEF] [GDCef::navigateBack]" << std::endl;
     if ((m_browser != nullptr) && (m_browser->CanGoBack()))
     {
         m_browser->GoBack();
     }
+}
+
+//------------------------------------------------------------------------------
+bool GDCef::canNavigateForward()
+{
+    std::cerr << "[GDCEF] [GDCef::canNavigateForward]" << std::endl;
+    if (!m_browser)
+        return false;
+
+    return m_browser->CanGoForward();
 }
 
 //------------------------------------------------------------------------------
@@ -353,10 +409,10 @@ void GDCef::navigateForward()
 //------------------------------------------------------------------------------
 void GDCef::reshape(int w, int h)
 {
-    if (!m_browser)
+    std::cout << "[GDCEF] [GDCef::reshape]" << std::endl;
+    if (!m_browser || !m_browser->GetHost())
         return;
 
-    std::cout << "[GDCEF] [GDCef::reshape]" << std::endl;
     std::cout << "[GDCEF] [GDCef::reshape] m_render_handler->reshape" << std::endl;
 
     m_render_handler->reshape(w, h);
@@ -365,7 +421,27 @@ void GDCef::reshape(int w, int h)
 }
 
 //------------------------------------------------------------------------------
-void GDCef::cefStop()
+int GDCef::id()
+{
+    std::cerr << "[GDCEF][GDCef::id]" << std::endl;
+    if (!m_browser)
+        return -1;
+
+    return m_browser->GetIdentifier();
+}
+
+//------------------------------------------------------------------------------
+bool GDCef::valid()
+{
+    std::cerr << "[GDCEF][GDCef::valid]" << std::endl;
+    if (!m_browser)
+        return false;
+
+    return m_browser->IsValid();
+}
+
+//------------------------------------------------------------------------------
+void GDCef::shutdown()
 {
     std::cerr << "[GDCEF][GDCef::cefStop]" << std::endl;
     CefShutdown();

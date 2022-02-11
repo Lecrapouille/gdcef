@@ -78,17 +78,39 @@ public:
     //! \fixme FIXME Need to be a static method ? Can we run it inside a thread ?
     void doMessageLoopWork();
 
+    //! \brief Return the globally unique identifier for this browser.
+    //! This value is also used as the tabId for extension APIs.
+    //! \note Return -1 when the browser is not valid.
+    int id();
+
+    //! \brief Return True if this object is currently valid.
+    //! This will return false after CefLifeSpanHandler::OnBeforeClose is called.
+    bool valid();
+
     //! \brief Set the render zoom level
     void setZoomLevel(double delta);
 
     //! \brief Load the given web page
-    void loadURL(godot::String url); // FIXME mmmh by copy really ? Not godot::String const& url ?
+    //! \fixme Godot does not like String const& url why ?
+    void loadURL(godot::String url);
+
+    //! \brief Return true if a document has been loaded in the browser.
+    bool loaded();
+
+    //! \brief Stop loading the page.
+    void stopLoading();
 
     //! \brief Get the current url of the browser
-    godot::String getUrl();
+    godot::String getURL();
+
+    //! \brief Return true if the browser can navigate to the previous page.
+    bool canNavigateBackward();
 
     //! \brief Navigate to the previous page if possible
-    void navigateBack();
+    void navigateBackward();
+
+    //! \brief Return true if the browser can navigate to the next page.
+    bool canNavigateForward();
 
     //! \brief Navigate to the next page if possible
     void navigateForward();
@@ -132,8 +154,8 @@ public:
     //! \brief run Mouse Wheel
     void mouseWheel(const int wDelta);
 
-    //! \brief Stopping CEF
-    void cefStop();
+    //! \brief Shutdown CEF
+    void shutdown();
 
     //! \brief Set the new keyboard state (char typed ...)
     void keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl);
