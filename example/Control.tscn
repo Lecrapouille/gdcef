@@ -1,26 +1,47 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=4 format=2]
 
-[ext_resource path="res://gdcef.gdns" type="Script" id=1]
+[ext_resource path="res://gdbrowser.gdns" type="Script" id=1]
 [ext_resource path="res://Control.gd" type="Script" id=2]
+[ext_resource path="res://gdcef.gdns" type="Script" id=3]
 
 [node name="Control" type="Control"]
-margin_left = -55.0
-margin_top = -46.0
-margin_right = 705.0
-margin_bottom = 525.0
+margin_left = -32.0
+margin_top = -35.0
+margin_right = 728.0
+margin_bottom = 536.0
 script = ExtResource( 2 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="texture1" type="TextureRect" parent="."]
-margin_left = 60.0
-margin_top = 50.0
-margin_right = 460.0
-margin_bottom = 450.0
+[node name="Texture1" type="TextureRect" parent="."]
+anchor_right = 0.149
+anchor_bottom = 0.179
+margin_left = 34.0
+margin_top = 47.0
+margin_right = 143.76
+margin_bottom = 179.791
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="cef1" type="Node" parent="."]
+[node name="Texture2" type="TextureRect" parent="."]
+anchor_right = 0.113
+anchor_bottom = 0.151
+margin_left = 322.0
+margin_top = 167.0
+margin_right = 377.12
+margin_bottom = 212.779
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CEF" type="Node" parent="."]
+script = ExtResource( 3 )
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 2.0
+autostart = true
+
+[node name="Node" type="Node" parent="."]
 script = ExtResource( 1 )

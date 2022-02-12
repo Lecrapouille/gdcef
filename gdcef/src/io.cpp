@@ -20,30 +20,31 @@
 //*************************************************************************
 
 #include "gdcef.hpp"
+#include <iostream>
 
 //------------------------------------------------------------------------------
-void GDCef::leftClick()
+void BrowserView::leftClick()
 {
     leftMouseDown();
     leftMouseUp();
 }
 
 //------------------------------------------------------------------------------
-void GDCef::rightClick()
+void BrowserView::rightClick()
 {
     rightMouseDown();
     rightMouseUp();
 }
 
 //------------------------------------------------------------------------------
-void GDCef::middleClick()
+void BrowserView::middleClick()
 {
     middleMouseDown();
     middleMouseUp();
 }
 
 //------------------------------------------------------------------------------
-void GDCef::leftMouseDown()
+void BrowserView::leftMouseDown()
 {
     if (!m_browser)
         return;
@@ -57,7 +58,7 @@ void GDCef::leftMouseDown()
 }
 
 //------------------------------------------------------------------------------
-void GDCef::rightMouseDown()
+void BrowserView::rightMouseDown()
 {
     if (!m_browser)
         return;
@@ -71,7 +72,7 @@ void GDCef::rightMouseDown()
 }
 
 //------------------------------------------------------------------------------
-void GDCef::leftMouseUp()
+void BrowserView::leftMouseUp()
 {
     if (!m_browser)
         return;
@@ -85,7 +86,7 @@ void GDCef::leftMouseUp()
 }
 
 //------------------------------------------------------------------------------
-void GDCef::rightMouseUp()
+void BrowserView::rightMouseUp()
 {
     if (!m_browser)
         return;
@@ -99,7 +100,7 @@ void GDCef::rightMouseUp()
 }
 
 //------------------------------------------------------------------------------
-void GDCef::middleMouseDown()
+void BrowserView::middleMouseDown()
 {
     if (!m_browser)
         return;
@@ -113,7 +114,7 @@ void GDCef::middleMouseDown()
 }
 
 //------------------------------------------------------------------------------
-void GDCef::middleMouseUp()
+void BrowserView::middleMouseUp()
 {
     if (!m_browser)
         return;
@@ -127,7 +128,7 @@ void GDCef::middleMouseUp()
 }
 
 //------------------------------------------------------------------------------
-void GDCef::mouseMove(int x, int y)
+void BrowserView::mouseMove(int x, int y)
 {
     if (!m_browser)
         return ;
@@ -147,7 +148,7 @@ void GDCef::mouseMove(int x, int y)
 }
 
 //------------------------------------------------------------------------------
-void GDCef::mouseWheel(const int wDelta)
+void BrowserView::mouseWheel(const int wDelta)
 {
     if (m_browser == nullptr)
         return ;
@@ -175,7 +176,7 @@ static uint32_t getKeyboardModifiers(bool shift, bool alt, bool ctrl)
 }
 
 //------------------------------------------------------------------------------
-void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
+void BrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
 {
     if (!m_browser)
         return;
@@ -189,7 +190,7 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
 
         if ((key >= 32) && (key <= 126)) // ASCII
         {
-            std::cout << "[GDCEF] [GDCef::keyPress] ASCII CODE" << std::endl;
+            std::cout << "[GDCEF] [BrowserView::keyPress] ASCII CODE" << std::endl;
             event.windows_key_code = key;
             event.character = key16b;
             event.unmodified_character = key16b;
@@ -199,7 +200,7 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
         else if (key == godot::GlobalConstants::KEY_SPACE ||
                  key == godot::GlobalConstants::KEY_TAB)
         {
-            std::cout << "[GDCEF] [GDCef::keyPress] KEY_SPACE / KEY_TAB" << std::endl;
+            std::cout << "[GDCEF] [BrowserView::keyPress] KEY_SPACE / KEY_TAB" << std::endl;
             event.windows_key_code = key;
             event.character = key16b;
             event.native_key_code = key;
@@ -213,19 +214,19 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
                  key == godot::GlobalConstants::KEY_KP_ENTER )
         {
             if (key == godot::GlobalConstants::KEY_BACKSPACE) {
-                std::cout << "[GDCEF] [GDCef::keyPress] KEY_BACKSPACE" << std::endl;
+                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_BACKSPACE" << std::endl;
                 event.windows_key_code = 8;
                 event.character = 8;
                 event.unmodified_character = 8;
             }
             else if (key == godot::GlobalConstants::KEY_ENTER) {
-                std::cout << "[GDCEF] [GDCef::keyPress] KEY_ENTER" << std::endl;
+                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_ENTER" << std::endl;
                 event.windows_key_code = 13;
                 event.character = 13;
                 event.unmodified_character = 13;
             }
             else if (key == godot::GlobalConstants::KEY_KP_ENTER) {
-                std::cout << "[GDCEF] [GDCef::keyPress] KEY_KP_ENTER" << std::endl;
+                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_KP_ENTER" << std::endl;
                 event.windows_key_code = 13;
                 event.character = 13;
                 event.unmodified_character = 13;
@@ -240,7 +241,7 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
         }
         else if (key >= 320 && key <= 329) // NUMBERS & NUMPAD
         {
-            std::cout << "[GDCEF] [GDCef::keyPress] NUMBERS and NUMPAD" << std::endl;
+            std::cout << "[GDCEF] [BrowserView::keyPress] NUMBERS and NUMPAD" << std::endl;
             event.windows_key_code = key;
             event.character = key16b;
             event.native_key_code = key;
@@ -264,43 +265,43 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
             // https://keycode.info/
 
             if (key == godot::GlobalConstants::KEY_RIGHT) {
-                std::cout << "[GDCEF] [GDCef::keyPress] KEY_RIGHT" << std::endl;
+                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_RIGHT" << std::endl;
                 event.windows_key_code = 39;
             }
             else if (key == godot::GlobalConstants::KEY_LEFT) {
-                std::cout << "[GDCEF] [GDCef::keyPress] KEY_LEFT" << std::endl;
+                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_LEFT" << std::endl;
                 event.windows_key_code = 37;
             }
             else if (key == godot::GlobalConstants::KEY_UP) {
-                std::cout << "[GDCEF] [GDCef::keyPress] KEY_UP" << std::endl;
+                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_UP" << std::endl;
                 event.windows_key_code = 38;
             }
             else if (key == godot::GlobalConstants::KEY_DOWN) {
-                std::cout << "[GDCEF] [GDCef::keyPress] KEY_DOWN" << std::endl;
+                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_DOWN" << std::endl;
                 event.windows_key_code = 40;
             }
             else if (key == godot::GlobalConstants::KEY_PAGEUP) {
-                std::cout << "[GDCEF] [GDCef::keyPress] KEY_PAGEUP" << std::endl;
+                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_PAGEUP" << std::endl;
                 event.windows_key_code = 33;
             }
             else if (key == godot::GlobalConstants::KEY_PAGEDOWN) {
-                std::cout << "[GDCEF] [GDCef::keyPress] KEY_PAGEDOWN" << std::endl;
+                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_PAGEDOWN" << std::endl;
                 event.windows_key_code = 34;
             }
             else if (key == godot::GlobalConstants::KEY_HOME) {
-                std::cout << "[GDCEF] [GDCef::keyPress] KEY_HOME" << std::endl;
+                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_HOME" << std::endl;
                 event.windows_key_code = 36; // Debut
             }
             else if (key == godot::GlobalConstants::KEY_END) {
-                std::cout << "[GDCEF] [GDCef::keyPress] KEY_END" << std::endl;
+                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_END" << std::endl;
                 event.windows_key_code = 35; // Fin
             }
             else if (key == godot::GlobalConstants::KEY_INSERT) {
-                std::cout << "[GDCEF] [GDCef::keyPress] KEY_INSERT" << std::endl;
+                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_INSERT" << std::endl;
                 event.windows_key_code = 45; // Insert
             }
             else if (key == godot::GlobalConstants::KEY_DELETE) {
-                std::cout << "[GDCEF] [GDCef::keyPress] KEY_DELETE" << std::endl;
+                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_DELETE" << std::endl;
                 event.windows_key_code = 46; // Del (not dot when no char event)
             }
 
@@ -311,7 +312,7 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
         }
         else
         {
-            std::cout << "[GDCEF] [GDCef::keyPress] Any Char" << std::endl;
+            std::cout << "[GDCEF] [BrowserView::keyPress] Any Char" << std::endl;
             event.windows_key_code = key;
             event.character = key16b;
             event.native_key_code = key;
@@ -325,7 +326,7 @@ void GDCef::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
     }
     else
     {
-        std::cout << "[GDCEF] [GDCef::KeyPressed] PRESSED FALSE" << std::endl;
+        std::cout << "[GDCEF] [BrowserView::KeyPressed] PRESSED FALSE" << std::endl;
         event.native_key_code |= int(0xC0000000);
         event.type = KEYEVENT_KEYUP;
         m_browser->GetHost()->SendKeyEvent(event);

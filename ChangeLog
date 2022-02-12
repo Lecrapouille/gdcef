@@ -1,2 +1,5 @@
+Version 0.2.0:
+	* Split CEF class into two classes: the CEF holding several browsers.
+
 Version 0.1.0:
 	* Initial version single CEF class managing a single browser.

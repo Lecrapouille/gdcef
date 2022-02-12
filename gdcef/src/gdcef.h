@@ -35,267 +35,390 @@
 #  include "cef_app.h"
 #  include "wrapper/cef_helpers.h"
 
-#  include <string>
-#  include <vector>
-#  include <memory>
-#  include <iostream>
-#  include <algorithm>
+#  include <array>
+#  include <map>
 
-// ****************************************************************************
+class BrowserView;
+
+// *****************************************************************************
 //! \brief Class deriving from Godot's Node and interfacing Chromium Embedded
-//! Framework.
-// ****************************************************************************
-class GDCef : public godot::Node
+//! Framework. This class can create isntances of BrowserView and manage their
+//! lifetime.
+// *****************************************************************************
+class GDCef : public godot::Node,
+              public CefLifeSpanHandler,
+              public CefClient
 {
-    GODOT_CLASS(GDCef, godot::Node);
+    //! \brief Godot stuff
+    GODOT_CLASS(GDCef, godot::Node)
 
 public:
 
-    //! \brief Default Constructor. Initialize internal states. Nothing else is
-    //! made because Godot engine will automatically call the _init() method.
-    GDCef();
+    // -------------------------------------------------------------------------
+    //! \brief Our initializer called by Godot.
+    // -------------------------------------------------------------------------
+    void _init();
 
+    // -------------------------------------------------------------------------
+    //! \brief Call CEF pomp loop message
+    // -------------------------------------------------------------------------
+    void _process(float delta);
+
+    // -------------------------------------------------------------------------
+    //! \brief Static function that Godot will call to find out which methods
+    //! can be called on our NativeScript and which properties it exposes.
+    // -------------------------------------------------------------------------
+    static void _register_methods();
+
+    // -------------------------------------------------------------------------
     //! \brief Destructor. Release CEF memory and sub CEF processes are notified
-    //! that the application is exiting.
+    //! that the application is exiting. All browsers are destroyed.
+    // -------------------------------------------------------------------------
     ~GDCef();
 
-    //! \brief Return the Godot texture holding the page content to other Godot
-    //! element that needs it for the rendering.
+    // -------------------------------------------------------------------------
+    //! \brief Allow Godot script to release CEF.
+    //! \fixme FIXME shall be removed
+    // -------------------------------------------------------------------------
+    void shutdown();
+
+    // -------------------------------------------------------------------------
+    //! \brief Const getter CEF settings.
+    // -------------------------------------------------------------------------
+    inline CefSettings const& settingsCEF() const
+    {
+        return m_cef_settings;
+    }
+
+    // -------------------------------------------------------------------------
+    //! \brief Const getter browser settings.
+    // -------------------------------------------------------------------------
+    inline CefBrowserSettings const& settingsBrowser() const
+    {
+        return m_browser_settings;
+    }
+
+    // -------------------------------------------------------------------------
+    //! \brief Const getter browser window settings.
+    // -------------------------------------------------------------------------
+    inline CefWindowInfo const& windowInfo() const
+    {
+        return m_window_info;
+    }
+
+    // -------------------------------------------------------------------------
+    //! \brief Create a browser view and store its instance inside the internal
+    //! container. Return the browser identifier or return -1 in case of failure.
+    // -------------------------------------------------------------------------
+    BrowserView* createBrowser(godot::String const name, godot::String const url);
+
+    virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override
+    {
+        return this;
+    }
+
+private: // CefLifeSpanHandler interfaces
+
+    virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) override;
+    virtual bool DoClose(CefRefPtr<CefBrowser> browser) override;
+    virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) override;
+
+private:
+
+    IMPLEMENT_REFCOUNTING(GDCef);
+
+    CefWindowInfo m_window_info;
+    CefSettings m_cef_settings;
+    CefBrowserSettings m_browser_settings;
+
+    std::map<int, CefRefPtr<CefBrowser>> m_browsers;
+};
+
+// ****************************************************************************
+//! \brief Class wrapping the CefBrowser class and export methods for Godot
+//! script. This class is instanciate by GDCef.
+// ****************************************************************************
+class BrowserView : public godot::Node,
+                    public CefRenderHandler,
+                    public CefLoadHandler,
+                    public CefClient
+{
+    friend class GDCef;
+
+    //! \brief Godot stuff
+    GODOT_CLASS(BrowserView, godot::Node);
+
+public:
+
+    // -------------------------------------------------------------------------
+    //! \brief Our initializer called by Godot.
+    // -------------------------------------------------------------------------
+    void _init();
+
+    // -------------------------------------------------------------------------
+    //! \brief Static function that Godot will call to find out which methods
+    //! can be called on our NativeScript and which properties it exposes.
+    // -------------------------------------------------------------------------
+    static void _register_methods();
+
+    // -------------------------------------------------------------------------
+    //! \brief Default Constructor. Initialize internal states. Nothing else is
+    //! made because Godot engine will automatically call the _init() method.
+    //! You shall complete the constructor by calling init(godot::String const&,
+    //! CefBrowserSettings const&, CefWindowInfo const&) because Godot does not
+    //! manage non dummy constructors.
+    // -------------------------------------------------------------------------
+    BrowserView();
+
+    // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    virtual ~BrowserView();
+
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Return the globally unique
+    //! identifier for this browser.  This value is also used as the tabId for
+    //! extension APIs.
+    //!
+    //! \note Return -1 when the browser is not valid.
+    // -------------------------------------------------------------------------
+    inline int id() const { return m_id; }
+
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Return True if this object is
+    //! currently valid. This will return false after
+    //! CefLifeSpanHandler::OnBeforeClose is called.
+    // -------------------------------------------------------------------------
+    bool isValid() const;
+
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Set the render zoom level.
+    // -------------------------------------------------------------------------
+    void setZoomLevel(double delta);
+
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Load the given web page
+    //! \fixme Godot does not like String const& url why ?
+    // -------------------------------------------------------------------------
+    void loadURL(godot::String url = "https://labo.stigmee.fr");
+
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Return true if a document has
+    //! been loaded in the browser.
+    // -------------------------------------------------------------------------
+    bool loaded() const;
+
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Stop loading the page.
+    // -------------------------------------------------------------------------
+    void stopLoading();
+
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Get the current url of the
+    //! browser.
+    // -------------------------------------------------------------------------
+    godot::String getURL() const;
+
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Return the Godot texture holding
+    //! the page content to other Godot element that needs it for the rendering.
     //! \fixme FIXME Need mutex ?
-    godot::Ref<godot::ImageTexture> texture()
+    // -------------------------------------------------------------------------
+    inline godot::Ref<godot::ImageTexture> texture()
     {
         return m_texture;
     }
 
-    //! \brief Pomp messages with other sub CEF processes.
-    //! \pre Shall be called periodically.
-    //! \fixme FIXME Need to be a static method ? Can we run it inside a thread ?
-    void doMessageLoopWork();
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Return true if the browser can
+    //! navigate to the previous page.
+    // -------------------------------------------------------------------------
+    bool canNavigateBackward() const;
 
-    //! \brief Return the globally unique identifier for this browser.
-    //! This value is also used as the tabId for extension APIs.
-    //! \note Return -1 when the browser is not valid.
-    int id();
-
-    //! \brief Return True if this object is currently valid.
-    //! This will return false after CefLifeSpanHandler::OnBeforeClose is called.
-    bool valid();
-
-    //! \brief Set the render zoom level
-    void setZoomLevel(double delta);
-
-    //! \brief Load the given web page
-    //! \fixme Godot does not like String const& url why ?
-    void loadURL(godot::String url);
-
-    //! \brief Return true if a document has been loaded in the browser.
-    bool loaded();
-
-    //! \brief Stop loading the page.
-    void stopLoading();
-
-    //! \brief Get the current url of the browser
-    godot::String getURL();
-
-    //! \brief Return true if the browser can navigate to the previous page.
-    bool canNavigateBackward();
-
-    //! \brief Navigate to the previous page if possible
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Navigate to the previous page
+    //! if possible.
+    // -------------------------------------------------------------------------
     void navigateBackward();
 
-    //! \brief Return true if the browser can navigate to the next page.
-    bool canNavigateForward();
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Return true if the browser can
+    //! navigate to the next page.
+    // -------------------------------------------------------------------------
+    bool canNavigateForward() const;
 
-    //! \brief Navigate to the next page if possible
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Navigate to the next page if
+    //! possible.
+    // -------------------------------------------------------------------------
     void navigateForward();
 
-    //! \brief Set the windows size
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Set the windows size
+    // -------------------------------------------------------------------------
     void reshape(int w, int h);
 
+    // -------------------------------------------------------------------------
+    //! \brief Set the viewport: the rectangle on the surface where to display
+    //! the web document. Values are in percent of the dimension on the
+    //! surface. If this function is not called default values are: x = y = 0
+    //! and w = h = 1 meaning the whole surface will be mapped.
+    //!
+    //! \param[in] x, the ratio where the top left corner shall start [0 .. 1[.
+    //! \param[in] y, the ratio where the top left corner shall start [0 .. 1[.
+    //! \param[in] w, the ratio where the top left corner shall start ]0 .. 1].
+    //! \param[in] h, the ratio where the top left corner shall start ]0 .. 1].
+    //! \return false if arguments are incorrect.
+    //!
+    //! Example: viewport(0.0f, 0.0f, 1.0f, 1.0f) means the whole surface.
+    //! Example: viewport(0.0f, 0.0f, 0.5f, 1.0f) means the left side of the
+    //!   surface vertically split.
+    //! Example: viewport(0.5f, 0.0f, 1.0f, 1.0f) means the right side of the
+    //!   surface vertically split.
+    // -------------------------------------------------------------------------
+    bool viewport(float x, float y, float w, float h);
+
+    // -------------------------------------------------------------------------
     //! \brief TODO
     // void executeJS(const std::string &cmd);
+    // -------------------------------------------------------------------------
 
-    //! \brief Down then up on Left button
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Down then up on Left button
+    // -------------------------------------------------------------------------
     void leftClick();
 
-    //! \brief Down then up on Right button
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Down then up on Right button.
+    // -------------------------------------------------------------------------
     void rightClick();
 
-    //! \brief Down then up on middle button
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Down then up on middle button.
+    // -------------------------------------------------------------------------
     void middleClick();
 
-    //! \brief Left Mouse button up
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Left Mouse button up.
+    // -------------------------------------------------------------------------
     void leftMouseUp();
 
-    //! \brief Right Mouse button up
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Right Mouse button up.
+    // -------------------------------------------------------------------------
     void rightMouseUp();
 
-    //! \brief Middle Mouse button up
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Middle Mouse button up.
+    // -------------------------------------------------------------------------
     void middleMouseUp();
 
-    //! \brief Left Mouse button down
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Left Mouse button down.
+    // -------------------------------------------------------------------------
     void leftMouseDown();
 
-    //! \brief Right Mouse button down
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Right Mouse button down.
+    // -------------------------------------------------------------------------
     void rightMouseDown();
 
-    //! \brief Middle Mouse button down
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Middle Mouse button down.
+    // -------------------------------------------------------------------------
     void middleMouseDown();
 
-    //! \brief Set the new mouse position.
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Set the new mouse position.
+    // -------------------------------------------------------------------------
     void mouseMove(int x, int y);
 
-    //! \brief run Mouse Wheel
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Mouse Wheel.
+    // -------------------------------------------------------------------------
     void mouseWheel(const int wDelta);
 
-    //! \brief Shutdown CEF
-    void shutdown();
-
-    //! \brief Set the new keyboard state (char typed ...)
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Set the new keyboard state (char typed ...).
+    // -------------------------------------------------------------------------
     void keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl);
 
-    //! \brief Our initializer called by Godot
-    void _init();
+private:
 
-    //! \brief Static function that Godot will call to find out which methods
-    //! can be called on our NativeScript and which properties it exposes.
-    static void _register_methods();
+    // -------------------------------------------------------------------------
+    //! \brief hack: since Godot does not like Constructor with parameters we
+    //! have to finalize BrowserView::BrowserView().
+    //! \return the browser unique identifier or -1 in case of failure.
+    // -------------------------------------------------------------------------
+    int init(godot::String const& url, CefBrowserSettings const& cef_settings,
+             CefWindowInfo const& window_info);
+
+private: // CefRenderHandler interfaces.
+
+    virtual CefRefPtr<CefRenderHandler> GetRenderHandler() override
+    {
+        return this;
+    }
+
+    // -------------------------------------------------------------------------
+    //! \brief Get the view port.
+    // -------------------------------------------------------------------------
+    virtual void GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) override;
+
+    // -------------------------------------------------------------------------
+    //! \brief Called when an element should be painted. Pixel values passed to this
+    //! method are scaled relative to view coordinates based on the value of
+    //! CefScreenInfo.device_scale_factor returned from GetScreenInfo. |type|
+    //! indicates whether the element is the view or the popup widget. |buffer|
+    //! contains the pixel data for the whole image. |dirtyRects| contains the set
+    //! of rectangles in pixel coordinates that need to be repainted. |buffer| will
+    //! be |width|*|height|*4 bytes in size and represents a BGRA image with an
+    //! upper-left origin. This method is only called when
+    //! CefWindowInfo::shared_texture_enabled is set to false.
+    // -------------------------------------------------------------------------
+    virtual void OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type,
+                         const RectList& dirtyRects, const void* buffer,
+                         int width, int height) override;
+
+private: // CefLoadHandler interfaces.
+
+    virtual CefRefPtr<CefLoadHandler> GetLoadHandler()
+    {
+        return this;
+    }
+
+    virtual void OnLoadEnd(CefRefPtr<CefBrowser> browser,
+                           CefRefPtr<CefFrame> frame,
+                           int httpStatusCode) override;
 
 private:
 
-    //! \brief Return the browser or create one if needed. This allows to postponed
-    CefRefPtr<CefBrowser> browser(godot::String url = "https://labo.stigmee.fr");
+    //! \brief
+    IMPLEMENT_REFCOUNTING(BrowserView);
 
-    // *************************************************************************
-    //! \brief Manager.
-    // *************************************************************************
-    class Manager : public CefApp
-    {
-    public:
-
-        virtual void OnBeforeCommandLineProcessing(
-            const CefString& ProcessType, CefRefPtr<CefCommandLine> CommandLine) override;
-
-        static CefSettings Settings;
-        static CefMainArgs MainArgs;
-        static bool CPURenderSettings;
-        static bool AutoPlay;
-
-        IMPLEMENT_REFCOUNTING(GDCef::Manager);
-    };
-
-    // *************************************************************************
-    //! \brief Private implementation to handle CEF events to draw the web page.
-    // *************************************************************************
-    class RenderHandler : public CefRenderHandler
-    {
-    public:
-
-        RenderHandler(GDCef& owner);
-
-        //! \brief Resize the browser's view
-        void reshape(int w, int h);
-
-        //! \brief CefRenderHandler interface. Get the view port.
-        virtual void GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) override;
-
-        //! \brief CefRenderHandler interface. Update the Godot's texture.
-        virtual void OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type,
-                             const RectList& dirtyRects, const void* buffer,
-                             int width, int height) override;
-
-        //! \brief CefBase interface
-        IMPLEMENT_REFCOUNTING(RenderHandler);
-
-    private:
-
-        //! \brief Browser's view dimension.
-        //! Initial browser's view size. We expose it to Godot which can set the
-        //! desired size depending on its viewport size.
-        int m_width = 128;
-        int m_height = 128;
-
-        //! \brief Access to GDCef::m_image
-        GDCef& m_owner;
-
-        //! \brief
-        godot::PoolByteArray m_data;
-    };
-
-    // *************************************************************************
-    //! \brief Provide access to browser-instance-specific callbacks. A single
-    //! CefClient instance can be shared among any number of browsers.
-    // *************************************************************************
-    class BrowserClient : public CefClient, public CefLifeSpanHandler
-    {
-    public:
-
-        BrowserClient(CefRefPtr<CefRenderHandler> ptr)
-            : m_renderHandler(ptr)
-        {}
-
-        // CefClient
-        virtual CefRefPtr<CefRenderHandler> GetRenderHandler() override
-        {
-            return m_renderHandler;
-        }
-
-        // CefLifeSpanHandler
-        virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) override
-        {
-            // CEF_REQUIRE_UI_THREAD();
-
-            if (!m_browser.get())
-            {
-                // Keep a reference to the main browser.
-                m_browser = browser;
-                m_browser_id = browser->GetIdentifier();
-            }
-        }
-
-        // CefLifeSpanHandler
-        virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) override
-        {
-            // CEF_REQUIRE_UI_THREAD();
-
-            if (m_browser_id == browser->GetIdentifier())
-            {
-                m_browser = nullptr;
-            }
-        }
-
-        CefRefPtr<CefBrowser> GetCEFBrowser()
-        {
-            return m_browser;
-        }
-
-        IMPLEMENT_REFCOUNTING(BrowserClient);
-
-    private:
-
-        CefRefPtr<CefRenderHandler> m_renderHandler;
-        CefRefPtr<CefBrowser> m_browser;
-        int m_browser_id;
-    };
-
-private:
-
-    //! \brief Chromium Embedded Framework elements
+    //! \brief
     CefRefPtr<CefBrowser> m_browser;
-    CefRefPtr<BrowserClient> m_client;
-    RenderHandler* m_render_handler = nullptr;
-
-    //! \brief Mouse cursor position on the main window
-    int m_mouse_x;
-    int m_mouse_y;
 
     //! \brief Godot's temporary image (CEF => Godot)
     godot::Ref<godot::ImageTexture> m_texture;
     godot::Ref<godot::Image> m_image;
+    godot::PoolByteArray m_data;
 
-    //! \brief Various browser settings.
-    CefBrowserSettings m_settings;
-    CefWindowInfo m_window_info;
+    //! \brief Mouse cursor position on the main window
+    int m_mouse_x = 0;
+    int m_mouse_y = 0;
+
+    //! \brief Browser's view dimension.
+    //! Initial browser's view size. We expose it to Godot which can set the
+    //! desired size depending on its viewport size.
+    float m_width = 128.0f;
+    float m_height = 128.0f;
+
+    //! \brief The reagion in where to paint the CEF texture on the Godot
+    //! surface.
+    std::array<float, 4> m_viewport;
+
+    //! \brief Cache unique indentifier
+    int m_id = -1;
 };
 
 #endif

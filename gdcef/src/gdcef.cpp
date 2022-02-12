@@ -22,8 +22,10 @@
 //------------------------------------------------------------------------------
 #include "gdcef.hpp"
 #include "helper.hpp"
+#include <iostream>
 
 //------------------------------------------------------------------------------
+// List of file names
 #if defined(_WIN32)
 #  define SUBPROCESS_NAME "gdcefSubProcess.exe"
 #  define NEEDED_LIBRARIES "libcef.dll", "libgdcef.dll", "vulkan-1.dll", \
@@ -41,254 +43,486 @@
 #endif
 
 //------------------------------------------------------------------------------
-// Init Manager static members
-CefSettings GDCef::Manager::Settings;
-CefMainArgs GDCef::Manager::MainArgs;
-bool GDCef::Manager::CPURenderSettings;
-bool GDCef::Manager::AutoPlay;
+// Logs
+#define GDCEF_DEBUG()                                                      \
+  std::cout << "[GDCEF][GDCEF::" << __func__ << "]" << std::endl
+#define GDCEF_DEBUG_VAL(x)                                                 \
+  std::cout << "[GDCEF][GDCEF::" << __func__ << "] " << x << std::endl
+#define GDCEF_ERROR(x)                                                     \
+  std::cerr << "[GDCEF][GDCEF::" << __func__ << "] " << x << std::endl
+#define BROWSER_DEBUG()                                                    \
+  std::cout << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "]"  \
+            << std::endl
+#define BROWSER_DEBUG_VAL(x)                                               \
+  std::cout << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "] " \
+            << x << std::endl
+#define BROWSER_ERROR(x)                                                   \
+  std::cerr << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "] " \
+            << x << std::endl
 
 //------------------------------------------------------------------------------
-void GDCef::Manager::OnBeforeCommandLineProcessing(
-    const CefString& /*ProcessType*/, CefRefPtr<CefCommandLine> CommandLine)
-{
-    std::cout << "[GDCEF] [GDCef::Manager::OnBeforeCommandLineProcessing]" << std::endl;
-
-    /**
-     * Used to pick command line switches:
-     * - If set to "true": CEF will use less CPU, but rendering performance will
-     *   be lower. CSS3 and WebGL will not be usable.
-     * - If set to "false": CEF will use more CPU, but rendering will be better,
-     *   CSS3 and WebGL will also be usable.
-     */
-    GDCef::Manager::CPURenderSettings = false;
-    GDCef::Manager::AutoPlay = false;
-
-    CommandLine->AppendSwitch("off-screen-rendering-enabled");
-    CommandLine->AppendSwitchWithValue("off-screen-frame-rate", "60");
-    //CommandLine->AppendSwitchWithValue("force-device-scale-factor", "1");
-    CommandLine->AppendSwitch("enable-font-antialiasing");
-    CommandLine->AppendSwitch("enable-media-stream");
-
-    // Should we use the render settings that use less CPU?
-    if (CPURenderSettings)
-    {
-        CommandLine->AppendSwitch("disable-gpu");
-        CommandLine->AppendSwitch("disable-gpu-compositing");
-        CommandLine->AppendSwitch("enable-begin-frame-scheduling");
-    }
-    else
-    {
-        // Enables things like CSS3 and WebGL
-        CommandLine->AppendSwitch("enable-gpu-rasterization");
-        CommandLine->AppendSwitch("enable-webgl");
-        CommandLine->AppendSwitch("disable-web-security");
-    }
-
-    CommandLine->AppendSwitchWithValue("enable-blink-features", "HTMLImports");
-
-    if (AutoPlay)
-    {
-        CommandLine->AppendSwitchWithValue("autoplay-policy", "no-user-gesture-required");
-    }
-
-    // Append more command line options here if you want Visit Peter Beverloo's
-    // site: http://peter.sh/experiments/chromium-command-line-switches/ for
-    // more info on the switches
-}
+static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
+                         CefWindowInfo& window_info);
+static void configureBrowser(CefBrowserSettings& browser_settings);
 
 //------------------------------------------------------------------------------
-// in a GDNative module, "_bind_methods" is replaced by the "_register_methods"
-// method this is used to expose various methods of this class to Godot
-void GDCef::_register_methods()
+static bool sanity_checks(fs::path const& folder)
 {
-    std::cout << "[GDCEF] [GDCef::_register_methods]" << std::endl;
-
-    godot::register_method("id", &GDCef::id);
-    godot::register_method("is_valid", &GDCef::valid);
-    godot::register_method("cef_stop", &GDCef::shutdown);
-    godot::register_method("do_message_loop_work", &GDCef::doMessageLoopWork);
-    godot::register_method("get_texture", &GDCef::texture);
-    godot::register_method("set_zoom_level", &GDCef::setZoomLevel);
-    godot::register_method("load_url", &GDCef::loadURL);
-    godot::register_method("page_loaded", &GDCef::loaded);
-    godot::register_method("get_url", &GDCef::getURL);
-    godot::register_method("stop_loading", &GDCef::stopLoading);
-    godot::register_method("can_navigate_backward", &GDCef::canNavigateBackward);
-    godot::register_method("can_navigate_forward", &GDCef::canNavigateForward);
-    godot::register_method("navigate_back", &GDCef::navigateBackward);
-    godot::register_method("navigate_forward", &GDCef::navigateForward);
-    godot::register_method("reshape", &GDCef::reshape);
-    godot::register_method("on_key_pressed", &GDCef::keyPress);
-    godot::register_method("on_mouse_moved", &GDCef::mouseMove);
-    godot::register_method("on_mouse_left_click", &GDCef::leftClick);
-    godot::register_method("on_mouse_right_click", &GDCef::rightClick);
-    godot::register_method("on_mouse_middle_click", &GDCef::middleClick);
-    godot::register_method("on_mouse_left_down", &GDCef::leftMouseDown);
-    godot::register_method("on_mouse_left_up", &GDCef::leftMouseUp);
-    godot::register_method("on_mouse_right_down", &GDCef::rightMouseDown);
-    godot::register_method("on_mouse_right_up", &GDCef::rightMouseUp);
-    godot::register_method("on_mouse_middle_down", &GDCef::middleMouseDown);
-    godot::register_method("on_mouse_middle_up", &GDCef::middleMouseUp);
-    godot::register_method("on_mouse_wheel", &GDCef::mouseWheel);
-}
-
-//------------------------------------------------------------------------------
-void GDCef::_init()
-{
-    std::cout << "[GDCEF] [GDCef::_init] start" << std::endl;
-
-    const std::vector<std::string> files = {
+    // List of needed files to make CEF working. We have to check their presence
+    // and integrity (even if race condition may theim be modified or removed).
+    const std::vector<std::string> files =
+    {
         SUBPROCESS_NAME, NEEDED_LIBRARIES,
         "icudtl.dat", "chrome_100_percent.pak", "chrome_200_percent.pak",
         "resources.pak", "v8_context_snapshot.bin"
     };
 
+    // Check if important CEF assets exist and are valid.
+    // FIXME: perform some SHA1
+    return are_valid_files(folder, files);
+}
+
+//------------------------------------------------------------------------------
+static bool isPlayInEditor()
+{
+    return executable_name().find("godot") != std::string::npos;
+}
+
+//------------------------------------------------------------------------------
+// in a GDNative module, "_bind_methods" is replaced by the "_register_methods"
+// method CefRefPtr<CefBrowser> m_browser;this is used to expose various methods
+// of this class to Godot
+void GDCef::_register_methods()
+{
+    std::cout << "[GDCEF][GDCef::_register_methods]" << std::endl;
+
+    godot::register_method("_process", &GDCef::_process);
+    godot::register_method("create_browser", &GDCef::createBrowser);
+}
+
+//------------------------------------------------------------------------------
+void GDCef::_init()
+{
+    GDCEF_DEBUG_VAL("Executable name: " << executable_name());
+
     // Get the folder path in which Stigmee and CEF assets are present
     fs::path folder;
-    fs::path sub_process_path;
-    fs::path sub_process_cache;
 
-    std::cout << "[GDCEF] [GDCef::_init] Executable name: " << executable_name()  << std::endl;
-    // Checking that we are not executing from the editor
-    if (executable_name().find("godot") != std::string::npos)
+    // Check if this process is executing from the Godot editor or from the
+    // Stigmee standalone application.
+    if (isPlayInEditor())
     {
-        std::cout << "[GDCEF] [GDCef::_init] launching from godot editor" << std::endl;
-        folder = std::filesystem::current_path();
-        std::cout << "[GDCEF] [GDCef::_init] <current_path> (where your project.godot file is located): " << folder << std::endl;
-        std::cout << "[GDCEF] [GDCef::_init] All CEF libs and sub-process executables should be located in : <current_path>/build" << std::endl;
-        sub_process_path = { folder / "build" / SUBPROCESS_NAME};
-        sub_process_cache = { folder / "build" / "cache" };
+        folder = std::filesystem::current_path() / "build";
+        GDCEF_DEBUG_VAL("Launching CEF from Godot editor");
+        GDCEF_DEBUG_VAL("Path where your project Godot files shall be located:"
+                        << folder);
     }
     else
     {
-        std::cout << "[GDCEF] [GDCef::_init] launching from Stigmee executable" << std::endl;
         folder = real_path();
-        std::cout << "[GDCEF] [GDCef::_init] <current_path> (the Stigmee executable path): " << folder << std::endl;
-        std::cout << "[GDCEF] [GDCef::_init] All CEF libs and sub-process executables should be located here" << std::endl;
-        sub_process_path = { folder / SUBPROCESS_NAME };
-        sub_process_cache = { folder / "cache" };
-        // Check if important CEF assets exist and are valid.
-        if (!are_valid_files(folder, files))
-        {
-            std::cout << "Aborting because of missing necessary files"
-                      << std::endl;
-            exit(1);
-        }
+        GDCEF_DEBUG_VAL("Launching CEF from Stigmee executable");
+        GDCEF_DEBUG_VAL("Path where your Stigmee files shall be located:"
+                        << folder);
     }
 
-    CefString(&GDCef::Manager::Settings.browser_subprocess_path)
-            .FromString(sub_process_path.string());
-    std::cout << "[GDCEF] [GDCef::_init] Looking for SubProcess at : "
-              << sub_process_path.string() << std::endl;
-
-    // Set the cache path
-    CefString(&GDCef::Manager::Settings.cache_path).FromString(sub_process_cache.string());
-    std::cout << "[GDCEF] [GDCef::_init] Setting cache path to : "
-              << sub_process_cache.string() << std::endl;
-
-    // Setup the default settings for GDCef::Manager
-    GDCef::Manager::Settings.windowless_rendering_enabled = true;
-    GDCef::Manager::Settings.no_sandbox = true;
-    GDCef::Manager::Settings.remote_debugging_port = 7777;
-    GDCef::Manager::Settings.uncaught_exception_stack_size = 5;
-
-    // Make a new GDCef::Manager instance
-    std::cout << "[GDCEF] [GDCef::_init] Creating the CefApp (GDCef::Manager) instance"
-              << std::endl;
-    CefRefPtr<GDCef::Manager> GDCefApp = new GDCef::Manager();
-    CefInitialize(GDCef::Manager::MainArgs, GDCef::Manager::Settings, GDCefApp, nullptr);
-    std::cout << "[GDCEF] [GDCef::_init] CefInitialize done" << std::endl;
-
-    // Various cef settings.
-    // TODO : test DPI settings
-    m_window_info.SetAsWindowless(0);
-    m_settings.windowless_frame_rate = 60; // 30 is default
-    if (!GDCef::Manager::CPURenderSettings)
+    // Check if needed files to make CEF working are present.
+    if (!sanity_checks(folder))
     {
-        m_settings.webgl = STATE_ENABLED;
+        GDCEF_ERROR("Aborting because of missing necessary files");
+        exit(1);
     }
 
-    std::cout << "[GDCEF] [GDCef::_init] Creating render handler" << std::endl;
-    m_render_handler = new RenderHandler(*this);
-    m_client = new BrowserClient(m_render_handler);
-    std::cout << "[GDCEF] [GDCef::_init] done" << std::endl;
-}
+    // Since we cannot configure CEF from the command line main(argc, argv)
+    // because we cannot access it we configure directly.
+    configureCEF(folder, m_cef_settings, m_window_info);
+    configureBrowser(m_browser_settings);
 
-//------------------------------------------------------------------------------
-CefRefPtr<CefBrowser> GDCef::browser(godot::String url)
-{
-    if (m_browser == nullptr)
+    // This function should be called on the main application thread to
+    // initialize the CEF browser process. The |application| parameter may be
+    // empty. A return value of true indicates that it succeeded and false
+    // indicates that it failed.  The |windows_sandbox_info| parameter is only
+    // used on Windows and may be NULL (see cef_sandbox_win.h for details).
+    CefMainArgs args;
+    GDCEF_DEBUG_VAL("[GDCEF][GDCef::_init] CefInitialize");
+    if (!CefInitialize(args, m_cef_settings, nullptr, nullptr))
     {
-        std::cout << "[GDCEF] [GDCef::browser] CreateBrowserSync" << std::endl;
-        m_browser = CefBrowserHost::CreateBrowserSync(
-            m_window_info, m_client.get(), url.utf8().get_data(),
-            m_settings, nullptr, nullptr);
-        std::cout << "[GDCEF] [GDCef::browser] CreateBrowserSync has been called !"
-                  << std::endl;
-        m_browser->GetHost()->WasResized();
+        GDCEF_ERROR("CefInitialize failed");
+        exit(1);
     }
-    return m_browser;
+    GDCEF_DEBUG_VAL("CefInitialize done with success");
 }
 
 //------------------------------------------------------------------------------
-GDCef::GDCef()
-    : m_mouse_x(0), m_mouse_y(0)
-{
-    std::cout << "[GDCEF] [GDCef::GDCef] begin" << std::endl;
-    m_image.instance();
-    m_texture.instance();
-}
-
-//------------------------------------------------------------------------------
-void GDCef::doMessageLoopWork()
+void GDCef::_process(float /*delta*/)
 {
     CefDoMessageLoopWork();
+}
+
+//------------------------------------------------------------------------------
+// See workspace_stigmee/godot/gdnative/browser/thirdparty/cef_binary/include/
+// internal/cef_types.h for more settings.
+static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
+                         CefWindowInfo& window_info)
+{
+    // The path to a separate executable that will be launched for
+    // sub-processes.  If this value is empty on Windows or Linux then the main
+    // process executable will be used. If this value is empty on macOS then a
+    // helper executable must exist at "Contents/Frameworks/<app>
+    // Helper.app/Contents/MacOS/<app> Helper" in the top-level app bundle. See
+    // the comments on CefExecuteProcess() for details. If this value is
+    // non-empty then it must be an absolute path. Also configurable using the
+    // "browser-subprocess-path" command-line switch.
+    fs::path sub_process_path = { folder / SUBPROCESS_NAME };
+    std::cout << "[GDCEF][GDCef::configureCEF] Setting SubProcess path: "
+              << sub_process_path.string() << std::endl;
+    CefString(&cef_settings.browser_subprocess_path)
+            .FromString(sub_process_path.string());
+
+    // The location where data for the global browser cache will be stored on
+    // disk. If this value is non-empty then it must be an absolute path that is
+    // either equal to or a child directory of CefSettings.root_cache_path. If
+    // this value is empty then browsers will be created in "incognito mode"
+    // where in-memory caches are used for storage and no data is persisted to
+    // disk.  HTML5 databases such as localStorage will only persist across
+    // sessions if a cache path is specified. Can be overridden for individual
+    // CefRequestContext instances via the CefRequestContextSettings.cache_path
+    // value. When using the Chrome runtime the "default" profile will be used
+    // if |cache_path| and |root_cache_path| have the same value.
+    fs::path sub_process_cache = { folder / "cache" };
+    std::cout << "[GDCEF][GDCef::configureCEF] Setting cache path: "
+              << sub_process_cache.string() << std::endl;
+    CefString(&cef_settings.cache_path)
+            .FromString(sub_process_cache.string());
+
+    // The root directory that all CefSettings.cache_path and
+    // CefRequestContextSettings.cache_path values must have in common. If this
+    // value is empty and CefSettings.cache_path is non-empty then it will
+    // default to the CefSettings.cache_path value. If this value is non-empty
+    // then it must be an absolute path. Failure to set this value correctly may
+    // result in the sandbox blocking read/write access to the cache_path
+    // directory.
+    CefString(&cef_settings.root_cache_path)
+            .FromString(sub_process_cache.string());
+
+    // The locale string that will be passed to WebKit. If empty the default
+    // locale of "en-US" will be used. This value is ignored on Linux where
+    // locale is determined using environment variable parsing with the
+    // precedence order: LANGUAGE, LC_ALL, LC_MESSAGES and LANG. Also
+    // configurable using the "lang" command-line switch.
+    CefString(&cef_settings.locale).FromString("fr");
+
+    // The directory and file name to use for the debug log. If empty a default
+    // log file name and location will be used. On Windows and Linux a
+    // "debug.log" file will be written in the main executable directory. On
+    // MacOS a "~/Library/Logs/<app name>_debug.log" file will be written where
+    // <app name> is the name of the main app executable. Also configurable
+    // using the "log-file" command-line switch.
+    CefString(&cef_settings.log_file).FromString((folder / "debug.log").string());
+    cef_settings.log_severity = LOGSEVERITY_WARNING; // LOGSEVERITY_DEBUG;
+
+    // Set to true (1) to enable windowless (off-screen) rendering support. Do
+    // not enable this value if the application does not use windowless
+    // rendering as it may reduce rendering performance on some systems.
+    cef_settings.windowless_rendering_enabled = true;
+
+    // Create the browser using windowless (off-screen) rendering. No window
+    // will be created for the browser and all rendering will occur via the
+    // CefRenderHandler interface. The |parent| value will be used to identify
+    // monitor info and to act as the parent window for dialogs, context menus,
+    // etc. If |parent| is not provided then the main screen monitor will be
+    // used and some functionality that requires a parent window may not
+    // function correctly. In order to create windowless browsers the
+    // CefSettings.windowless_rendering_enabled value must be set to true.
+    // Transparent painting is enabled by default but can be disabled by setting
+    // CefBrowserSettings.background_color to an opaque value.
+    window_info.SetAsWindowless(0);
+
+    // To allow calling OnPaint()
+    window_info.shared_texture_enabled = false;
+
+    // Set to true (1) to disable the sandbox for sub-processes. See
+    // cef_sandbox_win.h for requirements to enable the sandbox on Windows. Also
+    // configurable using the "no-sandbox" command-line switch.
+    cef_settings.no_sandbox = true;
+
+    // Set to true (1) to disable configuration of browser process features
+    // using standard CEF and Chromium command-line arguments. Configuration can
+    // still be specified using CEF data structures or via the
+    // CefApp::OnBeforeCommandLineProcessing() method.
+    cef_settings.command_line_args_disabled = true;
+
+    // Set to a value between 1024 and 65535 to enable remote debugging on the
+    // specified port. For example, if 8080 is specified the remote debugging
+    // URL will be http://localhost:8080. CEF can be remotely debugged from any
+    // CEF or Chrome browser window. Also configurable using the
+    // "remote-debugging-port" command-line switch.
+    cef_settings.remote_debugging_port = 7777;
+
+    // The number of stack trace frames to capture for uncaught exceptions.
+    // Specify a positive value to enable the CefRenderProcessHandler::
+    // OnUncaughtException() callback. Specify 0 (default value) and
+    // OnUncaughtException() will not be called. Also configurable using the
+    // "uncaught-exception-stack-size" command-line switch.
+    cef_settings.uncaught_exception_stack_size = 5;
+
+    // Set to true (1) to have the browser process message loop run in a
+    // separate thread. If false (0) than the CefDoMessageLoopWork() function
+    // must be called from your application message loop. This option is only
+    // supported on Windows and Linux.
+    cef_settings.multi_threaded_message_loop = 0;
+}
+
+//------------------------------------------------------------------------------
+// See workspace_stigmee/godot/gdnative/browser/thirdparty/cef_binary/include/
+// internal/cef_types.h for more settings.
+static void configureBrowser(CefBrowserSettings& browser_settings)
+{
+    // The maximum rate in frames per second (fps) that
+    // CefRenderHandler::OnPaint will be called for a windowless browser. The
+    // actual fps may be lower if the browser cannot generate frames at the
+    // requested rate. The minimum value is 1 and the maximum value is 60
+    // (default 30). This value can also be changed dynamically via
+    // CefBrowserHost::SetWindowlessFrameRate.
+    browser_settings.windowless_frame_rate = 30;
+
+    // Controls whether JavaScript can be executed. Also configurable using the
+    // "disable-javascript" command-line switch.
+    browser_settings.javascript = STATE_ENABLED;
+
+    // Controls whether JavaScript can be used to close windows that were not
+    // opened via JavaScript. JavaScript can still be used to close windows that
+    // were opened via JavaScript or that have no back/forward history. Also
+    // configurable using the "disable-javascript-close-windows" command-line
+    // switch.
+    browser_settings.javascript_close_windows = STATE_DISABLED;
+
+    // Controls whether JavaScript can access the clipboard. Also configurable
+    // using the "disable-javascript-access-clipboard" command-line switch.
+    browser_settings.javascript_access_clipboard = STATE_DISABLED;
+
+    // Controls whether DOM pasting is supported in the editor via
+    // execCommand("paste"). The |javascript_access_clipboard| setting must also
+    // be enabled. Also configurable using the "disable-javascript-dom-paste"
+    // command-line switch.
+    browser_settings.javascript_dom_paste = STATE_DISABLED;
+
+    // Controls whether any plugins will be loaded. Also configurable using the
+    // "disable-plugins" command-line switch.
+    browser_settings.plugins = STATE_ENABLED;
+
+    // Controls whether image URLs will be loaded from the network. A cached
+    // image will still be rendered if requested. Also configurable using the
+    // "disable-image-loading" command-line switch.
+    browser_settings.image_loading = STATE_DISABLED;
+
+    // Controls whether databases can be used. Also configurable using the
+    // "disable-databases" command-line switch.
+    browser_settings.databases = STATE_ENABLED;
+
+    // Controls whether WebGL can be used. Note that WebGL requires hardware
+    // support and may not work on all systems even when enabled. Also
+    // configurable using the "disable-webgl" command-line switch.
+    browser_settings.webgl = STATE_ENABLED;
 }
 
 //------------------------------------------------------------------------------
 GDCef::~GDCef()
 {
-    std::cout << "[GDCEF] [GDCef::~GDCef()]" << std::endl;
-    CefDoMessageLoopWork();
-    if (m_browser != nullptr)
+    GDCEF_DEBUG();
+    CefShutdown();
+}
+
+//------------------------------------------------------------------------------
+BrowserView* GDCef::createBrowser(godot::String const name, godot::String const url)
+{
+    GDCEF_DEBUG_VAL("name: " << name.utf8().get_data() <<
+                    ", url: " << url.utf8().get_data());
+
+    BrowserView* browser = BrowserView::_new();
+    if (browser == nullptr)
     {
-        auto host = m_browser->GetHost();
-        host->CloseDevTools(); // remote_debugging_port
-        host->CloseBrowser(true);
+        GDCEF_ERROR("new BrowserView() failed");
+        return nullptr;
     }
 
-    m_browser = nullptr;
-    m_client = nullptr;
+    // Complete BrowserView constructor
+    int id = browser->init(url, settingsBrowser(), windowInfo());
+    if (id < 0)
+    {
+       GDCEF_ERROR("browser->init() failed");
+       return nullptr;
+    }
 
-    // Clean Shutdown of CEF
-    shutdown();
-    m_render_handler = nullptr;
+    browser->set_name(name);
+    add_child(browser);
+    //m_browsers[id] = browser;
+    return browser;
 }
 
 //------------------------------------------------------------------------------
-GDCef::RenderHandler::RenderHandler(GDCef& owner)
-    : m_owner(owner)
-{}
-
-//------------------------------------------------------------------------------
-void GDCef::RenderHandler::reshape(int w, int h)
+void GDCef::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 {
-    std::cout << "[GDCEF] [GDCef::RenderHandler::reshape]" << std::endl;
-    m_width = w;
-    m_height = h;
+    CEF_REQUIRE_UI_THREAD();
+    GDCEF_DEBUG();
+
+    // Add to the list of existing browsers.
+    m_browsers[browser->GetIdentifier()] = browser;
 }
 
 //------------------------------------------------------------------------------
-void GDCef::RenderHandler::GetViewRect(CefRefPtr<CefBrowser> /*browser*/, CefRect& rect)
+bool GDCef::DoClose(CefRefPtr<CefBrowser> /*browser*/)
 {
-    rect = CefRect(0, 0, m_width, m_height);
+    CEF_REQUIRE_UI_THREAD();
+    GDCEF_DEBUG();
+
+    // Closing the main window requires special handling. See the DoClose()
+    // documentation in the CEF header for a detailed destription of this
+    // process.
+    if (m_browsers.size() == 1u)
+    {
+        // Set a flag to indicate that the window close should be allowed.
+        //is_closing_ = true;
+    }
+
+    // Allow the close. For windowed browsers this will result in the OS close
+    // event being sent.
+    return false;
+}
+
+//------------------------------------------------------------------------------
+void GDCef::OnBeforeClose(CefRefPtr<CefBrowser> browser)
+{
+    CEF_REQUIRE_UI_THREAD();
+    GDCEF_DEBUG();
+
+    // Remove from the list of existing browsers.
+    m_browsers.erase(browser->GetIdentifier());
+
+    if (m_browsers.empty())
+    {
+        // All browser windows have closed. Quit the application message loop.
+        //CefQuitMessageLoop();
+    }
+}
+
+//------------------------------------------------------------------------------
+// in a GDNative module, "_bind_methods" is replaced by the "_register_methods"
+// method CefRefPtr<CefBrowser> m_browser;this is used to expose various methods of this class to Godot
+void BrowserView::_register_methods()
+{
+    GDCEF_DEBUG();
+
+    godot::register_method("id", &BrowserView::id);
+    godot::register_method("is_valid", &BrowserView::isValid);
+    godot::register_method("get_texture", &BrowserView::texture);
+    godot::register_method("use_texture_from", &BrowserView::texture);
+    godot::register_method("set_zoom_level", &BrowserView::setZoomLevel);
+    godot::register_method("load_url", &BrowserView::loadURL);
+    godot::register_method("is_loaded", &BrowserView::loaded);
+    godot::register_method("get_url", &BrowserView::getURL);
+    godot::register_method("stop_loading", &BrowserView::stopLoading);
+    godot::register_method("can_navigate_backward", &BrowserView::canNavigateBackward);
+    godot::register_method("can_navigate_forward", &BrowserView::canNavigateForward);
+    godot::register_method("navigate_back", &BrowserView::navigateBackward);
+    godot::register_method("navigate_forward", &BrowserView::navigateForward);
+    godot::register_method("set_size", &BrowserView::reshape);
+    godot::register_method("set_viewport", &BrowserView::viewport);
+    godot::register_method("on_key_pressed", &BrowserView::keyPress);
+    godot::register_method("on_mouse_moved", &BrowserView::mouseMove);
+    godot::register_method("on_mouse_left_click", &BrowserView::leftClick);
+    godot::register_method("on_mouse_right_click", &BrowserView::rightClick);
+    godot::register_method("on_mouse_middle_click", &BrowserView::middleClick);
+    godot::register_method("on_mouse_left_down", &BrowserView::leftMouseDown);
+    godot::register_method("on_mouse_left_up", &BrowserView::leftMouseUp);
+    godot::register_method("on_mouse_right_down", &BrowserView::rightMouseDown);
+    godot::register_method("on_mouse_right_up", &BrowserView::rightMouseUp);
+    godot::register_method("on_mouse_middle_down", &BrowserView::middleMouseDown);
+    godot::register_method("on_mouse_middle_up", &BrowserView::middleMouseUp);
+    godot::register_method("on_mouse_wheel", &BrowserView::mouseWheel);
+
+    godot::register_signal<BrowserView>("page_loaded", "node", GODOT_VARIANT_TYPE_OBJECT);
+}
+
+//------------------------------------------------------------------------------
+void BrowserView::_init()
+{
+    BROWSER_DEBUG();
+}
+
+//------------------------------------------------------------------------------
+int BrowserView::init(godot::String const& url, CefBrowserSettings const& settings,
+                      CefWindowInfo const& window_info)
+{
+    // Create a new browser using the window parameters specified by
+    // |windowInfo|.  If |request_context| is empty the global request context
+    // will be used. This method can only be called on the browser process UI
+    // thread. The optional |extra_info| parameter provides an opportunity to
+    // specify extra information specific to the created browser that will be
+    // passed to CefRenderProcessHandler::OnBrowserCreated() in the render
+    // process.
+    m_browser = CefBrowserHost::CreateBrowserSync(
+        window_info, this, url.utf8().get_data(), settings,
+        nullptr, nullptr);
+
+    if ((m_browser == nullptr) || (m_browser->GetHost() == nullptr))
+    {
+        m_id = -1;
+        BROWSER_ERROR("CreateBrowserSync failed");
+    }
+    else
+    {
+        m_id = m_browser->GetIdentifier();
+        BROWSER_DEBUG_VAL("CreateBrowserSync succeeded");
+        m_browser->GetHost()->WasResized();
+    }
+
+    return m_id;
+}
+
+//------------------------------------------------------------------------------
+BrowserView::BrowserView()
+    : m_viewport({ 0.0f, 0.0f, 1.0f, 1.0f})
+{
+    BROWSER_DEBUG_VAL("Create Godot texture");
+
+    m_image.instance();
+    m_texture.instance();
+}
+
+//------------------------------------------------------------------------------
+BrowserView::~BrowserView()
+{
+    BROWSER_DEBUG();
+
+    if (!m_browser)
+        return ;
+
+    auto host = m_browser->GetHost();
+    if (!host)
+        return ;
+
+    host->CloseDevTools(); // remote_debugging_port
+    host->TryCloseBrowser();//CloseBrowser(true);
+}
+
+//------------------------------------------------------------------------------
+void BrowserView::GetViewRect(CefRefPtr<CefBrowser> /*browser*/, CefRect& rect)
+{
+    BROWSER_DEBUG_VAL(int(m_viewport[0] * m_width) << ", " <<
+                      int(m_viewport[1] * m_height) << ", " <<
+                      int(m_viewport[2] * m_width) << ", " <<
+                      int(m_viewport[3] * m_height));
+    rect = CefRect(int(m_viewport[0] * m_width),
+                   int(m_viewport[1] * m_height),
+                   int(m_viewport[2] * m_width),
+                   int(m_viewport[3] * m_height));
 }
 
 //------------------------------------------------------------------------------
 // FIXME find a less naive algorithm et utiliser dirtyRects
-void GDCef::RenderHandler::OnPaint(CefRefPtr<CefBrowser> /*browser*/, PaintElementType /*type*/,
-                                   const RectList& /*dirtyRects*/, const void* buffer,
-                                   int width, int height)
+void BrowserView::OnPaint(CefRefPtr<CefBrowser> /*browser*/, PaintElementType /*type*/,
+                          const RectList& /*dirtyRects*/, const void* buffer,
+                          int width, int height)
 {
     // Sanity check
     if ((width <= 0) || (height <= 0) || (buffer == nullptr))
@@ -311,14 +545,30 @@ void GDCef::RenderHandler::OnPaint(CefRefPtr<CefBrowser> /*browser*/, PaintEleme
     }
 
     // Copy Godot PoolVector to Godot texture.
-    m_owner.m_image->create_from_data(width, height, false, godot::Image::FORMAT_RGBA8, m_data);
-    m_owner.m_texture->create_from_image(m_owner.m_image, godot::Texture::FLAG_VIDEO_SURFACE);
+    m_image->create_from_data(width, height, false, godot::Image::FORMAT_RGBA8, m_data);
+    m_texture->create_from_image(m_image, godot::Texture::FLAG_VIDEO_SURFACE);
 }
 
 //------------------------------------------------------------------------------
-void GDCef::setZoomLevel(double delta)
+void BrowserView::OnLoadEnd(CefRefPtr<CefBrowser> browser,
+                            CefRefPtr<CefFrame> /*frame*/,
+                            int /*httpStatusCode*/)
 {
-    std::cout << "[GDCEF] [GDCef::setZoomLevel] delta:" << delta << std::endl;
+    GDCEF_DEBUG_VAL("has ended loading");
+    assert(browser != nullptr);
+    assert(m_browser != nullptr);
+    assert(browser->GetIdentifier() == m_browser->GetIdentifier());
+    (void) browser;
+
+    // Emit signal for Godot script
+    emit_signal("page_loaded", this);
+}
+
+//------------------------------------------------------------------------------
+void BrowserView::setZoomLevel(double delta)
+{
+    BROWSER_DEBUG_VAL(delta);
+
     if (!m_browser)
         return;
 
@@ -326,16 +576,18 @@ void GDCef::setZoomLevel(double delta)
 }
 
 //------------------------------------------------------------------------------
-void GDCef::loadURL(godot::String url)
+void BrowserView::loadURL(godot::String url)
 {
-    std::cout << "[GDCEF] [GDCef::loadURL]" << url.utf8().get_data() << std::endl;
-    browser(url)->GetMainFrame()->LoadURL(url.utf8().get_data());
+    BROWSER_DEBUG_VAL(url.utf8().get_data());
+
+    m_browser->GetMainFrame()->LoadURL(url.utf8().get_data());
 }
 
 //------------------------------------------------------------------------------
-bool GDCef::loaded()
+bool BrowserView::loaded() const
 {
-    std::cout << "[GDCEF] [GDCef::loaded]" << std::endl;
+    BROWSER_DEBUG();
+
     if (!m_browser)
         return false;
 
@@ -343,24 +595,24 @@ bool GDCef::loaded()
 }
 
 //------------------------------------------------------------------------------
-godot::String GDCef::getURL()
+godot::String BrowserView::getURL() const
 {
     if (m_browser && m_browser->GetMainFrame())
     {
         std::string str = m_browser->GetMainFrame()->GetURL().ToString();
-        std::cout << "[GDCEF] [GDCef::getURL] Retrieving URL: " << str
-                  << std::endl;
+        BROWSER_DEBUG_VAL(str);
         return str.c_str();
     }
 
-    std::cout << "[GDCEF] [GDCef::getURL] Cannot retrieving URL: " << std::endl;
+    BROWSER_ERROR("Not possible to retrieving URL");
     return {};
 }
 
 //------------------------------------------------------------------------------
-void GDCef::stopLoading()
+void BrowserView::stopLoading()
 {
-    std::cout << "[GDCEF] [GDCef::stopLoading]" << std::endl;
+    BROWSER_DEBUG();
+
     if (!m_browser)
         return;
 
@@ -368,9 +620,10 @@ void GDCef::stopLoading()
 }
 
 //------------------------------------------------------------------------------
-bool GDCef::canNavigateBackward()
+bool BrowserView::canNavigateBackward() const
 {
-    std::cerr << "[GDCEF] [GDCef::canNavigateBack]" << std::endl;
+    BROWSER_DEBUG();
+
     if (!m_browser)
         return false;
 
@@ -378,9 +631,10 @@ bool GDCef::canNavigateBackward()
 }
 
 //------------------------------------------------------------------------------
-void GDCef::navigateBackward()
+void BrowserView::navigateBackward()
 {
-    std::cout << "[GDCEF] [GDCef::navigateBack]" << std::endl;
+    BROWSER_DEBUG();
+
     if ((m_browser != nullptr) && (m_browser->CanGoBack()))
     {
         m_browser->GoBack();
@@ -388,9 +642,10 @@ void GDCef::navigateBackward()
 }
 
 //------------------------------------------------------------------------------
-bool GDCef::canNavigateForward()
+bool BrowserView::canNavigateForward() const
 {
-    std::cerr << "[GDCEF] [GDCef::canNavigateForward]" << std::endl;
+    BROWSER_DEBUG();
+
     if (!m_browser)
         return false;
 
@@ -398,9 +653,10 @@ bool GDCef::canNavigateForward()
 }
 
 //------------------------------------------------------------------------------
-void GDCef::navigateForward()
+void BrowserView::navigateForward()
 {
-    std::cout << "[GDCEF] [GDCef::navigateForward]" << std::endl;
+    BROWSER_DEBUG();
+
     if ((m_browser != nullptr) && (m_browser->CanGoForward()))
     {
         m_browser->GoForward();
@@ -408,42 +664,57 @@ void GDCef::navigateForward()
 }
 
 //------------------------------------------------------------------------------
-void GDCef::reshape(int w, int h)
+void BrowserView::reshape(int w, int h)
 {
-    std::cout << "[GDCEF] [GDCef::reshape]" << std::endl;
+    BROWSER_DEBUG_VAL(w << " x " << h);
+
+    m_width = float(w);
+    m_height = float(h);
+
     if (!m_browser || !m_browser->GetHost())
         return;
 
-    std::cout << "[GDCEF] [GDCef::reshape] m_render_handler->reshape" << std::endl;
-
-    m_render_handler->reshape(w, h);
-    std::cout << "[GDCEF] [GDCef::reshape] m_browser->GetHost()->WasResized" << std::endl;
     m_browser->GetHost()->WasResized();
 }
 
 //------------------------------------------------------------------------------
-int GDCef::id()
+bool BrowserView::viewport(float x, float y, float w, float h)
 {
-    std::cerr << "[GDCEF][GDCef::id]" << std::endl;
-    if (!m_browser)
-        return -1;
+    BROWSER_DEBUG_VAL(x << ", " << y << ", " << w << ", " << h);
 
-    return m_browser->GetIdentifier();
+    if (!(x >= 0.0f) && (x < 1.0f))
+        return false;
+
+    if (!(x >= 0.0f) && (y < 1.0f))
+        return false;
+
+    if (!(w > 0.0f) && (w <= 1.0f))
+        return false;
+
+    if (!(h > 0.0f) && (h <= 1.0f))
+        return false;
+
+    if (x + w > 1.0f)
+        return false;
+
+    if (y + h > 1.0f)
+        return false;
+
+    m_viewport[0] = x;
+    m_viewport[1] = y;
+    m_viewport[2] = w;
+    m_viewport[3] = h;
+
+    return true;
 }
 
 //------------------------------------------------------------------------------
-bool GDCef::valid()
+bool BrowserView::isValid() const
 {
-    std::cerr << "[GDCEF][GDCef::valid]" << std::endl;
+    BROWSER_DEBUG();
+
     if (!m_browser)
         return false;
 
     return m_browser->IsValid();
-}
-
-//------------------------------------------------------------------------------
-void GDCef::shutdown()
-{
-    std::cerr << "[GDCEF][GDCef::cefStop]" << std::endl;
-    CefShutdown();
 }

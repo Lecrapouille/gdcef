@@ -33,13 +33,13 @@
 #      pragma GCC diagnostic ignored "-Wfloat-equal"
 #      pragma GCC diagnostic ignored "-Wpedantic"
 #      pragma GCC diagnostic ignored "-Wshadow"
+#      pragma GCC diagnostic ignored "-Wcast-qual"
 #      if defined(__clang__)
 #        pragma clang diagnostic push
 #        pragma clang diagnostic ignored "-Wcast-align"
 #        pragma clang diagnostic ignored "-Wcast-align"
 #        pragma clang diagnostic ignored "-Wundef"
 #        pragma clang diagnostic ignored "-Wshadow-field"
-#        pragma clang diagnostic ignored "-Wcast-qual"
 #      endif
 #  endif
 
