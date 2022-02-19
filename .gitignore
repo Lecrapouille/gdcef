@@ -2,6 +2,7 @@
 godot-cpp/
 thirdparty/
 build/
+example/build
 GPUCache
 demo/build
 
