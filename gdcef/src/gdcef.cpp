@@ -345,14 +345,15 @@ bool GDCef::loaded()
 //------------------------------------------------------------------------------
 godot::String GDCef::getURL()
 {
-    std::cout << "[GDCEF] [GDCef::getURL] Retrieving URL: ";
     if (m_browser && m_browser->GetMainFrame())
     {
-        const char* str = m_browser->GetMainFrame()->GetURL().ToString().c_str();
-        std::cout << str << std::endl;
-        return str;
+        std::string str = m_browser->GetMainFrame()->GetURL().ToString();
+        std::cout << "[GDCEF] [GDCef::getURL] Retrieving URL: " << str
+                  << std::endl;
+        return str.c_str();
     }
 
+    std::cout << "[GDCEF] [GDCef::getURL] Cannot retrieving URL: " << std::endl;
     return {};
 }
 
