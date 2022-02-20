@@ -104,7 +104,7 @@ target_library = 'libgdcef'
 
 # Platform specific compilation
 if platform == 'osx':
-    env.Append(CXXFLAGS=['-std=c++17'])
+    env.Append(CXXFLAGS=['--std=c++17'])
     env.Append(LINKFLAGS=['-arch', 'x86_64', '-arch', 'arm64'])
     if compile_mode == 'debug':
         env.Append(CCFLAGS=['-g', '-O2'])
@@ -116,7 +116,7 @@ if platform == 'osx':
                          '-D__STDC_FORMAT_MACROS'])
 
 elif platform == 'linux':
-    env.Append(CXXFLAGS=['-std=c++17'])
+    env.Append(CXXFLAGS=['--std=c++17'])
     if compile_mode == 'debug':
         env.Append(CCFLAGS=['-g3', '-Og'])
     else:
@@ -124,12 +124,6 @@ elif platform == 'linux':
     env.Append(CCFLAGS=['-fPIC'])
     env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DNDEBUG', '-D_FILE_OFFSET_BITS=64',
                          '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
-    # Add compilation flags
-    env.Append(CCFLAGS=['-Wall', '-Wextra'])
-
-    # Remove some important compilation flags because of external libs
-    # does not compile with correct flags
-    env.Append(CCFLAGS=['-Wno-unused-parameter', '-Wno-parentheses'])
 
 elif platform == 'windows':
     # This makes sure to keep the session environment variables on windows,
@@ -145,6 +139,30 @@ elif platform == 'windows':
     else:
         env.Append(CPPDEFINES=['NDEBUG'])
         env.Append(CCFLAGS=['-O2', '-EHsc', '-MD'])
+
+# Unix compilation flags
+if platform == 'linux' or platform == 'osx':
+    # gcc/clang compilation flags
+    env.Append(CXXFLAGS=['-Wall', '-Wextra', '-Wuninitialized', '-Wundef',
+                         '-Wunused', '-Wunused-result', '-Wunused-parameter',
+                         '-Wtype-limits', '-Wcast-align', '-Wcast-qual',
+                         '-Wconversion', '-Wfloat-equal', '-Wpointer-arith',
+                         '-Wswitch-enum', '-Wpacked', '-Wold-style-cast',
+                         '-Wdeprecated', '-Wvariadic-macros', '-Wvla',
+                         '-Wsign-conversion'])
+
+    # clang specific flags
+    if env['use_llvm']:
+        env.Append(CXXFLAGS=['-Wused-but-marked-unused', '-Wzero-length-array',
+                             '-Wunused-member-function', '-Wvector-conversion',
+                             '-Wunused-getter-return-value', '-Wthread-safety',
+                             '-Wunneeded-member-function', '-Wshadow-all',
+                             '-Wunused-exception-parameter',
+                             '-Wunneeded-internal-declaration',
+                             '-Wunreachable-code-aggressive',
+                             '-Wsuper-class-method-mismatch',
+                             '-Werror=implicit-function-declaration',
+                             '-Wtautological-compare'])
 
 # Pathes of Godot header files
 env.Append(CPPPATH=['.',

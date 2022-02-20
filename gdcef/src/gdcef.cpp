@@ -19,9 +19,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //*************************************************************************
 
-#include "gdcef.h"
+//------------------------------------------------------------------------------
+#include "gdcef.hpp"
 #include "helper.hpp"
-#include <wrapper/cef_helpers.h> // CEF
 
 //------------------------------------------------------------------------------
 #if defined(_WIN32)
@@ -49,7 +49,7 @@ bool GDCef::Manager::AutoPlay;
 
 //------------------------------------------------------------------------------
 void GDCef::Manager::OnBeforeCommandLineProcessing(
-    const CefString& ProcessType, CefRefPtr<CefCommandLine> CommandLine)
+    const CefString& /*ProcessType*/, CefRefPtr<CefCommandLine> CommandLine)
 {
     std::cout << "[GDCEF] [GDCef::Manager::OnBeforeCommandLineProcessing]" << std::endl;
 
@@ -279,15 +279,15 @@ void GDCef::RenderHandler::reshape(int w, int h)
 }
 
 //------------------------------------------------------------------------------
-void GDCef::RenderHandler::GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect)
+void GDCef::RenderHandler::GetViewRect(CefRefPtr<CefBrowser> /*browser*/, CefRect& rect)
 {
     rect = CefRect(0, 0, m_width, m_height);
 }
 
 //------------------------------------------------------------------------------
 // FIXME find a less naive algorithm et utiliser dirtyRects
-void GDCef::RenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type,
-                                   const RectList& dirtyRects, const void* buffer,
+void GDCef::RenderHandler::OnPaint(CefRefPtr<CefBrowser> /*browser*/, PaintElementType /*type*/,
+                                   const RectList& /*dirtyRects*/, const void* buffer,
                                    int width, int height)
 {
     // Sanity check
@@ -302,7 +302,7 @@ void GDCef::RenderHandler::OnPaint(CefRefPtr<CefBrowser> browser, PaintElementTy
     // Copy CEF image buffer to Godot PoolVector
     m_data.resize(TEXTURE_SIZE);
     godot::PoolByteArray::Write w = m_data.write();
-    memcpy(&w[0], buffer, TEXTURE_SIZE);
+    memcpy(&w[0], buffer, size_t(TEXTURE_SIZE));
 
     // Color conversion BGRA8 -> RGBA8: swap B and R chanels
     for (int i = 0; i < TEXTURE_SIZE; i += COLOR_CHANELS)

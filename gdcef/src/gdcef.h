@@ -20,32 +20,26 @@
 //*************************************************************************
 
 #ifndef STIGMEE_GDCEF_HPP
-#define STIGMEE_GDCEF_HPP
-
-// ****************************************************************************
-// previously we derived from ImageTexture the core .h files from godot.
-// in GDNative we can directly use the corresponding .hpp file is the class has
-// been exposed (most of them are). so simply include ImageTexture.hpp
-// PoolVector doe not seem to be exposed but we can use PoolByteArray native type instead.
-// Most of the code replicates what's been done previously by @lecrapouille in the
-// ****************************************************************************
+#  define STIGMEE_GDCEF_HPP
 
 // Godot
-#include <Godot.hpp>
-#include <GDScript.hpp>
-#include <Node.hpp>
-#include <ImageTexture.hpp>
+#  include "Godot.hpp"
+#  include "GDScript.hpp"
+#  include "Node.hpp"
+#  include "ImageTexture.hpp"
+#  include "GlobalConstants.hpp"
 
 // Chromium Embedded Framework
-#include "cef_render_handler.h"
-#include "cef_client.h"
-#include "cef_app.h"
+#  include "cef_render_handler.h"
+#  include "cef_client.h"
+#  include "cef_app.h"
+#  include "wrapper/cef_helpers.h"
 
-#include <string>
-#include <vector>
-#include <memory>
-#include <iostream>
-#include <algorithm>
+#  include <string>
+#  include <vector>
+#  include <memory>
+#  include <iostream>
+#  include <algorithm>
 
 // ****************************************************************************
 //! \brief Class deriving from Godot's Node and interfacing Chromium Embedded
