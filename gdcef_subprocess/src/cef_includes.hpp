@@ -19,8 +19,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //*************************************************************************
 
-#ifndef STIGMEE_GDCEF_THIRDPARTS_HPP
-#  define STIGMEE_GDCEF_THIRDPARTS_HPP
+#ifndef STIGMEE_CEF_INCLUDES_HPP
+#  define STIGMEE_CEF_INCLUDES_HPP
 
 #  if !defined(_WIN32)
 #    pragma GCC diagnostic push
@@ -43,7 +43,15 @@
 #      endif
 #  endif
 
-#  include "gdcef.h"
+#  include "base/cef_logging.h"
+#  include "cef_client.h"
+#  include "cef_app.h"
+#  include "cef_browser.h"
+#  include "cef_command_line.h"
+#  include "wrapper/cef_helpers.h"
+#  ifdef __APPLE__
+#    include "include/wrapper/cef_library_loader.h"
+#  endif
 
 #  if !defined(_WIN32)
 #      if defined(__clang__)

@@ -20,10 +20,9 @@
 //*************************************************************************
 
 #ifndef CEF_TESTS_CEFSIMPLE_SIMPLE_APP_H_
-#define CEF_TESTS_CEFSIMPLE_SIMPLE_APP_H_
+#  define CEF_TESTS_CEFSIMPLE_SIMPLE_APP_H_
 
-//#include "script_handler.h"
-#include <cef_app.h>
+#  include "cef_includes.hpp"
 
 class GDCefBrowser : public CefApp,
                      public CefBrowserProcessHandler,

@@ -20,10 +20,10 @@
 //*************************************************************************
 
 #ifndef GDCEF_SUBPROCESS_CLIENT_HPP
-#define GDCEF_SUBPROCESS_CLIENT_HPP
+#  define GDCEF_SUBPROCESS_CLIENT_HPP
 
-#include <cef_client.h>
-#include <list>
+#  include "cef_includes.hpp"
+#  include <list>
 
 class GDCefClient : public CefClient,
                     public CefDisplayHandler,

@@ -19,13 +19,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //*************************************************************************
 
-#include <base/cef_logging.h>
 #include "gdcef_browser_app.hpp"
 #include <iostream>
-
-#ifdef __APPLE__
-#  include "include/wrapper/cef_library_loader.h"
-#endif
 
 // Entry point function for all processes.
 #ifdef _WIN32

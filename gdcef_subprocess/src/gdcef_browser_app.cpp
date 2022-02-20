@@ -21,12 +21,6 @@
 
 #include "gdcef_browser_app.hpp"
 #include "gdcef_client.hpp"
-
-// CEF
-#include <cef_browser.h>
-#include <cef_command_line.h>
-#include <wrapper/cef_helpers.h>
-
 #include <string>
 #include <iostream>
 
