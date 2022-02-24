@@ -58,14 +58,7 @@ bool are_valid_files(fs::path const& folder,
 // return __progname;
 std::string executable_name()
 {
-#if defined(PLATFORM_POSIX) || defined(__linux__)
-
-    char path[1024];
-    if (readlink("/proc/self/exe", path, 1024) == -1)
-        return {};
-    return path;
-
-#elif defined(_WIN32)
+#if defined(_WIN32)
     // Pragma required for linking + windows.h
     #pragma comment(lib, "kernel32.lib")
     //const DWORD MAX_PATH = 64u; // KO - MAX_PATH already defined anyway
@@ -75,7 +68,10 @@ std::string executable_name()
 
 #else
 
-    static_assert(false, "unrecognized platform");
+    char path[1024];
+    if (readlink("/proc/self/exe", path, 1024) == -1)
+        return {};
+    return path;
 
 #endif
 }
@@ -83,13 +79,7 @@ std::string executable_name()
 //------------------------------------------------------------------------------
 fs::path real_path()
 {
-#if defined(PLATFORM_POSIX) || defined(__linux__)
-
-    // Since /proc/self/exe return the canoncial we can return it directly
-    fs::path p(executable_name());
-    return p.parent_path();
-
-#elif defined(_WIN32)
+#if defined(_WIN32)
 
     // Step 1: Get the current path and concat the Stigmee executable name.
     //
@@ -98,6 +88,12 @@ fs::path real_path()
     //
     // Step 3: Return the path without the Stigmee name
     return fs::canonical({ fs::current_path() / executable_name() }).parent_path();
+
+#else //if defined(PLATFORM_POSIX) || defined(__linux__)
+
+    // Since /proc/self/exe return the canoncial we can return it directly
+    fs::path p(executable_name());
+    return p.parent_path();
 
 #endif
 }
