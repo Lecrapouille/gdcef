@@ -22,8 +22,16 @@
 
 import os
 
+# We let SCons build its default ENV as it includes OS-specific things which we don't
+# want to have to pull in manually.
+# Then we prepend PATH to make it take precedence, while preserving SCons' own entries.
+custom_tools = ["default"]
+env = Environment(tools=custom_tools)
+env.PrependENVPath("PATH", os.getenv("PATH"))
+env.PrependENVPath("PKG_CONFIG_PATH", os.getenv("PKG_CONFIG_PATH"))
+if "TERM" in os.environ:  # Used for colored output.
+    env["ENV"]["TERM"] = os.environ["TERM"]
 opts = Variables([], ARGUMENTS)
-env = DefaultEnvironment()
 
 # Define our options
 platforms = ['windows', 'x11', 'linux', 'linuxbsd', 'macos', 'osx']
