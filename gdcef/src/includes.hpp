@@ -19,22 +19,16 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //*************************************************************************
 
-#include "gdcef.hpp"
-#include "browser.hpp"
+#ifndef STIGMEE_INCLUDES_HPP
+#  define STIGMEE_INCLUDES_HPP
 
-extern "C" void GDN_EXPORT godot_gdnative_init(godot_gdnative_init_options * o)
-{
-    godot::Godot::gdnative_init(o);
-}
 
-extern "C" void GDN_EXPORT godot_gdnative_terminate(godot_gdnative_terminate_options * o)
-{
-    godot::Godot::gdnative_terminate(o);
-}
 
-extern "C" void GDN_EXPORT godot_nativescript_init(void* handle)
-{
-    godot::Godot::nativescript_init(handle);
-    godot::register_class<GDCef>();
-    godot::register_class<BrowserView>();
-}
+
+#  include <string>
+#  include <vector>
+#  include <memory>
+#  include <iostream>
+#  include <algorithm>
+
+#endif // STIGMEE_INCLUDES_HPP

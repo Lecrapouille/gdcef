@@ -19,8 +19,29 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //*************************************************************************
 
-#ifndef STIGMEE_GDCEF_HPP
-#  define STIGMEE_GDCEF_HPP
+#ifndef STIGMEE_GDCEF_BROWSER_HPP
+#  define STIGMEE_GDCEF_BROWSER_HPP
+
+#  if !defined(_WIN32)
+#    pragma GCC diagnostic push
+#      pragma GCC diagnostic ignored "-Wold-style-cast"
+#      pragma GCC diagnostic ignored "-Wparentheses"
+#      pragma GCC diagnostic ignored "-Wunused-parameter"
+#      pragma GCC diagnostic ignored "-Wconversion"
+#      pragma GCC diagnostic ignored "-Wsign-conversion"
+#      pragma GCC diagnostic ignored "-Wfloat-conversion"
+#      pragma GCC diagnostic ignored "-Wfloat-equal"
+#      pragma GCC diagnostic ignored "-Wpedantic"
+#      pragma GCC diagnostic ignored "-Wshadow"
+#      if defined(__clang__)
+#        pragma clang diagnostic push
+#        pragma clang diagnostic ignored "-Wcast-align"
+#        pragma clang diagnostic ignored "-Wcast-align"
+#        pragma clang diagnostic ignored "-Wundef"
+#        pragma clang diagnostic ignored "-Wshadow-field"
+#        pragma clang diagnostic ignored "-Wcast-qual"
+#      endif
+#  endif
 
 // Godot
 #  include "Godot.hpp"
@@ -35,120 +56,18 @@
 #  include "cef_app.h"
 #  include "wrapper/cef_helpers.h"
 
+#  include <iostream>
 #  include <array>
-#  include <map>
-
-class BrowserView;
-
-// *****************************************************************************
-//! \brief Class deriving from Godot's Node and interfacing Chromium Embedded
-//! Framework. This class can create isntances of BrowserView and manage their
-//! lifetime.
-// *****************************************************************************
-class GDCef : public godot::Node,
-              public CefLifeSpanHandler,
-              public CefClient
-{
-    //! \brief Godot stuff
-    GODOT_CLASS(GDCef, godot::Node)
-
-public:
-
-    // -------------------------------------------------------------------------
-    //! \brief Our initializer called by Godot.
-    // -------------------------------------------------------------------------
-    void _init();
-
-    // -------------------------------------------------------------------------
-    //! \brief Call CEF pomp loop message
-    // -------------------------------------------------------------------------
-    void _process(float delta);
-
-    // -------------------------------------------------------------------------
-    //! \brief Static function that Godot will call to find out which methods
-    //! can be called on our NativeScript and which properties it exposes.
-    // -------------------------------------------------------------------------
-    static void _register_methods();
-
-    // -------------------------------------------------------------------------
-    //! \brief Destructor. Release CEF memory and sub CEF processes are notified
-    //! that the application is exiting. All browsers are destroyed.
-    // -------------------------------------------------------------------------
-    ~GDCef();
-
-    // -------------------------------------------------------------------------
-    //! \brief Allow Godot script to release CEF.
-    //! \fixme FIXME shall be removed
-    // -------------------------------------------------------------------------
-    void shutdown();
-
-    // -------------------------------------------------------------------------
-    //! \brief Const getter CEF settings.
-    // -------------------------------------------------------------------------
-    inline CefSettings const& settingsCEF() const
-    {
-        return m_cef_settings;
-    }
-
-    // -------------------------------------------------------------------------
-    //! \brief Const getter browser settings.
-    // -------------------------------------------------------------------------
-    inline CefBrowserSettings const& settingsBrowser() const
-    {
-        return m_browser_settings;
-    }
-
-    // -------------------------------------------------------------------------
-    //! \brief Const getter browser window settings.
-    // -------------------------------------------------------------------------
-    inline CefWindowInfo const& windowInfo() const
-    {
-        return m_window_info;
-    }
-
-    // -------------------------------------------------------------------------
-    //! \brief Create a browser view and store its instance inside the internal
-    //! container. Return the browser identifier or return -1 in case of failure.
-    // -------------------------------------------------------------------------
-    BrowserView* createBrowser(godot::String const name, godot::String const url);
-
-    virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override
-    {
-        return this;
-    }
-
-private: // CefLifeSpanHandler interfaces
-
-    virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) override;
-    virtual bool DoClose(CefRefPtr<CefBrowser> browser) override;
-    virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) override;
-
-private:
-
-    IMPLEMENT_REFCOUNTING(GDCef);
-
-    CefWindowInfo m_window_info;
-    CefSettings m_cef_settings;
-    CefBrowserSettings m_browser_settings;
-
-    std::map<int, CefRefPtr<CefBrowser>> m_browsers;
-};
 
 // ****************************************************************************
 //! \brief Class wrapping the CefBrowser class and export methods for Godot
 //! script. This class is instanciate by GDCef.
 // ****************************************************************************
-class BrowserView : public godot::Node,
-                    public CefRenderHandler,
-                    public CefLoadHandler,
-                    public CefClient
+class BrowserView : public godot::Node
 {
     friend class GDCef;
 
-    //! \brief Godot stuff
-    GODOT_CLASS(BrowserView, godot::Node);
-
-public:
+public: // Godot interfaces
 
     // -------------------------------------------------------------------------
     //! \brief Our initializer called by Godot.
@@ -160,6 +79,117 @@ public:
     //! can be called on our NativeScript and which properties it exposes.
     // -------------------------------------------------------------------------
     static void _register_methods();
+
+    // -------------------------------------------------------------------------
+    //! \brief Godot stuff
+    // -------------------------------------------------------------------------
+    GODOT_CLASS(BrowserView, godot::Node);
+
+private: // CEF interfaces
+
+    // *************************************************************************
+    //! \brief Mandatory since Godot ref counter is conflicting with CEF ref
+    //! counting and therefore we reach with pure virtual destructor called.
+    //! To avoid this we have to create this intermediate class.
+    // *************************************************************************
+    class Impl: public CefRenderHandler,
+                public CefLoadHandler,
+                public CefClient
+    {
+    public:
+
+        // ---------------------------------------------------------------------
+        //! \brief Pass the owner instance.
+        // ---------------------------------------------------------------------
+        Impl(BrowserView& view)
+            : m_owner(view)
+        {}
+
+        ~Impl()
+        {
+            std::cout << "BrowserView::Impl::~Impl" << std::endl;
+        }
+
+    private: // CefClient::CefBaseRefCounted interfaces
+
+        // ---------------------------------------------------------------------
+        //! \brief CEF reference couting
+        // ---------------------------------------------------------------------
+        IMPLEMENT_REFCOUNTING(Impl);
+
+    private: // CefClient interfaces
+
+        // ---------------------------------------------------------------------
+        //! \brief Return the handler for off-screen rendering events.
+        // ---------------------------------------------------------------------
+        virtual CefRefPtr<CefRenderHandler> GetRenderHandler() override
+        {
+            return this;
+        }
+
+        // ---------------------------------------------------------------------
+        //! \brief Return the handler for browser load status events.
+        // ---------------------------------------------------------------------
+        virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override
+        {
+            return this;
+        }
+
+    private: // CefRenderHandler interfaces
+
+        // ---------------------------------------------------------------------
+        //! \brief Get the view port.
+        // ---------------------------------------------------------------------
+        virtual void GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) override
+        {
+            m_owner.getViewRect(browser, rect);
+        }
+
+        // ---------------------------------------------------------------------
+        //! \brief Called when an element should be painted. Pixel values passed
+        //! to this method are scaled relative to view coordinates based on the
+        //! value of CefScreenInfo.device_scale_factor returned from
+        //! GetScreenInfo. |type| indicates whether the element is the view or
+        //! the popup widget. |buffer| contains the pixel data for the whole
+        //! image. |dirtyRects| contains the set of rectangles in pixel
+        //! coordinates that need to be repainted. |buffer| will be
+        //! |width|*|height|*4 bytes in size and represents a BGRA image with an
+        //! upper-left origin. This method is only called when
+        //! CefWindowInfo::shared_texture_enabled is set to false.
+        // ---------------------------------------------------------------------
+        virtual void OnPaint(CefRefPtr<CefBrowser> browser,
+                             CefRenderHandler::PaintElementType type,
+                             const CefRenderHandler::RectList& dirtyRects,
+                             const void* buffer, int width, int height) override
+        {
+            m_owner.onPaint(browser, type, dirtyRects, buffer, width, height);
+        }
+
+    private: // CefLoadHandler interfaces
+
+        // ---------------------------------------------------------------------
+        //! \brief Called when the browser is done loading a frame. The |frame|
+        //! value will never be empty -- call the IsMain() method to check if
+        //! this frame is the main frame. Multiple frames may be loading at the
+        //! same time. Sub-frames may start or continue loading after the main
+        //! frame load has ended. This method will not be called for same page
+        //! navigations (fragments, history state, etc.) or for navigations that
+        //! fail or are canceled before commit. For notification of overall
+        //! browser load status use OnLoadingStateChange instead.
+        // ---------------------------------------------------------------------
+        virtual void OnLoadEnd(CefRefPtr<CefBrowser> browser,
+                               CefRefPtr<CefFrame> frame,
+                               int httpStatusCode) override
+        {
+            m_owner.onLoadEnd(browser, frame, httpStatusCode);
+        }
+
+    private:
+
+        BrowserView& m_owner;
+    };
+
+public:
 
     // -------------------------------------------------------------------------
     //! \brief Default Constructor. Initialize internal states. Nothing else is
@@ -171,6 +201,7 @@ public:
     BrowserView();
 
     // -------------------------------------------------------------------------
+    //! \brief Virtual to use dynamic_cast
     // -------------------------------------------------------------------------
     virtual ~BrowserView();
 
@@ -211,6 +242,8 @@ public:
     //! \brief Exported method to Godot script. Stop loading the page.
     // -------------------------------------------------------------------------
     void stopLoading();
+
+    void close();
 
     // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Get the current url of the
@@ -338,7 +371,8 @@ public:
     void mouseWheel(const int wDelta);
 
     // -------------------------------------------------------------------------
-    //! \brief Exported method to Godot script. Set the new keyboard state (char typed ...).
+    //! \brief Exported method to Godot script. Set the new keyboard state (char
+    //! typed ...).
     // -------------------------------------------------------------------------
     void keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl);
 
@@ -350,53 +384,38 @@ private:
     //! \return the browser unique identifier or -1 in case of failure.
     // -------------------------------------------------------------------------
     int init(godot::String const& url, CefBrowserSettings const& cef_settings,
-             CefWindowInfo const& window_info);
-
-private: // CefRenderHandler interfaces.
-
-    virtual CefRefPtr<CefRenderHandler> GetRenderHandler() override
-    {
-        return this;
-    }
+             CefWindowInfo const& window_info, godot::String const& name);
 
     // -------------------------------------------------------------------------
-    //! \brief Get the view port.
+    //! \brief BrowserView::Impl::GetViewRect
     // -------------------------------------------------------------------------
-    virtual void GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) override;
+    void getViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect);
 
     // -------------------------------------------------------------------------
-    //! \brief Called when an element should be painted. Pixel values passed to this
-    //! method are scaled relative to view coordinates based on the value of
-    //! CefScreenInfo.device_scale_factor returned from GetScreenInfo. |type|
-    //! indicates whether the element is the view or the popup widget. |buffer|
-    //! contains the pixel data for the whole image. |dirtyRects| contains the set
-    //! of rectangles in pixel coordinates that need to be repainted. |buffer| will
-    //! be |width|*|height|*4 bytes in size and represents a BGRA image with an
-    //! upper-left origin. This method is only called when
-    //! CefWindowInfo::shared_texture_enabled is set to false.
+    //! \brief BrowserView::Impl::GetViewRect
     // -------------------------------------------------------------------------
-    virtual void OnPaint(CefRefPtr<CefBrowser> browser, PaintElementType type,
-                         const RectList& dirtyRects, const void* buffer,
-                         int width, int height) override;
+    void onPaint(CefRefPtr<CefBrowser> browser,
+                 CefRenderHandler::PaintElementType type,
+                 const CefRenderHandler::RectList& dirtyRects,
+                 const void* buffer, int width, int height);
 
-private: // CefLoadHandler interfaces.
-
-    virtual CefRefPtr<CefLoadHandler> GetLoadHandler()
-    {
-        return this;
-    }
-
-    virtual void OnLoadEnd(CefRefPtr<CefBrowser> browser,
-                           CefRefPtr<CefFrame> frame,
-                           int httpStatusCode) override;
+    // -------------------------------------------------------------------------
+    //! \brief BrowserView::Impl::GetViewRect
+    // -------------------------------------------------------------------------
+    void onLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
+                   int httpStatusCode);
 
 private:
 
-    //! \brief
-    IMPLEMENT_REFCOUNTING(BrowserView);
+    //! \brief CEF interface implementation
+    friend BrowserView::Impl;
 
-    //! \brief
-    CefRefPtr<CefBrowser> m_browser;
+    //! \brief CEF interface implementation
+    CefRefPtr<Impl> m_impl = nullptr;
+
+    //! \brief One to one CEF browser. The GDCef is the class containing the
+    //! whole browsers.
+    CefRefPtr<CefBrowser> m_browser = nullptr;
 
     //! \brief Godot's temporary image (CEF => Godot)
     godot::Ref<godot::ImageTexture> m_texture;
@@ -421,4 +440,11 @@ private:
     int m_id = -1;
 };
 
-#endif
+#  if !defined(_WIN32)
+#      if defined(__clang__)
+#        pragma clang diagnostic pop
+#      endif
+#    pragma GCC diagnostic pop
+#  endif
+
+#endif // STIGMEE_GDCEF_BROWSER_HPP

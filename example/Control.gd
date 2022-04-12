@@ -25,14 +25,12 @@ func _ready():
 	$Texture2.set_size(Vector2(h/2, w/2))
 
 	# First tab
-	var left = $CEF.create_browser("left", "https://ibob.bg/blog/")
+	var left = $CEF.create_browser("https://ibob.bg/blog/", "left", h/2, w)
 	$Texture1.texture = left.get_texture()
-	left.set_size(h/2, w)
 	#left.set_viewport(0.25, 0.25, 0.25, 0.25)
 
 	# Second tab
-	var right = $CEF.create_browser("right", "https://phreda4.github.io/")
-	right.set_size(h/2, w)
+	var right = $CEF.create_browser("https://phreda4.github.io/", "right", h/2, w)
 	$Texture2.texture = right.get_texture()
 
 	# Connect the event when a page has bee loaded and wait X seconds

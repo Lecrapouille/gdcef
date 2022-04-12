@@ -19,8 +19,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //*************************************************************************
 
-#include "gdcef.hpp"
-#include <iostream>
+#include "browser.hpp"
+#include "helper.hpp"
 
 //------------------------------------------------------------------------------
 void BrowserView::leftClick()
@@ -190,7 +190,7 @@ void BrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool ctr
 
         if ((key >= 32) && (key <= 126)) // ASCII
         {
-            std::cout << "[GDCEF] [BrowserView::keyPress] ASCII CODE" << std::endl;
+            BROWSER_DEBUG_VAL("ASCII CODE");
             event.windows_key_code = key;
             event.character = key16b;
             event.unmodified_character = key16b;
@@ -200,7 +200,7 @@ void BrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool ctr
         else if (key == godot::GlobalConstants::KEY_SPACE ||
                  key == godot::GlobalConstants::KEY_TAB)
         {
-            std::cout << "[GDCEF] [BrowserView::keyPress] KEY_SPACE / KEY_TAB" << std::endl;
+            BROWSER_DEBUG_VAL("KEY_SPACE / KEY_TAB");
             event.windows_key_code = key;
             event.character = key16b;
             event.native_key_code = key;
@@ -214,19 +214,19 @@ void BrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool ctr
                  key == godot::GlobalConstants::KEY_KP_ENTER )
         {
             if (key == godot::GlobalConstants::KEY_BACKSPACE) {
-                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_BACKSPACE" << std::endl;
+                BROWSER_DEBUG_VAL("KEY_BACKSPACE");
                 event.windows_key_code = 8;
                 event.character = 8;
                 event.unmodified_character = 8;
             }
             else if (key == godot::GlobalConstants::KEY_ENTER) {
-                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_ENTER" << std::endl;
+                BROWSER_DEBUG_VAL("KEY_ENTER");
                 event.windows_key_code = 13;
                 event.character = 13;
                 event.unmodified_character = 13;
             }
             else if (key == godot::GlobalConstants::KEY_KP_ENTER) {
-                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_KP_ENTER" << std::endl;
+                BROWSER_DEBUG_VAL("KEY_KP_ENTER");
                 event.windows_key_code = 13;
                 event.character = 13;
                 event.unmodified_character = 13;
@@ -241,7 +241,7 @@ void BrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool ctr
         }
         else if (key >= 320 && key <= 329) // NUMBERS & NUMPAD
         {
-            std::cout << "[GDCEF] [BrowserView::keyPress] NUMBERS and NUMPAD" << std::endl;
+            BROWSER_DEBUG_VAL("NUMBERS and NUMPAD");
             event.windows_key_code = key;
             event.character = key16b;
             event.native_key_code = key;
@@ -265,43 +265,43 @@ void BrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool ctr
             // https://keycode.info/
 
             if (key == godot::GlobalConstants::KEY_RIGHT) {
-                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_RIGHT" << std::endl;
+                BROWSER_DEBUG_VAL("KEY_RIGHT");
                 event.windows_key_code = 39;
             }
             else if (key == godot::GlobalConstants::KEY_LEFT) {
-                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_LEFT" << std::endl;
+                BROWSER_DEBUG_VAL("KEY_LEFT");
                 event.windows_key_code = 37;
             }
             else if (key == godot::GlobalConstants::KEY_UP) {
-                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_UP" << std::endl;
+                BROWSER_DEBUG_VAL("KEY_UP");
                 event.windows_key_code = 38;
             }
             else if (key == godot::GlobalConstants::KEY_DOWN) {
-                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_DOWN" << std::endl;
+                BROWSER_DEBUG_VAL("KEY_DOWN");
                 event.windows_key_code = 40;
             }
             else if (key == godot::GlobalConstants::KEY_PAGEUP) {
-                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_PAGEUP" << std::endl;
+                BROWSER_DEBUG_VAL("KEY_PAGEUP");
                 event.windows_key_code = 33;
             }
             else if (key == godot::GlobalConstants::KEY_PAGEDOWN) {
-                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_PAGEDOWN" << std::endl;
+                BROWSER_DEBUG_VAL("KEY_PAGEDOWN");
                 event.windows_key_code = 34;
             }
             else if (key == godot::GlobalConstants::KEY_HOME) {
-                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_HOME" << std::endl;
+                BROWSER_DEBUG_VAL("KEY_HOME");
                 event.windows_key_code = 36; // Debut
             }
             else if (key == godot::GlobalConstants::KEY_END) {
-                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_END" << std::endl;
+                BROWSER_DEBUG_VAL("KEY_END");
                 event.windows_key_code = 35; // Fin
             }
             else if (key == godot::GlobalConstants::KEY_INSERT) {
-                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_INSERT" << std::endl;
+                BROWSER_DEBUG_VAL("KEY_INSERT");
                 event.windows_key_code = 45; // Insert
             }
             else if (key == godot::GlobalConstants::KEY_DELETE) {
-                std::cout << "[GDCEF] [BrowserView::keyPress] KEY_DELETE" << std::endl;
+                BROWSER_DEBUG_VAL("KEY_DELETE");
                 event.windows_key_code = 46; // Del (not dot when no char event)
             }
 
@@ -312,7 +312,7 @@ void BrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool ctr
         }
         else
         {
-            std::cout << "[GDCEF] [BrowserView::keyPress] Any Char" << std::endl;
+            BROWSER_DEBUG_VAL("Any Char");
             event.windows_key_code = key;
             event.character = key16b;
             event.native_key_code = key;
@@ -326,7 +326,7 @@ void BrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool ctr
     }
     else
     {
-        std::cout << "[GDCEF] [BrowserView::KeyPressed] PRESSED FALSE" << std::endl;
+        BROWSER_DEBUG_VAL("PRESSED FALSE");
         event.native_key_code |= int(0xC0000000);
         event.type = KEYEVENT_KEYUP;
         m_browser->GetHost()->SendKeyEvent(event);

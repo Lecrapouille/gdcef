@@ -21,8 +21,8 @@
 
 //------------------------------------------------------------------------------
 #include "gdcef.hpp"
+#include "browser.hpp"
 #include "helper.hpp"
-#include <iostream>
 
 //------------------------------------------------------------------------------
 // List of file names
@@ -41,24 +41,6 @@
 #else
 #  error "Undefined path for the Godot's CEF sub process for this architecture"
 #endif
-
-//------------------------------------------------------------------------------
-// Logs
-#define GDCEF_DEBUG()                                                      \
-  std::cout << "[GDCEF][GDCEF::" << __func__ << "]" << std::endl
-#define GDCEF_DEBUG_VAL(x)                                                 \
-  std::cout << "[GDCEF][GDCEF::" << __func__ << "] " << x << std::endl
-#define GDCEF_ERROR(x)                                                     \
-  std::cerr << "[GDCEF][GDCEF::" << __func__ << "] " << x << std::endl
-#define BROWSER_DEBUG()                                                    \
-  std::cout << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "]"  \
-            << std::endl
-#define BROWSER_DEBUG_VAL(x)                                               \
-  std::cout << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "] " \
-            << x << std::endl
-#define BROWSER_ERROR(x)                                                   \
-  std::cerr << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "] " \
-            << x << std::endl
 
 //------------------------------------------------------------------------------
 static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
@@ -98,6 +80,7 @@ void GDCef::_register_methods()
 
     godot::register_method("_process", &GDCef::_process);
     godot::register_method("create_browser", &GDCef::createBrowser);
+    godot::register_method("shutdown", &GDCef::shutdown);
 }
 
 //------------------------------------------------------------------------------
@@ -308,7 +291,7 @@ static void configureBrowser(CefBrowserSettings& browser_settings)
 
     // Controls whether any plugins will be loaded. Also configurable using the
     // "disable-plugins" command-line switch.
-    browser_settings.plugins = STATE_ENABLED;
+    //browser_settings.plugins = STATE_ENABLED;
 
     // Controls whether image URLs will be loaded from the network. A cached
     // image will still be rendered if requested. Also configurable using the
@@ -326,18 +309,33 @@ static void configureBrowser(CefBrowserSettings& browser_settings)
 }
 
 //------------------------------------------------------------------------------
-GDCef::~GDCef()
+GDCef::GDCef()
 {
-    GDCEF_DEBUG();
-    CefShutdown();
+    m_impl = new GDCef::Impl(*this);
 }
 
 //------------------------------------------------------------------------------
-BrowserView* GDCef::createBrowser(godot::String const name, godot::String const url)
+GDCef::~GDCef()
+{
+    shutdown();
+}
+
+//------------------------------------------------------------------------------
+void GDCef::shutdown()
+{
+    GDCEF_DEBUG();
+    CefQuitMessageLoop();
+    m_impl = nullptr;
+}
+
+//------------------------------------------------------------------------------
+BrowserView* GDCef::createBrowser(godot::String const url, godot::String const name,
+                                  int w, int h)
 {
     GDCEF_DEBUG_VAL("name: " << name.utf8().get_data() <<
                     ", url: " << url.utf8().get_data());
 
+    // Godot node creation (note Godot cannot pass arguments to _new())
     BrowserView* browser = BrowserView::_new();
     if (browser == nullptr)
     {
@@ -345,32 +343,35 @@ BrowserView* GDCef::createBrowser(godot::String const name, godot::String const 
         return nullptr;
     }
 
-    // Complete BrowserView constructor
-    int id = browser->init(url, settingsBrowser(), windowInfo());
+    // Complete BrowserView constructor (complete _new())
+    int id = browser->init(url, settingsBrowser(), windowInfo(), name);
     if (id < 0)
     {
        GDCEF_ERROR("browser->init() failed");
        return nullptr;
     }
 
-    browser->set_name(name);
+    // Update the dimension of the document
+    browser->reshape(w, h);
+
+    // Attach the new Godot node
     add_child(browser);
-    //m_browsers[id] = browser;
+
     return browser;
 }
 
 //------------------------------------------------------------------------------
-void GDCef::OnAfterCreated(CefRefPtr<CefBrowser> browser)
+void GDCef::Impl::OnAfterCreated(CefRefPtr<CefBrowser> /*browser*/)
 {
     CEF_REQUIRE_UI_THREAD();
     GDCEF_DEBUG();
 
     // Add to the list of existing browsers.
-    m_browsers[browser->GetIdentifier()] = browser;
+    //m_browsers[browser->GetIdentifier()] = browser;
 }
 
 //------------------------------------------------------------------------------
-bool GDCef::DoClose(CefRefPtr<CefBrowser> /*browser*/)
+bool GDCef::Impl::DoClose(CefRefPtr<CefBrowser> /*browser*/)
 {
     CEF_REQUIRE_UI_THREAD();
     GDCEF_DEBUG();
@@ -378,7 +379,7 @@ bool GDCef::DoClose(CefRefPtr<CefBrowser> /*browser*/)
     // Closing the main window requires special handling. See the DoClose()
     // documentation in the CEF header for a detailed destription of this
     // process.
-    if (m_browsers.size() == 1u)
+    //if (m_browsers.size() == 1u)
     {
         // Set a flag to indicate that the window close should be allowed.
         //is_closing_ = true;
@@ -390,331 +391,23 @@ bool GDCef::DoClose(CefRefPtr<CefBrowser> /*browser*/)
 }
 
 //------------------------------------------------------------------------------
-void GDCef::OnBeforeClose(CefRefPtr<CefBrowser> browser)
+void GDCef::Impl::OnBeforeClose(CefRefPtr<CefBrowser> browser)
 {
     CEF_REQUIRE_UI_THREAD();
     GDCEF_DEBUG();
 
-    // Remove from the list of existing browsers.
-    m_browsers.erase(browser->GetIdentifier());
-
-    if (m_browsers.empty())
+    // Remove from the list of existing browsers from the Godot child.
+    // FIXME we suppose that all child node are BrowserView.
+    int64_t i = m_owner.get_child_count();
+    while (i--)
     {
-        // All browser windows have closed. Quit the application message loop.
-        //CefQuitMessageLoop();
+        godot::Node* node = m_owner.get_child(i);
+        BrowserView* b = reinterpret_cast<BrowserView*>(node);
+        if ((b != nullptr) && (b->id() == browser->GetIdentifier()))
+        {
+            GDCEF_DEBUG_VAL("Removed " << b->id());
+            m_owner.remove_child(node);
+            node->queue_free();
+        }
     }
-}
-
-//------------------------------------------------------------------------------
-// in a GDNative module, "_bind_methods" is replaced by the "_register_methods"
-// method CefRefPtr<CefBrowser> m_browser;this is used to expose various methods of this class to Godot
-void BrowserView::_register_methods()
-{
-    GDCEF_DEBUG();
-
-    godot::register_method("id", &BrowserView::id);
-    godot::register_method("is_valid", &BrowserView::isValid);
-    godot::register_method("get_texture", &BrowserView::texture);
-    godot::register_method("use_texture_from", &BrowserView::texture);
-    godot::register_method("set_zoom_level", &BrowserView::setZoomLevel);
-    godot::register_method("load_url", &BrowserView::loadURL);
-    godot::register_method("is_loaded", &BrowserView::loaded);
-    godot::register_method("get_url", &BrowserView::getURL);
-    godot::register_method("stop_loading", &BrowserView::stopLoading);
-    godot::register_method("can_navigate_backward", &BrowserView::canNavigateBackward);
-    godot::register_method("can_navigate_forward", &BrowserView::canNavigateForward);
-    godot::register_method("navigate_back", &BrowserView::navigateBackward);
-    godot::register_method("navigate_forward", &BrowserView::navigateForward);
-    godot::register_method("set_size", &BrowserView::reshape);
-    godot::register_method("set_viewport", &BrowserView::viewport);
-    godot::register_method("on_key_pressed", &BrowserView::keyPress);
-    godot::register_method("on_mouse_moved", &BrowserView::mouseMove);
-    godot::register_method("on_mouse_left_click", &BrowserView::leftClick);
-    godot::register_method("on_mouse_right_click", &BrowserView::rightClick);
-    godot::register_method("on_mouse_middle_click", &BrowserView::middleClick);
-    godot::register_method("on_mouse_left_down", &BrowserView::leftMouseDown);
-    godot::register_method("on_mouse_left_up", &BrowserView::leftMouseUp);
-    godot::register_method("on_mouse_right_down", &BrowserView::rightMouseDown);
-    godot::register_method("on_mouse_right_up", &BrowserView::rightMouseUp);
-    godot::register_method("on_mouse_middle_down", &BrowserView::middleMouseDown);
-    godot::register_method("on_mouse_middle_up", &BrowserView::middleMouseUp);
-    godot::register_method("on_mouse_wheel", &BrowserView::mouseWheel);
-
-    godot::register_signal<BrowserView>("page_loaded", "node", GODOT_VARIANT_TYPE_OBJECT);
-}
-
-//------------------------------------------------------------------------------
-void BrowserView::_init()
-{
-    BROWSER_DEBUG();
-}
-
-//------------------------------------------------------------------------------
-int BrowserView::init(godot::String const& url, CefBrowserSettings const& settings,
-                      CefWindowInfo const& window_info)
-{
-    // Create a new browser using the window parameters specified by
-    // |windowInfo|.  If |request_context| is empty the global request context
-    // will be used. This method can only be called on the browser process UI
-    // thread. The optional |extra_info| parameter provides an opportunity to
-    // specify extra information specific to the created browser that will be
-    // passed to CefRenderProcessHandler::OnBrowserCreated() in the render
-    // process.
-    m_browser = CefBrowserHost::CreateBrowserSync(
-        window_info, this, url.utf8().get_data(), settings,
-        nullptr, nullptr);
-
-    if ((m_browser == nullptr) || (m_browser->GetHost() == nullptr))
-    {
-        m_id = -1;
-        BROWSER_ERROR("CreateBrowserSync failed");
-    }
-    else
-    {
-        m_id = m_browser->GetIdentifier();
-        BROWSER_DEBUG_VAL("CreateBrowserSync succeeded");
-        m_browser->GetHost()->WasResized();
-    }
-
-    return m_id;
-}
-
-//------------------------------------------------------------------------------
-BrowserView::BrowserView()
-    : m_viewport({ 0.0f, 0.0f, 1.0f, 1.0f})
-{
-    BROWSER_DEBUG_VAL("Create Godot texture");
-
-    m_image.instance();
-    m_texture.instance();
-}
-
-//------------------------------------------------------------------------------
-BrowserView::~BrowserView()
-{
-    BROWSER_DEBUG();
-
-    if (!m_browser)
-        return ;
-
-    auto host = m_browser->GetHost();
-    if (!host)
-        return ;
-
-    host->CloseDevTools(); // remote_debugging_port
-    host->TryCloseBrowser();//CloseBrowser(true);
-}
-
-//------------------------------------------------------------------------------
-void BrowserView::GetViewRect(CefRefPtr<CefBrowser> /*browser*/, CefRect& rect)
-{
-    BROWSER_DEBUG_VAL(int(m_viewport[0] * m_width) << ", " <<
-                      int(m_viewport[1] * m_height) << ", " <<
-                      int(m_viewport[2] * m_width) << ", " <<
-                      int(m_viewport[3] * m_height));
-    rect = CefRect(int(m_viewport[0] * m_width),
-                   int(m_viewport[1] * m_height),
-                   int(m_viewport[2] * m_width),
-                   int(m_viewport[3] * m_height));
-}
-
-//------------------------------------------------------------------------------
-// FIXME find a less naive algorithm et utiliser dirtyRects
-void BrowserView::OnPaint(CefRefPtr<CefBrowser> /*browser*/, PaintElementType /*type*/,
-                          const RectList& /*dirtyRects*/, const void* buffer,
-                          int width, int height)
-{
-    // Sanity check
-    if ((width <= 0) || (height <= 0) || (buffer == nullptr))
-        return ;
-
-    // BGRA8: blue, green, red components each coded as byte
-    int const COLOR_CHANELS = 4;
-    int const SIZEOF_COLOR = COLOR_CHANELS * sizeof(char);
-    int const TEXTURE_SIZE = SIZEOF_COLOR * width * height;
-
-    // Copy CEF image buffer to Godot PoolVector
-    m_data.resize(TEXTURE_SIZE);
-    godot::PoolByteArray::Write w = m_data.write();
-    memcpy(&w[0], buffer, size_t(TEXTURE_SIZE));
-
-    // Color conversion BGRA8 -> RGBA8: swap B and R chanels
-    for (int i = 0; i < TEXTURE_SIZE; i += COLOR_CHANELS)
-    {
-        std::swap(w[i], w[i + 2]);
-    }
-
-    // Copy Godot PoolVector to Godot texture.
-    m_image->create_from_data(width, height, false, godot::Image::FORMAT_RGBA8, m_data);
-    m_texture->create_from_image(m_image, godot::Texture::FLAG_VIDEO_SURFACE);
-}
-
-//------------------------------------------------------------------------------
-void BrowserView::OnLoadEnd(CefRefPtr<CefBrowser> browser,
-                            CefRefPtr<CefFrame> /*frame*/,
-                            int /*httpStatusCode*/)
-{
-    GDCEF_DEBUG_VAL("has ended loading");
-    assert(browser != nullptr);
-    assert(m_browser != nullptr);
-    assert(browser->GetIdentifier() == m_browser->GetIdentifier());
-    (void) browser;
-
-    // Emit signal for Godot script
-    emit_signal("page_loaded", this);
-}
-
-//------------------------------------------------------------------------------
-void BrowserView::setZoomLevel(double delta)
-{
-    BROWSER_DEBUG_VAL(delta);
-
-    if (!m_browser)
-        return;
-
-    m_browser->GetHost()->SetZoomLevel(delta);
-}
-
-//------------------------------------------------------------------------------
-void BrowserView::loadURL(godot::String url)
-{
-    BROWSER_DEBUG_VAL(url.utf8().get_data());
-
-    m_browser->GetMainFrame()->LoadURL(url.utf8().get_data());
-}
-
-//------------------------------------------------------------------------------
-bool BrowserView::loaded() const
-{
-    BROWSER_DEBUG();
-
-    if (!m_browser)
-        return false;
-
-    return m_browser->HasDocument();
-}
-
-//------------------------------------------------------------------------------
-godot::String BrowserView::getURL() const
-{
-    if (m_browser && m_browser->GetMainFrame())
-    {
-        std::string str = m_browser->GetMainFrame()->GetURL().ToString();
-        BROWSER_DEBUG_VAL(str);
-        return str.c_str();
-    }
-
-    BROWSER_ERROR("Not possible to retrieving URL");
-    return {};
-}
-
-//------------------------------------------------------------------------------
-void BrowserView::stopLoading()
-{
-    BROWSER_DEBUG();
-
-    if (!m_browser)
-        return;
-
-    m_browser->StopLoad();
-}
-
-//------------------------------------------------------------------------------
-bool BrowserView::canNavigateBackward() const
-{
-    BROWSER_DEBUG();
-
-    if (!m_browser)
-        return false;
-
-    return m_browser->CanGoBack();
-}
-
-//------------------------------------------------------------------------------
-void BrowserView::navigateBackward()
-{
-    BROWSER_DEBUG();
-
-    if ((m_browser != nullptr) && (m_browser->CanGoBack()))
-    {
-        m_browser->GoBack();
-    }
-}
-
-//------------------------------------------------------------------------------
-bool BrowserView::canNavigateForward() const
-{
-    BROWSER_DEBUG();
-
-    if (!m_browser)
-        return false;
-
-    return m_browser->CanGoForward();
-}
-
-//------------------------------------------------------------------------------
-void BrowserView::navigateForward()
-{
-    BROWSER_DEBUG();
-
-    if ((m_browser != nullptr) && (m_browser->CanGoForward()))
-    {
-        m_browser->GoForward();
-    }
-}
-
-//------------------------------------------------------------------------------
-void BrowserView::reshape(int w, int h)
-{
-    BROWSER_DEBUG_VAL(w << " x " << h);
-
-    m_width = float(w);
-    m_height = float(h);
-
-    if (!m_browser || !m_browser->GetHost())
-        return;
-
-    m_browser->GetHost()->WasResized();
-}
-
-//------------------------------------------------------------------------------
-bool BrowserView::viewport(float x, float y, float w, float h)
-{
-    BROWSER_DEBUG_VAL(x << ", " << y << ", " << w << ", " << h);
-
-    if (!(x >= 0.0f) && (x < 1.0f))
-        return false;
-
-    if (!(x >= 0.0f) && (y < 1.0f))
-        return false;
-
-    if (!(w > 0.0f) && (w <= 1.0f))
-        return false;
-
-    if (!(h > 0.0f) && (h <= 1.0f))
-        return false;
-
-    if (x + w > 1.0f)
-        return false;
-
-    if (y + h > 1.0f)
-        return false;
-
-    m_viewport[0] = x;
-    m_viewport[1] = y;
-    m_viewport[2] = w;
-    m_viewport[3] = h;
-
-    return true;
-}
-
-//------------------------------------------------------------------------------
-bool BrowserView::isValid() const
-{
-    BROWSER_DEBUG();
-
-    if (!m_browser)
-        return false;
-
-    return m_browser->IsValid();
 }
