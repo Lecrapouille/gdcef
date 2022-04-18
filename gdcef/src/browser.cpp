@@ -161,13 +161,17 @@ void BrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
 
 //------------------------------------------------------------------------------
 void BrowserView::onLoadEnd(CefRefPtr<CefBrowser> /*browser*/,
-                            CefRefPtr<CefFrame> /*frame*/,
-                            int /*httpStatusCode*/)
+                            CefRefPtr<CefFrame> frame,
+                            int httpStatusCode)
 {
-    GDCEF_DEBUG_VAL("has ended loading");
+    // Emit signal only when top-level frame has succeeded.
+    if ((httpStatusCode == 200) && (frame->IsMain()))
+    {
+        GDCEF_DEBUG_VAL("has ended loading " << frame->GetURL());
 
-    // Emit signal for Godot script
-    emit_signal("page_loaded", this);
+        // Emit signal for Godot script
+        emit_signal("page_loaded", this);
+    }
 }
 
 //------------------------------------------------------------------------------
