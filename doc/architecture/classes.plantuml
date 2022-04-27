@@ -1,0 +1,15 @@
+@startuml
+
+class Node as "godot::Node"
+
+class GDCef {
++ void _process(float delta)
++ GDBrowserView* createBrowser(...)
++ void shutdown()
+}
+
+Node <|-- GDCef
+Node <|-- GDBrowserView
+GDCef -> "*" GDBrowserView
+
+@enduml

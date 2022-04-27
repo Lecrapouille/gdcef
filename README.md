@@ -1,36 +1,47 @@
 # Chromium Embedded Framework as Godot native module
 
-This document explains how is compiled for Window, the Godot native module (GDNative) for Chromium Embedded Framework (CEF).
-This module is used by the Stigmee [project](https://github.com/stigmee/stigmee) and compiled automatically by
-this [install](https://github.com/stigmee/install) for Linux while, for the moment, you will have to do some
-manual steps for Windows.
+This repository contains the Godot native module (GDNative) for [Chromium
+Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home) (CEF).
+The module contains the code source of C++ wrapper classes on CEF API to be used
+from Godot scripts and is compiled automatically by the
+[install](https://github.com/stigmee/install) script `build.py` for Linux and
+for Windows 10 (not yet for Mac OS).
 
-* Tested successfully with Godot 3.4.2-stable, Linux and Windows environments. MacOS X compiles but does not work yet.
-* Tested with the following CEF version : cef_binary_96.0.16+g89c902b+chromium-96.0.4664.55 that can be downloaded at
-https://cef-builds.spotifycdn.com/index.html
+This document explains how this module is compiled to make you understand global
+ideas behind but for details, you will have to see directly inside the code
+source. The detail design is described in this [document](doc/detailsdesign.md).
 
 ## Environment
 
 Example of installation :
 
 ```
-<Project>\                                     <= Godot installation root (compile godot from here)
-<Project>\godot-native\                        <= Base folder holding native modules
-<Project>\godot-native\gdcef                   <= Code for the CEF module
-<Project>\godot-native\gdcef_subprocess        <= Code of the sub-process CEF executable
-<Project>\godot-native\godot-cpp               <= Godot C++ API and bindings (git cloned and to be compiled from here)
-<Project>\godot-native\thirdparty\cef_binary   <= CEF distribution used to build the dependencies (downloaded  and to be compiled from here)
+📦<Project>
+ ┣ 📂godot-cpp                 <= Godot C++ API and bindings (git cloned and to be compiled from here)
+ ┗ 📂godot-native              <= Base folder holding native modules
+   ┗ 📂browser                 <= Base folder holding native CEF module
+     ┣ 📂gdcef                 <= Code for the CEF module
+     ┣ 📂gdcef_subprocess      <= Code of the sub-process CEF executable
+     ┗ 📂cef_binary            <= CEF distribution used to build the dependencies (downloaded  and to be compiled from here)
 ```
 
-## Prerequisites
-
-The following 2 prerequisite components *are NOT included* in this repository and must be added to the project before any compilation attempt:
-- godot-native\godot-cpp
-- godot-native\thirdparty\cef_binary
+The Stigmee tree project is a little more complex than depicted in this diagram:
+it contains the Godot editor code have more native modules (Stigmark, IPFS ...)
+but only modules concerning CEF are depicted in this document.
 
 ### godot-cpp: Godot C++ API
 
-First of all, clone **recursively** the godot-cpp repository into `godot-native\godot-cpp` subfolder, using the appropriate branch (do not clone the master as you would end up with headers for the 4.0 version. Recursive cloning will include the appropriate godot-headers used to generate the C++ bindings.
+This first component must be present before doing any compilation attempt of
+Godot modules (Stigmark, IPFS ...).
+
+It is created when the Stigmee workspace is created thanks the
+[manifest](https://github.com/stigmee/manifest) file of the tool `tsrc` or
+`git-repo`.  What this repo tool does is to clone **recursively** the godot-cpp
+repository, using the appropriate branch (do not clone the master as you would
+end up with headers for the 4.0 version). Recursive cloning will include the
+appropriate godot-headers used to generate the C++ bindings. `godot-cpp`
+contains the Godot API like if we were directly inside the code source of the
+Godot editor.
 
 ```
 git clone --recursive -b 3.4 https://github.com/godotengine/godot-cpp
@@ -51,44 +62,89 @@ Receiving objects: 100% (801/801), 1.99 MiB | 11.24 MiB/s, done.
 Resolving deltas: 100% (498/498), done.
 Submodule path 'godot-headers': checked out 'd1596b939d6c9f5df86655ea617713ef321ad938'
 ```
+
+The `build.py`, for compiling `godot-cpp`, will call a command similar to these
+lines:
+
 ```
 cd godot-cpp
 scons platform=windows target=release -j8
 ```
-(use release_debug in rc distributions)
-(use release in stable distributions)
 
 ### cef_binary: prebuilt Chromium Embedded Framework
 
-Download the appropriate release (depending on your OS) from https://cef-builds.spotifycdn.com/index.html
-and extract it into `godot-native/thirdparty/cef_binary`, then compile it like so.
+The second component is not created when the Stigmee workspace is created by the
+repo tool but, instead, shall be downloaded from
+https://cef-builds.spotifycdn.com/index.html which is done automatically by the
+[install](https://github.com/stigmee/install) script `build.py`. The folder
+contains the CEF prebuilt. Our build script knows your operating system and the
+desired CEF version: a check inside the CEF's README (if present) allows it to
+know if CEF has been downloaded and if the version is the good one. If the
+version mismatch the old CEF version is removed and the new one is downlaoded.
+
+The `build.py`, to compile CEF, will call a command similar to these lines:
 
 ```
 cd ./thirdparty/cef_binary
 mkdir build
 cd build
 cmake ..
-cmake --build .
+make --build .
 ```
 
-For Windows64, actual builds are using dynamic library, and default VS solutions is configured for static compilation. Therefore need to use VS to compile in Release mode, and you will need to change the compiler mode of the Release mode from `/MT` to `/MD`,
-and add the 2 following preprocessor flags
+For Windows64, actual builds are using dynamic library, and default VS solutions
+is configured for static compilation. Therefore need to use VS to compile in
+Release mode, and you (the build script) will change the compiler mode of the
+Release mode from `/MT` to `/MD`, and add the 2 following preprocessor flags:
 
 * `_ITERATOR_DEBUG_LEVEL = 0;`                 under `C/C++ >> Preprocessor >> PreprocessorDefinitions`.
 * `_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH`       under `C/C++ >> Preprocessor >> PreprocessorDefinitions`.
 
+For Linux it seems not possible to compile in static, as consequence the
+`libcef.so` is quite fat: more than 1 gigabytes which is a factor more than the
+one for Windows (probably because this last knows better that Linux which symbol
+to export). The reason of dynamic library instead of static is given
+[here](https://www.magpcss.org/ceforum/viewtopic.php?f=6&t=11182) which is not
+important in our case because Stigmee is under GPL licence.
 
-## Sub-Process executable compilation (./gdcef_subprocess)
+*IMPORTANT:* The following dependencies are not included in the repository and
+need to be copied into your Godot project root (res://) along with the
+sub-process executable binary (they should be available in
+./thirdparty/cef_binary), otherwise Godot will complain about not being able to
+load the module dependencies at project startup. The destination folder is
+https://github.com/stigmee/stigmee inside its `build` folder (to be
+created). Those files are mandatory to correctly startup CEF:
 
-This executable is needed in order for the CEF to spawn the various CEF sub-processes (gpu process, render handler...). The binary path is passed at runtime to the CEF Client.
+```
+chrome_elf.dll       <- thirdparty\cef_binary\Release
+d3dcompiler_47.dll   <- thirdparty\cef_binary\Release
+icudtl.dat           <- thirdparty\cef_binary\Release
+libEGL.dll           <- thirdparty\cef_binary\Release
+libGLESv2.dll        <- thirdparty\cef_binary\Release
+libcef.dll           <- thirdparty\cef_binary\Release
+snapshot_blob.bin    <- thirdparty\cef_binary\Release
+v8_context_snapshot.bin   <- thirdparty\cef_binary\Release
+chrome_100_percent.pak    <- from thirdparty\cef_binary\Resources
+chrome_200_percent.pak    <- from thirdparty\cef_binary\Resources
+icudtl.dat      <- from thirdparty\cef_binary\Resources
+resources.pak   <- from thirdparty\cef_binary\Resources
+```
+
+Again, the `build.py` will do it for you.
+
+### Sub-Process executable compilation (./gdcef_subprocess)
+
+This executable is needed in order for the CEF to spawn the various CEF
+sub-processes (GPU process, render handler...). The binary path is passed at
+runtime to the CEF Client.
 
 ```
 📦gdcef_subprocess
  ┣ 📂src
  ┃ ┣ 📜gdcef_browser_app.cpp
- ┃ ┣ 📜gdcef_browser_app.h
+ ┃ ┣ 📜gdcef_browser_app.hpp
  ┃ ┣ 📜gdcef_client.cpp
- ┃ ┣ 📜gdcef_client.h
+ ┃ ┣ 📜gdcef_client.hpp
  ┃ ┗ 📜main.cpp
  ┗ 📜SConstruct
 ```
@@ -99,21 +155,28 @@ To compile this source :
 cd <Project>\godot-native\
 mkdir build
 cd .\gdcef_subprocess
-scons target=release platform=windows -j8
+scons target=release platform=windows workspace=$WORKSPACE_STIGMEE godot_version=3.4.3 -j8
 ```
 
-The executable will be generated into the build directory. It should be placed into the appropriate godot project path (see Module configuration).
+The executable will be created as `gdcefSubProcess.exe`. It should be placed
+into the appropriate our godot project https://github.com/stigmee/stigmee inside
+its `build` folder (to be created). Again the `build.py` will do it for you.
 
-## Module compilation (./gdcef)
+### Module compilation (./gdcef)
 
-This directory contains the source of the gdcef library, allowing to generate the libgdcef.dll module. This dll file can then be loaded by the GDNative module (see Module configuration).
+This directory contains the source of the gdcef library, allowing to generate
+the `libgdcef.dll` module. This dll file can then be loaded by the GDNative
+module (see Module configuration).
 
 ```
 📦gdcef
  ┣ 📂src
  ┃ ┣ 📜gdcef.cpp
- ┃ ┣ 📜gdcef.h
- ┃ ┗ 📜gdlibrary.cpp
+ ┃ ┣ 📜gdcef.hpp
+ ┃ ┣ 📜gdbrowser.cpp
+ ┃ ┣ 📜gdbrowser.hpp
+ ┃ ┣ 📜gdlibrary.cpp
+ ┃ ┗ 📜...
  ┗ 📜SConstruct
 ```
 
@@ -123,14 +186,17 @@ To compile this source :
 cd <Project>\godot-native\
 mkdir build
 cd .\gdcef
-scons target=release platform=windows -j8
+scons target=release platform=windows -j8 workspace=$WORKSPACE_STIGMEE godot_version=3.4.3 -j8
 ```
+
+The executable will be generated into the build directory. It should be placed
+into the appropriate our godot project https://github.com/stigmee/stigmee inside
+its `build` folder (to be created). Again the `build.py` will do it for you.
 
 ## Module configuration
 
-In order to configure the module :
-- place the `libgdcef.dll` file and `gdcefSubProcess.exe` into the project root (main game directory)
-- create the following 2 files under the `./build` directory
+In order to be used by Godot, create the following 2 files under the `./build`
+directory:
 
 - gdcef.gdns:
 ```
@@ -167,38 +233,5 @@ Windows.64=[ "res://build/libcef.dll" ]
 X11.64=[ "res://build/libcef.so" ]
 ```
 
-Ensure the lib is correctly loaded into your project (open the lib in the godot editor, make sur GDCef can be instanciated in GDScript).
-
-## Exposed methods (as of 13/01/2022)
-
-The following methods are part of the library at the moment, all in the GDCef class :
-
-```
-    void load_url(String url)
-    void navigate_back()
-    void navigate_forward()
-    void do_message_loop_work()
-    Ref<ImageTexture> get_texture()
-    void reshape(int w, int h)
-    void on_key_pressed(int key, bool pressed, bool up)
-    void on_mouse_moved(int x, int y)
-    void on_mouse_click(int button, bool mouse_up)
-    void on_mouse_wheel(const int wDelta)
-```
-
-*IMPORTANT:* The following dependencies are not included in the repository and need to be copied into your godot project root (res://) along with the sub-process executable binary (they should be available in ./thirdparty/cef_binary), otherwise godot will complain about not being able to load the module dependancies at project startup. Those files are mandatory to correctly startup CEF :
-
-```
-chrome_elf.dll       <- thirdparty\cef_binary\Release
-d3dcompiler_47.dll   <- thirdparty\cef_binary\Release
-icudtl.dat           <- thirdparty\cef_binary\Release
-libEGL.dll           <- thirdparty\cef_binary\Release
-libGLESv2.dll        <- thirdparty\cef_binary\Release
-libcef.dll           <- thirdparty\cef_binary\Release
-snapshot_blob.bin    <- thirdparty\cef_binary\Release
-v8_context_snapshot.bin   <- thirdparty\cef_binary\Release
-chrome_100_percent.pak    <- from thirdparty\cef_binary\Resources
-chrome_200_percent.pak    <- from thirdparty\cef_binary\Resources
-icudtl.dat      <- from thirdparty\cef_binary\Resources
-resources.pak   <- from thirdparty\cef_binary\Resources
- ```
+Ensure the lib is correctly loaded into your project (open the lib in the Godot
+editor, make sure GDCef can be instantiated in GDScript).
