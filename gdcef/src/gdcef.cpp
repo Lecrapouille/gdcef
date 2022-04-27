@@ -21,7 +21,7 @@
 
 //------------------------------------------------------------------------------
 #include "gdcef.hpp"
-#include "browser.hpp"
+#include "gdbrowser.hpp"
 #include "helper.hpp"
 
 //------------------------------------------------------------------------------
@@ -329,14 +329,14 @@ void GDCef::shutdown()
 }
 
 //------------------------------------------------------------------------------
-BrowserView* GDCef::createBrowser(godot::String const url, godot::String const name,
-                                  int w, int h)
+GDBrowserView* GDCef::createBrowser(godot::String const url, godot::String const
+                                    name, int w, int h)
 {
     GDCEF_DEBUG_VAL("name: " << name.utf8().get_data() <<
                     ", url: " << url.utf8().get_data());
 
     // Godot node creation (note Godot cannot pass arguments to _new())
-    BrowserView* browser = BrowserView::_new();
+    GDBrowserView* browser = GDBrowserView::_new();
     if (browser == nullptr)
     {
         GDCEF_ERROR("new BrowserView() failed");
@@ -402,7 +402,7 @@ void GDCef::Impl::OnBeforeClose(CefRefPtr<CefBrowser> browser)
     while (i--)
     {
         godot::Node* node = m_owner.get_child(i);
-        BrowserView* b = reinterpret_cast<BrowserView*>(node);
+        GDBrowserView* b = reinterpret_cast<GDBrowserView*>(node);
         if ((b != nullptr) && (b->id() == browser->GetIdentifier()))
         {
             GDCEF_DEBUG_VAL("Removed " << b->id());

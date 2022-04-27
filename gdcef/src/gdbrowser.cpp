@@ -20,54 +20,54 @@
 //*************************************************************************
 
 //------------------------------------------------------------------------------
-#include "browser.hpp"
+#include "gdbrowser.hpp"
 #include "helper.hpp"
 
 //------------------------------------------------------------------------------
 // in a GDNative module, "_bind_methods" is replaced by the "_register_methods"
 // method CefRefPtr<CefBrowser> m_browser;this is used to expose various methods of this class to Godot
-void BrowserView::_register_methods()
+void GDBrowserView::_register_methods()
 {
     GDCEF_DEBUG();
 
-    godot::register_method("close", &BrowserView::close);
-    godot::register_method("id", &BrowserView::id);
-    godot::register_method("is_valid", &BrowserView::isValid);
-    godot::register_method("get_texture", &BrowserView::texture);
-    godot::register_method("use_texture_from", &BrowserView::texture);
-    godot::register_method("set_zoom_level", &BrowserView::setZoomLevel);
-    godot::register_method("load_url", &BrowserView::loadURL);
-    godot::register_method("is_loaded", &BrowserView::loaded);
-    godot::register_method("get_url", &BrowserView::getURL);
-    godot::register_method("stop_loading", &BrowserView::stopLoading);
-    godot::register_method("has_previous_page", &BrowserView::canNavigateBackward);
-    godot::register_method("has_next_page", &BrowserView::canNavigateForward);
-    godot::register_method("previous_page", &BrowserView::navigateBackward);
-    godot::register_method("next_page", &BrowserView::navigateForward);
-    godot::register_method("resize", &BrowserView::reshape);
-    godot::register_method("set_viewport", &BrowserView::viewport);
-    godot::register_method("on_key_pressed", &BrowserView::keyPress);
-    godot::register_method("on_mouse_moved", &BrowserView::mouseMove);
-    godot::register_method("on_mouse_left_click", &BrowserView::leftClick);
-    godot::register_method("on_mouse_right_click", &BrowserView::rightClick);
-    godot::register_method("on_mouse_middle_click", &BrowserView::middleClick);
-    godot::register_method("on_mouse_left_down", &BrowserView::leftMouseDown);
-    godot::register_method("on_mouse_left_up", &BrowserView::leftMouseUp);
-    godot::register_method("on_mouse_right_down", &BrowserView::rightMouseDown);
-    godot::register_method("on_mouse_right_up", &BrowserView::rightMouseUp);
-    godot::register_method("on_mouse_middle_down", &BrowserView::middleMouseDown);
-    godot::register_method("on_mouse_middle_up", &BrowserView::middleMouseUp);
-    godot::register_method("on_mouse_wheel", &BrowserView::mouseWheel);
+    godot::register_method("close", &GDBrowserView::close);
+    godot::register_method("id", &GDBrowserView::id);
+    godot::register_method("is_valid", &GDBrowserView::isValid);
+    godot::register_method("get_texture", &GDBrowserView::texture);
+    godot::register_method("use_texture_from", &GDBrowserView::texture);
+    godot::register_method("set_zoom_level", &GDBrowserView::setZoomLevel);
+    godot::register_method("load_url", &GDBrowserView::loadURL);
+    godot::register_method("is_loaded", &GDBrowserView::loaded);
+    godot::register_method("get_url", &GDBrowserView::getURL);
+    godot::register_method("stop_loading", &GDBrowserView::stopLoading);
+    godot::register_method("has_previous_page", &GDBrowserView::canNavigateBackward);
+    godot::register_method("has_next_page", &GDBrowserView::canNavigateForward);
+    godot::register_method("previous_page", &GDBrowserView::navigateBackward);
+    godot::register_method("next_page", &GDBrowserView::navigateForward);
+    godot::register_method("resize", &GDBrowserView::reshape);
+    godot::register_method("set_viewport", &GDBrowserView::viewport);
+    godot::register_method("on_key_pressed", &GDBrowserView::keyPress);
+    godot::register_method("on_mouse_moved", &GDBrowserView::mouseMove);
+    godot::register_method("on_mouse_left_click", &GDBrowserView::leftClick);
+    godot::register_method("on_mouse_right_click", &GDBrowserView::rightClick);
+    godot::register_method("on_mouse_middle_click", &GDBrowserView::middleClick);
+    godot::register_method("on_mouse_left_down", &GDBrowserView::leftMouseDown);
+    godot::register_method("on_mouse_left_up", &GDBrowserView::leftMouseUp);
+    godot::register_method("on_mouse_right_down", &GDBrowserView::rightMouseDown);
+    godot::register_method("on_mouse_right_up", &GDBrowserView::rightMouseUp);
+    godot::register_method("on_mouse_middle_down", &GDBrowserView::middleMouseDown);
+    godot::register_method("on_mouse_middle_up", &GDBrowserView::middleMouseUp);
+    godot::register_method("on_mouse_wheel", &GDBrowserView::mouseWheel);
 
-    godot::register_signal<BrowserView>("page_loaded", "node", GODOT_VARIANT_TYPE_OBJECT);
+    godot::register_signal<GDBrowserView>("page_loaded", "node", GODOT_VARIANT_TYPE_OBJECT);
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::_init()
+void GDBrowserView::_init()
 {}
 
 //------------------------------------------------------------------------------
-int BrowserView::init(godot::String const& url, CefBrowserSettings const& settings,
+int GDBrowserView::init(godot::String const& url, CefBrowserSettings const& settings,
                       CefWindowInfo const& window_info, godot::String const& name)
 {
     // Create a new browser using the window parameters specified by
@@ -102,24 +102,24 @@ int BrowserView::init(godot::String const& url, CefBrowserSettings const& settin
 }
 
 //------------------------------------------------------------------------------
-BrowserView::BrowserView()
+GDBrowserView::GDBrowserView()
     : m_viewport({ 0.0f, 0.0f, 1.0f, 1.0f})
 {
     BROWSER_DEBUG_VAL("Create Godot texture");
 
-    m_impl = new BrowserView::Impl(*this);
+    m_impl = new GDBrowserView::Impl(*this);
     m_image.instance();
     m_texture.instance();
 }
 
 //------------------------------------------------------------------------------
-BrowserView::~BrowserView()
+GDBrowserView::~GDBrowserView()
 {
     close();
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::getViewRect(CefRefPtr<CefBrowser> /*browser*/, CefRect& rect)
+void GDBrowserView::getViewRect(CefRefPtr<CefBrowser> /*browser*/, CefRect& rect)
 {
     rect = CefRect(int(m_viewport[0] * m_width),
                    int(m_viewport[1] * m_height),
@@ -129,7 +129,7 @@ void BrowserView::getViewRect(CefRefPtr<CefBrowser> /*browser*/, CefRect& rect)
 
 //------------------------------------------------------------------------------
 // FIXME find a less naive algorithm et utiliser dirtyRects
-void BrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
+void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
                           CefRenderHandler::PaintElementType /*type*/,
                           const CefRenderHandler::RectList& /*dirtyRects*/,
                           const void* buffer, int width, int height)
@@ -160,7 +160,7 @@ void BrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::onLoadEnd(CefRefPtr<CefBrowser> /*browser*/,
+void GDBrowserView::onLoadEnd(CefRefPtr<CefBrowser> /*browser*/,
                             CefRefPtr<CefFrame> frame,
                             int httpStatusCode)
 {
@@ -175,7 +175,7 @@ void BrowserView::onLoadEnd(CefRefPtr<CefBrowser> /*browser*/,
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::setZoomLevel(double delta)
+void GDBrowserView::setZoomLevel(double delta)
 {
     BROWSER_DEBUG_VAL(delta);
 
@@ -186,7 +186,7 @@ void BrowserView::setZoomLevel(double delta)
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::loadURL(godot::String url)
+void GDBrowserView::loadURL(godot::String url)
 {
     BROWSER_DEBUG_VAL(url.utf8().get_data());
 
@@ -194,7 +194,7 @@ void BrowserView::loadURL(godot::String url)
 }
 
 //------------------------------------------------------------------------------
-bool BrowserView::loaded() const
+bool GDBrowserView::loaded() const
 {
     BROWSER_DEBUG();
 
@@ -205,7 +205,7 @@ bool BrowserView::loaded() const
 }
 
 //------------------------------------------------------------------------------
-godot::String BrowserView::getURL() const
+godot::String GDBrowserView::getURL() const
 {
     if (m_browser && m_browser->GetMainFrame())
     {
@@ -219,7 +219,7 @@ godot::String BrowserView::getURL() const
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::stopLoading()
+void GDBrowserView::stopLoading()
 {
     BROWSER_DEBUG();
 
@@ -230,7 +230,7 @@ void BrowserView::stopLoading()
 }
 
 //------------------------------------------------------------------------------
-bool BrowserView::canNavigateBackward() const
+bool GDBrowserView::canNavigateBackward() const
 {
     BROWSER_DEBUG();
 
@@ -241,7 +241,7 @@ bool BrowserView::canNavigateBackward() const
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::navigateBackward()
+void GDBrowserView::navigateBackward()
 {
     BROWSER_DEBUG();
 
@@ -252,7 +252,7 @@ void BrowserView::navigateBackward()
 }
 
 //------------------------------------------------------------------------------
-bool BrowserView::canNavigateForward() const
+bool GDBrowserView::canNavigateForward() const
 {
     BROWSER_DEBUG();
 
@@ -263,7 +263,7 @@ bool BrowserView::canNavigateForward() const
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::navigateForward()
+void GDBrowserView::navigateForward()
 {
     BROWSER_DEBUG();
 
@@ -274,7 +274,7 @@ void BrowserView::navigateForward()
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::reshape(int w, int h)
+void GDBrowserView::reshape(int w, int h)
 {
     BROWSER_DEBUG_VAL(w << " x " << h);
 
@@ -288,7 +288,7 @@ void BrowserView::reshape(int w, int h)
 }
 
 //------------------------------------------------------------------------------
-bool BrowserView::viewport(float x, float y, float w, float h)
+bool GDBrowserView::viewport(float x, float y, float w, float h)
 {
     BROWSER_DEBUG_VAL(x << ", " << y << ", " << w << ", " << h);
 
@@ -319,7 +319,7 @@ bool BrowserView::viewport(float x, float y, float w, float h)
 }
 
 //------------------------------------------------------------------------------
-bool BrowserView::isValid() const
+bool GDBrowserView::isValid() const
 {
     BROWSER_DEBUG();
 
@@ -330,7 +330,7 @@ bool BrowserView::isValid() const
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::close()
+void GDBrowserView::close()
 {
     BROWSER_DEBUG();
 

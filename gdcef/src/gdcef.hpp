@@ -57,9 +57,7 @@
 #  include "cef_app.h"
 #  include "wrapper/cef_helpers.h"
 
-#include <iostream>
-
-class BrowserView;
+class GDBrowserView;
 
 // *****************************************************************************
 //! \brief Class deriving from Godot's Node and interfacing Chromium Embedded
@@ -112,7 +110,6 @@ private: // CEF interfaces.
 
         virtual ~Impl()
         {
-            std::cout << "GDCef::Impl::~Impl" << std::endl;
             CefShutdown();
         }
 
@@ -193,8 +190,8 @@ public:
     //! \param[in] Return the address of the newly created browser (or nullptr
     //! in case of error).
     // -------------------------------------------------------------------------
-    BrowserView* createBrowser(godot::String const url, godot::String const name,
-                               int w, int h);
+    GDBrowserView* createBrowser(godot::String const url, godot::String const name,
+                                 int w, int h);
 
 private:
 

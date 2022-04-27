@@ -63,7 +63,7 @@
 //! \brief Class wrapping the CefBrowser class and export methods for Godot
 //! script. This class is instanciate by GDCef.
 // ****************************************************************************
-class BrowserView : public godot::Node
+class GDBrowserView : public godot::Node
 {
     friend class GDCef;
 
@@ -83,7 +83,7 @@ public: // Godot interfaces
     // -------------------------------------------------------------------------
     //! \brief Godot stuff
     // -------------------------------------------------------------------------
-    GODOT_CLASS(BrowserView, godot::Node);
+    GODOT_CLASS(GDBrowserView, godot::Node);
 
 private: // CEF interfaces
 
@@ -101,13 +101,13 @@ private: // CEF interfaces
         // ---------------------------------------------------------------------
         //! \brief Pass the owner instance.
         // ---------------------------------------------------------------------
-        Impl(BrowserView& view)
+        Impl(GDBrowserView& view)
             : m_owner(view)
         {}
 
         ~Impl()
         {
-            std::cout << "BrowserView::Impl::~Impl" << std::endl;
+            std::cout << "GDBrowserView::Impl::~Impl" << std::endl;
         }
 
     private: // CefClient::CefBaseRefCounted interfaces
@@ -186,7 +186,7 @@ private: // CEF interfaces
 
     private:
 
-        BrowserView& m_owner;
+        GDBrowserView& m_owner;
     };
 
 public:
@@ -198,12 +198,12 @@ public:
     //! CefBrowserSettings const&, CefWindowInfo const&) because Godot does not
     //! manage non dummy constructors.
     // -------------------------------------------------------------------------
-    BrowserView();
+    GDBrowserView();
 
     // -------------------------------------------------------------------------
     //! \brief Virtual to use dynamic_cast
     // -------------------------------------------------------------------------
-    virtual ~BrowserView();
+    virtual ~GDBrowserView();
 
     // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Return the globally unique
@@ -380,19 +380,19 @@ private:
 
     // -------------------------------------------------------------------------
     //! \brief hack: since Godot does not like Constructor with parameters we
-    //! have to finalize BrowserView::BrowserView().
+    //! have to finalize GDBrowserView::GDBrowserView().
     //! \return the browser unique identifier or -1 in case of failure.
     // -------------------------------------------------------------------------
     int init(godot::String const& url, CefBrowserSettings const& cef_settings,
              CefWindowInfo const& window_info, godot::String const& name);
 
     // -------------------------------------------------------------------------
-    //! \brief BrowserView::Impl::GetViewRect
+    //! \brief GDBrowserView::Impl::GetViewRect
     // -------------------------------------------------------------------------
     void getViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect);
 
     // -------------------------------------------------------------------------
-    //! \brief BrowserView::Impl::GetViewRect
+    //! \brief GDBrowserView::Impl::GetViewRect
     // -------------------------------------------------------------------------
     void onPaint(CefRefPtr<CefBrowser> browser,
                  CefRenderHandler::PaintElementType type,
@@ -400,7 +400,7 @@ private:
                  const void* buffer, int width, int height);
 
     // -------------------------------------------------------------------------
-    //! \brief BrowserView::Impl::GetViewRect
+    //! \brief GDBrowserView::Impl::GetViewRect
     // -------------------------------------------------------------------------
     void onLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                    int httpStatusCode);
@@ -408,7 +408,7 @@ private:
 private:
 
     //! \brief CEF interface implementation
-    friend BrowserView::Impl;
+    friend GDBrowserView::Impl;
 
     //! \brief CEF interface implementation
     CefRefPtr<Impl> m_impl = nullptr;

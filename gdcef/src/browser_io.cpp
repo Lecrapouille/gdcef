@@ -19,32 +19,32 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //*************************************************************************
 
-#include "browser.hpp"
+#include "gdbrowser.hpp"
 #include "helper.hpp"
 
 //------------------------------------------------------------------------------
-void BrowserView::leftClick()
+void GDBrowserView::leftClick()
 {
     leftMouseDown();
     leftMouseUp();
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::rightClick()
+void GDBrowserView::rightClick()
 {
     rightMouseDown();
     rightMouseUp();
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::middleClick()
+void GDBrowserView::middleClick()
 {
     middleMouseDown();
     middleMouseUp();
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::leftMouseDown()
+void GDBrowserView::leftMouseDown()
 {
     if (!m_browser)
         return;
@@ -58,7 +58,7 @@ void BrowserView::leftMouseDown()
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::rightMouseDown()
+void GDBrowserView::rightMouseDown()
 {
     if (!m_browser)
         return;
@@ -72,7 +72,7 @@ void BrowserView::rightMouseDown()
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::leftMouseUp()
+void GDBrowserView::leftMouseUp()
 {
     if (!m_browser)
         return;
@@ -86,7 +86,7 @@ void BrowserView::leftMouseUp()
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::rightMouseUp()
+void GDBrowserView::rightMouseUp()
 {
     if (!m_browser)
         return;
@@ -100,7 +100,7 @@ void BrowserView::rightMouseUp()
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::middleMouseDown()
+void GDBrowserView::middleMouseDown()
 {
     if (!m_browser)
         return;
@@ -114,7 +114,7 @@ void BrowserView::middleMouseDown()
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::middleMouseUp()
+void GDBrowserView::middleMouseUp()
 {
     if (!m_browser)
         return;
@@ -128,7 +128,7 @@ void BrowserView::middleMouseUp()
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::mouseMove(int x, int y)
+void GDBrowserView::mouseMove(int x, int y)
 {
     if (!m_browser)
         return ;
@@ -148,7 +148,7 @@ void BrowserView::mouseMove(int x, int y)
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::mouseWheel(const int wDelta)
+void GDBrowserView::mouseWheel(const int wDelta)
 {
     if (m_browser == nullptr)
         return ;
@@ -176,7 +176,7 @@ static uint32_t getKeyboardModifiers(bool shift, bool alt, bool ctrl)
 }
 
 //------------------------------------------------------------------------------
-void BrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
+void GDBrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
 {
     if (!m_browser)
         return;
