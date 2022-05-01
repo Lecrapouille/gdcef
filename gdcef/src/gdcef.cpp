@@ -296,7 +296,7 @@ static void configureBrowser(CefBrowserSettings& browser_settings)
     // Controls whether image URLs will be loaded from the network. A cached
     // image will still be rendered if requested. Also configurable using the
     // "disable-image-loading" command-line switch.
-    browser_settings.image_loading = STATE_DISABLED;
+    browser_settings.image_loading = STATE_ENABLED;
 
     // Controls whether databases can be used. Also configurable using the
     // "disable-databases" command-line switch.
