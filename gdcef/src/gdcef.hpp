@@ -22,7 +22,13 @@
 #ifndef STIGMEE_GDCEF_HPP
 #  define STIGMEE_GDCEF_HPP
 
-// Hide compilation warnings induced by Godot and CEF
+// *****************************************************************************
+//! \file Wrap Chromium Embedded Framework (that can be find at
+//! $WORKSPACE_STIGMEE/godot/gdnative/browser/thirdparty/cef_binary) as Godot
+//! native module
+// *****************************************************************************
+
+// Hide compilation warnings induced by Godot and by CEF
 #  if !defined(_WIN32)
 #    pragma GCC diagnostic push
 #      pragma GCC diagnostic ignored "-Wold-style-cast"
@@ -46,22 +52,18 @@
 
 // Godot
 #  include "Godot.hpp"
-#  include "GDScript.hpp"
 #  include "Node.hpp"
 #  include "ImageTexture.hpp"
-#  include "GlobalConstants.hpp"
 
 // Chromium Embedded Framework
-#  include "cef_render_handler.h"
 #  include "cef_client.h"
 #  include "cef_app.h"
-#  include "wrapper/cef_helpers.h"
 
 class GDBrowserView;
 
 // *****************************************************************************
 //! \brief Class deriving from Godot's Node and interfacing Chromium Embedded
-//! Framework. This class can create isntances of BrowserView and manage their
+//! Framework. This class can create isntances of GDBrowserView and manage their
 //! lifetime.
 // *****************************************************************************
 class GDCef : public godot::Node
@@ -69,32 +71,36 @@ class GDCef : public godot::Node
 public: // Godot interfaces.
 
     // -------------------------------------------------------------------------
-    //! \brief Our initializer called by Godot.
+    //! \brief Mandatory initializer automatically called by Godot.
     // -------------------------------------------------------------------------
     void _init();
 
     // -------------------------------------------------------------------------
-    //! \brief Static function that Godot will call to find out which methods
-    //! can be called on our NativeScript and which properties it exposes.
+    //! \brief Method automatically called by Godot engine to register the
+    //! desired C++ methods that will be callable from gdscript.
     // -------------------------------------------------------------------------
     static void _register_methods();
 
     // -------------------------------------------------------------------------
-    //! \brief Call CEF pomp loop message
+    //! \brief Process automatically called by Godot engine. Call the CEF pomp
+    //! loop message.
     // -------------------------------------------------------------------------
     void _process(float delta);
 
+private: // Godot interfaces.
+
     // -------------------------------------------------------------------------
-    //! \brief Godot stuff
+    //! \brief Godot reference counting. Beware can conflict with CEF reference
+    //! counting: this is why wehave to implement the sub class Impl.
     // -------------------------------------------------------------------------
     GODOT_CLASS(GDCef, godot::Node);
 
 private: // CEF interfaces.
 
     // *************************************************************************
-    //! \brief Mandatory since Godot ref counter is conflicting with CEF ref
-    //! counting and therefore we reach with pure virtual destructor called.
-    //! To avoid this we have to create this intermediate class.
+    //! \brief Mandatory since Godot reference counter is conflicting with CEF
+    //! reference counting and therefore we reach with pure virtual destructor
+    //! called. To avoid this crash, we have to create this intermediate class.
     // *************************************************************************
     class Impl: public CefLifeSpanHandler,
                 public CefClient
@@ -102,12 +108,16 @@ private: // CEF interfaces.
     public:
 
         // ---------------------------------------------------------------------
-        //! \brief Pass the owner instance.
+        //! \brief Default constructor getting the owner of the class instance.
         // ---------------------------------------------------------------------
-        Impl(GDCef& view)
-            : m_owner(view)
+        Impl(GDCef& cef)
+            : m_owner(cef)
         {}
 
+        // ---------------------------------------------------------------------
+        //! \brief Should be called on the main application thread to shut down
+        //! the CEF browser process before the application exits.
+        // ---------------------------------------------------------------------
         virtual ~Impl()
         {
             CefShutdown();

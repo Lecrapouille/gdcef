@@ -25,7 +25,7 @@
 #include "helper.hpp"
 
 //------------------------------------------------------------------------------
-// List of file names
+// List of file libraries and artifacts mandatory to make CEF working
 #if defined(_WIN32)
 #  define SUBPROCESS_NAME "gdcefSubProcess.exe"
 #  define NEEDED_LIBRARIES "libcef.dll", "libgdcef.dll", "vulkan-1.dll", \
@@ -48,10 +48,12 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
 static void configureBrowser(CefBrowserSettings& browser_settings);
 
 //------------------------------------------------------------------------------
+// Check if needed files to make CEF working are present and well formed. We
+// have to check their presence and integrity (even if race condition may theim
+// be modified or removed).
 static bool sanity_checks(fs::path const& folder)
 {
-    // List of needed files to make CEF working. We have to check their presence
-    // and integrity (even if race condition may theim be modified or removed).
+    // List of needed files.
     const std::vector<std::string> files =
     {
         SUBPROCESS_NAME, NEEDED_LIBRARIES,
@@ -59,19 +61,21 @@ static bool sanity_checks(fs::path const& folder)
         "resources.pak", "v8_context_snapshot.bin"
     };
 
-    // Check if important CEF assets exist and are valid.
-    // FIXME: perform some SHA1
+    // Check if important CEF artifacts exist and have correct SHA1.
+    // FIXME: SHA1 not made
     return are_valid_files(folder, files);
 }
 
 //------------------------------------------------------------------------------
-static bool isPlayInEditor()
+// CEF can be run either from the binary (standalone application) or from the
+// Godot editor. We have to distinguish the both case.
+static bool isStartedFromGodotEditor()
 {
     return executable_name().find("godot") != std::string::npos;
 }
 
 //------------------------------------------------------------------------------
-// in a GDNative module, "_bind_methods" is replaced by the "_register_methods"
+// In a GDNative module, "_bind_methods" is replaced by the "_register_methods"
 // method CefRefPtr<CefBrowser> m_browser;this is used to expose various methods
 // of this class to Godot
 void GDCef::_register_methods()
@@ -88,12 +92,12 @@ void GDCef::_init()
 {
     GDCEF_DEBUG_VAL("Executable name: " << executable_name());
 
-    // Get the folder path in which Stigmee and CEF assets are present
+    // Get the folder path in which Stigmee and CEF artifacts are present
     fs::path folder;
 
     // Check if this process is executing from the Godot editor or from the
     // Stigmee standalone application.
-    if (isPlayInEditor())
+    if (isStartedFromGodotEditor())
     {
         folder = std::filesystem::current_path() / "build";
         GDCEF_DEBUG_VAL("Launching CEF from Godot editor");
@@ -116,7 +120,7 @@ void GDCef::_init()
     }
 
     // Since we cannot configure CEF from the command line main(argc, argv)
-    // because we cannot access it we configure directly.
+    // because we cannot access to it, we have to configure CEF directly.
     configureCEF(folder, m_cef_settings, m_window_info);
     configureBrowser(m_browser_settings);
 
