@@ -42,8 +42,8 @@ opts.Add(EnumVariable('target', 'Compilation target', '', ['d', 'debug', 'r', 'r
 opts.Add(EnumVariable('platform', 'Compilation platform', '', platforms + ['']))
 opts.Add(EnumVariable('arch', 'Platform architecture', 'x86_64', ['x86_64', 'arm64']))
 opts.Add(BoolVariable('use_llvm', 'Use the LLVM / Clang compiler', 'no'))
-opts.Add(PathVariable('workspace', 'The path of Stigmee workspace', '', PathVariable.PathAccept))
-opts.Add(PathVariable('godot_version', 'The Godot version installed in workspace', '3.4.2-stable', PathVariable.PathAccept))
+opts.Add(PathVariable('api_path', 'Godot C++ API', ''))
+opts.Add(PathVariable('build_path', 'Build path', ''))
 
 # Updates the environment with the option variables.
 opts.Update(env)
@@ -79,22 +79,10 @@ if archi == 'x86_64':
     if platform != 'osx':
         arch_ext = '64'
 
-# Check if the Stigmee workspace is known
-workspace = env['workspace']
-if workspace == '':
-    print('You shall define the path of the Stigmee workspace.')
-    print('Please pass the content your environement variable WORKSPACE_STIGMEE')
-    quit();
-if not os.path.isdir(workspace):
-    print('The argument workspace ' + workspace + ' path is invalid')
-    print('Please pass the content your environement variable WORKSPACE_STIGMEE')
-    quit();
-
 # Check if Godot exists
-godot_api_path = workspace + '/godot/' + env['godot_version'] + '/cpp'
+godot_api_path = env['api_path']
 if not os.path.isdir(godot_api_path):
     print('The Godot path ' + godot_api_path + ' is invalid.')
-    print('Please pass the content your environement variable WORKSPACE_STIGMEE')
     quit();
 
 # Compile either in release or debug mode
@@ -108,7 +96,7 @@ elif compile_mode == 'r':
 cef_compile_mode = compile_mode.capitalize()
 
 # The godot library we want to create
-target_path = workspace + '/stigmee/build'
+target_path = env['build_path']
 target_library = 'libgdcef'
 
 # Platform specific compilation

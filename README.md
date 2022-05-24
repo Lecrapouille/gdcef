@@ -324,7 +324,13 @@ the correct node.
 
 ## The Hello-CEF example
 
-Since Stigmee is a huge project, once compiled, the minimal example showing how
-to use CEF in Godot is also linked with the `build` folder and this example
-can help you understanding how CEF is integrated within Stigmee. We use this
-example to prototype new API.
+A minial CEF example is given. We use it to prototype new API. It is automaticaly
+compiled by the [install](https://github.com/stigmee/install) `build.py` script.
+But if you not want to get all Stigmee workspace to test it, you can call:
+
+```
+./example.py <path to Godot C++ API>
+```
+
+Where `<path to Godot C++ API>` refers to https://github.com/godotengine/godot-cpp
+which shall have be compiled before calling this script.
