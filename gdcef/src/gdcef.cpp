@@ -351,8 +351,8 @@ GDBrowserView* GDCef::createBrowser(godot::String const url, godot::String const
     int id = browser->init(url, settingsBrowser(), windowInfo(), name);
     if (id < 0)
     {
-       GDCEF_ERROR("browser->init() failed");
-       return nullptr;
+        GDCEF_ERROR("browser->init() failed");
+        return nullptr;
     }
 
     // Update the dimension of the document

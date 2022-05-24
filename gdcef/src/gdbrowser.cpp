@@ -68,7 +68,7 @@ void GDBrowserView::_init()
 
 //------------------------------------------------------------------------------
 int GDBrowserView::init(godot::String const& url, CefBrowserSettings const& settings,
-                      CefWindowInfo const& window_info, godot::String const& name)
+                        CefWindowInfo const& window_info, godot::String const& name)
 {
     // Create a new browser using the window parameters specified by
     // |windowInfo|.  If |request_context| is empty the global request context
@@ -128,11 +128,11 @@ void GDBrowserView::getViewRect(CefRefPtr<CefBrowser> /*browser*/, CefRect& rect
 }
 
 //------------------------------------------------------------------------------
-// FIXME find a less naive algorithm et utiliser dirtyRects
+// FIXME find a less naive algorithm and dirtyRects instead of the whole image
 void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
-                          CefRenderHandler::PaintElementType /*type*/,
-                          const CefRenderHandler::RectList& /*dirtyRects*/,
-                          const void* buffer, int width, int height)
+                            CefRenderHandler::PaintElementType /*type*/,
+                            const CefRenderHandler::RectList& /*dirtyRects*/,
+                            const void* buffer, int width, int height)
 {
     // Sanity check
     if ((width <= 0) || (height <= 0) || (buffer == nullptr))
@@ -143,7 +143,7 @@ void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
     int const SIZEOF_COLOR = COLOR_CHANELS * sizeof(char);
     int const TEXTURE_SIZE = SIZEOF_COLOR * width * height;
 
-    // Copy CEF image buffer to Godot PoolVector
+    // Copy CEF image buffer to Godot PoolByteArray
     m_data.resize(TEXTURE_SIZE);
     godot::PoolByteArray::Write w = m_data.write();
     memcpy(&w[0], buffer, size_t(TEXTURE_SIZE));
@@ -154,15 +154,16 @@ void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
         std::swap(w[i], w[i + 2]);
     }
 
-    // Copy Godot PoolVector to Godot texture.
-    m_image->create_from_data(width, height, false, godot::Image::FORMAT_RGBA8, m_data);
+    // Copy Godot PoolByteArray to Godot texture.
+    m_image->create_from_data(width, height, false, godot::Image::FORMAT_RGBA8,
+                              m_data);
     m_texture->create_from_image(m_image, godot::Texture::FLAG_VIDEO_SURFACE);
 }
 
 //------------------------------------------------------------------------------
 void GDBrowserView::onLoadEnd(CefRefPtr<CefBrowser> /*browser*/,
-                            CefRefPtr<CefFrame> frame,
-                            int httpStatusCode)
+                              CefRefPtr<CefFrame> frame,
+                              int httpStatusCode)
 {
     // Emit signal only when top-level frame has succeeded.
     if ((httpStatusCode == 200) && (frame->IsMain()))
