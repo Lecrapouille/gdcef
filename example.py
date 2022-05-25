@@ -38,7 +38,7 @@ MODULE_TARGET = "release"  # "debug"
 
 PWD = os.getcwd()
 GDCEF_PATH = os.path.join(PWD, "gdcef")
-GDCEF_PROCESSES_PATH = os.path.join(PWD, "gdcef_subprocess")
+GDCEF_PROCESSES_PATH = os.path.join(PWD, "subprocess")
 GDCEF_THIRDPARTY_PATH = os.path.join(PWD, "thirdparty")
 CEF_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "cef_binary")
 GDCEF_EXAMPLE_PATH = os.path.join(PWD, "example")

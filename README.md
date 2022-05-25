@@ -30,7 +30,7 @@ will describe these folders.
  ┗ 📂godot-native              ⬅️ Base folder holding native modules (cloned)
    ┗ 📂browser                 ⬅️ Base folder holding native CEF module
      ┣ 📂gdcef                 ⬅️ Code for the CEF module (cloned)
-     ┣ 📂gdcef_subprocess      ⬅️ Code of the CEF sub-process executable (cloned)
+     ┣ 📂subprocess            ⬅️ Code of the CEF sub-process executable (cloned)
      ┗ 📂cef_binary            ⬅️ CEF distribution used to build the dependencies (downloaded)
 ```
 
@@ -159,7 +159,7 @@ licence (which it is not the case when compiled as dynamic libraries). See this
 [post](https://www.magpcss.org/ceforum/viewtopic.php?f=6&t=11182). In our case
 this fine since our project is already under GPL licence.
 
-## CEF secondary process (gdcef_subprocess)
+## CEF secondary process (subprocess)
 
 This executable is needed in order for the CEF to spawn the various CEF
 sub-processes (GPU process, render handler...). In CEF, a secondary process is
@@ -183,7 +183,7 @@ CEF's `cefsimple` example given in the source is enough. This executable can be
 directly used as it and you will have a minimal browser application.
 
 ```
-📦gdcef_subprocess
+📦subprocess
  ┣ 📂src
  ┃ ┣ 📜gdcef_browser_app.cpp
  ┃ ┣ 📜gdcef_browser_app.hpp
@@ -196,7 +196,7 @@ directly used as it and you will have a minimal browser application.
 To compile this source :
 
 ```
-cd gdcef_subprocess
+cd subprocess
 scons target=release platform=windows workspace=$WORKSPACE_STIGMEE godot_version=3.4.3-stable -j8
 ```
 
