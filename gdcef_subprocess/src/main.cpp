@@ -19,16 +19,18 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //*************************************************************************
 
-#include "gdcef_browser_app.hpp"
-#include <iostream>
+#include "main.hpp"
 
-// Entry point function for all processes.
+//------------------------------------------------------------------------------
+// Entry point function for all Window process.
+//------------------------------------------------------------------------------
 #ifdef _WIN32
 #  include <windows.h>
 #  include <process.h>
 #  include <tlhelp32.h>
 #  include <stdio.h>
 
+//------------------------------------------------------------------------------
 DWORD getppid()
 {
     HANDLE hSnapshot;
@@ -57,6 +59,7 @@ DWORD getppid()
     return ppid;
 }
 
+//------------------------------------------------------------------------------
 int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPTSTR lpCmdLine,
@@ -99,6 +102,9 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     return 0;
 }
 
+//------------------------------------------------------------------------------
+// Entry point function for all Linux process.
+//------------------------------------------------------------------------------
 #else // !_WIN32
 
 int main(int argc, char* argv[])
@@ -130,7 +136,8 @@ int main(int argc, char* argv[])
     // that share the same executable. This function checks the command-line and,
     // if this is a sub-process, executes the appropriate logic.
     int exit_code = CefExecuteProcess(main_args, app.get(), nullptr);
-    if (exit_code >= 0) {
+    if (exit_code >= 0)
+    {
         // The sub-process has completed so return here.
         return exit_code;
     }
