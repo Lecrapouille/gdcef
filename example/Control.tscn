@@ -40,7 +40,7 @@ __meta__ = {
 script = ExtResource( 3 )
 
 [node name="Timer" type="Timer" parent="."]
-wait_time = 2.0
+wait_time = 4.0
 autostart = true
 
 [node name="Node" type="Node" parent="."]
