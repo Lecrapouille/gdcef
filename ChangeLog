@@ -1,3 +1,6 @@
+Version 0.3.0:
+	* Switch to MIT license.
+
 Version 0.2.0:
 	* Split CEF class into two classes: the CEF holding several browsers.
 

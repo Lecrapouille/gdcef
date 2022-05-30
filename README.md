@@ -1,18 +1,23 @@
 # Chromium Embedded Framework as Godot native module
 
+*IMPORTANT:* This current repository is a fork of [this original
+repo](https://github.com/stigmee/gdnative-cef) (GPLv3) with a more permissive
+license (MIT). Indeed, since the original project will no longer be developped
+by their original authors, we, original authors, have accepted the fork of the
+original repository with a new licence.
+
 This repository contains the Godot native module (GDNative) wrapping [Chromium
 Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home) (CEF),
-that we have named `gdcef` for our application
-[Stigmee](https://github.com/stigmee). The code source of this module is made in
-C++ and implements some classes wrapping a subset of the CEF API that can be
-directly usable in Godot scripts (gdscript) but feel free to help us implemented
-other features.
+that we have named `gdcef`. The code source of this module is made in C++ and
+implements some classes wrapping a subset of the CEF API that can be directly
+usable in Godot scripts (gdscript) but feel free to help us implemented other
+features.
 
 This module is compiled automatically by our application general script
-[build.py](https://github.com/stigmee/install), which works for Linux and for
-Windows 10 (but not yet for Mac OS) but for people who are less interested by
-our application, but only desired to use the CEF in Godot, they can jump
-directly to the section talking about our minimal example in this document.
+build.py, which works for Linux and for Windows 10 (but not yet for Mac OS) but
+for people who are less interested by our application, but only desired to use
+the CEF in Godot, they can jump directly to the section talking about our
+minimal example in this document.
 
 The goal of this document is to make you understand the general ideas behind how
 this module `gdcef` is compiled (with examples for Window while similar for
@@ -26,16 +31,11 @@ document.
 
 ## Environment
 
-The tree structure of the Stigmee project is a little more complex than depicted
-in the next diagram: it contains folders the [Godot editor
-code](https://github.com/godotengine/godot), folders for other Godot native
-modules ([Stigmark](https://github.com/stigmee/gdnative-stigmark),
-[IPFS](https://github.com/stigmee/gdnative-ipfs), ...), but only modules
-concerning CEF will be depicted in this document. The next sections in this
-document will describe these folders.
+The tree structure of the your project can be different from the one depicted in
+the next diagram. For this document we have choose:
 
 ```
-📦Stigmee
+📦YourProject
  ┣ 📂godot-cpp                 ⬅️ Godot C++ API and bindings (cloned)
  ┗ 📂godot-native              ⬅️ Base folder holding native modules (cloned)
    ┗ 📂browser                 ⬅️ Base folder holding native CEF module
@@ -47,10 +47,10 @@ document will describe these folders.
 ## The Godot C++ binding API (godot-cpp)
 
 The first component, `godot-cpp` folder, must be present before doing *any*
-compilation attempt on a Godot module (CEF, Stigmark, IPFS ...). This folder
-comes from this [repo](https://github.com/godotengine/godot-cpp) and contains
-binding on the Godot API and allows you to compile your module like if you we
-were compiling it directly inside the code source of the Godot editor (see
+compilation attempt on a Godot module. This folder comes from this
+[repo](https://github.com/godotengine/godot-cpp) and contains binding on the
+Godot API and allows you to compile your module like if you we were compiling it
+directly inside the code source of the Godot editor (see
 [here](https://docs.godotengine.org/en/stable/development/cpp/custom_modules_in_cpp.html)
 for more information).
 
@@ -69,13 +69,9 @@ read French you can check this
 [document](https://github.com/stigmee/doc-internal/blob/master/doc/tuto_modif_godot_fr.md#compilation-du-module-godot-v34-stable)
 detailing how we succeeded.
 
-The `godot-cpp` repository is cloned when the Stigmee workspace is created
-thanks one of the following tool [tsrc](https://github.com/dmerejkowsky/tsrc) or
-[git-repo](https://gerrit.googlesource.com/git-repo/) and their associated
-manifest in this [repository](https://github.com/stigmee/manifest). The repo
-tool knows that it has to clone **recursively** using the appropriate branch
-(i.e. do not clone the master as you would end up with headers for the 4.0
-version) : `git clone --recursive -b 3.4
+The `godot-cpp` repository should be cloned **recursively** using the
+appropriate branch (i.e. do not clone the master as you would end up with
+headers for the 4.0 version) : `git clone --recursive -b 3.4
 https://github.com/godotengine/godot-cpp`. Recursive cloning will include the
 appropriate godot-headers used to generate the C++ bindings and will produce
 this kind of message (useless information have been removed for the clarity of
@@ -90,9 +86,8 @@ Cloning into '<Project>\godot-native\godot-cpp/godot-headers'...
 Submodule path 'godot-headers': checked out 'd1596b939d6c9f5df86655ea617713ef321ad938'
 ```
 
-The `godot-cpp` folder is automatically compiled by the
-[install](https://github.com/stigmee/install) script `build.py` which call a
-command similar to these lines:
+The `godot-cpp` folder is automatically compiled by the install script
+`build.py` which call a command similar to these lines:
 
 ```
 cd godot-cpp
@@ -107,23 +102,22 @@ compile in release or debug mode (and more parameters).
 
 The second component, `cef_binary` contains the CEF with prebuilt libraries with
 the C++ API and some code to compile. These libraries and artifacts are needed
-to make the Godot application (Stigmee) compilable and working. They are created
-when this component is compiled (in fact, compiling the CEF's `cefsimple`
-example given in the source is enough). Note that building CEF source code 'from
-scratch' is too complex: too long (around 4 hours with a good Ethernet
-connection, at worst 1 day with poor Ethernet connection), too huge (around 60
-and 100 giga bytes on your disk) and your system shall install plenty of system
-packages (apt-get).
+to make the Godot application compilable and working. They are created when this
+component is compiled (in fact, compiling the CEF's `cefsimple` example given in
+the source is enough). Note that building CEF source code 'from scratch' is too
+complex: too long (around 4 hours with a good Ethernet connection, at worst 1
+day with poor Ethernet connection), too huge (around 60 and 100 giga bytes on
+your disk) and your system shall install plenty of system packages (apt-get).
 
-Since this folder `cef_binary` cannot be directly git cloned when the Stigmee
-workspace is created, we have to downloaded, unpacked and renamed from the CEF
-website https://cef-builds.spotifycdn.com/index.html in an automatic way. This
-is done by our [install](https://github.com/stigmee/install) script `build.py`
-which knows your operating system and the desired CEF version: an inspection
-inside the CEF's README (if presents) allows to know if CEF has been previously
-downloaded or if the version is matching (if not, this means we wanted to
-install a different CEF version: the old `cef_binary` folder is removed and the
-new one is downloaded, unpacked and compiled automatically).
+Since this folder `cef_binary` cannot be directly git cloned, you have to
+downloaded, unpacked and renamed from the CEF website
+https://cef-builds.spotifycdn.com/index.html in an automatic way. This is done
+by our the install script `build.py` which knows your operating system and the
+desired CEF version: an inspection inside the CEF's README (if presents) allows
+to know if CEF has been previously downloaded or if the version is matching (if
+not, this means we wanted to install a different CEF version: the old
+`cef_binary` folder is removed and the new one is downloaded, unpacked and
+compiled automatically).
 
 To compile CEF, our build script `build.py` will call something similar to the
 following lines (but depending on your operating system):
@@ -137,12 +131,12 @@ cmake --build . --config Release
 The following libraries and artifacts shall copied into the Godot project root
 `res://` else Godot will not be able to locate them and will complain about not
 being able to load the module dependencies at project startup. The destination
-folder is https://github.com/stigmee/stigmee inside its `build` folder (to be
-created). Those files, for Windows, are mandatory to correctly startup
-CEF. Again, the `build.py` will do it for you, and for other operating system.
+folder is inside its `build` folder (to be created). Those files, for Windows,
+are mandatory to correctly startup CEF. Again, the `build.py` will do it for
+you, and for other operating system.
 
 ```
-📦Stigmee
+📦YourProject
  ┗ 📂build
     ┣ 📂locales                      ⬅️ locale-specific resources and strings
     ┃ ┣ 📜en-US.pak                  ⬅️ English
@@ -196,7 +190,7 @@ The detail design on how the both processes talk together is described in this
 
 The canonical path of the secondary process shall be known by the primary
 process (the primary process is explained in the next section). This is our case
-since this secondary process will live next to the Stigmee executable.
+since this secondary process will live next to your application binary.
 
 The code source of this secondary process is simply a simple version of the
 CEF's `cefsimple` example given in the source is enough. This executable can be
@@ -214,18 +208,18 @@ To compile this source :
 
 ```
 cd subprocess
-scons target=release platform=windows workspace=$WORKSPACE_STIGMEE godot_version=3.4.3-stable -j8
+scons target=release platform=windows workspace=$WORKSPACE godot_version=3.4.3-stable -j8
 ```
 
 The executable will be created as `gdcefSubProcess.exe`. It should be placed
-into the appropriate our godot project https://github.com/stigmee/stigmee inside
-its `build` folder (to be created). Again the `build.py` will do it for you.
+into the appropriate Godot project inside its `build` folder (to be created).
+Again the `build.py` will do it for you.
 
 ```
-📦Stigmee
+📦YourProject
  ┗ 📂build
     ┣ 📜 ...                         ⬅️ CEF libs and artifacts (see previously)
-    ┣ 📦Stigmee                      ⬅️ Stigmee executable
+    ┣ 📦YourProject                  ⬅️ YourProject executable
     ┗ 📦gdcefSubProcess              ⬅️ CEF secondary process
 ```
 
@@ -252,18 +246,18 @@ To compile this source :
 
 ```
 cd gdcef
-scons target=release platform=windows -j8 workspace=$WORKSPACE_STIGMEE godot_version=3.4.3-stable -j8
+scons target=release platform=windows -j8 workspace=$WORKSPACE godot_version=3.4.3-stable -j8
 ```
 
 The library `libgdcef.dll` will be generated into the build directory. It should be placed
-into the appropriate our godot project https://github.com/stigmee/stigmee inside
-its `build` folder (to be created). Again the `build.py` will do it for you.
+into the appropriate Godot project inside its `build` folder (to be created).
+Again the `build.py` will do it for you.
 
 ```
-📦Stigmee
+📦YourProject
  ┗ 📂build
     ┣ 📜 ...                         ⬅️ CEF libs and artifacts (see previously)
-    ┣ 📦Stigmee                      ⬅️ Stigmee executable
+    ┣ 📦YourProject                  ⬅️ YourProject executable
     ┣ 📦gdcefSubProcess              ⬅️ CEF secondary process
     ┗ 📜libgdcef.dll                 ⬅️ Our CEF native module library for Godot
 ```
@@ -277,14 +271,14 @@ complain about not being able to load the module dependencies at project
 startup.
 
 ```
-📦Stigmee                            ⬅️ Godot res://
- ┣ 📜project.godot                   ⬅️ Your Godot project (here Stigmee)
+📦YourProject                        ⬅️ Godot res://
+ ┣ 📜project.godot                   ⬅️ Your Godot project (here YourProject)
  ┣ 📂libs
  ┃ ┣ 📜gdcef.gdns                    ⬅️ CEF native script for gdcef.gdnlib
  ┃ ┗ 📜gdcef.gdnlib                  ⬅️ CEF native script for ../build/libgdcef.dll
  ┗ 📂build
     ┣ 📜 ...                         ⬅️ CEF libs and artifacts (see previously)
-    ┣ 📦Stigmee                      ⬅️ Stigmee executable
+    ┣ 📦YourProject                  ⬅️ YourProject executable
     ┣ 📦gdcefSubProcess              ⬅️ CEF secondary process
     ┗ 📜libgdcef.dll                 ⬅️ Our CEF native module library for Godot
 ```
@@ -339,12 +333,14 @@ the correct node.
 
 ![CEFnode](doc/scenegraph/cef.png)
 
+## Choose your CEF version
+
+
+
 ## The Hello-CEF example
 
-A minimal CEF example is given. We use it to prototype new API. It is
-automatically compiled by the [install](https://github.com/stigmee/install)
-`build.py` script. But if you not want to get all Stigmee workspace to test it,
-you can call:
+A minimal CEF example is given. It is automatically compiled by the install
+`build.py` script.
 
 ```
 ./example.py <path to Godot C++ API>

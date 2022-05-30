@@ -1,23 +1,27 @@
-//*************************************************************************
-// Stigmee: The art to sanctuarize knowledge exchanges.
-// Copyright 2021-2022 Alain Duron <duron.alain@gmail.com>
-// Copyright 2021-2022 Quentin Quadrat <lecrapouille@gmail.com>
+//*****************************************************************************
+// MIT License
 //
-// This file is part of Stigmee.
+// Copyright (c) 2022 Alain Duron <duron.alain@gmail.com>
+// Copyright (c) 2022 Quentin Quadrat <lecrapouille@gmail.com>
 //
-// Stigmee is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// This program is distributed in the hope that it will be useful, but
-// WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// General Public License for more details.
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//*************************************************************************
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//*****************************************************************************
 
 //------------------------------------------------------------------------------
 #include "gdcef.hpp"
@@ -92,11 +96,11 @@ void GDCef::_init()
 {
     GDCEF_DEBUG_VAL("Executable name: " << executable_name());
 
-    // Get the folder path in which Stigmee and CEF artifacts are present
+    // Get the folder path in which your application and CEF artifacts are present
     fs::path folder;
 
     // Check if this process is executing from the Godot editor or from the
-    // Stigmee standalone application.
+    // your standalone application.
     if (isStartedFromGodotEditor())
     {
         folder = std::filesystem::current_path() / "build";
@@ -107,8 +111,8 @@ void GDCef::_init()
     else
     {
         folder = real_path();
-        GDCEF_DEBUG_VAL("Launching CEF from Stigmee executable");
-        GDCEF_DEBUG_VAL("Path where your Stigmee files shall be located:"
+        GDCEF_DEBUG_VAL("Launching CEF from your executable");
+        GDCEF_DEBUG_VAL("Path where your application files shall be located:"
                         << folder);
     }
 

@@ -1,7 +1,7 @@
-# Stigmee details design
+# Details Design
 
 This details design document concerns the repository
-https://github.com/stigmee/gdnative-cef implementing a [Chromium Embedded
+https://github.com/Lecrapouille/gdcef implementing a [Chromium Embedded
 Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home) (CEF) native
 module for the [Godot editor](https://godotengine.org/) (gdCef).
 
@@ -14,8 +14,7 @@ scene graph like depicted by the following picture.
 
 See this
 [document](https://docs.godotengine.org/en/stable/classes/class_node.html)
-concerning what a Godot Node is. For Stigmee, the Godot C++ wrapper is localized
-in the folder `$WORKSPACE_STIGMEE/godot/3.4.3-stable/cpp`.
+concerning what a Godot Node is.
 
 ## Classes Diagram
 

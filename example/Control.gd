@@ -1,5 +1,5 @@
 # Hello CEF: basic application showing how to use CEF inside Godot.
-# See our Stigmee application we manage more cases such as mouse and keyboard events
+# The API can manage more cases such as mouse and keyboard events ...
 extends Control
 
 # Page iterator
