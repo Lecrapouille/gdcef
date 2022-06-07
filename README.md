@@ -333,9 +333,14 @@ the correct node.
 
 ![CEFnode](doc/scenegraph/cef.png)
 
-## Choose your CEF version
+## Update your CEF version
 
-
+- Check this website https://cef-builds.spotifycdn.com/index.html and select your
+desired operating system.
+- Copy the desired CEF version **without the name of the operating system**
+(for example `100.0.24+g0783cf8+chromium-100.0.4896.127`) and search in the
+`build.py` script the line `CEF_VERSION=` and paste the new version.
+- Rerun the `build.py` the `cef_binary` folder will be replaced by the new version.
 
 ## The Hello-CEF example
 
@@ -343,7 +348,7 @@ A minimal CEF example is given. It is automatically compiled by the install
 `build.py` script.
 
 ```
-./example.py <path to Godot C++ API>
+./build.py <path to Godot C++ API>
 ```
 
 Where `<path to Godot C++ API>` refers to
