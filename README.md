@@ -347,4 +347,8 @@ A minimal CEF example is given. It is automatically compiled by the install
 
 Where `<path to Godot C++ API>` refers to
 https://github.com/godotengine/godot-cpp which shall have be compiled before
-calling this script.
+calling this script. You can see https://github.com/stigmee/stigmee for how
+to use the mouse and keyboard events and see https://github.com/stigmee/install
+for install script taking into account of the Godot C++ API.
+
+
