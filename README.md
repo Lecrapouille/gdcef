@@ -351,4 +351,14 @@ calling this script. You can see https://github.com/stigmee/stigmee for how
 to use the mouse and keyboard events and see https://github.com/stigmee/install
 for install script taking into account of the Godot C++ API.
 
+### Gallery
+
+Projects interested by / using this module. Please do not hesitate to give your project
+links and pictures by pull requests.
+
+- https://elitemeta.city/
+
+Click to see on the image to see the Elitemeta video shared on IPFS.
+[![elitemeta](doc/gallery/elitemeta.jpg)](https://ipfs.io/ipfs/QmaL7NY5qs3AtAdcX8vFhqaHwJeTMKfP3PbzcHZBLmo1QQ?filename=elitemeta_0.mp4)
+Thanks to the team for having shared this video.
 
