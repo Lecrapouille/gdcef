@@ -13,12 +13,6 @@ implements some classes wrapping a subset of the CEF API that can be directly
 usable in Godot scripts (gdscript) but feel free to help us implemented other
 features.
 
-This module is compiled automatically by our application general script
-build.py, which works for Linux and for Windows 10 (but not yet for Mac OS) but
-for people who are less interested by our application, but only desired to use
-the CEF in Godot, they can jump directly to the section talking about our
-minimal example in this document.
-
 The goal of this document is to make you understand the general ideas behind how
 this module `gdcef` is compiled (with examples for Window while similar for
 other operating systems). The detail design on how guts are working is described
