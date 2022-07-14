@@ -336,6 +336,47 @@ desired operating system.
 `build.py` script the line `CEF_VERSION=` and paste the new version.
 - Rerun the `build.py` the `cef_binary` folder will be replaced by the new version.
 
+## Installation prerequisites
+
+In case of doubt see the [original project install documentation](https://github.com/stigmee/install).
+
+### Install Python3 packages
+
+Our `build.py` script is made in **Python3** to be usable for any operating
+systems (Linux, MacOS X, Windows). Please do not use Python 2. To make the
+installation possible, you will have to install the following python3 modules:
+
+```
+python3 -m pip install packaging python3_wget scons
+```
+
+- `scons` is a Makefile made in Python and it is needed to compile Godot.
+- `python3_wget` and `packaging` are needed to download and unarchive some tarballs.
+  **Please do not install the wget package !**
+
+### Install system packages
+
+Install the following tools: `g++`, `ninja`, `cmake` (greater or equal to
+3.21.0).
+
+- For Linux, depending on your distribution you can use `sudo apt-get install`.
+  To upgrade your cmake you can see this
+  [script](https://github.com/stigmee/doc-internal/blob/master/doc/install_latest_cmake.sh).
+- For MacOS X you can install [homebrew](https://brew.sh/index_fr).
+- For Windows user you will have to install:
+  - Visual Studio: https://visualstudio.microsoft.com/en/vs/ (mandatory)
+  - Python3: https://www.python.org/downloads/windows/
+  - CMake: https://cmake.org/download/
+  - Ninja: https://ninja-build.org/
+  - Git: https://git-scm.com/download/win
+
+To compile Stigmee for Windows:
+- Ensure VS2022 is installed
+- Open an **x64 Native Tools Command Prompt for VS 2022**, with
+  **Administrator** privilege (this should be available in the start menu under
+  Visual Studio 2022). This ensures the environment is correctly set to use the
+  VS tools.
+
 ## The Hello-CEF example
 
 A minimal CEF example is given. It is automatically compiled by the install
@@ -351,7 +392,7 @@ calling this script. You can see https://github.com/stigmee/stigmee for how
 to use the mouse and keyboard events and see https://github.com/stigmee/install
 for install script taking into account of the Godot C++ API.
 
-### Gallery
+## Gallery
 
 Projects interested by / using this module. Please do not hesitate to give your project
 links and pictures by pull requests.
