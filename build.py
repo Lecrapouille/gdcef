@@ -55,8 +55,10 @@ GODOT_CPP_API_PATH=''
 ARCHI = machine()
 NPROC = str(cpu_count())
 OSTYPE = system()
-if os.name == "nt" and get_platform().startswith("mingw"):
-    OSTYPE = "MinGW"
+
+#CEF does not support compiling for MinGW
+#if os.name == "nt" and get_platform().startswith("mingw"):
+#    OSTYPE = "MinGW"
 
 ###############################################################################
 ### Green color message
@@ -341,7 +343,7 @@ def compile_gdnative_cef(path):
         gdnative_scons_cmd("x11")
     elif OSTYPE == "Darwin":
         gdnative_scons_cmd("osx")
-    elif OSTYPE == "Windows" or OSTYPE == "MinGW":
+    elif OSTYPE == "Windows": # or OSTYPE == "MinGW":
         gdnative_scons_cmd("windows")
     else:
         fatal("Unknown archi " + OSTYPE + ": I dunno how to compile CEF module primary process")
