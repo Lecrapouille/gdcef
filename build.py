@@ -55,8 +55,6 @@ GODOT_CPP_API_PATH=''
 ARCHI = machine()
 NPROC = str(cpu_count())
 OSTYPE = system()
-if os.name == "nt" and get_platform().startswith("mingw"):
-    OSTYPE = "MinGW"
 
 ###############################################################################
 ### Green color message
