@@ -1,0 +1,4 @@
+urllib3
+progressbar
+scons
+packaging

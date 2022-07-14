@@ -29,7 +29,7 @@
 ###
 ###############################################################################
 
-import os, sys, wget, subprocess, hashlib, tarfile, wget, shutil, glob
+import os, sys, subprocess, hashlib, tarfile, shutil, glob, progressbar, urllib.request
 from platform import machine, system
 from pathlib import Path
 from subprocess import run
@@ -62,7 +62,6 @@ if os.name == "nt" and get_platform().startswith("mingw"):
 ### Green color message
 def info(msg):
     print("\033[32m[INFO] " + msg + "\033[00m", flush=True)
-
 
 ###############################################################################
 ### Red color message + abort
@@ -124,9 +123,27 @@ def grep(file_name, what):
         return None
 
 ###############################################################################
+### Needed for urllib.request.urlretrieve
+### See https://stackoverflow.com/a/53643011/8877076
+class MyProgressBar():
+    def __init__(self):
+        self.pbar = None
+
+    def __call__(self, block_num, block_size, total_size):
+        if not self.pbar:
+            self.pbar=progressbar.ProgressBar(maxval=total_size)
+            self.pbar.start()
+
+        downloaded = block_num * block_size
+        if downloaded < total_size:
+            self.pbar.update(downloaded)
+        else:
+            self.pbar.finish()
+
+###############################################################################
 ### Download artifacts
-def download(url):
-    wget.download(url)
+def download(url, destination):
+    urllib.request.urlretrieve(url, destination, reporthook=MyProgressBar())
     print('', flush=True)
 
 ###############################################################################
@@ -197,6 +214,7 @@ def download_cef():
         # Replace the '+' chars by URL percent encoding '%2B'
         CEF_URL_VERSION = CEF_VERSION.replace("+", "%2B")
         CEF_TARBALL = "cef_binary_" + CEF_URL_VERSION + "_" + CEF_ARCHI + ".tar.bz2"
+        SHA1_CEF_TARBALL = CEF_TARBALL + ".sha1"
         info("Downloading Chromium Embedded Framework into " + CEF_PATH + " ...")
 
         # Remove the CEF folder if exist and partial downloaded folder
@@ -207,11 +225,11 @@ def download_cef():
         # Download CEF at https://cef-builds.spotifycdn.com/index.html
         URL = "https://cef-builds.spotifycdn.com/" + CEF_TARBALL
         info(URL)
-        download(URL)
-        download(URL + ".sha1")
-        if compute_sha1(CEF_TARBALL) != read_sha1_file(CEF_TARBALL + ".sha1"):
+        download(URL, CEF_TARBALL)
+        download(URL + ".sha1", SHA1_CEF_TARBALL)
+        if compute_sha1(CEF_TARBALL) != read_sha1_file(SHA1_CEF_TARBALL):
             os.remove(CEF_TARBALL)
-            os.remove(CEF_TARBALL + ".sha1")
+            os.remove(SHA1_CEF_TARBALL)
             fatal("Downloaded CEF tarball does not match expected SHA1. Please retry!")
 
         # Simplify the folder name by removing the complex version number

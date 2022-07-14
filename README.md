@@ -347,12 +347,12 @@ systems (Linux, MacOS X, Windows). Please do not use Python 2. To make the
 installation possible, you will have to install the following python3 modules:
 
 ```
-python3 -m pip install packaging python3_wget scons
+# python3 -m pip install scons packaging urllib3 progressbar
+python3 -m pip  install -r requirements.txt
 ```
 
 - `scons` is a Makefile made in Python and it is needed to compile Godot.
-- `python3_wget` and `packaging` are needed to download and unarchive some tarballs.
-  **Please do not install the wget package !**
+- `urllib3` and `packaging` are needed to download and unarchive some tarballs.
 
 ### Install system packages
 
