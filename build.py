@@ -321,7 +321,7 @@ def compile_gdnative_cef(path):
         gdnative_scons_cmd("x11")
     elif OSTYPE == "Darwin":
         gdnative_scons_cmd("osx")
-    elif OSTYPE == "Windows" or OSTYPE == "MinGW":
+    elif OSTYPE == "Windows":
         gdnative_scons_cmd("windows")
     else:
         fatal("Unknown archi " + OSTYPE + ": I dunno how to compile CEF module primary process")
