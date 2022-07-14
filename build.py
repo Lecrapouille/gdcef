@@ -37,7 +37,7 @@ from multiprocessing import cpu_count
 
 ###############################################################################
 ### Global user settings
-CEF_VERSION = "102.0.9+g1c5e658+chromium-102.0.5005.63"
+CEF_VERSION = "103.0.10+ga5c79bb+chromium-103.0.5060.114"
 CEF_TARGET = "Release"     # "Debug"
 MODULE_TARGET = "release"  # "debug"
 
@@ -55,8 +55,8 @@ GODOT_CPP_API_PATH=''
 ARCHI = machine()
 NPROC = str(cpu_count())
 OSTYPE = system()
-if os.name == "nt" and get_platform().startswith("mingw"):
-    OSTYPE = "MinGW"
+# if os.name == "nt" and get_platform().startswith("mingw"):
+    # OSTYPE = "MinGW"
 
 ###############################################################################
 ### Green color message
@@ -195,7 +195,7 @@ def download_cef():
         info(CEF_VERSION + " already downloaded")
     else:
         # Replace the '+' chars by URL percent encoding '%2B'
-        CEF_URL_VERSION = CEF_VERSION.replace("+", "%2B")
+        CEF_URL_VERSION = CEF_VERSION
         CEF_TARBALL = "cef_binary_" + CEF_URL_VERSION + "_" + CEF_ARCHI + ".tar.bz2"
         info("Downloading Chromium Embedded Framework into " + CEF_PATH + " ...")
 
