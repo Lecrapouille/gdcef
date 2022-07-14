@@ -37,7 +37,7 @@ from multiprocessing import cpu_count
 
 ###############################################################################
 ### Global user settings
-CEF_VERSION = "102.0.9+g1c5e658+chromium-102.0.5005.63"
+CEF_VERSION = "103.0.10+ga5c79bb+chromium-103.0.5060.114"
 CEF_TARGET = "Release"     # "Debug"
 MODULE_TARGET = "release"  # "debug"
 
