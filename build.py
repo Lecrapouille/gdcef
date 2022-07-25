@@ -56,10 +56,6 @@ ARCHI = machine()
 NPROC = str(cpu_count())
 OSTYPE = system()
 
-#CEF does not support compiling for MinGW
-#if os.name == "nt" and get_platform().startswith("mingw"):
-#    OSTYPE = "MinGW"
-
 ###############################################################################
 ### Green color message
 def info(msg):
@@ -328,7 +324,7 @@ def gdnative_scons_cmd(plateform):
              "build_path=" + GDCEF_EXAMPLE_BUILD_PATH,
              "target=" + MODULE_TARGET, "--jobs=" + NPROC,
              "arch=" + ARCHI, "platform=" + plateform], check=True)
-    else: # FIXME "arch=" + ARCHI not working
+    else:
         run(["scons", "api_path=" + GODOT_CPP_API_PATH,
              "build_path=" + GDCEF_EXAMPLE_BUILD_PATH,
              "target=" + MODULE_TARGET, "--jobs=" + NPROC,
