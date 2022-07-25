@@ -361,6 +361,7 @@ if __name__ == "__main__":
 
     check_paths()
     download_cef()
+    compile_cef()
     install_cef_assets()
     compile_gdnative_cef(GDCEF_PATH)
     compile_gdnative_cef(GDCEF_PROCESSES_PATH)
