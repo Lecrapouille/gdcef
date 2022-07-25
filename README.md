@@ -7,9 +7,9 @@ implements some classes wrapping a subset of the CEF API that can be directly
 usable in Godot scripts (gdscript) but feel free to help us implemented other
 features.
 
-A minimal CEF example is given. It is automatically compiled by the install
-`build.py` script. A concrete Godot application using CEF can be find
-[here](https://github.com/stigmee/stigmee).
+A minimal CEF example is given. It is automatically compiled by the Python 3
+install `./build.py` script (no command line is need: all is taken under control).
+A concrete Godot application using CEF can be find [here](https://github.com/stigmee/stigmee).
 
 *IMPORTANT:* This current repository is a fork of [this original
 repo](https://github.com/stigmee/gdnative-cef) (GPLv3) with a more permissive
@@ -394,6 +394,7 @@ desired operating system.
 ### Installation prerequisites
 
 In case of doubt see the [original project install documentation](https://github.com/stigmee/install).
+This has been only tested with Godot version 3.4.
 
 #### Install Python3 packages
 
@@ -431,6 +432,15 @@ To compile Stigmee for Windows:
   **Administrator** privilege (this should be available in the start menu under
   Visual Studio 2022). This ensures the environment is correctly set to use the
   VS tools.
+
+#### Compile the example
+
+If all prerequisites have been installed. Just
+```
+./build.py
+```
+
+is enough :) No command line is needed.
 
 ### Gallery
 
