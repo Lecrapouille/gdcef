@@ -1,3 +1,9 @@
+Version 0.3.1:
+	* Build script: change python modules (no more wget).
+	* Update build script: clone and compile godot-cpp: no more command line needed.
+	* Fix build script: add missing Windows patches, add missing functions checking CMake and cl.exe
+	* Update documentation.
+
 Version 0.3.0:
 	* Switch to MIT license.
 
