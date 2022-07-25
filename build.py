@@ -34,6 +34,7 @@ from platform import machine, system
 from pathlib import Path
 from subprocess import run
 from multiprocessing import cpu_count
+from packaging import version
 
 ###############################################################################
 ### Global user settings
@@ -47,8 +48,8 @@ GDCEF_PATH = os.path.join(PWD, "gdcef")
 GDCEF_PROCESSES_PATH = os.path.join(PWD, "subprocess")
 GDCEF_THIRDPARTY_PATH = os.path.join(PWD, "thirdparty")
 CEF_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "cef_binary")
-PATCHES_PATH = os.path.join(PWD, "patches")
 GODOT_CPP_API_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "godot-3.4", "cpp")
+PATCHES_PATH = os.path.join(PWD, "patches")
 GDCEF_EXAMPLE_PATH = os.path.join(PWD, "example")
 GDCEF_EXAMPLE_BUILD_PATH = os.path.join(GDCEF_EXAMPLE_PATH, "build")
 
@@ -373,6 +374,52 @@ def compile_gdnative_cef(path):
         fatal("Unknown archi " + OSTYPE + ": I dunno how to compile CEF module primary process")
 
 ###############################################################################
+### Check if compilers are present (Windows)
+def check_compiler():
+    if OSTYPE == "Windows":
+        cppfile = "win.cc"
+        binfile = "win.exe"
+        objfile = "win.obj"
+        with open(cppfile, "w") as f:
+            f.write("#include <windows.h>\n")
+            f.write("int main(int argc, char **argv) { return 0; }")
+        if os.system("cl.exe /Fe:" + binfile + " " + cppfile) != 0:
+            os.remove(cppfile)
+            fatal("MS C++ compiler is not found. "
+                  "Install https://visualstudio.microsoft.com "
+                  "and open an x64 Native Tools Command Prompt for VS 2022, with Administrator privilege")
+        if os.path.isfile(binfile) == False:
+            os.remove(cppfile)
+            fatal("MS C++ compiler is not working. "
+                  "Install https://visualstudio.microsoft.com "
+                  "and open an x64 Native Tools Command Prompt for VS 2022, with Administrator privilege")
+        if os.system(binfile) != 0:
+            os.remove(cppfile)
+            fatal("MS C++ compiler could not compile test program. "
+                  "Install https://visualstudio.microsoft.com "
+                  "and open an x64 Native Tools Command Prompt for VS 2022, with Administrator privilege")
+        info("MS C++ Compiler OK")
+        os.remove(cppfile)
+        os.remove(binfile)
+        os.remove(objfile)
+
+###############################################################################
+### Check if cmake version is >= 3.19 needed by CEF (Linux)
+def check_cmake_version(min_version):
+    info("Checking cmake version ...")
+    if shutil.which("cmake") == None:
+        fatal("Your did not have CMake installed. See "
+              "doc/internal/doc/install_latest_cmake.sh to update it before "
+              "running this script")
+    output = subprocess.check_output(["cmake", "--version"]).decode("utf-8")
+    line = output.splitlines()[0]
+    current_version = line.split()[2]
+    if version.parse(current_version) < version.parse(min_version):
+        fatal("Your CMake version is " + current_version + " but shall be >= "
+              + min_version + "\nSee /doc/internal/doc/install_latest_cmake.sh "
+              "to update it before running this script")
+
+###############################################################################
 ### Run Godot example
 def run_godot_example():
     info("Compilation done with success. You can run your Godot editor and import the project at 'gdcef/example'")
@@ -381,6 +428,8 @@ def run_godot_example():
 ### Entry point
 if __name__ == "__main__":
     check_paths()
+    check_cmake_version("3.19")
+    check_compiler()
     compile_godot_cpp()
     download_cef()
     compile_cef()
