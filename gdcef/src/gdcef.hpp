@@ -196,7 +196,7 @@ public:
 
     // -------------------------------------------------------------------------
     //! \brief Create a browser view and store its instance inside the internal
-    //! container. Return the browser identifier or return -1 in case of failure.
+    //! container. Return the browser identifier or return nullptr in case of failure.
     //! \param[in] url the page link (by copy needed by Godot).
     //! \param[in] name the browser name (by copy needed by Godot).
     //! \param[in] w the width dimension of the document.
