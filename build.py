@@ -37,7 +37,7 @@ from multiprocessing import cpu_count
 
 ###############################################################################
 ### Global user settings
-CEF_VERSION = "103.0.10+ga5c79bb+chromium-103.0.5060.114"
+CEF_VERSION = "103.0.12+g8eb56c7+chromium-103.0.5060.134"
 CEF_TARGET = "Release"     # "Debug"
 MODULE_TARGET = "release"  # "debug"
 GODOT_CPP_TARGET = MODULE_TARGET
