@@ -1,10 +1,4 @@
-# Chromium Embedded Framework as Godot native module
-
-*IMPORTANT:* This current repository is a fork of [this original
-repo](https://github.com/stigmee/gdnative-cef) (GPLv3) with a more permissive
-license (MIT). Indeed, since the original project will no longer be developped
-by their original authors, we, original authors, have accepted the fork of the
-original repository with a new licence.
+# Chromium Embedded Framework as Godot 3.4 native module
 
 This repository contains the Godot native module (GDNative) wrapping [Chromium
 Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home) (CEF),
@@ -12,6 +6,18 @@ that we have named `gdcef`. The code source of this module is made in C++ and
 implements some classes wrapping a subset of the CEF API that can be directly
 usable in Godot scripts (gdscript) but feel free to help us implemented other
 features.
+
+A minimal CEF example is given. It is automatically compiled by the install
+`build.py` script. A concrete Godot application using CEF can be find
+[here](https://github.com/stigmee/stigmee).
+
+*IMPORTANT:* This current repository is a fork of [this original
+repo](https://github.com/stigmee/gdnative-cef) (GPLv3) with a more permissive
+license (MIT). Indeed, since the original project will no longer be developped
+by their original authors, we, original authors, have accepted the fork of the
+original repository under a new licence.
+
+## How CEF is compiled under Godot ?
 
 The goal of this document is to make you understand the general ideas behind how
 this module `gdcef` is compiled (with examples for Window while similar for
@@ -23,7 +29,7 @@ lecture). Else, ask questions either in our Discord, or in the `Discussions` or
 `Issues` menu of the associated GitHub repository to help improving this
 document.
 
-## Environment
+### Environment
 
 The tree structure of the your project can be different from the one depicted in
 the next diagram. For this document we have choose:
@@ -38,7 +44,7 @@ the next diagram. For this document we have choose:
      ┗ 📂cef_binary            ⬅️ CEF distribution used to build the dependencies (downloaded)
 ```
 
-## The Godot C++ binding API (godot-cpp)
+### The Godot C++ binding API (godot-cpp)
 
 The first component, `godot-cpp` folder, must be present before doing *any*
 compilation attempt on a Godot module. This folder comes from this
@@ -92,7 +98,7 @@ Where [scons](https://scons.org/) is a build system like Makefile but using the
 Python interpreter and the build script knowing the operating system, if to
 compile in release or debug mode (and more parameters).
 
-## Prebuilt Chromium Embedded Framework (cef_binary)
+### Prebuilt Chromium Embedded Framework (cef_binary)
 
 The second component, `cef_binary` contains the CEF with prebuilt libraries with
 the C++ API and some code to compile. These libraries and artifacts are needed
@@ -167,7 +173,7 @@ licence (which it is not the case when compiled as dynamic libraries). See this
 [post](https://www.magpcss.org/ceforum/viewtopic.php?f=6&t=11182). In our case
 this fine since our project is already under GPL licence.
 
-## CEF secondary process (subprocess)
+### CEF secondary process (subprocess)
 
 This executable is needed in order for the CEF to spawn the various CEF
 sub-processes (GPU process, render handler...). In CEF, a secondary process is
@@ -217,7 +223,7 @@ Again the `build.py` will do it for you.
     ┗ 📦gdcefSubProcess              ⬅️ CEF secondary process
 ```
 
-## CEF native module (gdcef)
+### CEF native module (gdcef)
 
 This directory contains the source of the gdcef library, allowing to generate
 the `libgdcef.dll` module. This dll file can then be loaded by the GDNative
@@ -256,7 +262,7 @@ Again the `build.py` will do it for you.
     ┗ 📜libgdcef.dll                 ⬅️ Our CEF native module library for Godot
 ```
 
-## Godot module configuration
+### Godot module configuration
 
 In order for native modules to be used by Godot, you have to create the
 following 2 files under the the Godot project root `res://` (for example in our
@@ -327,7 +333,7 @@ the correct node.
 
 ![CEFnode](doc/scenegraph/cef.png)
 
-## Update your CEF version
+### Update your CEF version
 
 - Check this website https://cef-builds.spotifycdn.com/index.html and select your
 desired operating system.
@@ -336,11 +342,11 @@ desired operating system.
 `build.py` script the line `CEF_VERSION=` and paste the new version.
 - Rerun the `build.py` the `cef_binary` folder will be replaced by the new version.
 
-## Installation prerequisites
+### Installation prerequisites
 
 In case of doubt see the [original project install documentation](https://github.com/stigmee/install).
 
-### Install Python3 packages
+#### Install Python3 packages
 
 Our `build.py` script is made in **Python3** to be usable for any operating
 systems (Linux, MacOS X, Windows). Please do not use Python 2. To make the
@@ -354,7 +360,7 @@ python3 -m pip  install -r requirements.txt
 - `scons` is a Makefile made in Python and it is needed to compile Godot.
 - `urllib3` and `packaging` are needed to download and unarchive some tarballs.
 
-### Install system packages
+#### Install system packages
 
 Install the following tools: `g++`, `ninja`, `cmake` (greater or equal to
 3.21.0).
@@ -377,22 +383,7 @@ To compile Stigmee for Windows:
   Visual Studio 2022). This ensures the environment is correctly set to use the
   VS tools.
 
-## The Hello-CEF example
-
-A minimal CEF example is given. It is automatically compiled by the install
-`build.py` script.
-
-```
-./build.py <path to Godot C++ API>
-```
-
-Where `<path to Godot C++ API>` refers to
-https://github.com/godotengine/godot-cpp which shall have be compiled before
-calling this script. You can see https://github.com/stigmee/stigmee for how
-to use the mouse and keyboard events and see https://github.com/stigmee/install
-for install script taking into account of the Godot C++ API.
-
-## Gallery
+### Gallery
 
 Projects interested by / using this module. Please do not hesitate to give your project
 links and pictures by pull requests.
@@ -402,4 +393,3 @@ links and pictures by pull requests.
 Click to see on the image to see the Elitemeta video shared on IPFS.
 [![elitemeta](doc/gallery/elitemeta.jpg)](https://ipfs.io/ipfs/QmaL7NY5qs3AtAdcX8vFhqaHwJeTMKfP3PbzcHZBLmo1QQ?filename=elitemeta_0.mp4)
 Thanks to the team for having shared this video.
-

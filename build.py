@@ -40,15 +40,16 @@ from multiprocessing import cpu_count
 CEF_VERSION = "103.0.10+ga5c79bb+chromium-103.0.5060.114"
 CEF_TARGET = "Release"     # "Debug"
 MODULE_TARGET = "release"  # "debug"
+GODOT_CPP_TARGET = MODULE_TARGET
 
 PWD = os.getcwd()
 GDCEF_PATH = os.path.join(PWD, "gdcef")
 GDCEF_PROCESSES_PATH = os.path.join(PWD, "subprocess")
 GDCEF_THIRDPARTY_PATH = os.path.join(PWD, "thirdparty")
 CEF_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "cef_binary")
+GODOT_CPP_API_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "godot-3.4", "cpp")
 GDCEF_EXAMPLE_PATH = os.path.join(PWD, "example")
 GDCEF_EXAMPLE_BUILD_PATH = os.path.join(GDCEF_EXAMPLE_PATH, "build")
-GODOT_CPP_API_PATH=''
 
 ###############################################################################
 ### Type of operating system, AMD64, ARM64 ...
@@ -168,8 +169,7 @@ def read_sha1_file(path_sha1):
 ###############################################################################
 ### Give some path checks
 def check_paths():
-    for path in [PWD, GDCEF_PATH, GDCEF_PROCESSES_PATH, GDCEF_EXAMPLE_PATH,
-                 GODOT_CPP_API_PATH]:
+    for path in [PWD, GDCEF_PATH, GDCEF_PROCESSES_PATH, GDCEF_EXAMPLE_PATH]:
         if not os.path.isdir(path):
             fatal('Folder ' + path + ' does not exist!')
 
@@ -315,6 +315,33 @@ def install_cef_assets():
         fatal("Unknown architecture " + OSTYPE + ": I dunno how to extract CEF artifacts")
 
 ###############################################################################
+### Compile Godot cpp wrapper needed for our gdnative code: CEF ...
+def compile_godot_cpp():
+    if not os.path.exists(GODOT_CPP_API_PATH):
+        info("Clone cpp wrapper for Godot 3.4")
+        run(["git", "clone", "--recursive", "-b", "3.4",
+             "https://github.com/godotengine/godot-cpp", GODOT_CPP_API_PATH])
+
+    lib = os.path.join(GODOT_CPP_API_PATH, "bin", "libgodot-cpp*" + GODOT_CPP_TARGET + "*")
+    if not os.path.exists(lib):
+        info("Compiling Godot C++ API (inside " + GODOT_CPP_API_PATH + ") ...")
+        os.chdir(GODOT_CPP_API_PATH)
+        if OSTYPE == "Linux":
+            run(["scons", "platform=linux", "target=" + GODOT_CPP_TARGET,
+                 "--jobs=" + NPROC], check=True)
+        elif OSTYPE == "Darwin":
+            run(["scons", "platform=osx", "macos_arch=" + ARCHI,
+                 "target=" + GODOT_CPP_TARGET, "--jobs=" + NPROC], check=True)
+        elif OSTYPE == "MinGW":
+            run(["scons", "platform=windows", "use_mingw=True",
+                 "target=" + GODOT_CPP_TARGET, "--jobs=" + NPROC], check=True)
+        elif OSTYPE == "Windows":
+            run(["scons", "platform=windows", "target=" + GODOT_CPP_TARGET,
+                 "--jobs=" + NPROC], check=True)
+        else:
+            fatal("Unknown architecture " + OSTYPE + ": I dunno how to compile Godot-cpp")
+
+###############################################################################
 ### Common Scons command for compiling our Godot gdnative modules
 def gdnative_scons_cmd(plateform):
     if GODOT_CPP_API_PATH == '':
@@ -352,15 +379,8 @@ def run_godot_example():
 ###############################################################################
 ### Entry point
 if __name__ == "__main__":
-    argc = len(sys.argv)
-    if argc != 2:
-        print('Command line: ' + sys.argv[0] + ' <path to Godot C++ API>')
-        print('Where:\n  <path to Godot C++ API> means the path to a compiled https://github.com/godotengine/godot-cpp')
-        sys.exit(-1)
-
-    GODOT_CPP_API_PATH = sys.argv[1]
-
     check_paths()
+    compile_godot_cpp()
     download_cef()
     compile_cef()
     install_cef_assets()
