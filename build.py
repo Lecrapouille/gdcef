@@ -349,6 +349,11 @@ def compile_gdnative_cef(path):
         fatal("Unknown archi " + OSTYPE + ": I dunno how to compile CEF module primary process")
 
 ###############################################################################
+### Run Godot example
+def run_godot_example():
+    info("Compilation done with success. You can run your Godot editor and import the project at 'gdcef/example'")
+
+###############################################################################
 ### Entry point
 if __name__ == "__main__":
     argc = len(sys.argv)
@@ -365,3 +370,4 @@ if __name__ == "__main__":
     install_cef_assets()
     compile_gdnative_cef(GDCEF_PATH)
     compile_gdnative_cef(GDCEF_PROCESSES_PATH)
+    run_godot_example()
