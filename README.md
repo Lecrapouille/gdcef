@@ -2,18 +2,18 @@
 
 This repository contains the Godot native module (GDNative) wrapping [Chromium
 Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home) (CEF),
-that we have named `gdcef`. The code source of this module is made in C++ and
+that we have named `gdcef`. The source code of this module is written in C++ and
 implements some classes wrapping a subset of the CEF API that can be directly
-usable in Godot scripts (gdscript) but feel free to help us implemented other
+used in Godot scripts (gdscript) but feel free to help us implement other
 features.
 
 A minimal CEF example is given. It is automatically compiled by the Python 3
-install `./build.py` script (no command line is need: all is taken under control).
+install `./build.py`.
 A concrete Godot application using CEF can be find [here](https://github.com/stigmee/stigmee).
 
 *IMPORTANT:* This current repository is a fork of [this original
 repo](https://github.com/stigmee/gdnative-cef) (GPLv3) with a more permissive
-license (MIT). Indeed, since the original project will no longer be developped
+license (MIT). Indeed, since the original project will no longer be developed
 by their original authors, we, original authors, have accepted the fork of the
 original repository under a new licence.
 
@@ -68,20 +68,20 @@ This class is instanciate by GDCef.
 
 ## How CEF is compiled under Godot ?
 
-The goal of this document is to make you understand the general ideas behind how
-this module `gdcef` is compiled (with examples for Window while similar for
+The goal of this document is to make you understand the general idea behind how
+this module `gdcef` is compiled (with examples for Windows while similar for
 other operating systems). The detail design on how guts are working is described
-in an other [document](doc/detailsdesign.md) (currently in gestation). For the
+in another [document](doc/detailsdesign.md) (currently unfinished). For the
 details of the implementation, you will have to dive directly inside the CEF
 code source, it has lot of comments (not always easy to apprehend at first
-lecture). Else, ask questions either in our Discord, or in the `Discussions` or
+read). Else, ask questions either in our Discord, or in the `Discussions` or
 `Issues` menu of the associated GitHub repository to help improving this
 document.
 
 ### Environment
 
 The tree structure of the your project can be different from the one depicted in
-the next diagram. For this document we have choose:
+the next diagram. For this document we chose:
 
 ```
 📦YourProject
@@ -98,7 +98,7 @@ the next diagram. For this document we have choose:
 The first component, `godot-cpp` folder, must be present before doing *any*
 compilation attempt on a Godot module. This folder comes from this
 [repo](https://github.com/godotengine/godot-cpp) and contains binding on the
-Godot API and allows you to compile your module like if you we were compiling it
+Godot API and allows you to compile your module like if you were compiling it
 directly inside the code source of the Godot editor (see
 [here](https://docs.godotengine.org/en/stable/development/cpp/custom_modules_in_cpp.html)
 for more information).
@@ -111,9 +111,9 @@ since CEF fewly triggers the Godot engine. The other point is that methods may
 have their name a little changed compared to the official API. Last good point
 for us for this project, is the presence of C++ namespace which fix for us a
 name conflict on the error enumerators: Godot and CEF using the same error
-names, the compiler does not know which one to use. Finally, to make use CEF
-natively inside Godot engine would mean to modify directly the Godot code
-source, which is more complex than using C++ binding. If you are curious and
+names, the compiler does not know which one to use. Finally, to make use of CEF
+natively inside Godot engine would mean to directly modify the Godot source
+code, which is more complex than using C++ binding. If you are curious and
 read French you can check this
 [document](https://github.com/stigmee/doc-internal/blob/master/doc/tuto_modif_godot_fr.md#compilation-du-module-godot-v34-stable)
 detailing how we succeeded.
@@ -144,8 +144,8 @@ scons platform=windows target=release
 ```
 
 Where [scons](https://scons.org/) is a build system like Makefile but using the
-Python interpreter and the build script knowing the operating system, if to
-compile in release or debug mode (and more parameters).
+Python interpreter and the build script knowing the operating system, if it has
+to compile in release or debug mode (and more parameters).
 
 ### Prebuilt Chromium Embedded Framework (cef_binary)
 
@@ -155,14 +155,14 @@ to make the Godot application compilable and working. They are created when this
 component is compiled (in fact, compiling the CEF's `cefsimple` example given in
 the source is enough). Note that building CEF source code 'from scratch' is too
 complex: too long (around 4 hours with a good Ethernet connection, at worst 1
-day with poor Ethernet connection), too huge (around 60 and 100 giga bytes on
+day with poor Ethernet connection), too huge (around 60 and 100 GB on
 your disk) and your system shall install plenty of system packages (apt-get).
 
 Since this folder `cef_binary` cannot be directly git cloned, you have to
-downloaded, unpacked and renamed from the CEF website
+download, unpack and rename it from the CEF website
 https://cef-builds.spotifycdn.com/index.html in an automatic way. This is done
-by our the install script `build.py` which knows your operating system and the
-desired CEF version: an inspection inside the CEF's README (if presents) allows
+by our the install script `build.py`, which knows your operating system and the
+desired CEF version: an inspection inside the CEF's README (if present) allows
 to know if CEF has been previously downloaded or if the version is matching (if
 not, this means we wanted to install a different CEF version: the old
 `cef_binary` folder is removed and the new one is downloaded, unpacked and
@@ -177,12 +177,12 @@ cmake -DCMAKE_BUILD_TYPE=Release .
 cmake --build . --config Release
 ```
 
-The following libraries and artifacts shall copied into the Godot project root
-`res://` else Godot will not be able to locate them and will complain about not
+The following libraries and artifacts are copied into the Godot project root
+`res://`, else Godot will not be able to locate them and will complain about not
 being able to load the module dependencies at project startup. The destination
 folder is inside its `build` folder (to be created). Those files, for Windows,
 are mandatory to correctly startup CEF. Again, the `build.py` will do it for
-you, and for other operating system.
+you, and for other OSes.
 
 ```
 📦YourProject
@@ -203,7 +203,7 @@ you, and for other operating system.
     ┗ 📜resources.pak                ⬅️ Non-localized resources and strings
 ```
 
-For Windows, actual builds are using dynamic library, and default VS solutions
+For Windows, actual builds are using dynamic libraries, and default VS solutions
 is configured for static compilation. Therefore need to use VS to compile in
 Release mode, and you (the build script) will change the compiler mode of the
 Release mode from `/MT` to `/MD`, and add the 2 following preprocessor flags:
