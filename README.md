@@ -216,11 +216,11 @@ seems not possible to compile in static, as consequence the `libcef.so` is quite
 fat: more than 1 gigabytes which is a factor more than the one for Windows
 (probably because this last knows better that Linux which symbol to export).
 
-*IMPORTANT:* since CEF is using some thirdpart libraries under the LGPL licence.
+*IMPORTANT:* since CEF is using some thirdparty libraries under the LGPL licence.
 Compiling them as static libraries will contaminate the project under the GPL
 licence (which it is not the case when compiled as dynamic libraries). See this
 [post](https://www.magpcss.org/ceforum/viewtopic.php?f=6&t=11182). In our case
-this fine since our project is already under GPL licence.
+this is fine since our project is already under GPL licence.
 
 ### CEF secondary process (subprocess)
 
@@ -229,9 +229,9 @@ sub-processes (GPU process, render handler...). In CEF, a secondary process is
 needed when the CEF initialization function cannot reach or modify the command
 line of the application (the `int main(int argc, char* argv[])`) which it is our
 case since we do not want to depend on a modified Godot (forked) holding
-internally a CEF. We gave a try: modifying Godot code source works but this
+internally a CEF. We gave it a try: modifying Godot source code works but this
 becomes too complex to follow evolution of Godot and CEF (since we are not
-developing the Godot engine code source). For more information you can read this
+developing the Godot engine source code). For more information you can read this
 [section](https://github.com/stigmee/doc-internal/blob/master/doc/tuto_modif_godot_fr.md#modification-du-main-de-godot-v34-stable).
 
 The detail design on how the both processes talk together is described in this
@@ -387,7 +387,7 @@ the correct node.
 - Check this website https://cef-builds.spotifycdn.com/index.html and select your
 desired operating system.
 - Copy the desired CEF version **without the name of the operating system**
-(for example `100.0.24+g0783cf8+chromium-100.0.4896.127`) and search in the
+(for example `100.0.24+g0783cf8+chromium-100.0.4896.127`) and search in
 `build.py` script the line `CEF_VERSION=` and paste the new version.
 - Rerun the `build.py` the `cef_binary` folder will be replaced by the new version.
 
@@ -399,16 +399,12 @@ This has been only tested with Godot version 3.4.
 #### Install Python3 packages
 
 Our `build.py` script is made in **Python3** to be usable for any operating
-systems (Linux, MacOS X, Windows). Please do not use Python 2. To make the
-installation possible, you will have to install the following python3 modules:
+systems (Linux, MacOS X, Windows). Please do not use Python 2. Please install the
+needed Python packages with pip by typing the following line into a terminal:
 
 ```
-# python3 -m pip install scons packaging urllib3 progressbar
 python3 -m pip  install -r requirements.txt
 ```
-
-- `scons` is a Makefile made in Python and it is needed to compile Godot.
-- `urllib3` and `packaging` are needed to download and unarchive some tarballs.
 
 #### Install system packages
 
@@ -426,7 +422,7 @@ Install the following tools: `g++`, `ninja`, `cmake` (greater or equal to
   - Ninja: https://ninja-build.org/
   - Git: https://git-scm.com/download/win
 
-To compile Stigmee for Windows:
+To compile GDCef for Windows:
 - Ensure VS2022 is installed
 - Open an **x64 Native Tools Command Prompt for VS 2022**, with
   **Administrator** privilege (this should be available in the start menu under
