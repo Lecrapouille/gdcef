@@ -1,3 +1,6 @@
+Version 0.3.2:
+	* Add second demo: CEF inside a 3D world with key and mouse bindings.
+
 Version 0.3.1:
 	* Build script: change python modules (no more wget).
 	* Update build script: clone and compile godot-cpp: no more command line needed.
