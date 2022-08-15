@@ -41,7 +41,7 @@ from packaging import version
 CEF_VERSION = "103.0.12+g8eb56c7+chromium-103.0.5060.134"
 CEF_TARGET = "Release"     # "Debug"
 MODULE_TARGET = "release"  # "debug"
-GODOT_VERSION = "3.4"
+GODOT_VERSION = "3.5"
 GODOT_CPP_TARGET = MODULE_TARGET
 CMAKE_MIN_VERSION = "3.19"
 
