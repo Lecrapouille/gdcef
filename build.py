@@ -41,6 +41,7 @@ from packaging import version
 CEF_VERSION = "103.0.12+g8eb56c7+chromium-103.0.5060.134"
 CEF_TARGET = "Release"     # "Debug"
 MODULE_TARGET = "release"  # "debug"
+GODOT_VERSION = "3.4"
 GODOT_CPP_TARGET = MODULE_TARGET
 CMAKE_MIN_VERSION = "3.19"
 
@@ -49,7 +50,7 @@ GDCEF_PATH = os.path.join(PWD, "gdcef")
 GDCEF_PROCESSES_PATH = os.path.join(PWD, "subprocess")
 GDCEF_THIRDPARTY_PATH = os.path.join(PWD, "thirdparty")
 CEF_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "cef_binary")
-GODOT_CPP_API_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "godot-3.4", "cpp")
+GODOT_CPP_API_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "godot-" + GODOT_VERSION, "cpp")
 PATCHES_PATH = os.path.join(PWD, "patches")
 GDCEF_EXAMPLE_PATH = os.path.join(PWD, "example")
 GDCEF_EXAMPLE_BUILD_PATH = os.path.join(GDCEF_EXAMPLE_PATH, "build")
@@ -318,13 +319,16 @@ def install_cef_assets():
         fatal("Unknown architecture " + OSTYPE + ": I dunno how to extract CEF artifacts")
 
 ###############################################################################
-### Compile Godot cpp wrapper needed for our gdnative code: CEF ...
-def compile_godot_cpp():
+### Download Godot cpp wrapper needed for our gdnative code: CEF ...
+def download_godot_cpp():
     if not os.path.exists(GODOT_CPP_API_PATH):
-        info("Clone cpp wrapper for Godot 3.4")
-        run(["git", "clone", "--recursive", "-b", "3.4",
+        info("Clone cpp wrapper for Godot " + GODOT_VERSION)
+        run(["git", "clone", "--recursive", "-b", GODOT_VERSION,
              "https://github.com/godotengine/godot-cpp", GODOT_CPP_API_PATH])
 
+###############################################################################
+### Compile Godot cpp wrapper needed for our gdnative code: CEF ...
+def compile_godot_cpp():
     lib = os.path.join(GODOT_CPP_API_PATH, "bin", "libgodot-cpp*" + GODOT_CPP_TARGET + "*")
     if not os.path.exists(lib):
         info("Compiling Godot C++ API (inside " + GODOT_CPP_API_PATH + ") ...")
@@ -432,6 +436,7 @@ if __name__ == "__main__":
     check_paths()
     check_cmake_version()
     check_compiler()
+    download_godot_cpp()
     compile_godot_cpp()
     download_cef()
     compile_cef()
