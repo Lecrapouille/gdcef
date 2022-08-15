@@ -49,8 +49,9 @@ PWD = os.getcwd()
 GDCEF_PATH = os.path.join(PWD, "gdcef")
 GDCEF_PROCESSES_PATH = os.path.join(PWD, "subprocess")
 GDCEF_THIRDPARTY_PATH = os.path.join(PWD, "thirdparty")
-CEF_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "cef_binary")
-GODOT_CPP_API_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "godot-" + GODOT_VERSION, "cpp")
+THIRDPARTY_CEF_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "cef_binary")
+THIRDPARTY_GODOT_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "godot-" + GODOT_VERSION)
+GODOT_CPP_API_PATH = os.path.join(THIRDPARTY_GODOT_PATH, "cpp")
 PATCHES_PATH = os.path.join(PWD, "patches")
 GDCEF_EXAMPLES_PATH = os.path.join(PWD, "examples")
 CEF_ARTIFACTS_BUILD_PATH = os.path.join(GDCEF_EXAMPLES_PATH, "build")
@@ -158,6 +159,7 @@ class MyProgressBar():
 ###############################################################################
 ### Download artifacts
 def download(url, destination):
+    info("Download " + url + " into " + destination)
     urllib.request.urlretrieve(url, destination, reporthook=MyProgressBar())
     print('', flush=True)
 
@@ -222,14 +224,14 @@ def download_cef():
 
     # CEF already installed ? Installed with a different version ?
     # Compare our desired version with the one stored in the CEF README
-    if grep(os.path.join(CEF_PATH, "README.txt"), CEF_VERSION) != None:
+    if grep(os.path.join(THIRDPARTY_CEF_PATH, "README.txt"), CEF_VERSION) != None:
         info(CEF_VERSION + " already downloaded")
     else:
         # Replace the '+' chars by URL percent encoding '%2B'
         CEF_URL_VERSION = CEF_VERSION.replace("+", "%2B")
         CEF_TARBALL = "cef_binary_" + CEF_URL_VERSION + "_" + CEF_ARCHI + ".tar.bz2"
         SHA1_CEF_TARBALL = CEF_TARBALL + ".sha1"
-        info("Downloading Chromium Embedded Framework into " + CEF_PATH + " ...")
+        info("Downloading Chromium Embedded Framework into " + THIRDPARTY_CEF_PATH + " ...")
 
         # Remove the CEF folder if exist and partial downloaded folder
         mkdir(GDCEF_THIRDPARTY_PATH)
@@ -247,7 +249,7 @@ def download_cef():
             fatal("Downloaded CEF tarball does not match expected SHA1. Please retry!")
 
         # Simplify the folder name by removing the complex version number
-        untarbz2(CEF_TARBALL, CEF_PATH)
+        untarbz2(CEF_TARBALL, THIRDPARTY_CEF_PATH)
 
         # Remove useless files
         os.remove(CEF_TARBALL)
@@ -256,10 +258,10 @@ def download_cef():
 ###############################################################################
 ### Compile Chromium Embedded Framework cefsimple example if not already made
 def compile_cef():
-    if os.path.isdir(CEF_PATH):
-        os.chdir(CEF_PATH)
+    if os.path.isdir(THIRDPARTY_CEF_PATH):
+        os.chdir(THIRDPARTY_CEF_PATH)
         info("Compiling Chromium Embedded Framework in " + CEF_TARGET +
-             " mode (inside " + CEF_PATH + ") ...")
+             " mode (inside " + THIRDPARTY_CEF_PATH + ") ...")
 
         # Apply patches for Windows
         if OSTYPE == "Windows":
@@ -292,8 +294,8 @@ def install_cef_assets():
     locales = os.path.join(build_path, "locales")
     mkdir(locales)
     if OSTYPE == "Linux" or OSTYPE == "Darwin":
-        # cp CEF_PATH/build/tests/cefsimple/*.pak *.dat *.so locales/* build_path
-        S = os.path.join(CEF_PATH, "build", "tests", "cefsimple", CEF_TARGET)
+        # cp THIRDPARTY_CEF_PATH/build/tests/cefsimple/*.pak *.dat *.so locales/* build_path
+        S = os.path.join(THIRDPARTY_CEF_PATH, "build", "tests", "cefsimple", CEF_TARGET)
         copyfile(os.path.join(S, "v8_context_snapshot.bin"), build_path)
         copyfile(os.path.join(S, "icudtl.dat"), build_path)
         for f in glob.glob(os.path.join(S, "*.pak")):
@@ -305,13 +307,13 @@ def install_cef_assets():
         for f in glob.glob(os.path.join(S, "*.so.*")):
             copyfile(f, build_path)
     elif OSTYPE == "Windows":
-        # cp CEF_PATH/Release/*.bin CEF_PATH/Release/*.dll build_path
-        S = os.path.join(CEF_PATH, CEF_TARGET)
+        # cp THIRDPARTY_CEF_PATH/Release/*.bin THIRDPARTY_CEF_PATH/Release/*.dll build_path
+        S = os.path.join(THIRDPARTY_CEF_PATH, CEF_TARGET)
         copyfile(os.path.join(S, "v8_context_snapshot.bin"), build_path)
         for f in glob.glob(os.path.join(S, "*.dll")):
             copyfile(f, build_path)
-        # cp CEF_PATH/Resources/*.pak *.dat locales/* build_path
-        S = os.path.join(CEF_PATH, "Resources")
+        # cp THIRDPARTY_CEF_PATH/Resources/*.pak *.dat locales/* build_path
+        S = os.path.join(THIRDPARTY_CEF_PATH, "Resources")
         copyfile(os.path.join(S, "icudtl.dat"), build_path)
         for f in glob.glob(os.path.join(S, "*.pak")):
             copyfile(f, build_path)
@@ -320,9 +322,9 @@ def install_cef_assets():
     elif OSTYPE == "Darwin":
         # For Mac OS X rename cef_sandbox.a to libcef_sandbox.a since Scons search
         # library names starting by lib*
-        os.chdir(os.path.join(CEF_PATH, CEF_TARGET))
+        os.chdir(os.path.join(THIRDPARTY_CEF_PATH, CEF_TARGET))
         shutil.copyfile("cef_sandbox.a", "libcef_sandbox.a")
-        S = os.path.join(CEF_PATH, CEF_TARGET, "Chromium Embedded Framework.framework")
+        S = os.path.join(THIRDPARTY_CEF_PATH, CEF_TARGET, "Chromium Embedded Framework.framework")
         for f in glob.glob(S + "/Libraries*.dylib"):
             copyfile(f, build_path)
         for f in glob.glob(S + "/Resources/*"):
@@ -334,7 +336,8 @@ def install_cef_assets():
 ### Download Godot cpp wrapper needed for our gdnative code: CEF ...
 def download_godot_cpp():
     if not os.path.exists(GODOT_CPP_API_PATH):
-        info("Clone cpp wrapper for Godot " + GODOT_VERSION)
+        info("Clone cpp wrapper for Godot " + GODOT_VERSION + " into " + GODOT_CPP_API_PATH)
+        mkdir(GODOT_CPP_API_PATH)
         run(["git", "clone", "--recursive", "-b", GODOT_VERSION,
              "https://github.com/godotengine/godot-cpp", GODOT_CPP_API_PATH])
 
