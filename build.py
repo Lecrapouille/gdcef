@@ -52,8 +52,8 @@ GDCEF_THIRDPARTY_PATH = os.path.join(PWD, "thirdparty")
 CEF_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "cef_binary")
 GODOT_CPP_API_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "godot-" + GODOT_VERSION, "cpp")
 PATCHES_PATH = os.path.join(PWD, "patches")
-GDCEF_EXAMPLE_PATH = os.path.join(PWD, "example")
-GDCEF_EXAMPLE_BUILD_PATH = os.path.join(GDCEF_EXAMPLE_PATH, "build")
+GDCEF_EXAMPLES_PATH = os.path.join(PWD, "examples")
+CEF_ARTIFACTS_BUILD_PATH = os.path.join(GDCEF_EXAMPLES_PATH, "build")
 
 ###############################################################################
 ### Type of operating system, AMD64, ARM64 ...
@@ -71,6 +71,18 @@ def info(msg):
 def fatal(msg):
     print("\033[31m[FATAL] " + msg + "\033[00m", flush=True)
     sys.exit(2)
+
+###############################################################################
+### Equivalent to test -L e on alias + ln -s
+def symlink(src, dst, force=False):
+    p = Path(dst);
+    if p.is_symlink():
+        os.remove(p)
+    elif force and p.is_file():
+        os.remove(p)
+    elif force and p.is_dir():
+        rmdir(dst)
+    os.symlink(src, dst)
 
 ###############################################################################
 ### Equivalent to cp --verbose
@@ -173,19 +185,19 @@ def read_sha1_file(path_sha1):
 ###############################################################################
 ### Give some path checks
 def check_paths():
-    for path in [PWD, GDCEF_PATH, GDCEF_PROCESSES_PATH, GDCEF_EXAMPLE_PATH]:
+    for path in [PWD, GDCEF_PATH, GDCEF_PROCESSES_PATH, GDCEF_EXAMPLES_PATH]:
         if not os.path.isdir(path):
             fatal('Folder ' + path + ' does not exist!')
 
         # Remove the example build folder to avoid messed up with your
         # application build using alias.
-        p = Path(GDCEF_EXAMPLE_BUILD_PATH);
+        p = Path(CEF_ARTIFACTS_BUILD_PATH);
         if p.is_symlink():
-            os.remove(GDCEF_EXAMPLE_BUILD_PATH)
+            os.remove(CEF_ARTIFACTS_BUILD_PATH)
         elif p.is_dir():
-            rmdir(GDCEF_EXAMPLE_BUILD_PATH)
+            rmdir(CEF_ARTIFACTS_BUILD_PATH)
         elif p.exists():
-            fatal('Please remove manually ' + GDCEF_EXAMPLE_BUILD_PATH + ' and recall this script')
+            fatal('Please remove manually ' + CEF_ARTIFACTS_BUILD_PATH + ' and recall this script')
 
 ###############################################################################
 ### Download prebuild Chromium Embedded Framework if folder is not present
@@ -272,7 +284,7 @@ def compile_cef():
 ###############################################################################
 ### Copy Chromium Embedded Framework assets to your application build folder
 def install_cef_assets():
-    build_path = GDCEF_EXAMPLE_BUILD_PATH
+    build_path = CEF_ARTIFACTS_BUILD_PATH
     mkdir(build_path)
 
     ### Get all CEF compiled artifacts needed for your application
@@ -355,12 +367,12 @@ def gdnative_scons_cmd(plateform):
         fatal('Please download and compile https://github.com/godotengine/godot-cpp and set GODOT_CPP_API_PATH')
     if OSTYPE == "Darwin":
         run(["scons", "api_path=" + GODOT_CPP_API_PATH,
-             "build_path=" + GDCEF_EXAMPLE_BUILD_PATH,
+             "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
              "target=" + MODULE_TARGET, "--jobs=" + NPROC,
              "arch=" + ARCHI, "platform=" + plateform], check=True)
     else:
         run(["scons", "api_path=" + GODOT_CPP_API_PATH,
-             "build_path=" + GDCEF_EXAMPLE_BUILD_PATH,
+             "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
              "target=" + MODULE_TARGET, "--jobs=" + NPROC,
              "platform=" + plateform], check=True)
 
@@ -426,9 +438,19 @@ def check_cmake_version():
               "running this script for Linux. For Windows install the latest exe.")
 
 ###############################################################################
+### Since we have multiple examples and CEF artifacts are heavy we make alias
+### on the build folder. On a real example you do not have to do it: simply
+### install the build/ folder inside your Godot application.
+def prepare_godot_examples():
+    info("Alias examples to CEF artifacts")
+    symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(GDCEF_EXAMPLES_PATH, "00", "build"))
+
+###############################################################################
 ### Run Godot example
 def run_godot_example():
-    info("Compilation done with success. You can run your Godot editor and import the project at 'gdcef/example'")
+    info("Compilation done with success. You can run your Godot editor " +
+         GODOT_CPP_API_PATH + " and import one of the project in the folder "
+         "'gdcef/examples'")
 
 ###############################################################################
 ### Entry point
@@ -443,4 +465,5 @@ if __name__ == "__main__":
     install_cef_assets()
     compile_gdnative_cef(GDCEF_PATH)
     compile_gdnative_cef(GDCEF_PROCESSES_PATH)
+    prepare_godot_examples()
     run_godot_example()
