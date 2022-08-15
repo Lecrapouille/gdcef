@@ -1,0 +1,14 @@
+[general]
+
+singleton=false
+load_once=true
+symbol_prefix="godot_"
+reloadable=false
+
+[entry]
+
+X11.64="res://build/libgdcef.so"
+
+[dependencies]
+
+X11.64=[ "res://build/libcef.so" ]
