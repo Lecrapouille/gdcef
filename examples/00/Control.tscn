@@ -21,9 +21,6 @@ margin_left = 34.0
 margin_top = 47.0
 margin_right = 143.76
 margin_bottom = 179.791
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="Texture2" type="TextureRect" parent="."]
 anchor_right = 0.113
@@ -40,7 +37,7 @@ __meta__ = {
 script = ExtResource( 3 )
 
 [node name="Timer" type="Timer" parent="."]
-wait_time = 4.0
+wait_time = 6.0
 autostart = true
 
 [node name="Node" type="Node" parent="."]

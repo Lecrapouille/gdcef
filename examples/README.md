@@ -1,5 +1,8 @@
 # Godot/CEF Demos
 
-## Demo 00
+## Demo 00: Multiple CEF browsers
 
-## Demo 01
+A demo showing a GUI with multiple CEF browser tabs. No mouse and keyboard
+events are managed. A timer is loading URLs one by one.
+
+![Screenshot](00/icon.png)
