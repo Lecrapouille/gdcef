@@ -42,6 +42,7 @@ CEF_VERSION = "103.0.12+g8eb56c7+chromium-103.0.5060.134"
 CEF_TARGET = "Release"     # "Debug"
 MODULE_TARGET = "release"  # "debug"
 GODOT_CPP_TARGET = MODULE_TARGET
+CMAKE_MIN_VERSION = "3.19"
 
 PWD = os.getcwd()
 GDCEF_PATH = os.path.join(PWD, "gdcef")
@@ -404,20 +405,21 @@ def check_compiler():
         os.remove(objfile)
 
 ###############################################################################
-### Check if cmake version is >= 3.19 needed by CEF (Linux)
-def check_cmake_version(min_version):
+### Check for the minimal cmake version imposed by CEF
+def check_cmake_version():
+    DOC_URL = "https://github.com/stigmee/doc-internal/blob/master/doc/install_latest_cmake.sh"
     info("Checking cmake version ...")
     if shutil.which("cmake") == None:
-        fatal("Your did not have CMake installed. See "
-              "doc/internal/doc/install_latest_cmake.sh to update it before "
-              "running this script")
+        fatal("Your did not have CMake installed. For Linux see " + DOC_URL +
+              " to update it before running this script. For Windows install "
+              "the latest exe.")
     output = subprocess.check_output(["cmake", "--version"]).decode("utf-8")
     line = output.splitlines()[0]
     current_version = line.split()[2]
-    if version.parse(current_version) < version.parse(min_version):
+    if version.parse(current_version) < version.parse(CMAKE_MIN_VERSION):
         fatal("Your CMake version is " + current_version + " but shall be >= "
-              + min_version + "\nSee /doc/internal/doc/install_latest_cmake.sh "
-              "to update it before running this script")
+              + CMAKE_MIN_VERSION + "\nSee " + DOC_URL + " to update it before "
+              "running this script for Linux. For Windows install the latest exe.")
 
 ###############################################################################
 ### Run Godot example
@@ -428,7 +430,7 @@ def run_godot_example():
 ### Entry point
 if __name__ == "__main__":
     check_paths()
-    check_cmake_version("3.19")
+    check_cmake_version()
     check_compiler()
     compile_godot_cpp()
     download_cef()
