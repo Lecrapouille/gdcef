@@ -1,4 +1,4 @@
-# Chromium Embedded Framework as Godot 3.4 native module
+# Chromium Embedded Framework as Godot 3.4+ native module
 
 This repository contains the Godot native module (GDNative) wrapping [Chromium
 Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home) (CEF),
@@ -7,9 +7,10 @@ implements some classes wrapping a subset of the CEF API that can be directly
 used in Godot scripts (gdscript) but feel free to help us implement other
 features.
 
-A minimal CEF example is given. It is automatically compiled by the Python 3
-install `./build.py`.
-A concrete Godot application using CEF can be find [here](https://github.com/stigmee/stigmee).
+A 2D and 3D CEF demos are given. They is automatically compiled by the Python 3
+install `./build.py` (see the concerned [README](examples/README.md) for more
+information: what are demos, how to compile them). A concrete Godot application
+using CEF can be find [here](https://github.com/stigmee/stigmee).
 
 *IMPORTANT:* This current repository is a fork of [this original
 repo](https://github.com/stigmee/gdnative-cef) (GPLv3) with a more permissive
@@ -21,50 +22,52 @@ original repository under a new licence.
 
 ### GDCef
 
-Class deriving from Godot's Node and interfacing Chromium Embedded Framework.
-This class can create isntances of GDBrowserView and manage their lifetime.
+`GDCef` is a class deriving from Godot's Node and interfacing the core of the
+Chromium Embedded Framework. This class can create instances of `GDBrowserView`
+(aka browser tabs) and store them as Godot child nodes (can be access from
+`get_node`).
 
 | Godot function name | arguments                                       | return         | comment                                                                                                                                                                                                 |
 |---------------------|-------------------------------------------------|----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| _process            | dt: float                                       | void           | Hidden function called automatically by Godot and call CEF internal pump messages.                                                                                                                      |
-| create_browser      | url: string, name: string, width: int height: int | GDBrowserView* | Create a browser view and store its instance inside the internal. url: the page link. name: the browser name. width: the width dimension of the document. height: the height dimension of the document. |
-| shutdown            |                                                 |                | Release CEF memory and sub CEF processes are notified that the application is exiting. All browsers are destroyed.                                                                                      |
+| `_process`            | `dt`: float                                       | void           | Hidden function called automatically by Godot and call CEF internal pump messages.                                                                                                                      |
+| `create_browser`      | `url`: string, `name`: string, `width`: int `height`: int | GDBrowserView* | Create a browser tab and store its instance as child node. `url`: the page link. `name`: the browser name to found from the scene graph. `width`: the initial width dimension of the document. `height`: the initial height dimension of the document. |
+| `shutdown`            |                                                 |                | Release CEF memory and sub CEF processes are notified that the application is exiting. All browsers are destroyed.                                                                                      |
 
 ### GDBrowserView
 
-Class wrapping the CefBrowser class and export methods for Godot script.
-This class is instanciate by GDCef.
+Class wrapping the `CefBrowser` class and export methods for Godot script.
+This class is instanciate by `GDCef` by `create_browser` and shall return its
+texture to Godot instance knowing how to render it (ie. `TextureRect`).
 
 | Godot function name   | arguments                                                   | return            | comment                                                                                                                                                                                                                                     |
 |-----------------------|-------------------------------------------------------------|-------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| close                 |                                                             |                   | Close the browser.                                                                                                                                                                                                                          |
-| id                    |                                                             | int               | Return the unique browser identifier.                                                                                                                                                                                                       |
-| is_valid              |                                                             | bool              | Return True if this object is currently valid.                                                                                                                                                                                              |
-| get_texture           |                                                             | Ref ImageTexture  | Return the Godot texture holding the page content to other Godot element that needs it for the rendering.                                                                                                                                   |
-| use_texture_from      |                                                             |  Ref ImageTexture |  Return the Godot texture holding the page content to other Godot element that needs it for the rendering.                                                                                                                                  |
-| set_zoom_level        | delta: float                                                |                   | Set the render zoom level.                                                                                                                                                                                                                  |
-| load_url              | url: string                                                 |                   | Load the given web page                                                                                                                                                                                                                     |
-| is_loaded             |                                                             | bool              | Return true if a document has been loaded in the browser.                                                                                                                                                                                   |
-| get_url               |                                                             | string            | Get the current url of the browser.                                                                                                                                                                                                         |
-| stop_loading          |                                                             |                   | Stop loading the page.                                                                                                                                                                                                                      |
-| has_previous_page     |                                                             | bool              | Return true if the browser can navigate to the previous page.                                                                                                                                                                               |
-| has_next_page         |                                                             | bool              | Return true if the browser can navigate to the next page.                                                                                                                                                                                   |
-| previous_page         |                                                             |                   | Navigate to the previous page if possible.                                                                                                                                                                                                  |
-| next_page             |                                                             |                   | Navigate to the next page if possible.                                                                                                                                                                                                      |
-| resize                |  width: int, height: int                                    |                   | Reshape the windows size.                                                                                                                                                                                                                   |
-| set_viewport          |  x: float, y: float, width: float, height: float            |                   | the rectangle on the surface where to display the web document. Values are in percent of the dimension on the surface. If this function is not called default values are: x = y = 0 and w = h = 1 meaning the whole surface will be mapped. |
-| on_key_pressed        | key: int, pressed: bool, shift: bool, alt: bool, ctrl: bool |                   | Set the new keyboard state (char typed ...)                                                                                                                                                                                                 |
-| on_mouse_moved        | x: int, y: int                                              |                   | Set the new mouse position.                                                                                                                                                                                                                 |
-| on_mouse_left_click   |                                                             |                   | Down then up on Left button                                                                                                                                                                                                                 |
-| on_mouse_right_click  |                                                             |                   | Down then up on Right button.                                                                                                                                                                                                               |
-| on_mouse_middle_click |                                                             |                   | Down then up on middle button.                                                                                                                                                                                                              |
-| on_mouse_left_down    |                                                             |                   | Left Mouse button down.                                                                                                                                                                                                                     |
-| on_mouse_left_up      |                                                             |                   | Left Mouse button up.                                                                                                                                                                                                                       |
-| on_mouse_right_down   |                                                             |                   | Right Mouse button down.                                                                                                                                                                                                                    |
-| on_mouse_right_up     |                                                             |                   | Right Mouse button up.                                                                                                                                                                                                                      |
-| on_mouse_middle_down  |                                                             |                   | Middle Mouse button down.                                                                                                                                                                                                                   |
-| on_mouse_middle_up    |                                                             |                   | Middle Mouse button up.                                                                                                                                                                                                                     |
-| on_mouse_wheel        | delta: int                                                  |                   | Mouse Wheel.                                                                                                                                                                                                                                |
+| `close`                 |                                                             |                   | Close the browser.                                                                                                                                                                                                                          |
+| `id`                    |                                                             | int               | Return the unique browser identifier.                                                                                                                                                                                                       |
+| `is_valid`              |                                                             | bool              | Return True if this object is currently valid.                                                                                                                                                                                              |
+| `get_texture`           |                                                             | Ref ImageTexture  | Return the Godot texture holding the page content to other Godot element that needs it for the rendering.                                                                                                                                   |
+| `set_zoom_level`        | `delta`: float                                                |                   | Set the render zoom level.                                                                                                                                                                                                                  |
+| `load_url`              | `url`: string                                                 |                   | Load the given web page                                                                                                                                                                                                                     |
+| `is_loaded`             |                                                             | bool              | Return true if a document has been loaded in the browser.                                                                                                                                                                                   |
+| `get_url`               |                                                             | string            | Get the current url of the browser.                                                                                                                                                                                                         |
+| `stop_loading`          |                                                             |                   | Stop loading the page.                                                                                                                                                                                                                      |
+| `has_previous_page`     |                                                             | bool              | Return true if the browser can navigate to the previous page.                                                                                                                                                                               |
+| `has_next_page`         |                                                             | bool              | Return true if the browser can navigate to the next page.                                                                                                                                                                                   |
+| `previous_page`         |                                                             |                   | Navigate to the previous page if possible.                                                                                                                                                                                                  |
+| `next_page`             |                                                             |                   | Navigate to the next page if possible.                                                                                                                                                                                                      |
+| `resize`                |  `width`: int, `height`: int                                    |                   | Reshape the windows size.                                                                                                                                                                                                                   |
+| `set_viewport`          |  `x`: float, `y`: float, `width`: float, `height`: float            |                   | the rectangle on the surface where to display the web document. Values are in percent of the dimension on the surface. If this function is not called default values are: x = y = 0 and w = h = 1 meaning the whole surface will be mapped. |
+| `on_key_pressed`        | `key`: int, `pressed`: bool, `shift`: bool, `alt`: bool, `ctrl`: bool |                   | Set the new keyboard state (char typed ...)                                                                                                                                                                                                 |
+| `on_mouse_moved`        | `x`: int, `y`: int                                              |                   | Set the new mouse position.                                                                                                                                                                                                                 |
+| `on_mouse_left_click`   |                                                             |                   | Down then up on Left button                                                                                                                                                                                                                 |
+| `on_mouse_right_click`  |                                                             |                   | Down then up on Right button.                                                                                                                                                                                                               |
+| `on_mouse_middle_click` |                                                             |                   | Down then up on middle button.                                                                                                                                                                                                              |
+| `on_mouse_left_down`    |                                                             |                   | Left Mouse button down.                                                                                                                                                                                                                     |
+| `on_mouse_left_up`      |                                                             |                   | Left Mouse button up.                                                                                                                                                                                                                       |
+| `on_mouse_right_down`   |                                                             |                   | Right Mouse button down.                                                                                                                                                                                                                    |
+| `on_mouse_right_up`     |                                                             |                   | Right Mouse button up.                                                                                                                                                                                                                      |
+| `on_mouse_middle_down`  |                                                             |                   | Middle Mouse button down.                                                                                                                                                                                                                   |
+| `on_mouse_middle_up`    |                                                             |                   | Middle Mouse button up.                                                                                                                                                                                                                     |
+| `on_mouse_wheel`        | `delta`: int                                                  |                   | Mouse Wheel.                                                                                                                                                                                                                                |
 
 ## How CEF is compiled under Godot ?
 
@@ -121,10 +124,10 @@ detailing how we succeeded.
 The `godot-cpp` repository should be cloned **recursively** using the
 appropriate branch (i.e. do not clone the master as you would end up with
 headers for the 4.0 version) : `git clone --recursive -b 3.4
-https://github.com/godotengine/godot-cpp`. Recursive cloning will include the
-appropriate godot-headers used to generate the C++ bindings and will produce
-this kind of message (useless information have been removed for the clarity of
-this document):
+https://github.com/godotengine/godot-cpp` (this project also works for Godot 3.5).
+Recursive cloning will include the appropriate godot-headers used to generate the
+C++ bindings and will produce this kind of message (useless information have been
+removed for the clarity of this document):
 
 ```
 Cloning into 'godot-cpp'...
@@ -382,6 +385,13 @@ the correct node.
 
 ![CEFnode](doc/scenegraph/cef.png)
 
+**Beware:** In Linux you will have to write something like:
+```
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/your/path/gdcef/examples/build
+```
+
+to make you system finds shared libraries such as `libcef.so`.
+
 ### Update your CEF version
 
 - Check this website https://cef-builds.spotifycdn.com/index.html and select your
@@ -394,7 +404,7 @@ desired operating system.
 ### Installation prerequisites
 
 In case of doubt see the [original project install documentation](https://github.com/stigmee/install).
-This has been only tested with Godot version 3.4.
+This has been only tested with Godot version 3.4 and 3.5.
 
 #### Install Python3 packages
 
@@ -428,15 +438,6 @@ To compile GDCef for Windows:
   **Administrator** privilege (this should be available in the start menu under
   Visual Studio 2022). This ensures the environment is correctly set to use the
   VS tools.
-
-#### Compile the example
-
-If all prerequisites have been installed. Just
-```
-./build.py
-```
-
-is enough :) No command line is needed.
 
 ### Gallery
 

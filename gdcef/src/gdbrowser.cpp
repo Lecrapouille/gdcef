@@ -38,7 +38,6 @@ void GDBrowserView::_register_methods()
     godot::register_method("id", &GDBrowserView::id);
     godot::register_method("is_valid", &GDBrowserView::isValid);
     godot::register_method("get_texture", &GDBrowserView::texture);
-    godot::register_method("use_texture_from", &GDBrowserView::texture);
     godot::register_method("set_zoom_level", &GDBrowserView::setZoomLevel);
     godot::register_method("load_url", &GDBrowserView::loadURL);
     godot::register_method("is_loaded", &GDBrowserView::loaded);
