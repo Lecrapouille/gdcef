@@ -209,7 +209,7 @@ def download_cef():
             CEF_ARCHI = "linux64"
         else:
             CEF_ARCHI = "linuxarm"
-    elif OSTYPE == "darwin":
+    elif OSTYPE == "Darwin":
         if ARCHI == "x86_64":
             CEF_ARCHI = "macosx64"
         else:
