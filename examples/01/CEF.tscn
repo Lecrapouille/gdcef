@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://GUI.gd" type="Script" id=1]
-[ext_resource path="res://gdcef.gdns" type="Script" id=2]
+[ext_resource path="res://libs/gdcef.gdns" type="Script" id=2]
 
 [node name="GUI" type="Control"]
 margin_right = 280.0

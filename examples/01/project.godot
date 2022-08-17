@@ -12,7 +12,7 @@ _global_script_classes=[ {
 "base": "",
 "class": "GDCef",
 "language": "NativeScript",
-"path": "res://gdcef.gdns"
+"path": "res://libs/gdcef.gdns"
 } ]
 _global_script_class_icons={
 "GDCef": ""
