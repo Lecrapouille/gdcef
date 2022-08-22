@@ -452,9 +452,13 @@ def prepare_godot_examples():
 ###############################################################################
 ### Run Godot example
 def run_godot_example():
-    info("Compilation done with success. You can run your Godot editor " +
-         GODOT_CPP_API_PATH + " and import one of the project in the folder "
-         "'gdcef/examples'")
+    info("Compilation done with success! Your CEF artifacts have been generated"
+         " into '" + CEF_ARTIFACTS_BUILD_PATH + "'. For Unix systems you have to"
+         " make your system knows where to find shared libraries needed for CEF."
+         " Save the following command in your envirnoment (~/.bashrc i.e.):\n\n"
+         "   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:" + CEF_ARTIFACTS_BUILD_PATH
+         + "\n\nYou can after run your Godot editor and try one of the demos"
+         " located in '" + GDCEF_EXAMPLES_PATH + "'.\n\nHave fun!")
 
 ###############################################################################
 ### Entry point
