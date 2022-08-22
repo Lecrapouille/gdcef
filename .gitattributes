@@ -1,0 +1,15 @@
+# Exclude all top-level files and directories (except addons) from zip downloads.
+# This makes installing through the AssetLib easier, because no files and folders
+# need to be unchecked.
+
+/.gitattributes     export-ignore
+/.gitignore         export-ignore
+/.gitmodules        export-ignore
+/.github            export-ignore
+/AUTHORS            export-ignore
+/ChangeLog          export-ignore
+/LICENSE            export-ignore
+/README.md          export-ignore
+/VERSION            export-ignore
+/build              export-ignore
+*.png.import        export-ignore

@@ -42,18 +42,18 @@ directly (no prerequesites).
 
 ## Demos
 
-## Demo 00: Multiple CEF browsers
+## Demo 00: Multiple CEF browsers in 2D
 
 A demo showing a 2D GUI with multiple CEF browser tabs. No mouse and keyboard
 events are managed. A timer is loading URLs one by one.
 
-![Screenshot](00/icon.png)
+![Screenshot](2D/icon.png)
 
-## Demo 01: CEF in 3D
+## Demo 01: Single CEF browser in 3D
 
 A demo showing a 2D GUI with a single CEF browser tab. The tab is rotating inside a 3D scene.
 You can use your mouse and keyboard to surf on the web :)
 
 This demo is based on the asset library: https://godotengine.org/asset-library/asset/127
 
-![Screenshot](01/icon.png)
+![Screenshot](3D/icon.png)

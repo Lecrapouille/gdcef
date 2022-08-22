@@ -8,7 +8,7 @@ used in Godot scripts (gdscript) but feel free to help us implement other
 features.
 
 A 2D and 3D CEF demos are given. They is automatically compiled by the Python 3
-install `./build.py` (see the concerned [README](examples/README.md) for more
+install `./build.py` (see the concerned [README](addons/gdcef/demos/README.md) for more
 information: what are demos, how to compile them). A concrete Godot application
 using CEF can be find [here](https://github.com/stigmee/stigmee).
 
@@ -74,7 +74,7 @@ texture to Godot instance knowing how to render it (ie. `TextureRect`).
 The goal of this document is to make you understand the general idea behind how
 this module `gdcef` is compiled (with examples for Windows while similar for
 other operating systems). The detail design on how guts are working is described
-in another [document](doc/detailsdesign.md) (currently unfinished). For the
+in another [document](addons/gdcef/doc/detailsdesign.md) (currently unfinished). For the
 details of the implementation, you will have to dive directly inside the CEF
 code source, it has lot of comments (not always easy to apprehend at first
 read). Else, ask questions either in our Discord, or in the `Discussions` or
@@ -238,7 +238,7 @@ developing the Godot engine source code). For more information you can read this
 [section](https://github.com/stigmee/doc-internal/blob/master/doc/tuto_modif_godot_fr.md#modification-du-main-de-godot-v34-stable).
 
 The detail design on how the both processes talk together is described in this
-[document](doc/detailsdesign.md).
+[document](addons/gdcef/doc/detailsdesign.md).
 
 The canonical path of the secondary process shall be known by the primary
 process (the primary process is explained in the next section). This is our case
@@ -280,7 +280,7 @@ Again the `build.py` will do it for you.
 This directory contains the source of the gdcef library, allowing to generate
 the `libgdcef.dll` module. This dll file can then be loaded by the GDNative
 module (see Module configuration). The detail design is described in this
-[document](doc/detailsdesign.md).
+[document](addons/gdcef/doc/detailsdesign.md).
 
 ```
 📦gdcef
@@ -447,5 +447,5 @@ links and pictures by pull requests.
 - https://elitemeta.city/
 
 Click to see on the image to see the Elitemeta video shared on IPFS.
-[![elitemeta](doc/gallery/elitemeta.jpg)](https://ipfs.io/ipfs/QmaL7NY5qs3AtAdcX8vFhqaHwJeTMKfP3PbzcHZBLmo1QQ?filename=elitemeta_0.mp4)
+[![elitemeta](addons/gdcef/doc/gallery/elitemeta.jpg)](https://ipfs.io/ipfs/QmaL7NY5qs3AtAdcX8vFhqaHwJeTMKfP3PbzcHZBLmo1QQ?filename=elitemeta_0.mp4)
 Thanks to the team for having shared this video.

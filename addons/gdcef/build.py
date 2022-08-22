@@ -53,8 +53,8 @@ THIRDPARTY_CEF_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "cef_binary")
 THIRDPARTY_GODOT_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "godot-" + GODOT_VERSION)
 GODOT_CPP_API_PATH = os.path.join(THIRDPARTY_GODOT_PATH, "cpp")
 PATCHES_PATH = os.path.join(PWD, "patches")
-GDCEF_EXAMPLES_PATH = os.path.join(PWD, "examples")
-CEF_ARTIFACTS_BUILD_PATH = os.path.join(GDCEF_EXAMPLES_PATH, "build")
+GDCEF_EXAMPLES_PATH = os.path.join(PWD, "demos")
+CEF_ARTIFACTS_BUILD_PATH = os.path.realpath(os.path.join("../../build"))
 
 ###############################################################################
 ### Type of operating system, AMD64, ARM64 ...
@@ -446,8 +446,8 @@ def check_cmake_version():
 ### install the build/ folder inside your Godot application.
 def prepare_godot_examples():
     info("Alias examples to CEF artifacts")
-    symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(GDCEF_EXAMPLES_PATH, "00", "build"))
-    symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(GDCEF_EXAMPLES_PATH, "01", "build"))
+    symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(GDCEF_EXAMPLES_PATH, "2D", "build"))
+    symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(GDCEF_EXAMPLES_PATH, "3D", "build"))
 
 ###############################################################################
 ### Run Godot example
@@ -457,8 +457,8 @@ def run_godot_example():
          " make your system knows where to find shared libraries needed for CEF."
          " Save the following command in your envirnoment (~/.bashrc i.e.):\n\n"
          "   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:" + CEF_ARTIFACTS_BUILD_PATH
-         + "\n\nYou can after run your Godot editor and try one of the demos"
-         " located in '" + GDCEF_EXAMPLES_PATH + "'.\n\nHave fun!")
+         + "\n\nYou can after run your Godot editor " + GODOT_VERSION + " and try"
+         " one of the demos located in '" + GDCEF_EXAMPLES_PATH + "'.\n\nHave fun!")
 
 ###############################################################################
 ### Entry point
