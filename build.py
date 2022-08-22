@@ -447,6 +447,7 @@ def check_cmake_version():
 def prepare_godot_examples():
     info("Alias examples to CEF artifacts")
     symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(GDCEF_EXAMPLES_PATH, "00", "build"))
+    symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(GDCEF_EXAMPLES_PATH, "01", "build"))
 
 ###############################################################################
 ### Run Godot example
