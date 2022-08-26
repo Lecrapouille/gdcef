@@ -10,17 +10,11 @@ config_version=4
 
 _global_script_classes=[ {
 "base": "",
-"class": "BrowserView",
-"language": "NativeScript",
-"path": "res://gdbrowser.gdns"
-}, {
-"base": "",
 "class": "GDCef",
 "language": "NativeScript",
-"path": "res://gdcef.gdns"
+"path": "res://libs/gdcef.gdns"
 } ]
 _global_script_class_icons={
-"BrowserView": "",
 "GDCef": ""
 }
 
