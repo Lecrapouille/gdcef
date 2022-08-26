@@ -38,7 +38,7 @@ from packaging import version
 
 ###############################################################################
 ### Global user settings
-CEF_VERSION = "103.0.12+g8eb56c7+chromium-103.0.5060.134"
+CEF_VERSION = "104.4.25+gd80d467+chromium-104.0.5112.102"
 CEF_TARGET = "Release"     # "Debug"
 MODULE_TARGET = "release"  # "debug"
 GODOT_VERSION = "3.5"
