@@ -1,3 +1,10 @@
+Version 0.4.0:
+	* Move all folders to addons/ folder
+	* Update CEF version to 104.
+	* Default Godot version is 3.5.
+	* Fix issues in demos.
+	* Organize doc.
+
 Version 0.3.2:
 	* Add second demo: CEF inside a 3D world with key and mouse bindings.
 
