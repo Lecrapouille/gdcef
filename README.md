@@ -12,11 +12,10 @@ https://godotengine.org/asset-library/asset/1426
 
 *Note:* This current repository is a fork of [the following
 repo](https://github.com/stigmee/gdnative-cef) (under GPLv3) with a more
-permissive license (MIT). Indeed, since the [base
-project](https://github.com/stigmee) is stalled and the original CEF GDNative
-repo is no longer maintained by their original authors Alain and Quentin, we,
-the undersigned, have decided to fork the original repository under a more
-permissive license for a better distribution.
+permissive license (MIT). Since the original repo is no longer maintained
+by their two original authors (Alain and Quentin), we, the undersigned Alain
+and Quentin, gave the consent of relicensing the original code under the
+MIT license.
 
 ## Complete documentation
 
