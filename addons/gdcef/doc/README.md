@@ -17,7 +17,7 @@ This repository contains the following things:
 - A [2D demo](../demos/2D/) and [3D demos](../demos/3D/).
 - A python-3 [build script](../build.py) that will git clone the
   Godot-cpp binding, the CEF tarball, compile CEF, compile the primary and
-  secondary CEF process, create the CEF artifacts.
+  secondary CEF process, and create the CEF artifacts.
 - Documentation.
 
 *Note:* We are using C++17, but we are not using fancy C++ features, we just to
@@ -31,23 +31,23 @@ project it gives additional information.
 
 ### CEF license
 
-**IMPORTANT:** I'm not a jurist but since CEF seems using some thirdparty
-libraries under the LGPL licence (see this
+**IMPORTANT:** I'm not a jurist but since CEF seems using some third-party
+libraries under the LGPL license (see this
 [post](https://www.magpcss.org/ceforum/viewtopic.php?f=6&t=11182)) and compiling
-CEF as a static library will contaminate the project under the GPL licence
-(which it is not the case when compiled as dynamic library).
+CEF as a static library will contaminate the project under the GPL license
+(which is not the case when compiled as a dynamic library).
 
-In our case CEF is compiled as static library for Windows (else we got issues,
+In our case, CEF is compiled as a static library for Windows (else we got issues,
 see our [patch](../patches/CEF/win/)) and for Linux, since the
-`libcef.so` 1 GB, which is heavy, I did not succeeded to compile it as static
+`libcef.so` 1 GB, which is heavy, I did not succeed to compile it as static
 library to make it smaller.
 
 ### Operating System
 
 *IMPORTANT:* Currently this module is only working for Linux and for
 Windows. Devices such as Android and IOS are not supported by CEF. This module
-can be compiled for MacOS but needs some modification in the code source and
-extra C# code. I do not have a MacBook at full time. I'm looking for some MacOS
+can be compiled for macOS but needs some modification in the code source and
+extra C# code. I do not have a MacBook full-time. I'm looking for some MacOS
 developers to help me (see my branch `dev-darwin`). You can be helped with
 https://github.com/CefView/CefViewCore and the
 [cefsimple](https://bitbucket.org/chromiumembedded/cef/wiki/Tutorial) example
@@ -61,8 +61,8 @@ Install the following tools: `g++`, `ninja`, `cmake` (greater or equal to
 - For Linux, depending on your distribution you can use `sudo apt-get install`.
   To upgrade your cmake you can see this
   [script](https://github.com/stigmee/doc-internal/blob/master/doc/install_latest_cmake.sh).
-- For MacOS X you can install [homebrew](https://brew.sh/index_fr).
-- For Windows user you will have to install:
+- For macOS X you can install [homebrew](https://brew.sh/index_fr).
+- For Windows users you will have to install:
   - Visual Studio: https://visualstudio.microsoft.com/en/vs/ (mandatory)
   - Python3: https://www.python.org/downloads/windows/
   - CMake: https://cmake.org/download/
@@ -78,21 +78,21 @@ To compile GDCef for Windows:
 
 ### Install Python3 packages
 
-Our [build.py](../build.py) script is made in **Python3** to be usable
-for any operating systems (Linux, MacOS X, Windows). Please do not use
+Our [build.py](../build.py) script is made in **Python3** to be used
+for any operating system (Linux, macOS X, Windows). Please do not use
 Python 2. Please install the needed Python packages with pip by typing the
 following line into a terminal:
 
 ```
-python3 -m pip  install -r requirements.txt
+python3 -m pip install -r requirements.txt
 ```
 
 ## Compilation for Linux and for Windows
 
 ### Compilation of the native module for Godot 3.5
 
-The [build.py] does not have command line. It deals all cases by itself (your
-operating system, the number of cores of your CPU ...). By default is deals with
+The [build.py] does not have the command line. It deals with all cases by itself (your
+operating system, the number of cores of your CPU ...). By default, it deals with
 Godot 3.5.
 
 ```
@@ -100,7 +100,7 @@ cd addons/gdcef
 ./build.py
 ```
 
-Please be patient! The script needs some times for completing its job, since it
+Please be patient! The script needs some time for completing its job since it
 has:
 - to download CEF from this website https://cef-builds.spotifycdn.com/index.html
   (600 MB) and extract the tarball inside `../thirdparty/cef_binary`
@@ -126,10 +126,10 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/your/path/gdcef/examples/build
 
 ### Compilation of the native module for Godot 3.4
 
-This modules has not been tested with a Godot version lower than 3.4. For Godot
+This module has not been tested with a Godot version lower than 3.4. For Godot
 3.4:
-- search in [build.py](../build.py) script the line `GODOT_VERSION =
-  "3.5"` and replace by the desired version.
+- Search in [build.py](../build.py) script the line `GODOT_VERSION =
+  "3.5"` and replaced with the desired version.
 - Run the build.py like explained for Godot 3.5.
 
 ### Update the CEF version
@@ -149,14 +149,14 @@ compiled CEF).
 
 ### Running demos
 
-Once [build.py](../build.py) script has done with success its job, you
-can start your Godot editor and goes into `../demos` and load the
+Once [build.py](../build.py) script has done success its job, you
+can start your Godot editor and goes into `../demos`, and load the
 Godot project of demos. They are ready to use. See this
 [README](demos/README.md) describing the given demos.
 
-A concrete Godot application using CEF can be find [here](https://github.com/stigmee/stigmee).
+A concrete Godot application using CEF can be found [here](https://github.com/stigmee/stigmee).
 
-## What I have to do next for using CEF in my personal project ?
+## What do I have to do next for using CEF in my personal project?
 
 - Copy the `build/` folder holding CEF artifacts that have been compiled into
   your Godot project.
@@ -174,7 +174,7 @@ A concrete Godot application using CEF can be find [here](https://github.com/sti
 - Create a Godot `TextRect` that will receive your browser texture.
 - Create a gdscript and, for example, inside `func _ready():` from the `$CEF`
   node, make create a new browser tab named `browser name` (it will be a Godot
-  child node that can be find with function such as `$CEF.get_node`) and make
+  child node that can be found with a function such as `$CEF.get_node`) and make
   `TextRect` get the texture of your browser tab. See the following code:
 
 ```
@@ -190,7 +190,7 @@ binding. See the demo 3D to make your browser tab reacts to our input events.
 ### Change CEF options
 
 Inside the `static void configureCEF(...` function in the
-`../gdcef/src/gdcef.cpp` you can modify some option of CEF like the
+`../gdcef/src/gdcef.cpp` you can modify some options of CEF like the
 verbosity, where to generate the cache folder, locales ...
 
 ### CEF API
@@ -199,13 +199,14 @@ The API for the gdscript is given in this
 [document](../doc/API.md). This document will describe the functions
 that can be called from your gdscripts.
 
-### Software architecture an details design
+### Software architecture and details design
 
 - The details design is given in this
-  [document](../doc/detailsdesign.md). This document will explain you
-  the reason of the tree organisation, how gdcef are compiled, why you need a
+  [document](../doc/detailsdesign.md). This document will explain to you
+  the reason of the tree organization, how gdcef are compiled, why you need a
   secondary process, ...
 
 - The software architecture is given in this
-  [document](../doc/architecture.md). This document explain how CEF
+  [document](../doc/architecture.md). This document explains how CEF
   works internally. **Note: this document is a draft**.
+

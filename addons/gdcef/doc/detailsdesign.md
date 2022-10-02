@@ -1,18 +1,17 @@
-# Details design: How CEF is compiled under Godot ?
+# Details design: How CEF is compiled under Godot?
 
 The goal of this document is to make you understand the general idea behind how
 this module `gdcef` is compiled (with examples for Windows while similar for
-other operating systems). The detail design on how guts are working is described
+other operating systems). The detailed design of how guts are working is described
 in another [document](addons/gdcef/doc/detailsdesign.md) (currently unfinished). For the
 details of the implementation, you will have to dive directly inside the CEF
-code source, it has lot of comments (not always easy to apprehend at first
-read). Else, ask questions either in our Discord, or in the `Discussions` or
-`Issues` menu of the associated GitHub repository to help improving this
-document.
+code source, it has a lot of comments (not always easy to apprehend at first
+read). Else, ask questions either in the `Discussions` or `Issues` menu of the
+associated GitHub repository to help improve this document.
 
 ## Environment
 
-The tree structure of the your project can be different from the one depicted in
+The tree structure of your project can be different from the one depicted in
 the next diagram. For this document we chose:
 
 ```
@@ -30,20 +29,20 @@ the next diagram. For this document we chose:
 The first component, `godot-cpp` folder, must be present before doing *any*
 compilation attempt on a Godot module. This folder comes from this
 [repo](https://github.com/godotengine/godot-cpp) and contains binding on the
-Godot API and allows you to compile your module like if you were compiling it
+Godot API allows you to compile your module as if you were compiling it
 directly inside the code source of the Godot editor (see
 [here](https://docs.godotengine.org/en/stable/development/cpp/custom_modules_in_cpp.html)
 for more information).
 
-*IMPORTANT:* You have to know that contrary than compiling your module directly
-inside the `modules` folder of the Godot engine, this method has the drawback,
-each time that one of your exported functions is called, to call extra
-intermediate functions imposed by the binding layer. In our case this is fine
-since CEF fewly triggers the Godot engine. The other point is that methods may
-have their name a little changed compared to the official API. Last good point
-for us for this project, is the presence of C++ namespace which fix for us a
-name conflict on the error enumerators: Godot and CEF using the same error
-names, the compiler does not know which one to use. Finally, to make use of CEF
+*IMPORTANT:* You have to know that contrary to compiling your module directly
+inside the `modules` folder of the Godot engine, this method has a drawback,
+each time that one of your exported functions is called, call extra
+intermediate functions imposed by the binding layer. In our case, this is fine
+since CEF few triggers the Godot engine. The other point is that methods may
+have their name a little changed compared to the official API. The last good point
+for us for this project is the presence of C++ namespace which fixes for us a
+name conflict on the error enumerators: Godot and CEF use the same error
+names, but the compiler does not know which one to use. Finally, to make use of CEF
 natively inside Godot engine would mean to directly modify the Godot source
 code, which is more complex than using C++ binding. If you are curious and
 read French you can check this
@@ -52,7 +51,7 @@ detailing how we succeeded.
 
 The `godot-cpp` repository should be cloned **recursively** using the
 appropriate branch (i.e. do not clone the master as you would end up with
-headers for the 4.0 version) : `git clone --recursive -b 3.4
+headers for the 4.0 version): `git clone --recursive -b 3.4
 https://github.com/godotengine/godot-cpp` (this project also works for Godot 3.5).
 Recursive cloning will include the appropriate godot-headers used to generate the
 C++ bindings and will produce this kind of message (useless information have been
@@ -68,7 +67,7 @@ Submodule path 'godot-headers': checked out 'd1596b939d6c9f5df86655ea617713ef321
 ```
 
 The `godot-cpp` folder is automatically compiled by the install script
-`build.py` which call a command similar to these lines:
+`build.py` which calls a command similar to these lines:
 
 ```
 cd godot-cpp
@@ -144,29 +143,29 @@ Release mode from `/MT` to `/MD`, and add the 2 following preprocessor flags:
 * `_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH`       under `C/C++ >> Preprocessor >> PreprocessorDefinitions`.
 
 Our build script `build.py` will apply a patch before compiling. For Linux it
-seems not possible to compile in static, as consequence the `libcef.so` is quite
-fat: more than 1 gigabytes which is a factor more than the one for Windows
-(probably because this last knows better that Linux which symbol to export).
+seems not possible to compile in static, as a consequence the `libcef.so` is quite
+fat: more than 1 gigabyte which is a factor more than the one for Windows
+(probably because this last knows better than Linux which symbol to export).
 
-*IMPORTANT:* since CEF is using some thirdparty libraries under the LGPL licence.
+*IMPORTANT:* since CEF is using some third-party libraries under the LGPL license.
 Compiling them as static libraries will contaminate the project under the GPL
-licence (which it is not the case when compiled as dynamic libraries). See this
-[post](https://www.magpcss.org/ceforum/viewtopic.php?f=6&t=11182). In our case
-this is fine since our project is already under GPL licence.
+license (which is not the case when compiled as dynamic libraries). See this
+[post](https://www.magpcss.org/ceforum/viewtopic.php?f=6&t=11182). In our case,
+this is fine since our project is already under GPL license.
 
 ## CEF secondary process (subprocess)
 
 This executable is needed in order for the CEF to spawn the various CEF
 sub-processes (GPU process, render handler...). In CEF, a secondary process is
 needed when the CEF initialization function cannot reach or modify the command
-line of the application (the `int main(int argc, char* argv[])`) which it is our
+line of the application (the `int main(int argc, char* argv[])`) which is our
 case since we do not want to depend on a modified Godot (forked) holding
 internally a CEF. We gave it a try: modifying Godot source code works but this
-becomes too complex to follow evolution of Godot and CEF (since we are not
-developing the Godot engine source code). For more information you can read this
+becomes too complex to follow the evolution of Godot and CEF (since we are not
+developing the Godot engine source code). For more information, you can read this
 [section](https://github.com/stigmee/doc-internal/blob/master/doc/tuto_modif_godot_fr.md#modification-du-main-de-godot-v34-stable).
 
-The detail design on how the both processes talk together is described in this
+The detailed design on how both processes talk together is described in this
 [document](addons/gdcef/doc/detailsdesign.md).
 
 The canonical path of the secondary process shall be known by the primary
@@ -246,9 +245,9 @@ Again the `build.py` will do it for you.
 ## Godot module configuration
 
 In order for native modules to be used by Godot, you have to create the
-following 2 files under the the Godot project root `res://` (for example in our
+following 2 files under the Godot project root `res://` (for example in our
 case in the folder `libs`) else Godot will not be able to locate them and will
-complain about not being able to load the module dependencies at project
+complain about not being able to load the module dependencies at a project
 startup.
 
 ```
@@ -277,7 +276,7 @@ library = ExtResource( 1 )
 script_class_name = "GDCef"
 ```
 
-This file holds information of the C++ exported class name `GDCef`, its name on
+This file holds information on the C++ exported class name `GDCef`, its name on
 Godot and refers to the second file `gdcef.gdnlib`.
 
 - gdcef.gdnlib:
@@ -314,9 +313,10 @@ the correct node.
 
 ![CEFnode](doc/scenegraph/cef.png)
 
-**Beware:** In Linux you will have to write something like:
+**Beware:** In Linux, you will have to write something like:
 ```
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/your/path/gdcef/examples/build
 ```
 
-to make you system finds shared libraries such as `libcef.so`.
+to make your system finds shared libraries such as `libcef.so`.
+

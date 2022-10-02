@@ -10,7 +10,7 @@ module for the [Godot editor](https://godotengine.org/) (gdCef).
 Inside the `gdcef` folder, two main classes deriving from `godot::Node` have
 been created to wrap the CEF C++ API to be usable from Godot scripts. Derived
 from Godot Nodes, it allows instances of these classes to be attached inside to
-scene graph like depicted by the following picture.
+the scene-graph as depicted by the following picture.
 
 ![CEFnode](scenegraph/cef.png)
 
@@ -25,9 +25,9 @@ The following picture depicts the class diagram:
 ![classdiag](architecture/classes.png)
 
 - `GDCef` implemented in [gdcef/src/gdcef.cpp](gdcef.[ch]pp). Its goal is to
-  wrap the initialization phase of CEF, its settings and the loop back of
-  messages of CEF sub processes. This class allows to create `GDBrowserView`
-  that are attached as child nodes inside the scene graph.
+  wrap up the initialization phase of CEF, its settings, and the loopback of
+  messages of CEF subprocesses. This class allows creating `GDBrowserView`
+  that are attached as child nodes inside the scene-graph.
 
 - `GDBrowserView` implemented in [gdcef/src/gdbrowser.cpp](gdbrowser.[ch]pp).
   Its goal is to wrap a browser view allowing to display the web document, to
@@ -43,28 +43,29 @@ A [secondary CEF
 process](https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage.md#markdown-header-separate-sub-process-executable)
 is needed when CEF (here, our class `GDCef`) cannot directly access the
 `main(int argc, char* argv[])` function of the application. This is mandatory for
-its initialization. 
+its initialization.
 <!---
-This is unfortunately the case since CEF is created as node
-scene graph but CEF does not come natively inside the Godot engine and
-accessing to the Godot engine `main` function.
+This is, unfortunately, the case since CEF is created as a node
+scene-graph but CEF does not come natively inside the Godot engine and
+accessing the Godot engine `main` function.
 -->
-This is unfortunately the case since CEF is created as a Node Scene Graph
-but CEF and it's access to Godot Engine's `main` function do not exist
+This is, unfortunately, the case since CEF is created as a Node scene-graph
+but CEF and its access to Godot Engine's `main` function do not exist
 in Godot's source code.
 
-When starting, CEF will fork the application several times into processes 
+When starting, CEF will fork the application several times into processes
 and the forked processes become specialized processes
 
 You have to know that CEF modifies the content of your `argv` and this may mess
 up your application if it also parses the command line (you can back it up,
 meaning using a `std::vector` to back up `argv` and after CEF init to restore
-values in `argv` back). What is "two separated process" exactly ? Just an extra
-fork: the main process forks itself and call the secondary process, which can
-fully access to its own main(int argc, char* argv[]). The main constrain is the
+values in `argv` back). What is "two separated processes" exactly? Just an extra
+fork: the main process forks itself and calls the secondary process, which can
+fully access it is own main(int argc, char* argv[]). The main constraint is the
 path of the secondary process shall be canonic (and this is a pain to get the
 real path).
 
 <!---
 ## Diagram sequence
 -->
+

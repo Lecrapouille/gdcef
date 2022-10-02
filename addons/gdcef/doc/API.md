@@ -4,7 +4,7 @@
 
 `GDCef` is a class deriving from Godot's Node and interfacing the core of the
 Chromium Embedded Framework. This class can create instances of `GDBrowserView`
-(aka browser tabs) and store them as Godot child nodes (can be access from
+(aka browser tabs) and store them as Godot child nodes (can be accessed from
 `get_node`).
 
 | Godot function name | arguments                                       | return         | comment                                                                                                                                                                                                 |
@@ -48,3 +48,4 @@ texture to Godot instance knowing how to render it (ie. `TextureRect`).
 | `on_mouse_middle_down`  |                                                             |                   | Middle Mouse button down.                                                                                                                                                                                                                   |
 | `on_mouse_middle_up`    |                                                             |                   | Middle Mouse button up.                                                                                                                                                                                                                     |
 | `on_mouse_wheel`        | `delta`: int                                                  |                   | Mouse Wheel.                                                                                                                                                                                                                                |
+
