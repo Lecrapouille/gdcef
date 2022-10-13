@@ -54,6 +54,8 @@ THIRDPARTY_GODOT_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "godot-" + GODOT_VER
 GODOT_CPP_API_PATH = os.path.join(THIRDPARTY_GODOT_PATH, "cpp")
 PATCHES_PATH = os.path.join(PWD, "patches")
 GDCEF_EXAMPLES_PATH = os.path.join(PWD, "demos")
+# If you modify CEF_ARTIFACTS_BUILD_PATH, do not forget to also change Godot
+# .gdns and .gdnlib files inside GDCEF_EXAMPLES_PATH.
 CEF_ARTIFACTS_BUILD_PATH = os.path.realpath(os.path.join("../../build"))
 
 ###############################################################################
@@ -453,11 +455,13 @@ def prepare_godot_examples():
 ### Run Godot example
 def run_godot_example():
     info("Compilation done with success! Your CEF artifacts have been generated"
-         " into '" + CEF_ARTIFACTS_BUILD_PATH + "'. For Unix systems you have to"
-         " make your system knows where to find shared libraries needed for CEF."
-         " Save the following command in your envirnoment (~/.bashrc i.e.):\n\n"
+         " into '" + CEF_ARTIFACTS_BUILD_PATH + "' and can be used for your Godot"
+         " project. Do not forget to add .gdns and .gdnlib files refering to libgdcef.so/dll."
+         " For Unix systems you have to make your system know where to find shared"
+         " libraries needed for CEF. Save the following command in your environment"
+         " (~/.bashrc i.e.):\n\n"
          "   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:" + CEF_ARTIFACTS_BUILD_PATH
-         + "\n\nYou can after run your Godot editor " + GODOT_VERSION + " and try"
+         + "\n\nOnce done, you can run your Godot editor " + GODOT_VERSION + " and try"
          " one of the demos located in '" + GDCEF_EXAMPLES_PATH + "'.\n\nHave fun!")
 
 ###############################################################################

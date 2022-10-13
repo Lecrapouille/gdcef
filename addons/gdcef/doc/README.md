@@ -91,7 +91,7 @@ python3 -m pip install -r requirements.txt
 
 ### Compilation of the native module for Godot 3.5
 
-The [build.py] does not have the command line. It deals with all cases by itself (your
+The [build.py](../build.py) does not have the command line. It deals with all cases by itself (your
 operating system, the number of cores of your CPU ...). By default, it deals with
 Godot 3.5.
 

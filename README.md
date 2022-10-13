@@ -25,6 +25,16 @@ library, all details are referred in the following
 this module, how to run demos, describe the architecture, details design and
 more ...
 
+**TL;DR:** Compile this project with the Python3 build script:
+```
+cd addons/gdcef
+./build.py
+```
+
+Generated artifacts are in the `build/` folder. Use this folder in your Godot
+project and add gdns and gdnlib files to refer `build/libgdcef.so/dll`. See
+demos given with this repo.
+
 ## Gallery
 
 Projects interested in / using this module. Please do not hesitate to share your
