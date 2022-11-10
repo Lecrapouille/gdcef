@@ -56,6 +56,7 @@
 
 // Godot
 #  include "Godot.hpp"
+#  include "OS.hpp"
 #  include "Node.hpp"
 #  include "ImageTexture.hpp"
 

@@ -75,7 +75,8 @@ static bool sanity_checks(fs::path const& folder)
 // Godot editor. We have to distinguish the both case.
 static bool isStartedFromGodotEditor()
 {
-    return executable_name().find("godot") != std::string::npos;
+    // Old way: executable_name().find("godot") != std::string::npos;
+    return godot::OS::get_singleton()->has_feature("editor");
 }
 
 //------------------------------------------------------------------------------
