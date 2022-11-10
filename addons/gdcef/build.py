@@ -456,12 +456,13 @@ def prepare_godot_examples():
 def run_godot_example():
     info("Compilation done with success! Your CEF artifacts have been generated"
          " into '" + CEF_ARTIFACTS_BUILD_PATH + "' and can be used for your Godot"
-         " project. Do not forget to add .gdns and .gdnlib files refering to libgdcef.so/dll."
-         " For Unix systems you have to make your system know where to find shared"
-         " libraries needed for CEF. Save the following command in your environment"
-         " (~/.bashrc i.e.):\n\n"
-         "   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:" + CEF_ARTIFACTS_BUILD_PATH
-         + "\n\nOnce done, you can run your Godot editor " + GODOT_VERSION + " and try"
+         " project. Do not forget to add .gdns and .gdnlib files refering to libgdcef.so/dll.\n")
+    if OSTYPE == "Linux":
+        info("For Unix systems you have to make your system know where to find shared"
+             " libraries needed for CEF. Save the following command in your environment"
+             " (~/.bashrc i.e.):\n\n"
+             "   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:" + CEF_ARTIFACTS_BUILD_PATH + "\n")
+    info("Once done, you can run your Godot editor " + GODOT_VERSION + " and try"
          " one of the demos located in '" + GDCEF_EXAMPLES_PATH + "'.\n\nHave fun!")
 
 ###############################################################################
