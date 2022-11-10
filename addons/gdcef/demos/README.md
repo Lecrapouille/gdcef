@@ -2,7 +2,7 @@
 
 ## Compile demos
 
-If all prerequisites have been installed (Python 3, Godot 3.4+, CMake > 3.19, g++)
+If all prerequisites have been installed (Python 3, Godot 3.4+, CMake > 3.19, g++, VS2022)
 and you have either Linux or Windows. Just type:
 
 ```
@@ -10,12 +10,13 @@ cd ..
 ./build.py
 ```
 
-is enough to:
+No command line is needed. This script will:
 - Download and compile CEF
 - Download and compile Godot-cpp
-- Create the CEF artifcats needed for running demos (inside `build`).
+- Create the CEF artifcats needed for running demos (inside `build` at the root of the project).
 
-No command line is needed.
+**Workaround For Windows:** You need **x64 Native Tools Command Prompt for VS 2022**, with
+  **Administrator** privilege!
 
 **Workaround For Linux:** for the moment, the `libcef.so` and other shared libraries,
 as artifcats, are not found by the systeme (even if indicated in the `.gdnlib` file.
