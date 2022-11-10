@@ -1,7 +1,11 @@
+Version 0.5.0:
+	* Fix function checking if CEF is started from the Godot editor or from application.
+	* Update CEF version to 107.
+
 Version 0.4.0:
-	* Move all folders to addons/ folder
+	* Move all project folders into the addons/ folder
 	* Update CEF version to 104.
-	* Default Godot version is 3.5.
+	* Default Godot version is now 3.5.
 	* Fix issues in demos.
 	* Organize doc.
 
