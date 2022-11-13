@@ -375,6 +375,11 @@ public:
     void mouseWheel(const int wDelta);
 
     // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Mouse Wheel Horizontal.
+    // -------------------------------------------------------------------------
+    void mouseWheelHorizontal(const int wDelta);
+
+    // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Set the new keyboard state (char
     //! typed ...).
     // -------------------------------------------------------------------------
