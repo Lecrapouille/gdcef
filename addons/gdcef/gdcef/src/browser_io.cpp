@@ -164,6 +164,7 @@ void GDBrowserView::mouseWheel(const int wDelta)
     m_browser->GetHost()->SendMouseWheelEvent(evt, 0, wDelta * 10);
 }
 
+//------------------------------------------------------------------------------
 void GDBrowserView::mouseWheelHorizontal(const int wDelta)
 {
     if (m_browser == nullptr)
