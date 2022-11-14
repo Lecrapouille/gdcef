@@ -60,7 +60,7 @@ void GDBrowserView::_register_methods()
     godot::register_method("on_mouse_right_up", &GDBrowserView::rightMouseUp);
     godot::register_method("on_mouse_middle_down", &GDBrowserView::middleMouseDown);
     godot::register_method("on_mouse_middle_up", &GDBrowserView::middleMouseUp);
-    godot::register_method("on_mouse_wheel", &GDBrowserView::mouseWheel);
+    godot::register_method("on_mouse_wheel_vertical", &GDBrowserView::mouseWheelVertical);
     godot::register_method("on_mouse_wheel_horizontal", &GDBrowserView::mouseWheelHorizontal);
 
     godot::register_signal<GDBrowserView>("page_loaded", "node", GODOT_VARIANT_TYPE_OBJECT);

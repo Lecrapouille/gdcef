@@ -152,7 +152,7 @@ void GDBrowserView::mouseMove(int x, int y)
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::mouseWheel(const int wDelta)
+void GDBrowserView::mouseWheelVertical(const int wDelta)
 {
     if (m_browser == nullptr)
         return ;

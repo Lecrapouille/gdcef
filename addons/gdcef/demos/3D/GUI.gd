@@ -71,9 +71,9 @@ func _on_TextureRect_gui_input(event):
 		return
 	if event is InputEventMouseButton:
 		if event.button_index == BUTTON_WHEEL_UP:
-			browser.on_mouse_wheel(2)
+			browser.on_mouse_wheel_vertical(2)
 		elif event.button_index == BUTTON_WHEEL_DOWN:
-			browser.on_mouse_wheel(-2)
+			browser.on_mouse_wheel_vertical(-2)
 		elif event.button_index == BUTTON_LEFT:
 			mouse_pressed = event.pressed
 			if event.pressed == true:
