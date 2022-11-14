@@ -106,7 +106,7 @@ bool GDCef::initialize(godot::String folder_path)
     // Get the folder path in which your application and CEF artifacts are present
     fs::path folder;
 
-    if (folder_path.length() == 0)
+    if (folder_path.length() > 0)
     {
         GDCEF_DEBUG_VAL("input folder:" << folder_path.utf8().get_data());
         folder = std::filesystem::current_path() / folder_path.trim_prefix("res://").utf8().get_data();
