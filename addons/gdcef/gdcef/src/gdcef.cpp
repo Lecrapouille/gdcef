@@ -129,15 +129,17 @@ bool GDCef::initialize(godot::String folder_path)
             GDCEF_DEBUG_VAL("Path where your application files shall be located:"
                             << folder);
         }
-
-        // Check if needed files to make CEF working are present.
-        if (!sanity_checks(folder))
-        {
-            GDCEF_ERROR("Aborting because of missing necessary files");
-            return false;
-        }
     }
 
+    // Check if needed files to make CEF working are present.
+    if (!sanity_checks(folder))
+    {
+        GDCEF_ERROR("Aborting because of missing necessary files");
+        godot::Godot::print("Error: CEF artifacts not found at path: ", godot::String(folder.u8string().c_str()));
+        return false;
+    }
+
+    godot::Godot::print(godot::String(folder.u8string().c_str()));
     // Since we cannot configure CEF from the command line main(argc, argv)
     // because we cannot access to it, we have to configure CEF directly.
     configureCEF(folder, m_cef_settings, m_window_info);
@@ -153,9 +155,11 @@ bool GDCef::initialize(godot::String folder_path)
     if (!CefInitialize(args, m_cef_settings, nullptr, nullptr))
     {
         GDCEF_ERROR("CefInitialize failed");
+        godot::Godot::print("CefInitialize failed");
         return false;
     }
     GDCEF_DEBUG_VAL("CefInitialize done with success");
+    godot::Godot::print("CefInitialize done with success");
     return true;
 }
 
