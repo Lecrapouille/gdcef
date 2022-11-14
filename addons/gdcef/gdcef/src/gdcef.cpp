@@ -117,7 +117,6 @@ bool GDCef::initialize(godot::String cef_folder_path)
     // Since we cannot configure CEF from the command line main(argc, argv)
     // because we cannot access to it, we have to configure CEF directly.
     configureCEF(folder, m_cef_settings, m_window_info);
-    configureBrowser(m_browser_settings);
 
     // This function should be called on the main application thread to
     // initialize the CEF browser process. The |application| parameter may be
@@ -346,7 +345,9 @@ GDBrowserView* GDCef::createBrowser(godot::String const url, godot::String const
     }
 
     // Complete BrowserView constructor (complete _new())
-    int id = browser->init(url, settingsBrowser(), windowInfo(), name);
+    CefBrowserSettings browser_settings;
+    configureBrowser(browser_settings);
+    int id = browser->init(url, browser_settings, windowInfo(), name);
     if (id < 0)
     {
         GDCEF_ERROR("browser->init() failed");

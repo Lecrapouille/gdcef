@@ -184,13 +184,6 @@ public:
         return m_cef_settings;
     }
 
-    // -------------------------------------------------------------------------
-    //! \brief Const getter browser settings.
-    // -------------------------------------------------------------------------
-    inline CefBrowserSettings const& settingsBrowser() const
-    {
-        return m_browser_settings;
-    }
 
     // -------------------------------------------------------------------------
     //! \brief Const getter browser window settings.
@@ -223,8 +216,6 @@ private:
     CefWindowInfo m_window_info;
     //! \brief
     CefSettings m_cef_settings;
-    //! \brief
-    CefBrowserSettings m_browser_settings;
 };
 
 #  if !defined(_WIN32)
