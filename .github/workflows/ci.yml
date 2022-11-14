@@ -1,0 +1,34 @@
+name: CI for GDCEF
+on:
+  workflow_dispatch:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build_linux:
+    name: Build on Linux
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout GDCEF
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          cd addons/gdcef
+          python3 -m pip install -r requirements.txt
+      - name: Compile GDCEF
+        run: |
+          cd addons/gdcef
+          python3 build.py
+      - name: Check build
+        run: |
+          cd build
+          ls gdcefSubProcess libgdcef.so libcef.so
