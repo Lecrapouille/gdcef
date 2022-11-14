@@ -100,52 +100,20 @@ void GDCef::_init()
 }
 
 //------------------------------------------------------------------------------
-bool GDCef::initialize(godot::String folder_path)
+bool GDCef::initialize(godot::String cef_folder_path)
 {
 
-    godot::Godot::print("Input folder_path:");
-    godot::Godot::print(folder_path);
-    godot::Godot::print("Length:");
-    godot::Godot::print(folder_path.length());
     // Get the folder path in which your application and CEF artifacts are present
-    fs::path folder;
-
-    if (folder_path.length() > 0)
-    {
-        godot::Godot::print("Using input folder_path");
-        GDCEF_DEBUG_VAL("input folder:" << folder_path.utf8().get_data());
-        folder = std::filesystem::current_path() / folder_path.trim_prefix("res://").utf8().get_data();
-    }
-    else
-    {
-        godot::Godot::print("Using default path");
-        // Check if this process is executing from the Godot editor or from the
-        // your standalone application.
-        if (isStartedFromGodotEditor())
-        {
-            folder = std::filesystem::current_path() / "build";
-            GDCEF_DEBUG_VAL("Launching CEF from Godot editor");
-            GDCEF_DEBUG_VAL("Path where your project Godot files shall be located:"
-                            << folder);
-        }
-        else
-        {
-            folder = real_path();
-            GDCEF_DEBUG_VAL("Launching CEF from your executable");
-            GDCEF_DEBUG_VAL("Path where your application files shall be located:"
-                            << folder);
-        }
-    }
+    fs::path folder = cef_folder_path.utf8().get_data();
 
     // Check if needed files to make CEF working are present.
     if (!sanity_checks(folder))
     {
         GDCEF_ERROR("Aborting because of missing necessary files");
-        godot::Godot::print("Error: CEF artifacts not found at path: ", godot::String(folder.u8string().c_str()));
+        godot::Godot::print("Error: CEF artifacts not found at path: " + godot::String(folder.u8string().c_str()));
         return false;
     }
 
-    godot::Godot::print(godot::String(folder.u8string().c_str()));
     // Since we cannot configure CEF from the command line main(argc, argv)
     // because we cannot access to it, we have to configure CEF directly.
     configureCEF(folder, m_cef_settings, m_window_info);

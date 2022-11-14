@@ -83,7 +83,7 @@ public: // Godot interfaces.
     // -------------------------------------------------------------------------
     //! \brief Called to initialize CEF with runtime settings
     // -------------------------------------------------------------------------
-    bool initialize(godot::String folder_path=godot::String(""));
+    bool initialize(godot::String cef_folder_path);
 
     // -------------------------------------------------------------------------
     //! \brief Method automatically called by Godot engine to register the
