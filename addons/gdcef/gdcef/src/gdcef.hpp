@@ -81,6 +81,11 @@ public: // Godot interfaces.
     void _init();
 
     // -------------------------------------------------------------------------
+    //! \brief Called to initialize CEF with runtime settings
+    // -------------------------------------------------------------------------
+    bool initialize(godot::String folder_path=godot::String(""));
+
+    // -------------------------------------------------------------------------
     //! \brief Method automatically called by Godot engine to register the
     //! desired C++ methods that will be callable from gdscript.
     // -------------------------------------------------------------------------

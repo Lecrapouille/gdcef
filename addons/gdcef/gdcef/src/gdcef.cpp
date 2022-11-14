@@ -87,6 +87,7 @@ void GDCef::_register_methods()
 {
     std::cout << "[GDCEF][GDCef::_register_methods]" << std::endl;
 
+    godot::register_method("initialize", &GDCef::initialize);
     godot::register_method("_process", &GDCef::_process);
     godot::register_method("create_browser", &GDCef::createBrowser);
     godot::register_method("shutdown", &GDCef::shutdown);
@@ -96,32 +97,45 @@ void GDCef::_register_methods()
 void GDCef::_init()
 {
     GDCEF_DEBUG_VAL("Executable name: " << executable_name());
+}
+
+//------------------------------------------------------------------------------
+bool GDCef::initialize(godot::String folder_path)
+{
 
     // Get the folder path in which your application and CEF artifacts are present
     fs::path folder;
 
-    // Check if this process is executing from the Godot editor or from the
-    // your standalone application.
-    if (isStartedFromGodotEditor())
+    if (!folder_path.casecmp_to(godot::String("")))
     {
-        folder = std::filesystem::current_path() / "build";
-        GDCEF_DEBUG_VAL("Launching CEF from Godot editor");
-        GDCEF_DEBUG_VAL("Path where your project Godot files shall be located:"
-                        << folder);
+        GDCEF_DEBUG_VAL("input folder:" << folder_path.utf8().get_data());
+        folder = std::filesystem::current_path() / folder_path.trim_prefix("res://").utf8().get_data();
     }
     else
     {
-        folder = real_path();
-        GDCEF_DEBUG_VAL("Launching CEF from your executable");
-        GDCEF_DEBUG_VAL("Path where your application files shall be located:"
-                        << folder);
-    }
+        // Check if this process is executing from the Godot editor or from the
+        // your standalone application.
+        if (isStartedFromGodotEditor())
+        {
+            folder = std::filesystem::current_path() / "build";
+            GDCEF_DEBUG_VAL("Launching CEF from Godot editor");
+            GDCEF_DEBUG_VAL("Path where your project Godot files shall be located:"
+                            << folder);
+        }
+        else
+        {
+            folder = real_path();
+            GDCEF_DEBUG_VAL("Launching CEF from your executable");
+            GDCEF_DEBUG_VAL("Path where your application files shall be located:"
+                            << folder);
+        }
 
-    // Check if needed files to make CEF working are present.
-    if (!sanity_checks(folder))
-    {
-        GDCEF_ERROR("Aborting because of missing necessary files");
-        exit(1);
+        // Check if needed files to make CEF working are present.
+        if (!sanity_checks(folder))
+        {
+            GDCEF_ERROR("Aborting because of missing necessary files");
+            return false;
+        }
     }
 
     // Since we cannot configure CEF from the command line main(argc, argv)
@@ -139,9 +153,10 @@ void GDCef::_init()
     if (!CefInitialize(args, m_cef_settings, nullptr, nullptr))
     {
         GDCEF_ERROR("CefInitialize failed");
-        exit(1);
+        return false;
     }
     GDCEF_DEBUG_VAL("CefInitialize done with success");
+    return true;
 }
 
 //------------------------------------------------------------------------------
