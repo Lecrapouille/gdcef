@@ -103,16 +103,22 @@ void GDCef::_init()
 bool GDCef::initialize(godot::String folder_path)
 {
 
+    godot::Godot::print("Input folder_path:");
+    godot::Godot::print(folder_path);
+    godot::Godot::print("Length:");
+    godot::Godot::print(folder_path.length());
     // Get the folder path in which your application and CEF artifacts are present
     fs::path folder;
 
     if (folder_path.length() > 0)
     {
+        godot::Godot::print("Using input folder_path");
         GDCEF_DEBUG_VAL("input folder:" << folder_path.utf8().get_data());
         folder = std::filesystem::current_path() / folder_path.trim_prefix("res://").utf8().get_data();
     }
     else
     {
+        godot::Godot::print("Using default path");
         // Check if this process is executing from the Godot editor or from the
         // your standalone application.
         if (isStartedFromGodotEditor())
