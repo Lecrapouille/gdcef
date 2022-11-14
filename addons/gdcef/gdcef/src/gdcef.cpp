@@ -201,7 +201,7 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // locale is determined using environment variable parsing with the
     // precedence order: LANGUAGE, LC_ALL, LC_MESSAGES and LANG. Also
     // configurable using the "lang" command-line switch.
-    CefString(&cef_settings.locale).FromString("fr");
+    CefString(&cef_settings.locale).FromString("en-US");
 
     // The directory and file name to use for the debug log. If empty a default
     // log file name and location will be used. On Windows and Linux a
