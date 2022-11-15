@@ -259,7 +259,7 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
 //------------------------------------------------------------------------------
 // See workspace_stigmee/godot/gdnative/browser/thirdparty/cef_binary/include/
 // internal/cef_types.h for more settings.
-static void configureBrowser(CefBrowserSettings& browser_settings)
+static void configureBrowser(CefBrowserSettings& browser_settings, godot::Dictionary user_settings)
 {
     // The maximum rate in frames per second (fps) that
     // CefRenderHandler::OnPaint will be called for a windowless browser. The
@@ -307,6 +307,8 @@ static void configureBrowser(CefBrowserSettings& browser_settings)
     // support and may not work on all systems even when enabled. Also
     // configurable using the "disable-webgl" command-line switch.
     browser_settings.webgl = STATE_ENABLED;
+    if (user_settings.has("webgl"))
+        browser_settings.webgl = user_settings["webgl"] ? STATE_ENABLED : STATE_DISABLED;
 }
 
 //------------------------------------------------------------------------------
@@ -331,7 +333,7 @@ void GDCef::shutdown()
 
 //------------------------------------------------------------------------------
 GDBrowserView* GDCef::createBrowser(godot::String const url, godot::String const
-                                    name, int w, int h)
+                                    name, int w, int h, godot::Dictionary user_settings)
 {
     GDCEF_DEBUG_VAL("name: " << name.utf8().get_data() <<
                     ", url: " << url.utf8().get_data());
@@ -345,9 +347,9 @@ GDBrowserView* GDCef::createBrowser(godot::String const url, godot::String const
     }
 
     // Complete BrowserView constructor (complete _new())
-    CefBrowserSettings browser_settings;
-    configureBrowser(browser_settings);
-    int id = browser->init(url, browser_settings, windowInfo(), name);
+    CefBrowserSettings settings;
+    configureBrowser(settings, user_settings);
+    int id = browser->init(url, settings, windowInfo(), name);
     if (id < 0)
     {
         GDCEF_ERROR("browser->init() failed");

@@ -204,7 +204,7 @@ public:
     //! in case of error).
     // -------------------------------------------------------------------------
     GDBrowserView* createBrowser(godot::String const url, godot::String const name,
-                                 int w, int h);
+                                 int w, int h, godot::Dictionary browser_settings);
 
 private:
 
