@@ -48,7 +48,7 @@
 
 //------------------------------------------------------------------------------
 static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
-                         CefWindowInfo& window_info);
+                         CefWindowInfo& window_info, godot::Dictionary config);
 static void configureBrowser(CefBrowserSettings& browser_settings);
 
 //------------------------------------------------------------------------------
@@ -100,7 +100,7 @@ void GDCef::_init()
 }
 
 //------------------------------------------------------------------------------
-bool GDCef::initialize(godot::String cef_folder_path)
+bool GDCef::initialize(godot::String cef_folder_path, godot::Dictionary config)
 {
 
     // Get the folder path in which your application and CEF artifacts are present
@@ -116,7 +116,7 @@ bool GDCef::initialize(godot::String cef_folder_path)
 
     // Since we cannot configure CEF from the command line main(argc, argv)
     // because we cannot access to it, we have to configure CEF directly.
-    configureCEF(folder, m_cef_settings, m_window_info);
+    configureCEF(folder, m_cef_settings, m_window_info, config);
 
     // This function should be called on the main application thread to
     // initialize the CEF browser process. The |application| parameter may be
@@ -146,7 +146,7 @@ void GDCef::_process(float /*delta*/)
 // See workspace_stigmee/godot/gdnative/browser/thirdparty/cef_binary/include/
 // internal/cef_types.h for more settings.
 static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
-                         CefWindowInfo& window_info)
+                         CefWindowInfo& window_info, godot::Dictionary config)
 {
     // The path to a separate executable that will be launched for
     // sub-processes.  If this value is empty on Windows or Linux then the main
@@ -156,44 +156,69 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // the comments on CefExecuteProcess() for details. If this value is
     // non-empty then it must be an absolute path. Also configurable using the
     // "browser-subprocess-path" command-line switch.
-    fs::path sub_process_path = { folder / SUBPROCESS_NAME };
+    fs::path sub_process_path;
+    if (config.has("browser_subprocess_path")) {
+        godot::String pathStr = config["browser_subprocess_path"];
+        sub_process_path = pathStr.utf8().get_data();
+    } else {
+        sub_process_path = { folder / SUBPROCESS_NAME };
+    }
     std::cout << "[GDCEF][GDCef::configureCEF] Setting SubProcess path: "
               << sub_process_path.string() << std::endl;
     CefString(&cef_settings.browser_subprocess_path)
             .FromString(sub_process_path.string());
 
-    // The location where data for the global browser cache will be stored on
-    // disk. If this value is non-empty then it must be an absolute path that is
-    // either equal to or a child directory of CefSettings.root_cache_path. If
-    // this value is empty then browsers will be created in "incognito mode"
-    // where in-memory caches are used for storage and no data is persisted to
-    // disk.  HTML5 databases such as localStorage will only persist across
-    // sessions if a cache path is specified. Can be overridden for individual
-    // CefRequestContext instances via the CefRequestContextSettings.cache_path
-    // value. When using the Chrome runtime the "default" profile will be used
-    // if |cache_path| and |root_cache_path| have the same value.
-    fs::path sub_process_cache = { folder / "cache" };
-    std::cout << "[GDCEF][GDCef::configureCEF] Setting cache path: "
-              << sub_process_cache.string() << std::endl;
-    CefString(&cef_settings.cache_path)
-            .FromString(sub_process_cache.string());
+    // if cache directories not set, browser will be in incognito mode
+    if (!config.has("incognito") || !config["incognito"]) {
+        // The location where data for the global browser cache will be stored on
+        // disk. If this value is non-empty then it must be an absolute path that is
+        // either equal to or a child directory of CefSettings.root_cache_path. If
+        // this value is empty then browsers will be created in "incognito mode"
+        // where in-memory caches are used for storage and no data is persisted to
+        // disk.  HTML5 databases such as localStorage will only persist across
+        // sessions if a cache path is specified. Can be overridden for individual
+        // CefRequestContext instances via the CefRequestContextSettings.cache_path
+        // value. When using the Chrome runtime the "default" profile will be used
+        // if |cache_path| and |root_cache_path| have the same value.
+        fs::path sub_process_cache;
+        if (config.has("cache_path")) {
+            godot::String pathStr = config["cache_path"];
+            sub_process_cache = pathStr.utf8().get_data();
+        } else {
+            sub_process_cache = { folder / "cache" };
+        }
+        std::cout << "[GDCEF][GDCef::configureCEF] Setting cache path: "
+                  << sub_process_cache.string() << std::endl;
+        CefString(&cef_settings.cache_path)
+                .FromString(sub_process_cache.string());
 
-    // The root directory that all CefSettings.cache_path and
-    // CefRequestContextSettings.cache_path values must have in common. If this
-    // value is empty and CefSettings.cache_path is non-empty then it will
-    // default to the CefSettings.cache_path value. If this value is non-empty
-    // then it must be an absolute path. Failure to set this value correctly may
-    // result in the sandbox blocking read/write access to the cache_path
-    // directory.
-    CefString(&cef_settings.root_cache_path)
-            .FromString(sub_process_cache.string());
+        // The root directory that all CefSettings.cache_path and
+        // CefRequestContextSettings.cache_path values must have in common. If this
+        // value is empty and CefSettings.cache_path is non-empty then it will
+        // default to the CefSettings.cache_path value. If this value is non-empty
+        // then it must be an absolute path. Failure to set this value correctly may
+        // result in the sandbox blocking read/write access to the cache_path
+        // directory.
+        fs::path root_cache;
+        if (config.has("root_cache_path")) {
+            godot::String pathStr = config["root_cache_path"];
+            root_cache = pathStr.utf8().get_data();
+        } else {
+            root_cache = sub_process_cache;
+        }
+        CefString(&cef_settings.root_cache_path)
+                .FromString(root_cache.string());
+    }
 
     // The locale string that will be passed to WebKit. If empty the default
     // locale of "en-US" will be used. This value is ignored on Linux where
     // locale is determined using environment variable parsing with the
     // precedence order: LANGUAGE, LC_ALL, LC_MESSAGES and LANG. Also
     // configurable using the "lang" command-line switch.
-    CefString(&cef_settings.locale).FromString("fr");
+    if (config.has("locale")) {
+        godot::String locale = config["locale"];
+        CefString(&cef_settings.locale).FromString(locale.utf8().get_data());
+    }
 
     // The directory and file name to use for the debug log. If empty a default
     // log file name and location will be used. On Windows and Linux a
@@ -201,8 +226,29 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // MacOS a "~/Library/Logs/<app name>_debug.log" file will be written where
     // <app name> is the name of the main app executable. Also configurable
     // using the "log-file" command-line switch.
-    CefString(&cef_settings.log_file).FromString((folder / "debug.log").string());
-    cef_settings.log_severity = LOGSEVERITY_WARNING; // LOGSEVERITY_DEBUG;
+    fs::path log_file_path;
+    if (config.has("log_file")) {
+        godot::String pathStr = config["log_file"];
+        log_file_path = pathStr.utf8().get_data();
+    } else {
+        log_file_path =  { folder / "debug.log" };
+    }
+    CefString(&cef_settings.log_file).FromString(log_file_path.string());
+
+    if (config.has("log_severity")) {
+        if (config["log_severity"] == godot::String("verbose"))
+            cef_settings.log_severity = LOGSEVERITY_VERBOSE;
+        else if (config["log_severity"] == godot::String("info"))
+            cef_settings.log_severity = LOGSEVERITY_INFO;
+        else if (config["log_severity"] == godot::String("warning"))
+            cef_settings.log_severity = LOGSEVERITY_WARNING;
+        else if (config["log_severity"] == godot::String("error"))
+            cef_settings.log_severity = LOGSEVERITY_ERROR;
+        else if (config["log_severity"] == godot::String("fatal"))
+            cef_settings.log_severity = LOGSEVERITY_FATAL;
+    } else {
+        cef_settings.log_severity = LOGSEVERITY_WARNING;
+    }
 
     // Set to true (1) to enable windowless (off-screen) rendering support. Do
     // not enable this value if the application does not use windowless
@@ -240,7 +286,9 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // URL will be http://localhost:8080. CEF can be remotely debugged from any
     // CEF or Chrome browser window. Also configurable using the
     // "remote-debugging-port" command-line switch.
-    cef_settings.remote_debugging_port = 7777;
+    if (config.has("remote_debugging_port")) {
+        cef_settings.remote_debugging_port = config["remote_debugging_port"];
+    }
 
     // The number of stack trace frames to capture for uncaught exceptions.
     // Specify a positive value to enable the CefRenderProcessHandler::
