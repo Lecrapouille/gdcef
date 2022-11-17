@@ -119,7 +119,11 @@ func _input(event):
 # ==============================================================================
 func _ready():
 	var S = $Panel/TextureRect.get_size()
-	var browser = $CEF.create_browser("https://github.com/Lecrapouille/gdcef", browser1, S.x, S.y)
+	var resource_path = ProjectSettings.globalize_path("res://build/")
+	print(resource_path)
+	var success = $CEF.initialize(resource_path, {"locale":"en-US"})
+	print("SUCCESS: ", success)
+	var browser = $CEF.create_browser("https://github.com/Lecrapouille/gdcef", browser1, S.x, S.y, {})
 	browser.connect("page_loaded", self, "_on_page_loaded")
 	$Panel/TextureRect.texture = browser.get_texture()
 	pass
