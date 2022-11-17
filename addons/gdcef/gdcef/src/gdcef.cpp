@@ -50,6 +50,8 @@
 static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
                          CefWindowInfo& window_info, godot::Dictionary config);
 static void configureBrowser(CefBrowserSettings& browser_settings);
+static cef_state_t getConfig(godot::Dictionary config, char* property,
+                              cef_state_t default_value);
 
 //------------------------------------------------------------------------------
 // Check if needed files to make CEF working are present and well formed. We
@@ -307,7 +309,8 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
 //------------------------------------------------------------------------------
 // See workspace_stigmee/godot/gdnative/browser/thirdparty/cef_binary/include/
 // internal/cef_types.h for more settings.
-static void configureBrowser(CefBrowserSettings& browser_settings, godot::Dictionary user_settings)
+static void configureBrowser(CefBrowserSettings& browser_settings,
+                             godot::Dictionary config)
 {
     // The maximum rate in frames per second (fps) that
     // CefRenderHandler::OnPaint will be called for a windowless browser. The
@@ -319,58 +322,58 @@ static void configureBrowser(CefBrowserSettings& browser_settings, godot::Dictio
 
     // Controls whether JavaScript can be executed. Also configurable using the
     // "disable-javascript" command-line switch.
-    browser_settings.javascript = STATE_ENABLED;
-    if (user_settings.has("javascript"))
-        browser_settings.javascript = user_settings["javascript"] ? STATE_ENABLED : STATE_DISABLED;
+    browser_settings.javascript =
+        getConfig(config, "javascript", STATE_ENABLED);
 
     // Controls whether JavaScript can be used to close windows that were not
     // opened via JavaScript. JavaScript can still be used to close windows that
     // were opened via JavaScript or that have no back/forward history. Also
     // configurable using the "disable-javascript-close-windows" command-line
     // switch.
-    browser_settings.javascript_close_windows = STATE_DISABLED;
-    if (user_settings.has("javascript_close_windows"))
-        browser_settings.javascript_close_windows = user_settings["javascript_close_windows"] ? STATE_ENABLED : STATE_DISABLED;
+    browser_settings.javascript_close_windows =
+        getConfig(config, "javascript_close_windows", STATE_DISABLED);
 
     // Controls whether JavaScript can access the clipboard. Also configurable
     // using the "disable-javascript-access-clipboard" command-line switch.
-    browser_settings.javascript_access_clipboard = STATE_DISABLED;
-    if (user_settings.has("javascript_access_clipboard"))
-        browser_settings.javascript_access_clipboard = user_settings["javascript_access_clipboard"] ? STATE_ENABLED : STATE_DISABLED;
+    browser_settings.javascript_access_clipboard =
+        getConfig(config, "javascript_access_clipboard", STATE_DISABLED);
 
     // Controls whether DOM pasting is supported in the editor via
     // execCommand("paste"). The |javascript_access_clipboard| setting must also
     // be enabled. Also configurable using the "disable-javascript-dom-paste"
     // command-line switch.
-    browser_settings.javascript_dom_paste = STATE_DISABLED;
-    if (user_settings.has("javascript_dom_paste"))
-        browser_settings.javascript_dom_paste = user_settings["javascript_dom_paste"] ? STATE_ENABLED : STATE_DISABLED;
+    browser_settings.javascript_dom_paste =
+        getConfig(config, "javascript_dom_paste", STATE_DISABLED);
 
     // Controls whether any plugins will be loaded. Also configurable using the
     // "disable-plugins" command-line switch.
-    //browser_settings.plugins = STATE_ENABLED;
-    //if (user_settings.has("plugins"))
-    //  browser_settings.plugins = user_settings["plugins"] ? STATE_ENABLED : STATE_DISABLED;
+    //  browser_settings.plugins = getConfig(config, "plugins", STATE_ENABLED);
+
 
     // Controls whether image URLs will be loaded from the network. A cached
     // image will still be rendered if requested. Also configurable using the
     // "disable-image-loading" command-line switch.
-    browser_settings.image_loading = STATE_ENABLED;
-    if (user_settings.has("image_loading"))
-        browser_settings.image_loading = user_settings["image_loading"] ? STATE_ENABLED : STATE_DISABLED;
+    browser_settings.image_loading =
+        getConfig(config, "image_loading", STATE_ENABLED);
 
     // Controls whether databases can be used. Also configurable using the
     // "disable-databases" command-line switch.
-    browser_settings.databases = STATE_ENABLED;
-    if (user_settings.has("databases"))
-        browser_settings.databases = user_settings["databases"] ? STATE_ENABLED : STATE_DISABLED;
+    browser_settings.databases = getConfig(config, "databases", STATE_ENABLED);
 
     // Controls whether WebGL can be used. Note that WebGL requires hardware
     // support and may not work on all systems even when enabled. Also
     // configurable using the "disable-webgl" command-line switch.
-    browser_settings.webgl = STATE_ENABLED;
-    if (user_settings.has("webgl"))
-        browser_settings.webgl = user_settings["webgl"] ? STATE_ENABLED : STATE_DISABLED;
+    browser_settings.webgl = getConfig(config, "webgl", STATE_ENABLED);
+}
+
+//------------------------------------------------------------------------------
+// helper function to pull out config value, or return default
+static cef_state_t getConfig(godot::Dictionary config, char* property,
+                             cef_state_t default_value)
+{
+    if (config.has(property))
+        return config[property] ? STATE_ENABLED : STATE_DISABLED;
+    return default_value;
 }
 
 //------------------------------------------------------------------------------
@@ -395,11 +398,11 @@ void GDCef::shutdown()
 
 //------------------------------------------------------------------------------
 GDBrowserView* GDCef::createBrowser(godot::String const url, godot::String const
-                                    name, int w, int h, godot::Dictionary user_settings)
+                                    name, int w, int h, godot::Dictionary config)
 {
     GDCEF_DEBUG_VAL("name: " << name.utf8().get_data() <<
                     ", url: " << url.utf8().get_data());
-    godot::Godot::print("user_settings: " + user_settings.to_json());
+    godot::Godot::print("config: " + config.to_json());
 
     // Godot node creation (note Godot cannot pass arguments to _new())
     GDBrowserView* browser = GDBrowserView::_new();
@@ -411,7 +414,7 @@ GDBrowserView* GDCef::createBrowser(godot::String const url, godot::String const
 
     // Complete BrowserView constructor (complete _new())
     CefBrowserSettings settings;
-    configureBrowser(settings, user_settings);
+    configureBrowser(settings, config);
     int id = browser->init(url, settings, windowInfo(), name);
     if (id < 0)
     {
