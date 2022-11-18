@@ -118,7 +118,7 @@ func _input(event):
 # Create a single briwser named "browser1" that is attached as child node to $CEF.
 # ==============================================================================
 func _ready():
-    # set the path to the gdcef resources
+	# set the path to the gdcef resources
 	var resource_path = ProjectSettings.globalize_path("res://build/")
 	if not OS.has_feature("editor"):
 		# Note: globalize_path doesn't work for exported projects: 
