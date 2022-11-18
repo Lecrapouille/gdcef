@@ -23,7 +23,7 @@ var iterator = 0
 # Timer callback: every 6 seconds load a new webpage.
 # ==============================================================================
 func _on_Timer_timeout():
-	iterator = (iterator + 1) % 6
+	iterator = (iterator + 1) % pages.size()
 	get_node("CEF/right").load_url(pages[iterator])
 
 # ==============================================================================
@@ -43,12 +43,17 @@ func _ready():
 	set_position(Vector2(0,0))
 	set_size(Vector2(h, w))
 
-	# First browser tab is displaying the first webpage.
+    # set the path to the gdcef resources
 	var resource_path = ProjectSettings.globalize_path("res://build/")
+	if not OS.has_feature("editor"):
+		# Note: globalize_path doesn't work for exported projects: 
+		# https://docs.godotengine.org/en/stable/classes/class_projectsettings.html#class-projectsettings-method-globalize-path
+		resource_path = OS.get_executable_path().get_base_dir().plus_file("build")
 	print(resource_path)
 	var success = $CEF.initialize(resource_path, {"locale":"en-US"})
-	print("SUCCESS: ", success)
-	var left = $CEF.create_browser(pages[3], "left", h/2, w, {})
+	print("CEF INITIALIZE: ", success)
+	# First browser tab is displaying the first webpage.
+	var left = $CEF.create_browser(pages[3], "left", h/2, w, {"incognito":false})
 	$Texture1.set_position(Vector2(0,0))
 	$Texture1.set_size(Vector2(h/2, w/2))
 	$Texture1.texture = left.get_texture()
@@ -56,7 +61,7 @@ func _ready():
 
 	# Second browser tab is displaying the second webpage and the timer will
 	# make it load a new URL.
-	var right = $CEF.create_browser(pages[0], "right", h/2, w, {})
+	var right = $CEF.create_browser(pages[0], "right", h/2, w, {"webgl": true})
 	$Texture2.set_position(Vector2(h/2,0))
 	$Texture2.set_size(Vector2(h/2, w/2))
 	$Texture2.texture = right.get_texture()
