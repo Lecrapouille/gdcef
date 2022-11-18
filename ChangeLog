@@ -1,3 +1,8 @@
+Version 0.?.?:
+	* on_mouse_wheel scroll horizontally and vertically. Added on_mouse_wheel_horizontal
+      and on_mouse_wheel_vertical.
+	* Set default locales to English instead of French.
+
 Version 0.5.0:
 	* Fix function checking if CEF is started from the Godot editor or from application.
 	* Update CEF version to 107.
