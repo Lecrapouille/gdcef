@@ -81,15 +81,6 @@ static bool sanity_checks(fs::path const& folder)
 }
 
 //------------------------------------------------------------------------------
-// CEF can be run either from the binary (standalone application) or from the
-// Godot editor. We have to distinguish the both case.
-static bool isStartedFromGodotEditor()
-{
-    // Old way: executable_name().find("godot") != std::string::npos;
-    return godot::OS::get_singleton()->has_feature("editor");
-}
-
-//------------------------------------------------------------------------------
 // In a GDNative module, "_bind_methods" is replaced by the "_register_methods"
 // method CefRefPtr<CefBrowser> m_browser;this is used to expose various methods
 // of this class to Godot
