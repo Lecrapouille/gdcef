@@ -52,6 +52,14 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
 static void configureBrowser(CefBrowserSettings& browser_settings);
 static cef_state_t getConfig(godot::Dictionary config, char* property,
                               cef_state_t default_value);
+static const char* getConfig(godot::Dictionary config, char* property,
+                              char* default_value);
+static bool getConfig(godot::Dictionary config, char* property,
+                              bool default_value);
+static int getConfig(godot::Dictionary config, char* property,
+                              int default_value);
+static fs::path getConfig(godot::Dictionary config, char* property,
+                              fs::path default_value);
 
 //------------------------------------------------------------------------------
 // Check if needed files to make CEF working are present and well formed. We
@@ -158,20 +166,17 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // the comments on CefExecuteProcess() for details. If this value is
     // non-empty then it must be an absolute path. Also configurable using the
     // "browser-subprocess-path" command-line switch.
-    fs::path sub_process_path;
-    if (config.has("browser_subprocess_path")) {
-        godot::String pathStr = config["browser_subprocess_path"];
-        sub_process_path = pathStr.utf8().get_data();
-    } else {
-        sub_process_path = { folder / SUBPROCESS_NAME };
-    }
+    fs::path sub_process_path =
+        getConfig(config, "browser_subprocess_path", {folder / SUBPROCESS_NAME});
+
     std::cout << "[GDCEF][GDCef::configureCEF] Setting SubProcess path: "
               << sub_process_path.string() << std::endl;
     CefString(&cef_settings.browser_subprocess_path)
             .FromString(sub_process_path.string());
 
     // if cache directories not set, browser will be in incognito mode
-    if (!config.has("incognito") || !config["incognito"]) {
+    //
+    if (!getConfig(config, "incognito", false)) {
         // The location where data for the global browser cache will be stored on
         // disk. If this value is non-empty then it must be an absolute path that is
         // either equal to or a child directory of CefSettings.root_cache_path. If
@@ -182,13 +187,9 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
         // CefRequestContext instances via the CefRequestContextSettings.cache_path
         // value. When using the Chrome runtime the "default" profile will be used
         // if |cache_path| and |root_cache_path| have the same value.
-        fs::path sub_process_cache;
-        if (config.has("cache_path")) {
-            godot::String pathStr = config["cache_path"];
-            sub_process_cache = pathStr.utf8().get_data();
-        } else {
-            sub_process_cache = { folder / "cache" };
-        }
+        fs::path sub_process_cache =
+            getConfig(config, "cache_path", {folder / "cache"});
+
         std::cout << "[GDCEF][GDCef::configureCEF] Setting cache path: "
                   << sub_process_cache.string() << std::endl;
         CefString(&cef_settings.cache_path)
@@ -201,13 +202,8 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
         // then it must be an absolute path. Failure to set this value correctly may
         // result in the sandbox blocking read/write access to the cache_path
         // directory.
-        fs::path root_cache;
-        if (config.has("root_cache_path")) {
-            godot::String pathStr = config["root_cache_path"];
-            root_cache = pathStr.utf8().get_data();
-        } else {
-            root_cache = sub_process_cache;
-        }
+        fs::path root_cache = 
+            getConfig(config, "root_cache_path", sub_process_cache);
         CefString(&cef_settings.root_cache_path)
                 .FromString(root_cache.string());
     }
@@ -217,10 +213,8 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // locale is determined using environment variable parsing with the
     // precedence order: LANGUAGE, LC_ALL, LC_MESSAGES and LANG. Also
     // configurable using the "lang" command-line switch.
-    if (config.has("locale")) {
-        godot::String locale = config["locale"];
-        CefString(&cef_settings.locale).FromString(locale.utf8().get_data());
-    }
+    const char* locale = getConfig(config, "locale", "en-US");
+    CefString(&cef_settings.locale).FromString(locale);
 
     // The directory and file name to use for the debug log. If empty a default
     // log file name and location will be used. On Windows and Linux a
@@ -228,34 +222,27 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // MacOS a "~/Library/Logs/<app name>_debug.log" file will be written where
     // <app name> is the name of the main app executable. Also configurable
     // using the "log-file" command-line switch.
-    fs::path log_file_path;
-    if (config.has("log_file")) {
-        godot::String pathStr = config["log_file"];
-        log_file_path = pathStr.utf8().get_data();
-    } else {
-        log_file_path =  { folder / "debug.log" };
-    }
+    fs::path log_file_path = getConfig(config, "log_file", {folder / "debug.log"})
     CefString(&cef_settings.log_file).FromString(log_file_path.string());
 
-    if (config.has("log_severity")) {
-        if (config["log_severity"] == godot::String("verbose"))
-            cef_settings.log_severity = LOGSEVERITY_VERBOSE;
-        else if (config["log_severity"] == godot::String("info"))
-            cef_settings.log_severity = LOGSEVERITY_INFO;
-        else if (config["log_severity"] == godot::String("warning"))
-            cef_settings.log_severity = LOGSEVERITY_WARNING;
-        else if (config["log_severity"] == godot::String("error"))
-            cef_settings.log_severity = LOGSEVERITY_ERROR;
-        else if (config["log_severity"] == godot::String("fatal"))
-            cef_settings.log_severity = LOGSEVERITY_FATAL;
-    } else {
+
+    const char* logString = getConfig(config, "log_severity", "warning");
+    if (std::strcmp(logString, "verbose")==0)
+        cef_settings.log_severity = LOGSEVERITY_VERBOSE;
+    else if (std::strcmp(logString, "info")==0)
+        cef_settings.log_severity = LOGSEVERITY_INFO;
+    else if (std::strcmp(logString, "warning")==0)
         cef_settings.log_severity = LOGSEVERITY_WARNING;
-    }
+    else if (std::strcmp(logString, "error")==0)
+        cef_settings.log_severity = LOGSEVERITY_ERROR;
+    else if (std::strcmp(logString, "fatal")==0)
+        cef_settings.log_severity = LOGSEVERITY_FATAL;
 
     // Set to true (1) to enable windowless (off-screen) rendering support. Do
     // not enable this value if the application does not use windowless
     // rendering as it may reduce rendering performance on some systems.
-    cef_settings.windowless_rendering_enabled = true;
+    cef_settings.windowless_rendering_enabled =
+        getConfig(config, "windowless_rendering_enabled", true);
 
     // Create the browser using windowless (off-screen) rendering. No window
     // will be created for the browser and all rendering will occur via the
@@ -267,15 +254,17 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // CefSettings.windowless_rendering_enabled value must be set to true.
     // Transparent painting is enabled by default but can be disabled by setting
     // CefBrowserSettings.background_color to an opaque value.
-    window_info.SetAsWindowless(0);
+    int windowless = getConfig(config, "set_as_windowless", 0);
+    window_info.SetAsWindowless(windowless);
 
     // To allow calling OnPaint()
-    window_info.shared_texture_enabled = false;
+    window_info.shared_texture_enabled =
+        getConfig(config, "shared_texture_enabled", false);
 
     // Set to true (1) to disable the sandbox for sub-processes. See
     // cef_sandbox_win.h for requirements to enable the sandbox on Windows. Also
     // configurable using the "no-sandbox" command-line switch.
-    cef_settings.no_sandbox = true;
+    cef_settings.no_sandbox = getConfig(config, "no_sandbox", true);
 
     // Set to true (1) to disable configuration of browser process features
     // using standard CEF and Chromium command-line arguments. Configuration can
@@ -288,22 +277,23 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // URL will be http://localhost:8080. CEF can be remotely debugged from any
     // CEF or Chrome browser window. Also configurable using the
     // "remote-debugging-port" command-line switch.
-    if (config.has("remote_debugging_port")) {
-        cef_settings.remote_debugging_port = config["remote_debugging_port"];
-    }
+    cef_settings.remote_debugging_port =
+        getConfig(config, "remote_debugging_port", 7777);
 
     // The number of stack trace frames to capture for uncaught exceptions.
     // Specify a positive value to enable the CefRenderProcessHandler::
     // OnUncaughtException() callback. Specify 0 (default value) and
     // OnUncaughtException() will not be called. Also configurable using the
     // "uncaught-exception-stack-size" command-line switch.
-    cef_settings.uncaught_exception_stack_size = 5;
+    cef_settings.uncaught_exception_stack_size =
+        getConfig(config, "exception_stack_size", 5);
 
     // Set to true (1) to have the browser process message loop run in a
     // separate thread. If false (0) than the CefDoMessageLoopWork() function
     // must be called from your application message loop. This option is only
     // supported on Windows and Linux.
-    cef_settings.multi_threaded_message_loop = 0;
+    cef_settings.multi_threaded_message_loop =
+        getConfig(config, "multi_threaded_message_loop", 0);
 }
 
 //------------------------------------------------------------------------------
@@ -373,6 +363,44 @@ static cef_state_t getConfig(godot::Dictionary config, char* property,
 {
     if (config.has(property))
         return config[property] ? STATE_ENABLED : STATE_DISABLED;
+    return default_value;
+}
+
+static const char* getConfig(godot::Dictionary config, char* property,
+                             char* default_value)
+{
+    if (config.has(property)) {
+        godot::String str = config[property];
+        return str.utf8().get_data();
+    }
+    return default_value;
+}
+
+
+static bool getConfig(godot::Dictionary config, char* property,
+                             bool default_value)
+{
+    if (config.has(property))
+        return config[property];
+    return default_value;
+}
+
+static int getConfig(godot::Dictionary config, char* property,
+                             int default_value)
+{
+    if (config.has(property))
+        return config[property];
+    return default_value;
+}
+
+
+static fs::path getConfig(godot::Dictionary config, char* property,
+                             fs::path default_value)
+{
+    if (config.has(property)) {
+        godot::String str = config[property];
+        return str.utf8().get_data();
+    }
     return default_value;
 }
 
