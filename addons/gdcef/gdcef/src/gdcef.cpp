@@ -142,7 +142,6 @@ bool GDCef::initialize(godot::String cef_folder_path, godot::Dictionary config)
         return false;
     }
     GDCEF_DEBUG_VAL("CefInitialize done with success");
-    godot::Godot::print("CefInitialize done with success");
     return true;
 }
 
@@ -222,7 +221,7 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // MacOS a "~/Library/Logs/<app name>_debug.log" file will be written where
     // <app name> is the name of the main app executable. Also configurable
     // using the "log-file" command-line switch.
-    fs::path log_file_path = getConfig(config, "log_file", {folder / "debug.log"})
+    fs::path log_file_path = getConfig(config, "log_file", {folder / "debug.log"});
     CefString(&cef_settings.log_file).FromString(log_file_path.string());
 
 
@@ -254,8 +253,7 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // CefSettings.windowless_rendering_enabled value must be set to true.
     // Transparent painting is enabled by default but can be disabled by setting
     // CefBrowserSettings.background_color to an opaque value.
-    int windowless = getConfig(config, "set_as_windowless", 0);
-    window_info.SetAsWindowless(windowless);
+    window_info.SetAsWindowless(0);
 
     // To allow calling OnPaint()
     window_info.shared_texture_enabled =
