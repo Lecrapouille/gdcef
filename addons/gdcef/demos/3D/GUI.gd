@@ -118,12 +118,9 @@ func _input(event):
 # Create a single briwser named "browser1" that is attached as child node to $CEF.
 # ==============================================================================
 func _ready():
-	# set the path to the gdcef resources
+	# Note: exported projects don't support globalize_path:
+	# https://docs.godotengine.org/en/3.5/classes/class_projectsettings.html#class-projectsettings-method-globalize-path
 	var resource_path = ProjectSettings.globalize_path("res://build/")
-	if not OS.has_feature("editor"):
-		# Note: globalize_path doesn't work for exported projects: 
-		# https://docs.godotengine.org/en/stable/classes/class_projectsettings.html#class-projectsettings-method-globalize-path
-		resource_path = OS.get_executable_path().get_base_dir().plus_file("build")
 	print(resource_path)
 	var success = $CEF.initialize(resource_path, {"locale":"en-US"})
 	print("CEF INITIALIZED: ", success)
