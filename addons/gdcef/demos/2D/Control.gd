@@ -53,7 +53,7 @@ func _ready():
 	var success = $CEF.initialize(resource_path, {"locale":"en-US"})
 	print("CEF INITIALIZE: ", success)
 	# First browser tab is displaying the first webpage.
-	var left = $CEF.create_browser(pages[3], "left", h/2, w, {"incognito":false})
+	var left = $CEF.create_browser(pages[4], "left", h/2, w, {"incognito":false})
 	$Texture1.set_position(Vector2(0,0))
 	$Texture1.set_size(Vector2(h/2, w/2))
 	$Texture1.texture = left.get_texture()
