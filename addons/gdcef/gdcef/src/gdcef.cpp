@@ -112,6 +112,11 @@ void GDCef::_init()
 //------------------------------------------------------------------------------
 bool GDCef::initialize(godot::String cef_folder_path, godot::Dictionary config)
 {
+    if (initialized) {
+        GDCEF_ERROR("Already initialized");
+        godot::Godot::print("Error: Already initialized");
+        return false;
+    }
 
     // Get the folder path in which your application and CEF artifacts are present
     fs::path folder = cef_folder_path.utf8().get_data();
@@ -141,6 +146,7 @@ bool GDCef::initialize(godot::String cef_folder_path, godot::Dictionary config)
         godot::Godot::print("CefInitialize failed");
         return false;
     }
+    initialized = true;
     GDCEF_DEBUG_VAL("CefInitialize done with success");
     return true;
 }
@@ -428,7 +434,12 @@ GDBrowserView* GDCef::createBrowser(godot::String const url, godot::String const
 {
     GDCEF_DEBUG_VAL("name: " << name.utf8().get_data() <<
                     ", url: " << url.utf8().get_data());
-    godot::Godot::print("config: " + config.to_json());
+
+    if (!initialized) {
+        GDCEF_ERROR("CEF was not initialized");
+        godot::Godot::print("Error: CEF was not initialized");
+        return nullptr;
+    }
 
     // Godot node creation (note Godot cannot pass arguments to _new())
     GDBrowserView* browser = GDBrowserView::_new();

@@ -216,6 +216,8 @@ private:
     CefWindowInfo m_window_info;
     //! \brief
     CefSettings m_cef_settings;
+    //! \brief
+    bool initialized = false;
 };
 
 #  if !defined(_WIN32)
