@@ -43,6 +43,7 @@ void GDBrowserView::_register_methods()
     godot::register_method("is_loaded", &GDBrowserView::loaded);
     godot::register_method("get_url", &GDBrowserView::getURL);
     godot::register_method("stop_loading", &GDBrowserView::stopLoading);
+    godot::register_method("execute_javascript", &GDBrowserView::executeJavaScript);
     godot::register_method("has_previous_page", &GDBrowserView::canNavigateBackward);
     godot::register_method("has_next_page", &GDBrowserView::canNavigateForward);
     godot::register_method("previous_page", &GDBrowserView::navigateBackward);
@@ -232,6 +233,19 @@ void GDBrowserView::stopLoading()
         return;
 
     m_browser->StopLoad();
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::executeJavaScript(godot::String javascript)
+{
+    BROWSER_DEBUG();
+
+    if (!m_browser)
+        return;
+    CefString codeStr;
+    codeStr.FromString(javascript.utf8().get_data());
+    CefString urlStr;
+    m_browser->GetMainFrame()->ExecuteJavaScript(codeStr, urlStr, 0);
 }
 
 //------------------------------------------------------------------------------
