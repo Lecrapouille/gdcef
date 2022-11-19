@@ -118,11 +118,17 @@ func _input(event):
 # Create a single briwser named "browser1" that is attached as child node to $CEF.
 # ==============================================================================
 func _ready():
+	# Note: exported projects don't support globalize_path:
+	# https://docs.godotengine.org/en/3.5/classes/class_projectsettings.html#class-projectsettings-method-globalize-path
+	var resource_path = ProjectSettings.globalize_path("res://build/")
+	print(resource_path)
+	var success = $CEF.initialize(resource_path, {"locale":"en-US"})
+	print("CEF INITIALIZED: ", success)
+
 	var S = $Panel/TextureRect.get_size()
-	var browser = $CEF.create_browser("https://github.com/Lecrapouille/gdcef", browser1, S.x, S.y)
+	var browser = $CEF.create_browser("https://github.com/Lecrapouille/gdcef", browser1, S.x, S.y, {"javascript":true})
 	browser.connect("page_loaded", self, "_on_page_loaded")
 	$Panel/TextureRect.texture = browser.get_texture()
-	pass
 
 # ==============================================================================
 # $CEF is periodically updated

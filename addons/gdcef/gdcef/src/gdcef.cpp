@@ -48,8 +48,18 @@
 
 //------------------------------------------------------------------------------
 static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
-                         CefWindowInfo& window_info);
+                         CefWindowInfo& window_info, godot::Dictionary config);
 static void configureBrowser(CefBrowserSettings& browser_settings);
+static cef_state_t getConfig(godot::Dictionary config, char* property,
+                              cef_state_t default_value);
+static const char* getConfig(godot::Dictionary config, char* property,
+                              char* default_value);
+static bool getConfig(godot::Dictionary config, char* property,
+                              bool default_value);
+static int getConfig(godot::Dictionary config, char* property,
+                              int default_value);
+static fs::path getConfig(godot::Dictionary config, char* property,
+                              fs::path default_value);
 
 //------------------------------------------------------------------------------
 // Check if needed files to make CEF working are present and well formed. We
@@ -71,15 +81,6 @@ static bool sanity_checks(fs::path const& folder)
 }
 
 //------------------------------------------------------------------------------
-// CEF can be run either from the binary (standalone application) or from the
-// Godot editor. We have to distinguish the both case.
-static bool isStartedFromGodotEditor()
-{
-    // Old way: executable_name().find("godot") != std::string::npos;
-    return godot::OS::get_singleton()->has_feature("editor");
-}
-
-//------------------------------------------------------------------------------
 // In a GDNative module, "_bind_methods" is replaced by the "_register_methods"
 // method CefRefPtr<CefBrowser> m_browser;this is used to expose various methods
 // of this class to Godot
@@ -87,6 +88,7 @@ void GDCef::_register_methods()
 {
     std::cout << "[GDCEF][GDCef::_register_methods]" << std::endl;
 
+    godot::register_method("initialize", &GDCef::initialize);
     godot::register_method("_process", &GDCef::_process);
     godot::register_method("create_browser", &GDCef::createBrowser);
     godot::register_method("shutdown", &GDCef::shutdown);
@@ -96,38 +98,31 @@ void GDCef::_register_methods()
 void GDCef::_init()
 {
     GDCEF_DEBUG_VAL("Executable name: " << executable_name());
+}
+
+//------------------------------------------------------------------------------
+bool GDCef::initialize(godot::String cef_folder_path, godot::Dictionary config)
+{
+    if (initialized) {
+        GDCEF_ERROR("Already initialized");
+        godot::Godot::print("Error: Already initialized");
+        return false;
+    }
 
     // Get the folder path in which your application and CEF artifacts are present
-    fs::path folder;
-
-    // Check if this process is executing from the Godot editor or from the
-    // your standalone application.
-    if (isStartedFromGodotEditor())
-    {
-        folder = std::filesystem::current_path() / "build";
-        GDCEF_DEBUG_VAL("Launching CEF from Godot editor");
-        GDCEF_DEBUG_VAL("Path where your project Godot files shall be located:"
-                        << folder);
-    }
-    else
-    {
-        folder = real_path();
-        GDCEF_DEBUG_VAL("Launching CEF from your executable");
-        GDCEF_DEBUG_VAL("Path where your application files shall be located:"
-                        << folder);
-    }
+    fs::path folder = cef_folder_path.utf8().get_data();
 
     // Check if needed files to make CEF working are present.
     if (!sanity_checks(folder))
     {
         GDCEF_ERROR("Aborting because of missing necessary files");
-        exit(1);
+        godot::Godot::print("Error: CEF artifacts not found at path: " + godot::String(folder.u8string().c_str()));
+        return false;
     }
 
     // Since we cannot configure CEF from the command line main(argc, argv)
     // because we cannot access to it, we have to configure CEF directly.
-    configureCEF(folder, m_cef_settings, m_window_info);
-    configureBrowser(m_browser_settings);
+    configureCEF(folder, m_cef_settings, m_window_info, config);
 
     // This function should be called on the main application thread to
     // initialize the CEF browser process. The |application| parameter may be
@@ -139,9 +134,12 @@ void GDCef::_init()
     if (!CefInitialize(args, m_cef_settings, nullptr, nullptr))
     {
         GDCEF_ERROR("CefInitialize failed");
-        exit(1);
+        godot::Godot::print("CefInitialize failed");
+        return false;
     }
+    initialized = true;
     GDCEF_DEBUG_VAL("CefInitialize done with success");
+    return true;
 }
 
 //------------------------------------------------------------------------------
@@ -154,7 +152,7 @@ void GDCef::_process(float /*delta*/)
 // See workspace_stigmee/godot/gdnative/browser/thirdparty/cef_binary/include/
 // internal/cef_types.h for more settings.
 static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
-                         CefWindowInfo& window_info)
+                         CefWindowInfo& window_info, godot::Dictionary config)
 {
     // The path to a separate executable that will be launched for
     // sub-processes.  If this value is empty on Windows or Linux then the main
@@ -164,44 +162,55 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // the comments on CefExecuteProcess() for details. If this value is
     // non-empty then it must be an absolute path. Also configurable using the
     // "browser-subprocess-path" command-line switch.
-    fs::path sub_process_path = { folder / SUBPROCESS_NAME };
+    fs::path sub_process_path =
+        getConfig(config, "browser_subprocess_path", {folder / SUBPROCESS_NAME});
+
     std::cout << "[GDCEF][GDCef::configureCEF] Setting SubProcess path: "
               << sub_process_path.string() << std::endl;
     CefString(&cef_settings.browser_subprocess_path)
             .FromString(sub_process_path.string());
 
-    // The location where data for the global browser cache will be stored on
-    // disk. If this value is non-empty then it must be an absolute path that is
-    // either equal to or a child directory of CefSettings.root_cache_path. If
-    // this value is empty then browsers will be created in "incognito mode"
-    // where in-memory caches are used for storage and no data is persisted to
-    // disk.  HTML5 databases such as localStorage will only persist across
-    // sessions if a cache path is specified. Can be overridden for individual
-    // CefRequestContext instances via the CefRequestContextSettings.cache_path
-    // value. When using the Chrome runtime the "default" profile will be used
-    // if |cache_path| and |root_cache_path| have the same value.
-    fs::path sub_process_cache = { folder / "cache" };
-    std::cout << "[GDCEF][GDCef::configureCEF] Setting cache path: "
-              << sub_process_cache.string() << std::endl;
-    CefString(&cef_settings.cache_path)
-            .FromString(sub_process_cache.string());
+    // if cache directories not set, browser will be in incognito mode
+    //
+    if (!getConfig(config, "incognito", false)) {
+        // The location where data for the global browser cache will be stored on
+        // disk. If this value is non-empty then it must be an absolute path that is
+        // either equal to or a child directory of CefSettings.root_cache_path. If
+        // this value is empty then browsers will be created in "incognito mode"
+        // where in-memory caches are used for storage and no data is persisted to
+        // disk.  HTML5 databases such as localStorage will only persist across
+        // sessions if a cache path is specified. Can be overridden for individual
+        // CefRequestContext instances via the CefRequestContextSettings.cache_path
+        // value. When using the Chrome runtime the "default" profile will be used
+        // if |cache_path| and |root_cache_path| have the same value.
+        fs::path sub_process_cache =
+            getConfig(config, "cache_path", {folder / "cache"});
 
-    // The root directory that all CefSettings.cache_path and
-    // CefRequestContextSettings.cache_path values must have in common. If this
-    // value is empty and CefSettings.cache_path is non-empty then it will
-    // default to the CefSettings.cache_path value. If this value is non-empty
-    // then it must be an absolute path. Failure to set this value correctly may
-    // result in the sandbox blocking read/write access to the cache_path
-    // directory.
-    CefString(&cef_settings.root_cache_path)
-            .FromString(sub_process_cache.string());
+        std::cout << "[GDCEF][GDCef::configureCEF] Setting cache path: "
+                  << sub_process_cache.string() << std::endl;
+        CefString(&cef_settings.cache_path)
+                .FromString(sub_process_cache.string());
+
+        // The root directory that all CefSettings.cache_path and
+        // CefRequestContextSettings.cache_path values must have in common. If this
+        // value is empty and CefSettings.cache_path is non-empty then it will
+        // default to the CefSettings.cache_path value. If this value is non-empty
+        // then it must be an absolute path. Failure to set this value correctly may
+        // result in the sandbox blocking read/write access to the cache_path
+        // directory.
+        fs::path root_cache = 
+            getConfig(config, "root_cache_path", sub_process_cache);
+        CefString(&cef_settings.root_cache_path)
+                .FromString(root_cache.string());
+    }
 
     // The locale string that will be passed to WebKit. If empty the default
     // locale of "en-US" will be used. This value is ignored on Linux where
     // locale is determined using environment variable parsing with the
     // precedence order: LANGUAGE, LC_ALL, LC_MESSAGES and LANG. Also
     // configurable using the "lang" command-line switch.
-    CefString(&cef_settings.locale).FromString("en-US");
+    const char* locale = getConfig(config, "locale", "en-US");
+    CefString(&cef_settings.locale).FromString(locale);
 
     // The directory and file name to use for the debug log. If empty a default
     // log file name and location will be used. On Windows and Linux a
@@ -209,13 +218,27 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // MacOS a "~/Library/Logs/<app name>_debug.log" file will be written where
     // <app name> is the name of the main app executable. Also configurable
     // using the "log-file" command-line switch.
-    CefString(&cef_settings.log_file).FromString((folder / "debug.log").string());
-    cef_settings.log_severity = LOGSEVERITY_WARNING; // LOGSEVERITY_DEBUG;
+    fs::path log_file_path = getConfig(config, "log_file", {folder / "debug.log"});
+    CefString(&cef_settings.log_file).FromString(log_file_path.string());
+
+
+    const char* logString = getConfig(config, "log_severity", "warning");
+    if (std::strcmp(logString, "verbose")==0)
+        cef_settings.log_severity = LOGSEVERITY_VERBOSE;
+    else if (std::strcmp(logString, "info")==0)
+        cef_settings.log_severity = LOGSEVERITY_INFO;
+    else if (std::strcmp(logString, "warning")==0)
+        cef_settings.log_severity = LOGSEVERITY_WARNING;
+    else if (std::strcmp(logString, "error")==0)
+        cef_settings.log_severity = LOGSEVERITY_ERROR;
+    else if (std::strcmp(logString, "fatal")==0)
+        cef_settings.log_severity = LOGSEVERITY_FATAL;
 
     // Set to true (1) to enable windowless (off-screen) rendering support. Do
     // not enable this value if the application does not use windowless
     // rendering as it may reduce rendering performance on some systems.
-    cef_settings.windowless_rendering_enabled = true;
+    cef_settings.windowless_rendering_enabled =
+        getConfig(config, "windowless_rendering_enabled", true);
 
     // Create the browser using windowless (off-screen) rendering. No window
     // will be created for the browser and all rendering will occur via the
@@ -230,12 +253,13 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     window_info.SetAsWindowless(0);
 
     // To allow calling OnPaint()
-    window_info.shared_texture_enabled = false;
+    window_info.shared_texture_enabled =
+        getConfig(config, "shared_texture_enabled", false);
 
     // Set to true (1) to disable the sandbox for sub-processes. See
     // cef_sandbox_win.h for requirements to enable the sandbox on Windows. Also
     // configurable using the "no-sandbox" command-line switch.
-    cef_settings.no_sandbox = true;
+    cef_settings.no_sandbox = getConfig(config, "no_sandbox", true);
 
     // Set to true (1) to disable configuration of browser process features
     // using standard CEF and Chromium command-line arguments. Configuration can
@@ -248,26 +272,30 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // URL will be http://localhost:8080. CEF can be remotely debugged from any
     // CEF or Chrome browser window. Also configurable using the
     // "remote-debugging-port" command-line switch.
-    cef_settings.remote_debugging_port = 7777;
+    cef_settings.remote_debugging_port =
+        getConfig(config, "remote_debugging_port", 7777);
 
     // The number of stack trace frames to capture for uncaught exceptions.
     // Specify a positive value to enable the CefRenderProcessHandler::
     // OnUncaughtException() callback. Specify 0 (default value) and
     // OnUncaughtException() will not be called. Also configurable using the
     // "uncaught-exception-stack-size" command-line switch.
-    cef_settings.uncaught_exception_stack_size = 5;
+    cef_settings.uncaught_exception_stack_size =
+        getConfig(config, "exception_stack_size", 5);
 
     // Set to true (1) to have the browser process message loop run in a
     // separate thread. If false (0) than the CefDoMessageLoopWork() function
     // must be called from your application message loop. This option is only
     // supported on Windows and Linux.
-    cef_settings.multi_threaded_message_loop = 0;
+    cef_settings.multi_threaded_message_loop =
+        getConfig(config, "multi_threaded_message_loop", 0);
 }
 
 //------------------------------------------------------------------------------
 // See workspace_stigmee/godot/gdnative/browser/thirdparty/cef_binary/include/
 // internal/cef_types.h for more settings.
-static void configureBrowser(CefBrowserSettings& browser_settings)
+static void configureBrowser(CefBrowserSettings& browser_settings,
+                             godot::Dictionary config)
 {
     // The maximum rate in frames per second (fps) that
     // CefRenderHandler::OnPaint will be called for a windowless browser. The
@@ -279,42 +307,96 @@ static void configureBrowser(CefBrowserSettings& browser_settings)
 
     // Controls whether JavaScript can be executed. Also configurable using the
     // "disable-javascript" command-line switch.
-    browser_settings.javascript = STATE_ENABLED;
+    browser_settings.javascript =
+        getConfig(config, "javascript", STATE_ENABLED);
 
     // Controls whether JavaScript can be used to close windows that were not
     // opened via JavaScript. JavaScript can still be used to close windows that
     // were opened via JavaScript or that have no back/forward history. Also
     // configurable using the "disable-javascript-close-windows" command-line
     // switch.
-    browser_settings.javascript_close_windows = STATE_DISABLED;
+    browser_settings.javascript_close_windows =
+        getConfig(config, "javascript_close_windows", STATE_DISABLED);
 
     // Controls whether JavaScript can access the clipboard. Also configurable
     // using the "disable-javascript-access-clipboard" command-line switch.
-    browser_settings.javascript_access_clipboard = STATE_DISABLED;
+    browser_settings.javascript_access_clipboard =
+        getConfig(config, "javascript_access_clipboard", STATE_DISABLED);
 
     // Controls whether DOM pasting is supported in the editor via
     // execCommand("paste"). The |javascript_access_clipboard| setting must also
     // be enabled. Also configurable using the "disable-javascript-dom-paste"
     // command-line switch.
-    browser_settings.javascript_dom_paste = STATE_DISABLED;
+    browser_settings.javascript_dom_paste =
+        getConfig(config, "javascript_dom_paste", STATE_DISABLED);
 
     // Controls whether any plugins will be loaded. Also configurable using the
     // "disable-plugins" command-line switch.
-    //browser_settings.plugins = STATE_ENABLED;
+    //  browser_settings.plugins = getConfig(config, "plugins", STATE_ENABLED);
+
 
     // Controls whether image URLs will be loaded from the network. A cached
     // image will still be rendered if requested. Also configurable using the
     // "disable-image-loading" command-line switch.
-    browser_settings.image_loading = STATE_ENABLED;
+    browser_settings.image_loading =
+        getConfig(config, "image_loading", STATE_ENABLED);
 
     // Controls whether databases can be used. Also configurable using the
     // "disable-databases" command-line switch.
-    browser_settings.databases = STATE_ENABLED;
+    browser_settings.databases = getConfig(config, "databases", STATE_ENABLED);
 
     // Controls whether WebGL can be used. Note that WebGL requires hardware
     // support and may not work on all systems even when enabled. Also
     // configurable using the "disable-webgl" command-line switch.
-    browser_settings.webgl = STATE_ENABLED;
+    browser_settings.webgl = getConfig(config, "webgl", STATE_ENABLED);
+}
+
+//------------------------------------------------------------------------------
+// helper function to pull out config value, or return default
+static cef_state_t getConfig(godot::Dictionary config, char* property,
+                             cef_state_t default_value)
+{
+    if (config.has(property))
+        return config[property] ? STATE_ENABLED : STATE_DISABLED;
+    return default_value;
+}
+
+static const char* getConfig(godot::Dictionary config, char* property,
+                             char* default_value)
+{
+    if (config.has(property)) {
+        godot::String str = config[property];
+        return str.utf8().get_data();
+    }
+    return default_value;
+}
+
+
+static bool getConfig(godot::Dictionary config, char* property,
+                             bool default_value)
+{
+    if (config.has(property))
+        return config[property];
+    return default_value;
+}
+
+static int getConfig(godot::Dictionary config, char* property,
+                             int default_value)
+{
+    if (config.has(property))
+        return config[property];
+    return default_value;
+}
+
+
+static fs::path getConfig(godot::Dictionary config, char* property,
+                             fs::path default_value)
+{
+    if (config.has(property)) {
+        godot::String str = config[property];
+        return str.utf8().get_data();
+    }
+    return default_value;
 }
 
 //------------------------------------------------------------------------------
@@ -339,10 +421,16 @@ void GDCef::shutdown()
 
 //------------------------------------------------------------------------------
 GDBrowserView* GDCef::createBrowser(godot::String const url, godot::String const
-                                    name, int w, int h)
+                                    name, int w, int h, godot::Dictionary config)
 {
     GDCEF_DEBUG_VAL("name: " << name.utf8().get_data() <<
                     ", url: " << url.utf8().get_data());
+
+    if (!initialized) {
+        GDCEF_ERROR("CEF was not initialized");
+        godot::Godot::print("Error: CEF was not initialized");
+        return nullptr;
+    }
 
     // Godot node creation (note Godot cannot pass arguments to _new())
     GDBrowserView* browser = GDBrowserView::_new();
@@ -353,7 +441,9 @@ GDBrowserView* GDCef::createBrowser(godot::String const url, godot::String const
     }
 
     // Complete BrowserView constructor (complete _new())
-    int id = browser->init(url, settingsBrowser(), windowInfo(), name);
+    CefBrowserSettings settings;
+    configureBrowser(settings, config);
+    int id = browser->init(url, settings, windowInfo(), name);
     if (id < 0)
     {
         GDCEF_ERROR("browser->init() failed");

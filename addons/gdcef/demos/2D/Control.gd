@@ -13,7 +13,8 @@ var pages = [
 	"https://bitbucket.org/chromiumembedded/cef/wiki/Home",
 	"https://docs.godotengine.org/",
 	"https://threejs.org/examples/#webgl_animation_keyframes",
-	"http://chreage.befuse.com/content/WEBGL/ChreageAlpha0-3/index.html"
+	"http://chreage.befuse.com/content/WEBGL/ChreageAlpha0-3/index.html",
+	"https://www.localeplanet.com/support/browser.html"
 ]
 # Iterator on the array holding URLs.
 var iterator = 0
@@ -22,7 +23,7 @@ var iterator = 0
 # Timer callback: every 6 seconds load a new webpage.
 # ==============================================================================
 func _on_Timer_timeout():
-	iterator = (iterator + 1) % 4
+	iterator = (iterator + 1) % pages.size()
 	get_node("CEF/right").load_url(pages[iterator])
 
 # ==============================================================================
@@ -42,8 +43,14 @@ func _ready():
 	set_position(Vector2(0,0))
 	set_size(Vector2(h, w))
 
+	# Note: exported projects don't support globalize_path:
+	# https://docs.godotengine.org/en/3.5/classes/class_projectsettings.html#class-projectsettings-method-globalize-path
+	var resource_path = ProjectSettings.globalize_path("res://build/")
+	print(resource_path)
+	var success = $CEF.initialize(resource_path, {"locale":"en-US"})
+	print("CEF INITIALIZED: ", success)
 	# First browser tab is displaying the first webpage.
-	var left = $CEF.create_browser(pages[4], "left", h/2, w)
+	var left = $CEF.create_browser(pages[4], "left", h/2, w, {"incognito":false})
 	$Texture1.set_position(Vector2(0,0))
 	$Texture1.set_size(Vector2(h/2, w/2))
 	$Texture1.texture = left.get_texture()
@@ -51,7 +58,7 @@ func _ready():
 
 	# Second browser tab is displaying the second webpage and the timer will
 	# make it load a new URL.
-	var right = $CEF.create_browser(pages[0], "right", h/2, w)
+	var right = $CEF.create_browser(pages[0], "right", h/2, w, {"webgl": true})
 	$Texture2.set_position(Vector2(h/2,0))
 	$Texture2.set_size(Vector2(h/2, w/2))
 	$Texture2.texture = right.get_texture()

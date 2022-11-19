@@ -81,6 +81,11 @@ public: // Godot interfaces.
     void _init();
 
     // -------------------------------------------------------------------------
+    //! \brief Called to initialize CEF with runtime settings
+    // -------------------------------------------------------------------------
+    bool initialize(godot::String cef_folder_path, godot::Dictionary config);
+
+    // -------------------------------------------------------------------------
     //! \brief Method automatically called by Godot engine to register the
     //! desired C++ methods that will be callable from gdscript.
     // -------------------------------------------------------------------------
@@ -179,13 +184,6 @@ public:
         return m_cef_settings;
     }
 
-    // -------------------------------------------------------------------------
-    //! \brief Const getter browser settings.
-    // -------------------------------------------------------------------------
-    inline CefBrowserSettings const& settingsBrowser() const
-    {
-        return m_browser_settings;
-    }
 
     // -------------------------------------------------------------------------
     //! \brief Const getter browser window settings.
@@ -206,7 +204,7 @@ public:
     //! in case of error).
     // -------------------------------------------------------------------------
     GDBrowserView* createBrowser(godot::String const url, godot::String const name,
-                                 int w, int h);
+                                 int w, int h, godot::Dictionary browser_settings);
 
 private:
 
@@ -219,7 +217,7 @@ private:
     //! \brief
     CefSettings m_cef_settings;
     //! \brief
-    CefBrowserSettings m_browser_settings;
+    bool initialized = false;
 };
 
 #  if !defined(_WIN32)
