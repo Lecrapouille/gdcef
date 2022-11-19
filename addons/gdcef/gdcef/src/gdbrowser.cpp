@@ -238,14 +238,18 @@ void GDBrowserView::stopLoading()
 //------------------------------------------------------------------------------
 void GDBrowserView::executeJavaScript(godot::String javascript)
 {
-    BROWSER_DEBUG();
 
-    if (!m_browser)
-        return;
-    CefString codeStr;
-    codeStr.FromString(javascript.utf8().get_data());
-    CefString urlStr;
-    m_browser->GetMainFrame()->ExecuteJavaScript(codeStr, urlStr, 0);
+    if (!m_browser && m_browser->GetMainFrame())
+    {
+        CefString codeStr;
+        codeStr.FromString(javascript.utf8().get_data());
+        CefString urlStr;
+        m_browser->GetMainFrame()->ExecuteJavaScript(codeStr, urlStr, 0);
+    }
+    else
+    {
+        BROWSER_ERROR("execute_javascript failed");
+    }
 }
 
 //------------------------------------------------------------------------------
