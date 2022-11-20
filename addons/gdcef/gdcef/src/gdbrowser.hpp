@@ -234,7 +234,7 @@ public:
     //! \brief Exported method to Godot script. Load the given web page
     //! \fixme Godot does not like String const& url why ?
     // -------------------------------------------------------------------------
-    void loadURL(godot::String url = "https://labo.stigmee.fr");
+    void loadURL(godot::String url);
 
     // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Return true if a document has
