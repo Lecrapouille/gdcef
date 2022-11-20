@@ -119,9 +119,9 @@ func _ready():
 	#   {log_severity", "warning"}
 	#   {"remote_debugging_port", 7777}
 	#   {"exception_stack_size", 5}
-	var success = $CEF.initialize(resource_path, {"incognito":false, "locale":"en-US"})
-	print("CEF INITIALIZED: ", success)
-	if !success:
+	if !$CEF.initialize(resource_path, {"incognito":false, "locale":"en-US"}):
+		push_error("Failed initializing CEF")
+		get_tree().quit()
 		pass
 
 	### Browsers ###############################################################

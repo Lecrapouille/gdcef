@@ -122,8 +122,10 @@ func _ready():
 	# https://docs.godotengine.org/en/3.5/classes/class_projectsettings.html#class-projectsettings-method-globalize-path
 	var resource_path = ProjectSettings.globalize_path("res://build/")
 	print(resource_path)
-	var success = $CEF.initialize(resource_path, {"locale":"en-US"})
-	print("CEF INITIALIZED: ", success)
+	if !$CEF.initialize(resource_path, {"locale":"en-US"}):
+		push_error("Failed initializing CEF")
+		get_tree().quit()
+		pass
 
 	var S = $Panel/TextureRect.get_size()
 	var browser = $CEF.create_browser("https://github.com/Lecrapouille/gdcef", browser1, S.x, S.y, {"javascript":true})
