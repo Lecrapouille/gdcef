@@ -9,9 +9,38 @@ Chromium Embedded Framework. This class can create instances of `GDBrowserView`
 
 | Godot function name | arguments                                       | return         | comment                                                                                                                                                                                                 |
 |---------------------|-------------------------------------------------|----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `initialize`          | `cef_folder_path` godot::String, `config`: godot::Dictionary | bool | Replace Godot _init() and passing optional CEF configuration. Return false in case of failure or double initialisation. |
 | `_process`            | `dt`: float                                       | void           | Hidden function called automatically by Godot and call CEF internal pump messages.                                                                                                                      |
-| `create_browser`      | `url`: string, `name`: string, `width`: int `height`: int | GDBrowserView* | Create a browser tab and store its instance as child node. `url`: the page link. `name`: the browser name to found from the scene graph. `width`: the initial width dimension of the document. `height`: the initial height dimension of the document. |
+| `create_browser`      | `url`: string, `name`: string, `width`: int, `height`: int, `settings`: godot::Dictionary | GDBrowserView* | Create a browser tab and store its instance as child node. `url`: the page link. `name`: the browser name to found from the scene graph. `width`: the initial width dimension of the document. `height`: the initial height dimension of the document. |
 | `shutdown`            |                                                 |                | Release CEF memory and sub CEF processes are notified that the application is exiting. All browsers are destroyed.                                                                                      |
+
+
+### CEF configuration
+
+Since Godot `_init` does not accept passing arguments, you have to use `initialize` function
+and pass the folder owing CEF artifacts. You also have to pass a Godot dictionary to configurate
+the beahvior of CEF. Default values are:
+- {"incognito", false}
+- {"cache_path", cef_folder_path / "cache"}
+- {"root_cache_path", cef_folder_path / "cache"}
+- {"browser_subprocess_path", cef_folder_path / SUBPROCESS_NAME }
+- {"log_file", cef_folder_path / "debug.log"}
+- {log_severity", "warning"}
+- {"remote_debugging_port", 7777}
+- {"exception_stack_size", 5}
+- {"locale", "en-US"}
+
+### Browser configuration
+
+You can modify browser configuration when creating one with `create_browser`. Default values are:
+- {"frame_rate", 30}
+- {"javascript", true}
+- {"javascript_close_windows", false}
+- {"javascript_access_clipboard", false}
+- {"javascript_dom_paste", false}
+- {"image_loading", true}
+- {"databases", true}
+- {"webgl", true}
 
 ## GDBrowserView
 
