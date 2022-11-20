@@ -86,9 +86,7 @@ void GDCef::_register_methods()
 
 //------------------------------------------------------------------------------
 void GDCef::_init()
-{
-    GDCEF_DEBUG_VAL("Executable name: " << executable_name());
-}
+{}
 
 //------------------------------------------------------------------------------
 bool GDCef::initialize(godot::String cef_folder_path, godot::Dictionary config)
@@ -106,8 +104,9 @@ bool GDCef::initialize(godot::String cef_folder_path, godot::Dictionary config)
     // Check if needed files to make CEF working are present.
     if (!sanity_checks(folder))
     {
-        GDCEF_ERROR("Aborting because of missing necessary files");
-        godot::Godot::print("Error: CEF artifacts not found at path: " + godot::String(folder.u8string().c_str()));
+        GDCEF_ERROR("Error: at least one CEF artifacts not found at path: " << folder);
+        godot::Godot::print("Error: at least one CEF artifacts not found at path: " + godot::String(folder.u8string().c_str()));
+        m_impl = nullptr;
         return false;
     }
 
@@ -126,6 +125,7 @@ bool GDCef::initialize(godot::String cef_folder_path, godot::Dictionary config)
     {
         GDCEF_ERROR("CefInitialize failed");
         godot::Godot::print("CefInitialize failed");
+        m_impl = nullptr;
         return false;
     }
     m_initialized = true;
@@ -136,7 +136,10 @@ bool GDCef::initialize(godot::String cef_folder_path, godot::Dictionary config)
 //------------------------------------------------------------------------------
 void GDCef::_process(float /*delta*/)
 {
-    CefDoMessageLoopWork();
+    if (m_impl != nullptr)
+    {
+        CefDoMessageLoopWork();
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -357,8 +360,11 @@ GDCef::~GDCef()
 void GDCef::shutdown()
 {
     GDCEF_DEBUG();
-    CefQuitMessageLoop();
-    m_impl = nullptr;
+    if (m_impl != nullptr)
+    {
+        CefQuitMessageLoop();
+        m_impl = nullptr;
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -368,7 +374,7 @@ GDBrowserView* GDCef::createBrowser(godot::String const url, godot::String const
     GDCEF_DEBUG_VAL("name: " << name.utf8().get_data() <<
                     ", url: " << url.utf8().get_data());
 
-    if (!m_initialized)
+    if (m_impl == nullptr)
     {
         GDCEF_ERROR("CEF was not initialized");
         godot::Godot::print("Error: CEF was not initialized");
