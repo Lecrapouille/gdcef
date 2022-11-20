@@ -311,7 +311,7 @@ attach to it the `gdcef.gdns` file as `NativeScript` (in the language
 selector). If Godot is complaining is probably your node is incompatible. Select
 the correct node.
 
-![CEFnode](doc/scenegraph/cef.png)
+![CEFnode](scenegraph/cef.png)
 
 **Beware:** In Linux, you will have to write something like:
 ```

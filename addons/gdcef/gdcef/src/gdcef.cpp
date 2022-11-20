@@ -179,8 +179,8 @@ void GDCef::_process(float /*delta*/)
 }
 
 //------------------------------------------------------------------------------
-// See workspace_stigmee/godot/gdnative/browser/thirdparty/cef_binary/include/
-// internal/cef_types.h for more settings.
+//! \brief See gdcef/addons/gdcef/thirdparty/cef_binary/include/internal/cef_types.h
+//! for more information about settings.
 static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
                          CefWindowInfo& window_info, godot::Dictionary config)
 {
@@ -320,8 +320,8 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
 }
 
 //------------------------------------------------------------------------------
-// See workspace_stigmee/godot/gdnative/browser/thirdparty/cef_binary/include/
-// internal/cef_types.h for more settings.
+//! \brief See gdcef/addons/gdcef/thirdparty/cef_binary/include/ internal/cef_types.h
+//! for more information about settings.
 static void configureBrowser(CefBrowserSettings& browser_settings,
                              godot::Dictionary config)
 {
