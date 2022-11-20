@@ -216,8 +216,10 @@ private:
     CefWindowInfo m_window_info;
     //! \brief
     CefSettings m_cef_settings;
-    //! \brief
-    bool initialized = false;
+    //! \brief Since we have to pass parameter to Godot _init() which is not possible.
+    //! We have to call initialize() method which can be potentially be called several
+    //! times.
+    bool m_initialized = false;
 };
 
 #  if !defined(_WIN32)
