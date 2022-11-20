@@ -23,8 +23,8 @@
 // SOFTWARE.
 //*****************************************************************************
 
-#ifndef STIGMEE_GDCEF_HELPER_HPP
-#  define STIGMEE_GDCEF_HELPER_HPP
+#ifndef STIGMEE_GDCEF_HELPER_FILES_HPP
+#  define STIGMEE_GDCEF_HELPER_FILES_HPP
 
 #  include <vector>
 #  include <iostream>
@@ -85,4 +85,4 @@ bool are_valid_files(std::filesystem::path const& folder,
 // ****************************************************************************
 fs::path real_path();
 
-#endif // STIGMEE_GDCEF_HELPER_HPP
+#endif // STIGMEE_GDCEF_HELPER_FILES_HPP

@@ -26,7 +26,8 @@
 //------------------------------------------------------------------------------
 #include "gdcef.hpp"
 #include "gdbrowser.hpp"
-#include "helper.hpp"
+#include "helper_files.hpp"
+#include "helper_config.hpp"
 
 //------------------------------------------------------------------------------
 // List of file libraries and artifacts mandatory to make CEF working
@@ -49,17 +50,6 @@
 //------------------------------------------------------------------------------
 static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
                          CefWindowInfo& window_info, godot::Dictionary config);
-static void configureBrowser(CefBrowserSettings& browser_settings);
-static cef_state_t getConfig(godot::Dictionary config, char* property,
-                              cef_state_t default_value);
-static const char* getConfig(godot::Dictionary config, char* property,
-                              char* default_value);
-static bool getConfig(godot::Dictionary config, char* property,
-                              bool default_value);
-static int getConfig(godot::Dictionary config, char* property,
-                              int default_value);
-static fs::path getConfig(godot::Dictionary config, char* property,
-                              fs::path default_value);
 
 //------------------------------------------------------------------------------
 // Check if needed files to make CEF working are present and well formed. We
@@ -164,16 +154,16 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // non-empty then it must be an absolute path. Also configurable using the
     // "browser-subprocess-path" command-line switch.
     fs::path sub_process_path =
-        getConfig(config, "browser_subprocess_path", {folder / SUBPROCESS_NAME});
+        getConfig(config, "browser_subprocess_path", folder / SUBPROCESS_NAME);
 
     std::cout << "[GDCEF][GDCef::configureCEF] Setting SubProcess path: "
               << sub_process_path.string() << std::endl;
     CefString(&cef_settings.browser_subprocess_path)
             .FromString(sub_process_path.string());
 
-    // if cache directories not set, browser will be in incognito mode
-    //
-    if (!getConfig(config, "incognito", false)) {
+    // If cache directories not set, browser will be in incognito mode.
+    if (!getConfig(config, "incognito", false))
+    {
         // The location where data for the global browser cache will be stored on
         // disk. If this value is non-empty then it must be an absolute path that is
         // either equal to or a child directory of CefSettings.root_cache_path. If
@@ -185,7 +175,7 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
         // value. When using the Chrome runtime the "default" profile will be used
         // if |cache_path| and |root_cache_path| have the same value.
         fs::path sub_process_cache =
-            getConfig(config, "cache_path", {folder / "cache"});
+            getConfig(config, "cache_path", folder / "cache");
 
         std::cout << "[GDCEF][GDCef::configureCEF] Setting cache path: "
                   << sub_process_cache.string() << std::endl;
@@ -199,8 +189,7 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
         // then it must be an absolute path. Failure to set this value correctly may
         // result in the sandbox blocking read/write access to the cache_path
         // directory.
-        fs::path root_cache = 
-            getConfig(config, "root_cache_path", sub_process_cache);
+        fs::path root_cache = getConfig(config, "root_cache_path", sub_process_cache);
         CefString(&cef_settings.root_cache_path)
                 .FromString(root_cache.string());
     }
@@ -210,7 +199,7 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // locale is determined using environment variable parsing with the
     // precedence order: LANGUAGE, LC_ALL, LC_MESSAGES and LANG. Also
     // configurable using the "lang" command-line switch.
-    const char* locale = getConfig(config, "locale", "en-US");
+    std::string locale = getConfig(config, "locale", std::string("en-US"));
     CefString(&cef_settings.locale).FromString(locale);
 
     // The directory and file name to use for the debug log. If empty a default
@@ -219,27 +208,25 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // MacOS a "~/Library/Logs/<app name>_debug.log" file will be written where
     // <app name> is the name of the main app executable. Also configurable
     // using the "log-file" command-line switch.
-    fs::path log_file_path = getConfig(config, "log_file", {folder / "debug.log"});
+    fs::path log_file_path = getConfig(config, "log_file", folder / "debug.log");
     CefString(&cef_settings.log_file).FromString(log_file_path.string());
-
-
-    const char* logString = getConfig(config, "log_severity", "warning");
-    if (std::strcmp(logString, "verbose")==0)
+    std::string logString = getConfig(config, "log_severity", std::string("warning"));
+    if (logString == "verbose")
         cef_settings.log_severity = LOGSEVERITY_VERBOSE;
-    else if (std::strcmp(logString, "info")==0)
+    else if (logString == "info")
         cef_settings.log_severity = LOGSEVERITY_INFO;
-    else if (std::strcmp(logString, "warning")==0)
+    else if (logString == "warning")
         cef_settings.log_severity = LOGSEVERITY_WARNING;
-    else if (std::strcmp(logString, "error")==0)
+    else if (logString == "error")
         cef_settings.log_severity = LOGSEVERITY_ERROR;
-    else if (std::strcmp(logString, "fatal")==0)
+    else if (logString == "fatal")
         cef_settings.log_severity = LOGSEVERITY_FATAL;
 
     // Set to true (1) to enable windowless (off-screen) rendering support. Do
     // not enable this value if the application does not use windowless
     // rendering as it may reduce rendering performance on some systems.
-    cef_settings.windowless_rendering_enabled =
-        getConfig(config, "windowless_rendering_enabled", true);
+    cef_settings.windowless_rendering_enabled = true;
+        //getConfig(config, "windowless_rendering_enabled", true);
 
     // Create the browser using windowless (off-screen) rendering. No window
     // will be created for the browser and all rendering will occur via the
@@ -254,13 +241,14 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     window_info.SetAsWindowless(0);
 
     // To allow calling OnPaint()
-    window_info.shared_texture_enabled =
-        getConfig(config, "shared_texture_enabled", false);
+    window_info.shared_texture_enabled = false;
+        // getConfig(config, "shared_texture_enabled", false);
 
     // Set to true (1) to disable the sandbox for sub-processes. See
     // cef_sandbox_win.h for requirements to enable the sandbox on Windows. Also
     // configurable using the "no-sandbox" command-line switch.
-    cef_settings.no_sandbox = getConfig(config, "no_sandbox", true);
+    cef_settings.no_sandbox = true;
+        // getConfig(config, "no_sandbox", true);
 
     // Set to true (1) to disable configuration of browser process features
     // using standard CEF and Chromium command-line arguments. Configuration can
@@ -288,8 +276,8 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // separate thread. If false (0) than the CefDoMessageLoopWork() function
     // must be called from your application message loop. This option is only
     // supported on Windows and Linux.
-    cef_settings.multi_threaded_message_loop =
-        getConfig(config, "multi_threaded_message_loop", 0);
+    cef_settings.multi_threaded_message_loop = 0;
+        // getConfig(config, "multi_threaded_message_loop", 0);
 }
 
 //------------------------------------------------------------------------------
@@ -304,7 +292,8 @@ static void configureBrowser(CefBrowserSettings& browser_settings,
     // requested rate. The minimum value is 1 and the maximum value is 60
     // (default 30). This value can also be changed dynamically via
     // CefBrowserHost::SetWindowlessFrameRate.
-    browser_settings.windowless_frame_rate = 30;
+    browser_settings.windowless_frame_rate =
+        getConfig(config, "frame_rate", 30);
 
     // Controls whether JavaScript can be executed. Also configurable using the
     // "disable-javascript" command-line switch.
@@ -350,54 +339,6 @@ static void configureBrowser(CefBrowserSettings& browser_settings,
     // support and may not work on all systems even when enabled. Also
     // configurable using the "disable-webgl" command-line switch.
     browser_settings.webgl = getConfig(config, "webgl", STATE_ENABLED);
-}
-
-//------------------------------------------------------------------------------
-// helper function to pull out config value, or return default
-static cef_state_t getConfig(godot::Dictionary config, char* property,
-                             cef_state_t default_value)
-{
-    if (config.has(property))
-        return config[property] ? STATE_ENABLED : STATE_DISABLED;
-    return default_value;
-}
-
-static const char* getConfig(godot::Dictionary config, char* property,
-                             char* default_value)
-{
-    if (config.has(property)) {
-        godot::String str = config[property];
-        return str.utf8().get_data();
-    }
-    return default_value;
-}
-
-
-static bool getConfig(godot::Dictionary config, char* property,
-                             bool default_value)
-{
-    if (config.has(property))
-        return config[property];
-    return default_value;
-}
-
-static int getConfig(godot::Dictionary config, char* property,
-                             int default_value)
-{
-    if (config.has(property))
-        return config[property];
-    return default_value;
-}
-
-
-static fs::path getConfig(godot::Dictionary config, char* property,
-                             fs::path default_value)
-{
-    if (config.has(property)) {
-        godot::String str = config[property];
-        return str.utf8().get_data();
-    }
-    return default_value;
 }
 
 //------------------------------------------------------------------------------

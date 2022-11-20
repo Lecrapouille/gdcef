@@ -81,7 +81,24 @@ public: // Godot interfaces.
     void _init();
 
     // -------------------------------------------------------------------------
-    //! \brief Called to initialize CEF with runtime settings
+    //! \brief Called to initialize CEF with runtime settings.
+    //! \note Since _init() does not accept parameters, you have to call this
+    //! method instead !
+    //! \param[in] cef_folder_path the path to the folder holding CEF artifacts
+    //! (what have been compiled from CEF prebuild and we have placed by default
+    //! in the build/ folder at the root of this repo).
+    //! \param[in] config dictionary of CEF config with default values:
+    //!   - {"incognito", false}
+    //!   - {"cache_path", cef_folder_path / "cache"}
+    //!   - {"root_cache_path", cef_folder_path / "cache"}
+    //!   - {"browser_subprocess_path", cef_folder_path / SUBPROCESS_NAME }
+    //!   - {"log_file", cef_folder_path / "debug.log"}
+    //!   - {log_severity", "warning"}
+    //!   - {"remote_debugging_port", 7777}
+    //!   - {"exception_stack_size", 5}
+    //!   - {"locale", "en-US"}
+    //! \return true if CEF init with success. Return false if CEF init ends
+    //! badly or if this method is called more than once.
     // -------------------------------------------------------------------------
     bool initialize(godot::String cef_folder_path, godot::Dictionary config);
 
@@ -202,6 +219,16 @@ public:
     //! \param[in] h the height dimension of the document.
     //! \param[in] Return the address of the newly created browser (or nullptr
     //! in case of error).
+    //! \param[in] browser_settings dictionary of Browser config with default values:
+    //!   - {"frame_rate", 30}
+    //!   - {"javascript", STATE_ENABLED}
+    //!   - {"javascript_close_windows", STATE_DISABLED}
+    //!   - {"javascript_access_clipboard", STATE_DISABLED}
+    //!   - {"javascript_dom_paste", STATE_DISABLED}
+    //!   - {"image_loading", STATE_ENABLED}
+    //!   - {"databases", STATE_ENABLED}
+    //!   - {"webgl", STATE_ENABLED}
+    //!   Wherer STATE_DISABLED / STATE_ENABLED == false / true
     // -------------------------------------------------------------------------
     GDBrowserView* createBrowser(godot::String const url, godot::String const name,
                                  int w, int h, godot::Dictionary browser_settings);

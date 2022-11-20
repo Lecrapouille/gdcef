@@ -25,7 +25,7 @@
 
 //------------------------------------------------------------------------------
 #include "gdbrowser.hpp"
-#include "helper.hpp"
+#include "helper_files.hpp"
 
 //------------------------------------------------------------------------------
 // in a GDNative module, "_bind_methods" is replaced by the "_register_methods"
