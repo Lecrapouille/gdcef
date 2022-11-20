@@ -35,3 +35,5 @@ script = ExtResource( 3 )
 [node name="Timer" type="Timer" parent="."]
 wait_time = 6.0
 autostart = true
+
+[connection signal="gui_input" from="Texture1" to="." method="_on_Texture1_gui_input"]

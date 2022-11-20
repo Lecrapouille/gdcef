@@ -45,8 +45,9 @@ directly (no prerequesites).
 
 ## Demo 00: Multiple CEF browsers in 2D
 
-A demo showing a 2D GUI with multiple CEF browser tabs. No mouse and keyboard
-events are managed. A timer is loading URLs one by one.
+A demo showing a 2D GUI with multiple CEF browser tabs. Only mouse and keyboard
+events for the left browser are managed since a timer is loading URLs one by one
+for the right one.
 
 ![Screenshot](2D/icon.png)
 
