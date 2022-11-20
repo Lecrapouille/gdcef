@@ -118,11 +118,27 @@ func _input(event):
 # Create a single briwser named "browser1" that is attached as child node to $CEF.
 # ==============================================================================
 func _ready():
-	# Note: exported projects don't support globalize_path:
+
+	# Configuration are:
+	#   resource_path := {"artifacts", CEF_ARTIFACTS_FOLDER}
+	#   resource_path := {"exported_artifacts", application_real_path()}
+	#   {"incognito":false}
+	#   {"cache_path", resource_path / "cache"}
+	#   {"root_cache_path", resource_path / "cache"}
+	#   {"browser_subprocess_path", resource_path / SUBPROCESS_NAME }
+	#   {"log_file", resource_path / "debug.log"}
+	#   {log_severity", "warning"}
+	#   {"remote_debugging_port", 7777}
+	#   {"exception_stack_size", 5}
+	#
+	# Configurate CEF. In incognito mode cache directories not used and in-memory
+	# caches are used instead and no data is persisted to disk.
+	#
+	# artifacts: allows path such as "build" or "res://build/". Note that "res://"
+	# will use ProjectSettings.globalize_path but exported projects don't support globalize_path:
 	# https://docs.godotengine.org/en/3.5/classes/class_projectsettings.html#class-projectsettings-method-globalize-path
-	var resource_path = ProjectSettings.globalize_path("res://build/")
-	print(resource_path)
-	if !$CEF.initialize(resource_path, {"locale":"en-US"}):
+	var resource_path = "res://build/"
+	if !$CEF.initialize({"artifacts":resource_path, "incognito":true, "locale":"en-US"}):
 		push_error("Failed initializing CEF")
 		get_tree().quit()
 		pass

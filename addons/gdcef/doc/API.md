@@ -9,7 +9,7 @@ Chromium Embedded Framework. This class can create instances of `GDBrowserView`
 
 | Godot function name | arguments                                       | return         | comment                                                                                                                                                                                                 |
 |---------------------|-------------------------------------------------|----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `initialize`          | `cef_folder_path` godot::String, `config`: godot::Dictionary | bool | Replace Godot _init() and passing optional CEF configuration. Return false in case of failure or double initialisation. |
+| `initialize`          | `config`: godot::Dictionary | bool | Replace Godot _init() and passing optional CEF configuration. Return false in case of failure or double initialisation. |
 | `_process`            | `dt`: float                                       | void           | Hidden function called automatically by Godot and call CEF internal pump messages.                                                                                                                      |
 | `create_browser`      | `url`: string, `name`: string, `width`: int, `height`: int, `settings`: godot::Dictionary | GDBrowserView* | Create a browser tab and store its instance as child node. `url`: the page link. `name`: the browser name to found from the scene graph. `width`: the initial width dimension of the document. `height`: the initial height dimension of the document. |
 | `shutdown`            |                                                 |                | Release CEF memory and sub CEF processes are notified that the application is exiting. All browsers are destroyed.                                                                                      |
@@ -20,27 +20,37 @@ Chromium Embedded Framework. This class can create instances of `GDBrowserView`
 Since Godot `_init` does not accept passing arguments, you have to use `initialize` function
 and pass the folder owing CEF artifacts. You also have to pass a Godot dictionary to configurate
 the beahvior of CEF. Default values are:
-- {"incognito", false}
-- {"cache_path", cef_folder_path / "cache"}
-- {"root_cache_path", cef_folder_path / "cache"}
-- {"browser_subprocess_path", cef_folder_path / SUBPROCESS_NAME }
-- {"log_file", cef_folder_path / "debug.log"}
-- {log_severity", "warning"}
-- {"remote_debugging_port", 7777}
-- {"exception_stack_size", 5}
-- {"locale", "en-US"}
+- `{"artifcats", CEF_ARTIFACTS_FOLDER}` Path where the build CEF artifcats are stored. They are
+  needed to make CEF running and therefore your application. It defines `cef_folder_path`. The
+  default value is given during the compilation with the build.py script. You can specify either
+  a local path or a global path or a Godot path (starting with `"res://"`).
+- `{"exported_artifcats", application_real_path()}` Path where the build CEF artifcats are stored
+  when the Godot application is exported. Artifcats are needed to make CEF running and therefore
+  your application. It defines `cef_folder_path`.
+- `{"incognito", false}` : In incognito mode cache directories not used and in-memory caches are
+  used instead and no data is persisted to disk.
+- `{"cache_path", cef_folder_path / "cache"}` : Where to store CEF caches.
+- `{"root_cache_path", cef_folder_path / "cache"}`
+- `{"browser_subprocess_path", cef_folder_path / SUBPROCESS_NAME }` : canonical path to the CEF
+  subprocess called by the `initialize` function.
+- `{"log_file", cef_folder_path / "debug.log"}` : Where to store logs.
+- `{log_severity", "warning"}` : Verbosity control of logs. Choose between `"verbose"`, `"info"`,
+  `"warning"`, `"error"`, `"fatal"`.
+- `{"remote_debugging_port", 7777}` : the port for debbuging CEF.
+- `{"exception_stack_size", 5}`
+- `{"locale", "en-US"}` : Select your language.
 
 ### Browser configuration
 
 You can modify browser configuration when creating one with `create_browser`. Default values are:
-- {"frame_rate", 30}
-- {"javascript", true}
-- {"javascript_close_windows", false}
-- {"javascript_access_clipboard", false}
-- {"javascript_dom_paste", false}
-- {"image_loading", true}
-- {"databases", true}
-- {"webgl", true}
+- `{"frame_rate", 30}`
+- `{"javascript", true}`
+- `{"javascript_close_windows", false}`
+- `{"javascript_access_clipboard", false}`
+- `{"javascript_dom_paste", false}`
+- `{"image_loading", true}`
+- `{"databases", true}`
+- `{"webgl", true}`
 
 ## GDBrowserView
 

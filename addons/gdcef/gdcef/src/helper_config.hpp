@@ -29,6 +29,16 @@
 #  include "gdcef.hpp"
 
 // ****************************************************************************
+//! \brief  CEF can be run either from the binary (standalone application) or
+//! from the Godot editor. We have to distinguish the both case.
+// ****************************************************************************
+#define isStartedFromGodotEditor()                                            \
+   godot::OS::get_singleton()->has_feature("editor")
+
+#define globalize_path(path)                                                  \
+   godot::ProjectSettings::get_singleton()->globalize_path(path.c_str()).utf8().get_data()
+
+// ****************************************************************************
 //! \brief Godot dictionary getter with default value.
 // ****************************************************************************
 template<class T>

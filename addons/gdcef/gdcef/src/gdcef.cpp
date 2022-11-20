@@ -48,6 +48,12 @@
 #endif
 
 //------------------------------------------------------------------------------
+// Folder name (not the path) holding the CEF artifacts needed to make CEF working
+#if (!defined(CEF_ARTIFACTS_FOLDER))
+#  error "CEF_ARTIFACTS_FOLDER is not defined"
+#endif
+
+//------------------------------------------------------------------------------
 static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
                          CefWindowInfo& window_info, godot::Dictionary config);
 
@@ -89,7 +95,7 @@ void GDCef::_init()
 {}
 
 //------------------------------------------------------------------------------
-bool GDCef::initialize(godot::String cef_folder_path, godot::Dictionary config)
+bool GDCef::initialize(godot::Dictionary config)
 {
     if (m_initialized)
     {
@@ -99,13 +105,43 @@ bool GDCef::initialize(godot::String cef_folder_path, godot::Dictionary config)
     }
 
     // Get the folder path in which your application and CEF artifacts are present
-    fs::path folder = cef_folder_path.utf8().get_data();
+    fs::path folder;
+
+    // Check if this process is executing from the Godot editor or from the
+    // your standalone application.
+    if (isStartedFromGodotEditor())
+    {
+        std::string cef_folder_path =
+                getConfig(config, "artifacts", std::string(CEF_ARTIFACTS_FOLDER));
+        if (cef_folder_path.rfind("res://", 0) == 0)
+        {
+            // Note: exported projects don't support globalize_path, see:
+            // https://docs.godotengine.org/en/3.5/classes/class_projectsettings.html
+            // Section: class-projectsettings-method-globalize-path
+            folder = globalize_path(cef_folder_path);
+        }
+        else
+        {
+            folder = std::filesystem::current_path() / cef_folder_path;
+        }
+        GDCEF_DEBUG_VAL("Launching CEF from Godot editor");
+        GDCEF_DEBUG_VAL("Path where your project Godot files shall be located:"
+                        << folder);
+    }
+    else
+    {
+        folder = getConfig(config, "exported_artifacts", real_path());
+        GDCEF_DEBUG_VAL("Launching CEF from your executable");
+        GDCEF_DEBUG_VAL("Path where your application files shall be located:"
+                        << folder);
+    }
 
     // Check if needed files to make CEF working are present.
     if (!sanity_checks(folder))
     {
         GDCEF_ERROR("Error: at least one CEF artifacts not found at path: " << folder);
-        godot::Godot::print("Error: at least one CEF artifacts not found at path: " + godot::String(folder.u8string().c_str()));
+        godot::Godot::print("Error: at least one CEF artifacts not found at path: " +
+                            godot::String(folder.u8string().c_str()));
         m_impl = nullptr;
         return false;
     }
@@ -164,7 +200,7 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     CefString(&cef_settings.browser_subprocess_path)
             .FromString(sub_process_path.string());
 
-    // If cache directories not set, browser will be in incognito mode.
+    // Incognito mode: cache directories not used.
     if (!getConfig(config, "incognito", false))
     {
         // The location where data for the global browser cache will be stored on

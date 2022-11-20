@@ -56,6 +56,7 @@
 
 // Godot
 #  include "Godot.hpp"
+#  include "ProjectSettings.hpp"
 #  include "OS.hpp"
 #  include "Node.hpp"
 #  include "ImageTexture.hpp"
@@ -84,14 +85,13 @@ public: // Godot interfaces.
     //! \brief Called to initialize CEF with runtime settings.
     //! \note Since _init() does not accept parameters, you have to call this
     //! method instead !
-    //! \param[in] cef_folder_path the path to the folder holding CEF artifacts
-    //! (what have been compiled from CEF prebuild and we have placed by default
-    //! in the build/ folder at the root of this repo).
     //! \param[in] config dictionary of CEF config with default values:
+    //!   - cef_folder_path := {"artifacts", CEF_ARTIFACTS_FOLDER}
+    //!   - cef_folder_path := {"exported_artifacts", application_real_path()}
     //!   - {"incognito", false}
     //!   - {"cache_path", cef_folder_path / "cache"}
     //!   - {"root_cache_path", cef_folder_path / "cache"}
-    //!   - {"browser_subprocess_path", cef_folder_path / SUBPROCESS_NAME }
+    //!   - {"browser_subprocess_path", cef_folder_path / SUBPROCESS_NAME}
     //!   - {"log_file", cef_folder_path / "debug.log"}
     //!   - {log_severity", "warning"}
     //!   - {"remote_debugging_port", 7777}
@@ -100,7 +100,7 @@ public: // Godot interfaces.
     //! \return true if CEF init with success. Return false if CEF init ends
     //! badly or if this method is called more than once.
     // -------------------------------------------------------------------------
-    bool initialize(godot::String cef_folder_path, godot::Dictionary config);
+    bool initialize(godot::Dictionary config);
 
     // -------------------------------------------------------------------------
     //! \brief Method automatically called by Godot engine to register the

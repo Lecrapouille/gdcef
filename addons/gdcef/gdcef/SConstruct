@@ -48,6 +48,7 @@ opts.Add(EnumVariable('arch', 'Platform architecture', 'x86_64', ['x86_64', 'arm
 opts.Add(BoolVariable('use_llvm', 'Use the LLVM / Clang compiler', 'no'))
 opts.Add(PathVariable('api_path', 'Godot C++ API', ''))
 opts.Add(PathVariable('build_path', 'Build path', ''))
+opts.Add(PathVariable('cef_artifacts_folder', 'CEF artifacts folder', '', PathVariable.PathAccept))
 
 # Updates the environment with the option variables.
 opts.Update(env)
@@ -165,6 +166,9 @@ if platform == 'linux' or platform == 'osx':
                              '-Wsuper-class-method-mismatch',
                              '-Werror=implicit-function-declaration',
                              '-Wtautological-compare'])
+
+# User defines
+env.Append(CXXFLAGS=['-DCEF_ARTIFACTS_FOLDER=' + env['cef_artifacts_folder']])
 
 # Pathes of Godot header files
 env.Append(CPPPATH=['.',

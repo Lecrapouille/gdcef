@@ -56,7 +56,8 @@ PATCHES_PATH = os.path.join(PWD, "patches")
 GDCEF_EXAMPLES_PATH = os.path.join(PWD, "demos")
 # If you modify CEF_ARTIFACTS_BUILD_PATH, do not forget to also change Godot
 # .gdns and .gdnlib files inside GDCEF_EXAMPLES_PATH.
-CEF_ARTIFACTS_BUILD_PATH = os.path.realpath(os.path.join("../../build"))
+CEF_ARTIFACTS_FOLDER = "build"
+CEF_ARTIFACTS_BUILD_PATH = os.path.realpath(os.path.join("../../" + CEF_ARTIFACTS_FOLDER))
 
 ###############################################################################
 ### Type of operating system, AMD64, ARM64 ...
@@ -372,11 +373,13 @@ def gdnative_scons_cmd(plateform):
         fatal('Please download and compile https://github.com/godotengine/godot-cpp and set GODOT_CPP_API_PATH')
     if OSTYPE == "Darwin":
         run(["scons", "api_path=" + GODOT_CPP_API_PATH,
+             "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER + "\\\"",
              "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
              "target=" + MODULE_TARGET, "--jobs=" + NPROC,
              "arch=" + ARCHI, "platform=" + plateform], check=True)
     else:
         run(["scons", "api_path=" + GODOT_CPP_API_PATH,
+             "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER + "\\\"",
              "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
              "target=" + MODULE_TARGET, "--jobs=" + NPROC,
              "platform=" + plateform], check=True)
@@ -448,8 +451,8 @@ def check_cmake_version():
 ### install the build/ folder inside your Godot application.
 def prepare_godot_examples():
     info("Alias examples to CEF artifacts")
-    symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(GDCEF_EXAMPLES_PATH, "2D", "build"))
-    symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(GDCEF_EXAMPLES_PATH, "3D", "build"))
+    symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(GDCEF_EXAMPLES_PATH, "2D", CEF_ARTIFACTS_FOLDER))
+    symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(GDCEF_EXAMPLES_PATH, "3D", CEF_ARTIFACTS_FOLDER))
 
 ###############################################################################
 ### Run Godot example

@@ -122,3 +122,10 @@ compiled CEF).
 - **Be sure your CEF version contains `+` symbols but not the URL-encode `%2B` format.**
 - Rerun the `build.py` the older `thirdparty/cef_binary` folder will be replaced
   automatically by the new version.
+
+### I dislike the folder name `build` holding CEF artifacts
+
+You can change it!
+Search in [build.py](../build.py) script the line `CEF_ARTIFACTS_FOLDER = "build"`
+and modifiy it. Rerun the `build.py` and adapt gdnlib files in `demos/*/libs/`
+folders.

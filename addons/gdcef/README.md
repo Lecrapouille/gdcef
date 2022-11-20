@@ -50,9 +50,13 @@ can start your Godot editor 3.5 and goes into the `demos` folder, and try the
 - Copy the `build/` folder holding CEF artifacts that have been compiled into
   your Godot project.
 - Remove the `build/cache` folder if you have used CEF previously.
+- If you dislike the folder name `build` holding CEF artifacts, you can change it.
+  Search in [build.py](../build.py) script the line `CEF_ARTIFACTS_FOLDER = "build"`
+  and modifiy it. Rerun the `build.py`. This will force Godot knowing default path.
+  Else you can refer it explictely when calling `initialize()`.
 - Copy and adapt the `gdcef.gdns` and `gdcef.gdnlib` inside your Godot
-  project. See more information in the last section of this
-  [document](doc/detailsdesign.md).
+  project and adapt the path to shared libraries. See more information in the last
+  section of this [document](doc/detailsdesign.md).
 - CEF can run from the Godot editor and you can export your project for Linux
   and Windows as usual.
 - The gdcef module checks the presence of CEF artifacts and the presence of the
@@ -60,7 +64,7 @@ can start your Godot editor 3.5 and goes into the `demos` folder, and try the
 - In your Godot scene create a `Node` or `Spatial` named for example
   `CEF`. Extend it to be a `GDCEF` by setting the path to `gdcef.gdns` as
   `Nativescript`.
-- When initializing CEF with `initialize` pass the path of the `build/` folder.
+- When initializing CEF with `initialize` instead of Godot `_init`.
 - Create a Godot `TextRect` that will receive your browser texture.
 - Create a gdscript and, for example, inside `func _ready():` from the `$CEF`
   node, make create a new browser tab named `browser name` (it will be a Godot
@@ -75,11 +79,14 @@ $TextureRect.texture = browser.get_texture()
 You should have a minimal CEF browser not reacting to your mouse and key
 binding. See the demo 3D to make your browser tab reacts to our input events.
 
+When exporting your project, make Godot generates your binary application inside
+the `build` folder.
+
 ## Diving inside this project
 
 ### Updating the CEF version
 
-See this [guide](doc/installation.md).
+See this [guide](https://github.com/Lecrapouille/gdcef/blob/master/addons/gdcef/doc/installation.md#update-the-cef-version).
 
 ### CEF API
 
