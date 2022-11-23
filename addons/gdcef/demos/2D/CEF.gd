@@ -7,7 +7,7 @@
 extends Control
 
 # Name of the browser
-const browser1 = "browser1"
+var current_browser = "current_browser"
 
 # Memorize if the mouse was pressed
 var mouse_pressed : bool = false
@@ -16,9 +16,11 @@ var mouse_pressed : bool = false
 # Home button pressed: get the browser node and load a new page.
 # ==============================================================================
 func _on_Home_pressed():
-	var browser = $CEF.get_node(browser1)
+	if not $CEF.is_alive():
+		return
+	var browser = $CEF.get_node(current_browser)
 	if browser == null:
-		$Panel/Label.set_text("Failed getting Godot node " + browser1)
+		$Panel/VBox/HBox/Info.set_text("Failed getting Godot node " + current_browser)
 		return
 	browser.load_url("https://bitbucket.org/chromiumembedded/cef/wiki/Home")
 	pass
@@ -27,9 +29,11 @@ func _on_Home_pressed():
 # Go to previously visited page
 # ==============================================================================
 func _on_Prev_pressed():
-	var browser = $CEF.get_node(browser1)
+	if not $CEF.is_alive():
+		return
+	var browser = $CEF.get_node(current_browser)
 	if browser == null:
-		$Panel/Label.set_text("Failed getting Godot node " + browser1)
+		$Panel/VBox/HBox/Info.set_text("Failed getting Godot node " + current_browser)
 		return
 	browser.previous_page()
 	pass
@@ -38,9 +42,11 @@ func _on_Prev_pressed():
 # Go to next page
 # ==============================================================================
 func _on_Next_pressed():
-	var browser = $CEF.get_node(browser1)
+	if not $CEF.is_alive():
+		return
+	var browser = $CEF.get_node(current_browser)
 	if browser == null:
-		$Panel/Label.set_text("Failed getting Godot node " + browser1)
+		$Panel/VBox/HBox/Info.set_text("Failed getting Godot node " + current_browser)
 		return
 	browser.next_page()
 	pass
@@ -49,15 +55,17 @@ func _on_Next_pressed():
 # Callback when a page has ended to load: we print a message
 # ==============================================================================
 func _on_page_loaded(node):
-	$Panel/Label.set_text(node.name + ": page " + node.get_url() + " loaded")
+	$Panel/VBox/HBox/Info.set_text("Page " + node.get_url() + " loaded")
 
 # ==============================================================================
 # On new URL entered
 # ==============================================================================
 func _on_TextEdit_text_changed(new_text):
-	var browser = $CEF.get_node(browser1)
+	if not $CEF.is_alive():
+		return
+	var browser = $CEF.get_node(current_browser)
 	if browser == null:
-		$Panel/Label.set_text("Failed getting Godot node " + browser1)
+		$Panel/VBox/HBox/Info.set_text("Failed getting Godot node " + current_browser)
 		return
 	browser.load_url(new_text)
 
@@ -65,9 +73,11 @@ func _on_TextEdit_text_changed(new_text):
 # Get mouse events and broadcast them to CEF
 # ==============================================================================
 func _on_TextureRect_gui_input(event):
-	var browser = $CEF.get_node(browser1)
+	if not $CEF.is_alive():
+		return
+	var browser = $CEF.get_node(current_browser)
 	if browser == null:
-		$Panel/Label.set_text("Failed getting Godot node " + browser1)
+		$Panel/VBox/HBox/Info.set_text("Failed getting Godot node " + current_browser)
 		return
 	if event is InputEventMouseButton:
 		if event.button_index == BUTTON_WHEEL_UP:
@@ -102,20 +112,21 @@ func _on_TextureRect_gui_input(event):
 # Make the CEF browser reacts from keyboard events.
 # ==============================================================================
 func _input(event):
-	var browser = $CEF.get_node(browser1)
+	if not $CEF.is_alive():
+		return
+	var browser = $CEF.get_node(current_browser)
 	if browser == null:
-		$Panel/Label.set_text("Failed getting Godot node " + browser1)
+		$Panel/VBox/HBox/Info.set_text("Failed getting Godot node " + current_browser)
 		return
 	if event is InputEventKey:
 		if event.unicode != 0:
 			browser.on_key_pressed(event.unicode, event.pressed, event.shift, event.alt, event.control)
 		else:
 			browser.on_key_pressed(event.scancode, event.pressed, event.shift, event.alt, event.control)
-
 	pass
 
 # ==============================================================================
-# Create a single briwser named "browser1" that is attached as child node to $CEF.
+# Create a single briwser named "current_browser" that is attached as child node to $CEF.
 # ==============================================================================
 func _ready():
 
@@ -139,14 +150,14 @@ func _ready():
 	# https://docs.godotengine.org/en/3.5/classes/class_projectsettings.html#class-projectsettings-method-globalize-path
 	var resource_path = "res://build/"
 	if !$CEF.initialize({"artifacts":resource_path, "incognito":true, "locale":"en-US"}):
-		push_error("Failed initializing CEF")
-		get_tree().quit()
-		pass
+		$Panel/VBox/HBox/Info.set_text($CEF.get_error())
+		push_error($CEF.get_error())
+		return
 
-	var S = $Panel/TextureRect.get_size()
-	var browser = $CEF.create_browser("https://github.com/Lecrapouille/gdcef", browser1, S.x, S.y, {"javascript":true})
+	var S = $Panel/VBox/TextureRect.get_size()
+	var browser = $CEF.create_browser("https://github.com/Lecrapouille/gdcef", current_browser, S.x, S.y, {"javascript":true})
 	browser.connect("page_loaded", self, "_on_page_loaded")
-	$Panel/TextureRect.texture = browser.get_texture()
+	$Panel/VBox/TextureRect.texture = browser.get_texture()
 
 # ==============================================================================
 # $CEF is periodically updated

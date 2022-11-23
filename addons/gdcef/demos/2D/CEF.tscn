@@ -4,8 +4,8 @@
 [ext_resource path="res://libs/gdcef.gdns" type="Script" id=2]
 
 [node name="GUI" type="Control"]
-margin_right = 280.0
-margin_bottom = 180.0
+anchor_right = 1.0
+anchor_bottom = 1.0
 mouse_filter = 1
 script = ExtResource( 1 )
 
@@ -15,65 +15,75 @@ script = ExtResource( 2 )
 [node name="Panel" type="Panel" parent="."]
 anchor_right = 2.504
 anchor_bottom = 1.856
-margin_right = 323.88
-margin_bottom = 262.92
+margin_left = -1.0
+margin_right = -1541.1
+margin_bottom = -513.6
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="TextureRect" type="TextureRect" parent="Panel"]
-anchor_top = 0.015
-anchor_bottom = 0.015
-margin_left = 5.0
-margin_top = 28.045
-margin_right = 1019.0
-margin_bottom = 559.045
-mouse_filter = 0
-expand = true
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="Panel"]
-margin_left = 5.0
-margin_top = 578.0
-margin_right = 82.0
-margin_bottom = 592.0
-mouse_filter = 0
-text = "Hello world!"
+[node name="HBox" type="HBoxContainer" parent="Panel/VBox"]
+margin_right = 1023.0
+margin_bottom = 24.0
 
-[node name="Label2" type="Label" parent="Panel"]
-margin_left = 7.0
-margin_top = 7.0
-margin_right = 41.0
-margin_bottom = 21.0
+[node name="URL" type="Label" parent="Panel/VBox/HBox"]
+margin_top = 5.0
+margin_right = 29.0
+margin_bottom = 19.0
+rect_pivot_offset = Vector2( 34, 14 )
 mouse_filter = 0
 text = "URL:"
 
-[node name="Home" type="Button" parent="Panel"]
-margin_left = 208.0
-margin_top = 3.0
-margin_right = 259.0
-margin_bottom = 25.0
-text = "Home"
+[node name="TextEdit" type="LineEdit" parent="Panel/VBox/HBox"]
+margin_left = 33.0
+margin_right = 474.0
+margin_bottom = 24.0
+size_flags_horizontal = 3
 
-[node name="Prev" type="Button" parent="Panel"]
-margin_left = 186.0
-margin_top = 3.0
-margin_right = 206.0
-margin_bottom = 25.0
+[node name="Prev" type="Button" parent="Panel/VBox/HBox"]
+margin_left = 478.0
+margin_right = 498.0
+margin_bottom = 24.0
 text = "<"
 
-[node name="Next" type="Button" parent="Panel"]
-margin_left = 259.0
-margin_top = 3.0
-margin_right = 279.0
-margin_bottom = 25.0
+[node name="Home" type="Button" parent="Panel/VBox/HBox"]
+margin_left = 502.0
+margin_right = 553.0
+margin_bottom = 24.0
+text = "Home"
+
+[node name="Next" type="Button" parent="Panel/VBox/HBox"]
+margin_left = 557.0
+margin_right = 577.0
+margin_bottom = 24.0
 text = ">"
 
-[node name="TextEdit" type="LineEdit" parent="Panel"]
-margin_left = 43.0
-margin_top = 2.0
-margin_right = 185.0
-margin_bottom = 26.0
+[node name="Info" type="Label" parent="Panel/VBox/HBox"]
+margin_left = 581.0
+margin_top = 5.0
+margin_right = 1023.0
+margin_bottom = 19.0
+mouse_filter = 0
+size_flags_horizontal = 3
+text = "info"
 
-[connection signal="gui_input" from="Panel/TextureRect" to="." method="_on_TextureRect_gui_input"]
-[connection signal="pressed" from="Panel/Home" to="." method="_on_Home_pressed"]
-[connection signal="pressed" from="Panel/Prev" to="." method="_on_Prev_pressed"]
-[connection signal="pressed" from="Panel/Next" to="." method="_on_Prev_pressed"]
-[connection signal="pressed" from="Panel/Next" to="." method="_on_Next_pressed"]
-[connection signal="text_changed" from="Panel/TextEdit" to="." method="_on_TextEdit_text_changed"]
+[node name="TextureRect" type="TextureRect" parent="Panel/VBox"]
+margin_top = 28.0
+margin_right = 1023.0
+margin_bottom = 600.0
+rect_min_size = Vector2( 1, 1 )
+mouse_filter = 0
+size_flags_vertical = 3
+expand = true
+stretch_mode = 3
+
+[connection signal="text_changed" from="Panel/VBox/HBox/TextEdit" to="." method="_on_TextEdit_text_changed"]
+[connection signal="pressed" from="Panel/VBox/HBox/Prev" to="." method="_on_Prev_pressed"]
+[connection signal="pressed" from="Panel/VBox/HBox/Home" to="." method="_on_Home_pressed"]
+[connection signal="pressed" from="Panel/VBox/HBox/Next" to="." method="_on_Prev_pressed"]
+[connection signal="pressed" from="Panel/VBox/HBox/Next" to="." method="_on_Next_pressed"]
+[connection signal="gui_input" from="Panel/VBox/TextureRect" to="." method="_on_TextureRect_gui_input"]
