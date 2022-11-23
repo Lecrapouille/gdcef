@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=2]
 
-[ext_resource path="res://GUI.gd" type="Script" id=1]
+[ext_resource path="res://CEF.gd" type="Script" id=1]
 [ext_resource path="res://libs/gdcef.gdns" type="Script" id=2]
 
 [node name="GUI" type="Control"]
@@ -13,24 +13,26 @@ script = ExtResource( 1 )
 script = ExtResource( 2 )
 
 [node name="Panel" type="Panel" parent="."]
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchor_right = 2.504
+anchor_bottom = 1.856
+margin_right = 323.88
+margin_bottom = 262.92
 
 [node name="TextureRect" type="TextureRect" parent="Panel"]
 anchor_top = 0.015
 anchor_bottom = 0.015
 margin_left = 5.0
-margin_top = 28.3
-margin_right = 273.0
-margin_bottom = 158.3
+margin_top = 28.045
+margin_right = 1019.0
+margin_bottom = 559.045
 mouse_filter = 0
 expand = true
 
 [node name="Label" type="Label" parent="Panel"]
-margin_left = 4.0
-margin_top = 163.0
-margin_right = 81.0
-margin_bottom = 177.0
+margin_left = 5.0
+margin_top = 578.0
+margin_right = 82.0
+margin_bottom = 592.0
 mouse_filter = 0
 text = "Hello world!"
 

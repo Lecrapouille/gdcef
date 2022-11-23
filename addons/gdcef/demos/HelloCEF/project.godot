@@ -20,8 +20,8 @@ _global_script_class_icons={
 
 [application]
 
-config/name="CEF in 2D"
-run/main_scene="res://CEF.tscn"
+config/name="Hello CEF"
+run/main_scene="res://Control.tscn"
 config/icon="res://icon.png"
 
 [physics]

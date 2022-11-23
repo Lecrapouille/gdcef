@@ -1,0 +1,18 @@
+[general]
+
+singleton=false
+load_once=true
+symbol_prefix="godot_"
+reloadable=false
+
+[entry]
+
+OSX.64="res://Frameworks/Chromium\ Embedded\ Framework.framework/Libraries/libgdcef.dylib"
+Windows.64="res://build/libgdcef.dll"
+X11.64="res://build/libgdcef.so"
+
+[dependencies]
+
+OSX.64=[  ]
+Windows.64=[ "res://build/libcef.dll" ]
+X11.64=[ "res://build/libcef.so" ]

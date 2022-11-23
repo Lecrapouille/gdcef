@@ -43,15 +43,21 @@ directly (no prerequesites).
 
 ## Demos
 
-## Demo 00: Multiple CEF browsers in 2D
+## Demo 00: Hello CEF
 
-A demo showing a 2D GUI with multiple CEF browser tabs. Only mouse and keyboard
+A "Hello-world" demo showing a 2D GUI with multiple CEF browser tabs. Only mouse and keyboard
 events for the left browser are managed since a timer is loading URLs one by one
 for the right one.
 
+![Screenshot](HelloCEF/icon.png)
+
+## Demo 01: CEF browser in 2D
+
+Basic browser with multiple tabs (work in progress).
+
 ![Screenshot](2D/icon.png)
 
-## Demo 01: Single CEF browser in 3D
+## Demo 02: CEF browser in 3D
 
 A demo showing a 2D GUI with a single CEF browser tab. The tab is rotating inside a 3D scene.
 You can use your mouse and keyboard to surf on the web :)
