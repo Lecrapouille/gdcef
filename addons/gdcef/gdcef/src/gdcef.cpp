@@ -88,6 +88,8 @@ void GDCef::_register_methods()
     godot::register_method("_process", &GDCef::_process);
     godot::register_method("create_browser", &GDCef::createBrowser);
     godot::register_method("shutdown", &GDCef::shutdown);
+    godot::register_method("is_alive", &GDCef::isAlive);
+    godot::register_method("get_error", &GDCef::getError);
 }
 
 //------------------------------------------------------------------------------
@@ -102,7 +104,6 @@ bool GDCef::initialize(godot::Dictionary config)
     if (m_initialized)
     {
         GDCEF_ERROR("Already initialized");
-        godot::Godot::print("Error: Already initialized");
         return false;
     }
 
@@ -142,8 +143,6 @@ bool GDCef::initialize(godot::Dictionary config)
     if (!sanity_checks(folder))
     {
         GDCEF_ERROR("Error: at least one CEF artifacts not found at path: " << folder);
-        godot::Godot::print("Error: at least one CEF artifacts not found at path: " +
-                            godot::String(folder.u8string().c_str()));
         m_impl = nullptr;
         return false;
     }
@@ -162,13 +161,26 @@ bool GDCef::initialize(godot::Dictionary config)
     if (!CefInitialize(args, m_cef_settings, nullptr, nullptr))
     {
         GDCEF_ERROR("CefInitialize failed");
-        godot::Godot::print("CefInitialize failed");
         m_impl = nullptr;
         return false;
     }
     m_initialized = true;
     GDCEF_DEBUG_VAL("CefInitialize done with success");
     return true;
+}
+
+//------------------------------------------------------------------------------
+bool GDCef::isAlive()
+{
+    return m_initialized && m_impl;
+}
+
+//------------------------------------------------------------------------------
+godot::String GDCef::getError()
+{
+    std::string err = m_error.str();
+    m_error.clear();
+    return {err.c_str()};
 }
 
 //------------------------------------------------------------------------------
@@ -416,7 +428,6 @@ GDBrowserView* GDCef::createBrowser(godot::String const url, godot::String const
     if (m_impl == nullptr)
     {
         GDCEF_ERROR("CEF was not initialized");
-        godot::Godot::print("Error: CEF was not initialized");
         return nullptr;
     }
 

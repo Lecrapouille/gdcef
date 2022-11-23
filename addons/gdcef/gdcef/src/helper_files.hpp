@@ -26,27 +26,8 @@
 #ifndef STIGMEE_GDCEF_HELPER_FILES_HPP
 #  define STIGMEE_GDCEF_HELPER_FILES_HPP
 
+#  include "helper_log.hpp"
 #  include <vector>
-#  include <iostream>
-
-// ****************************************************************************
-// Logging
-// ****************************************************************************
-#define GDCEF_DEBUG()                                                      \
-  std::cout << "[GDCEF][GDCEF::" << __func__ << "]" << std::endl
-#define GDCEF_DEBUG_VAL(x)                                                 \
-  std::cout << "[GDCEF][GDCEF::" << __func__ << "] " << x << std::endl
-#define GDCEF_ERROR(x)                                                     \
-  std::cerr << "[GDCEF][GDCEF::" << __func__ << "] " << x << std::endl
-#define BROWSER_DEBUG()                                                    \
-  std::cout << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "]"  \
-            << std::endl
-#define BROWSER_DEBUG_VAL(x)                                               \
-  std::cout << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "] " \
-            << x << std::endl
-#define BROWSER_ERROR(x)                                                   \
-  std::cerr << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "] " \
-            << x << std::endl
 
 // ****************************************************************************
 // C++17 filesystem utilities. The include depends on the version of g++ or

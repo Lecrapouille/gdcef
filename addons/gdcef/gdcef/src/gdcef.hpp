@@ -103,6 +103,16 @@ public: // Godot interfaces.
     bool initialize(godot::Dictionary config);
 
     // -------------------------------------------------------------------------
+    //! \brief Is CEF initialized and running ?
+    // -------------------------------------------------------------------------
+    bool isAlive();
+
+    // -------------------------------------------------------------------------
+    //! \brief Return the latest error.
+    // -------------------------------------------------------------------------
+    godot::String getError();
+
+    // -------------------------------------------------------------------------
     //! \brief Method automatically called by Godot engine to register the
     //! desired C++ methods that will be callable from gdscript.
     // -------------------------------------------------------------------------
@@ -201,7 +211,6 @@ public:
         return m_cef_settings;
     }
 
-
     // -------------------------------------------------------------------------
     //! \brief Const getter browser window settings.
     // -------------------------------------------------------------------------
@@ -247,6 +256,8 @@ private:
     //! We have to call initialize() method which can be potentially be called several
     //! times.
     bool m_initialized = false;
+    //! \brief Hold last error messages
+    mutable std::stringstream m_error;
 };
 
 #  if !defined(_WIN32)

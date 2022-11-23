@@ -36,6 +36,7 @@ void GDBrowserView::_register_methods()
 
     godot::register_method("close", &GDBrowserView::close);
     godot::register_method("id", &GDBrowserView::id);
+    godot::register_method("get_error", &GDBrowserView::getError);
     godot::register_method("is_valid", &GDBrowserView::isValid);
     godot::register_method("get_texture", &GDBrowserView::texture);
     godot::register_method("set_zoom_level", &GDBrowserView::setZoomLevel);
@@ -70,6 +71,14 @@ void GDBrowserView::_register_methods()
 //------------------------------------------------------------------------------
 void GDBrowserView::_init()
 {}
+
+//------------------------------------------------------------------------------
+godot::String GDBrowserView::getError()
+{
+    std::string err = m_error.str();
+    m_error.clear();
+    return {err.c_str()};
+}
 
 //------------------------------------------------------------------------------
 int GDBrowserView::init(godot::String const& url, CefBrowserSettings const& settings,

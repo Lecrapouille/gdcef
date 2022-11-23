@@ -219,6 +219,11 @@ public:
     inline int id() const { return m_id; }
 
     // -------------------------------------------------------------------------
+    //! \brief Return the latest error.
+    // -------------------------------------------------------------------------
+    godot::String getError();
+
+    // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Return True if this object is
     //! currently valid. This will return false after
     //! CefLifeSpanHandler::OnBeforeClose is called.
@@ -456,6 +461,9 @@ private:
 
     //! \brief Cache unique indentifier
     int m_id = -1;
+
+    //! \brief Hold last error messages
+    mutable std::stringstream m_error;
 };
 
 #  if !defined(_WIN32)
