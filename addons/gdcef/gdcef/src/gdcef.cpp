@@ -92,7 +92,9 @@ void GDCef::_register_methods()
 
 //------------------------------------------------------------------------------
 void GDCef::_init()
-{}
+{
+    // Replaced by GDCef::initialize(xxx)
+}
 
 //------------------------------------------------------------------------------
 bool GDCef::initialize(godot::Dictionary config)
@@ -401,6 +403,7 @@ void GDCef::shutdown()
         CefQuitMessageLoop();
         m_impl = nullptr;
     }
+    m_initialized = false;
 }
 
 //------------------------------------------------------------------------------
