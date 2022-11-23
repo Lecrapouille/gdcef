@@ -11,6 +11,10 @@ on:
       - master
 
 jobs:
+
+  #############################################################################
+  ### Linux
+  #############################################################################
   build_linux:
     name: Build on Linux
     runs-on: ubuntu-20.04
@@ -32,3 +36,36 @@ jobs:
         run: |
           cd build
           ls gdcefSubProcess libgdcef.so libcef.so
+
+  #############################################################################
+  ### Windows
+  #############################################################################
+  build_windows:
+    name: Build on Windows
+    runs-on: windows-2022
+    steps:
+      # Add path for finding cl.exe
+      # FIXME: I dunno why Godot editor and godot-cpp can find cl.exe while our
+      # godot native modules cannot find it without this extra path
+      - uses: ilammy/msvc-dev-cmd@v1.10.0
+
+      - name: Checkout GDCEF
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Install system packages
+        shell: powershell
+        run: |
+          cd addons/gdcef
+          python3 -m pip install -r requirements.txt
+      - name: Compile GDCEF
+        shell: powershell
+        run: |
+          cd addons/gdcef
+          python3 build.py
+      - name: Check build
+        run: |
+          cd build
+          Test-Path -Path \a\gdcef\gdcef\build\gdcefSubProcess.exe
+          Test-Path -Path \a\gdcef\gdcef\build\libgdcef.dll
+          Test-Path -Path \a\gdcef\gdcef\build\libcef.dll
