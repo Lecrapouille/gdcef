@@ -30,40 +30,61 @@ size_flags_vertical = 3
 margin_right = 1023.0
 margin_bottom = 24.0
 
-[node name="URL" type="Label" parent="Panel/VBox/HBox"]
+[node name="Add" type="Button" parent="Panel/VBox/HBox"]
+margin_right = 20.0
+margin_bottom = 24.0
+text = "+"
+
+[node name="Tabs" type="Label" parent="Panel/VBox/HBox"]
+margin_left = 24.0
 margin_top = 5.0
-margin_right = 29.0
+margin_right = 57.0
+margin_bottom = 19.0
+rect_pivot_offset = Vector2( 34, 14 )
+mouse_filter = 0
+text = "Tabs:"
+
+[node name="BrowserList" type="OptionButton" parent="Panel/VBox/HBox"]
+margin_left = 61.0
+margin_right = 333.0
+margin_bottom = 24.0
+size_flags_horizontal = 3
+
+[node name="URL" type="Label" parent="Panel/VBox/HBox"]
+margin_left = 337.0
+margin_top = 5.0
+margin_right = 366.0
 margin_bottom = 19.0
 rect_pivot_offset = Vector2( 34, 14 )
 mouse_filter = 0
 text = "URL:"
 
 [node name="TextEdit" type="LineEdit" parent="Panel/VBox/HBox"]
-margin_left = 33.0
-margin_right = 474.0
+margin_left = 370.0
+margin_right = 643.0
 margin_bottom = 24.0
 size_flags_horizontal = 3
 
 [node name="Prev" type="Button" parent="Panel/VBox/HBox"]
-margin_left = 478.0
-margin_right = 498.0
+margin_left = 647.0
+margin_right = 667.0
 margin_bottom = 24.0
 text = "<"
 
 [node name="Home" type="Button" parent="Panel/VBox/HBox"]
-margin_left = 502.0
-margin_right = 553.0
+margin_left = 671.0
+margin_right = 722.0
 margin_bottom = 24.0
 text = "Home"
 
 [node name="Next" type="Button" parent="Panel/VBox/HBox"]
-margin_left = 557.0
-margin_right = 577.0
+margin_left = 726.0
+margin_right = 746.0
 margin_bottom = 24.0
 text = ">"
 
 [node name="Info" type="Label" parent="Panel/VBox/HBox"]
-margin_left = 581.0
+margin_left = 750.0
 margin_top = 5.0
 margin_right = 1023.0
 margin_bottom = 19.0
@@ -81,6 +102,8 @@ size_flags_vertical = 3
 expand = true
 stretch_mode = 3
 
+[connection signal="pressed" from="Panel/VBox/HBox/Add" to="." method="_on_Add_pressed"]
+[connection signal="item_selected" from="Panel/VBox/HBox/BrowserList" to="." method="_on_BrowserList_item_selected"]
 [connection signal="text_changed" from="Panel/VBox/HBox/TextEdit" to="." method="_on_TextEdit_text_changed"]
 [connection signal="pressed" from="Panel/VBox/HBox/Prev" to="." method="_on_Prev_pressed"]
 [connection signal="pressed" from="Panel/VBox/HBox/Home" to="." method="_on_Home_pressed"]

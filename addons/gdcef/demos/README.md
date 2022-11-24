@@ -55,6 +55,11 @@ for the right one.
 
 Basic browser with multiple tabs (work in progress).
 
+Type inside the URL entry your desired URL. It loads dynamicaly the URL. While the URL is not
+complete the page is not yet loaded. Once the URL is correct and the page load, the URL is saved
+in your current browser tab. To create a new browser tab, click on the `+` button. A default page
+is displayed. Type in the URL to load a new web page.
+
 ![Screenshot](2D/icon.png)
 
 ## Demo 02: CEF browser in 3D
