@@ -73,6 +73,24 @@ func _on_Home_pressed():
 	pass
 
 # ==============================================================================
+# Color button pressed: present a pop-up to change the background color
+# ==============================================================================
+func _on_BGColor_pressed():
+	if $ColorPopup.visible:
+		$ColorPopup.popup_hide()
+	else:
+		$ColorPopup.popup_centered(Vector2(0,0))
+
+# ==============================================================================
+# color picker changed: inject javascript to change background color
+# ==============================================================================
+func _on_ColorPicker_color_changed(color):
+	if current_browser != null:
+		var js_string = 'document.body.style.background = "#%s"' % color.to_html(false)
+		print(js_string)
+		current_browser.execute_javascript(js_string)
+
+# ==============================================================================
 # Go to previously visited page
 # ==============================================================================
 func _on_Prev_pressed():
