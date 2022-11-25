@@ -1,7 +1,11 @@
 Version 0.?.?:
-	* on_mouse_wheel scroll horizontally and vertically. Added on_mouse_wheel_horizontal
-      and on_mouse_wheel_vertical.
-	* Allow to pass CEF configuration as well for the browser.
+	* Beware: the API for this version is incompatible with previous version.
+	* Fix API: `on_mouse_wheel` scrolled horizontally and vertically: added `on_mouse_wheel_horizontal` function
+      and renamed `on_mouse_wheel` to `on_mouse_wheel_vertical`.
+	* Broken API: `_init` is no longer used but `initialise` taking as argument the CEF configuration.
+	* Broken API: `create_browser` is taking extra argument: the browser configuration.
+	* New API: CEF: `is_alive`, `get_error`. Browser: `get_error`.
+	* Reorganize demos: rename 2D demo for hello-world demo. Add a real 2D browser application managing several tabs.
 
 Version 0.5.0:
 	* Fix function checking if CEF is started from the Godot editor or from application.
