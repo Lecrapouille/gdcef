@@ -46,45 +46,51 @@ text = "Tabs:"
 
 [node name="BrowserList" type="OptionButton" parent="Panel/VBox/HBox"]
 margin_left = 61.0
-margin_right = 333.0
+margin_right = 317.0
 margin_bottom = 24.0
 size_flags_horizontal = 3
 
 [node name="URL" type="Label" parent="Panel/VBox/HBox"]
-margin_left = 337.0
+margin_left = 321.0
 margin_top = 5.0
-margin_right = 366.0
+margin_right = 350.0
 margin_bottom = 19.0
 rect_pivot_offset = Vector2( 34, 14 )
 mouse_filter = 0
 text = "URL:"
 
 [node name="TextEdit" type="LineEdit" parent="Panel/VBox/HBox"]
-margin_left = 370.0
-margin_right = 643.0
+margin_left = 354.0
+margin_right = 610.0
 margin_bottom = 24.0
 size_flags_horizontal = 3
 
 [node name="Prev" type="Button" parent="Panel/VBox/HBox"]
-margin_left = 647.0
-margin_right = 667.0
+margin_left = 614.0
+margin_right = 634.0
 margin_bottom = 24.0
 text = "<"
 
 [node name="Home" type="Button" parent="Panel/VBox/HBox"]
-margin_left = 671.0
-margin_right = 722.0
+margin_left = 638.0
+margin_right = 689.0
 margin_bottom = 24.0
 text = "Home"
 
+[node name="BGColor" type="Button" parent="Panel/VBox/HBox"]
+margin_left = 693.0
+margin_right = 738.0
+margin_bottom = 24.0
+text = "Color"
+
 [node name="Next" type="Button" parent="Panel/VBox/HBox"]
-margin_left = 726.0
-margin_right = 746.0
+margin_left = 742.0
+margin_right = 762.0
 margin_bottom = 24.0
 text = ">"
 
 [node name="Info" type="Label" parent="Panel/VBox/HBox"]
-margin_left = 750.0
+margin_left = 766.0
 margin_top = 5.0
 margin_right = 1023.0
 margin_bottom = 19.0
@@ -102,11 +108,27 @@ size_flags_vertical = 3
 expand = true
 stretch_mode = 3
 
+[node name="ColorPopup" type="WindowDialog" parent="."]
+margin_left = 348.0
+margin_top = 81.0
+margin_right = 664.0
+margin_bottom = 501.0
+window_title = "Javascript Injection Example: Color Picker"
+
+[node name="ColorPicker" type="ColorPicker" parent="ColorPopup"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+edit_alpha = false
+presets_enabled = false
+presets_visible = false
+
 [connection signal="pressed" from="Panel/VBox/HBox/Add" to="." method="_on_Add_pressed"]
 [connection signal="item_selected" from="Panel/VBox/HBox/BrowserList" to="." method="_on_BrowserList_item_selected"]
 [connection signal="text_changed" from="Panel/VBox/HBox/TextEdit" to="." method="_on_TextEdit_text_changed"]
 [connection signal="pressed" from="Panel/VBox/HBox/Prev" to="." method="_on_Prev_pressed"]
 [connection signal="pressed" from="Panel/VBox/HBox/Home" to="." method="_on_Home_pressed"]
-[connection signal="pressed" from="Panel/VBox/HBox/Next" to="." method="_on_Prev_pressed"]
+[connection signal="pressed" from="Panel/VBox/HBox/BGColor" to="." method="_on_BGColor_pressed"]
 [connection signal="pressed" from="Panel/VBox/HBox/Next" to="." method="_on_Next_pressed"]
+[connection signal="pressed" from="Panel/VBox/HBox/Next" to="." method="_on_Prev_pressed"]
 [connection signal="gui_input" from="Panel/VBox/TextureRect" to="." method="_on_TextureRect_gui_input"]
+[connection signal="color_changed" from="ColorPopup/ColorPicker" to="." method="_on_ColorPicker_color_changed"]

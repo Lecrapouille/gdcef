@@ -248,7 +248,7 @@ void GDBrowserView::stopLoading()
 void GDBrowserView::executeJavaScript(godot::String javascript)
 {
 
-    if (!m_browser && m_browser->GetMainFrame())
+    if (m_browser && m_browser->GetMainFrame())
     {
         CefString codeStr;
         codeStr.FromString(javascript.utf8().get_data());
