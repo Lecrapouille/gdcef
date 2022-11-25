@@ -6,8 +6,9 @@
 
 extends Control
 
-# Default page
-const DEFAULT_PAGE = "https://github.com/Lecrapouille/gdcef"
+# Default pages
+const DEFAULT_PAGE = "http://kpjkradio.com/"
+const HOME_PAGE = "https://github.com/Lecrapouille/gdcef"
 
 # The current browser as Godot node
 onready var current_browser = null
@@ -16,7 +17,7 @@ onready var current_browser = null
 onready var mouse_pressed : bool = false
 
 # ==============================================================================
-# Create a new browser or null if failed.
+# Create a new browser and return it or return null if failed.
 # ==============================================================================
 func create_browser(url):
 	var name = str($Panel/VBox/HBox/BrowserList.get_item_count())
@@ -55,11 +56,10 @@ func _on_BrowserList_item_selected(index):
 	pass
 
 # ==============================================================================
-# + button pressed: create a new browser node.
+# '+' button pressed: create a new browser node.
 # ==============================================================================
 func _on_Add_pressed():
-	var url = "http://kpjkradio.com/"
-	var browser = create_browser(url)
+	var browser = create_browser(DEFAULT_PAGE)
 	if browser != null:
 		current_browser = browser
 	pass
@@ -69,7 +69,7 @@ func _on_Add_pressed():
 # ==============================================================================
 func _on_Home_pressed():
 	if current_browser != null:
-		current_browser.load_url(DEFAULT_PAGE)
+		current_browser.load_url(HOME_PAGE)
 	pass
 
 # ==============================================================================
@@ -82,7 +82,7 @@ func _on_BGColor_pressed():
 		$ColorPopup.popup_centered(Vector2(0,0))
 
 # ==============================================================================
-# color picker changed: inject javascript to change background color
+# Color picker changed: inject javascript to change the background color
 # ==============================================================================
 func _on_ColorPicker_color_changed(color):
 	if current_browser != null:
@@ -98,7 +98,7 @@ func _on_Prev_pressed():
 	pass
 
 # ==============================================================================
-# Go to next page
+# Go to next visited page
 # ==============================================================================
 func _on_Next_pressed():
 	if current_browser != null:
@@ -179,7 +179,7 @@ func _ready():
 		push_error($CEF.get_error())
 		return
 
-	current_browser = create_browser(DEFAULT_PAGE)
+	current_browser = create_browser(HOME_PAGE)
 	pass
 
 # ==============================================================================

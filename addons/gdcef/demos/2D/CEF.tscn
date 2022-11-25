@@ -118,6 +118,10 @@ window_title = "Javascript Injection Example: Color Picker"
 [node name="ColorPicker" type="ColorPicker" parent="ColorPopup"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 8.0
+margin_bottom = 8.0
 edit_alpha = false
 presets_enabled = false
 presets_visible = false
@@ -128,7 +132,7 @@ presets_visible = false
 [connection signal="pressed" from="Panel/VBox/HBox/Prev" to="." method="_on_Prev_pressed"]
 [connection signal="pressed" from="Panel/VBox/HBox/Home" to="." method="_on_Home_pressed"]
 [connection signal="pressed" from="Panel/VBox/HBox/BGColor" to="." method="_on_BGColor_pressed"]
-[connection signal="pressed" from="Panel/VBox/HBox/Next" to="." method="_on_Next_pressed"]
 [connection signal="pressed" from="Panel/VBox/HBox/Next" to="." method="_on_Prev_pressed"]
+[connection signal="pressed" from="Panel/VBox/HBox/Next" to="." method="_on_Next_pressed"]
 [connection signal="gui_input" from="Panel/VBox/TextureRect" to="." method="_on_TextureRect_gui_input"]
 [connection signal="color_changed" from="ColorPopup/ColorPicker" to="." method="_on_ColorPicker_color_changed"]

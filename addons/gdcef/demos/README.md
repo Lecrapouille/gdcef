@@ -56,9 +56,11 @@ for the right one.
 Basic browser with multiple tabs (work in progress).
 
 Type inside the URL entry your desired URL. It loads dynamicaly the URL. While the URL is not
-complete the page is not yet loaded. Once the URL is correct and the page load, the URL is saved
-in your current browser tab. To create a new browser tab, click on the `+` button. A default page
-is displayed. Type in the URL to load a new web page.
+complete the page is not yet loaded. Once the URL is correct and the page loaded, the URL is saved
+in your current browser tab. To create a new browser tab, click on the `+` button: a default page
+is displayed, then type in the URL to load a new web page.
+
+The 'color' button shows a basic Javascript injection: it changes the background color.
 
 ![Screenshot](2D/icon.png)
 
