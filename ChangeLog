@@ -1,10 +1,10 @@
-Version 0.?.?:
+Version 0.6.0:
 	* Beware: the API for this version is incompatible with previous version.
 	* Fix API: `on_mouse_wheel` scrolled horizontally and vertically: added `on_mouse_wheel_horizontal` function
       and renamed `on_mouse_wheel` to `on_mouse_wheel_vertical`.
 	* Broken API: `_init` is no longer used but `initialise` taking as argument the CEF configuration.
 	* Broken API: `create_browser` is taking extra argument: the browser configuration.
-	* New API: CEF: `is_alive`, `get_error`. Browser: `get_error`.
+	* New API: CEF: `is_alive`, `get_error`. Browser: `get_error`, `execute_javascript`.
 	* Reorganize demos: rename 2D demo for hello-world demo. Add a real 2D browser application managing several tabs.
 
 Version 0.5.0:
