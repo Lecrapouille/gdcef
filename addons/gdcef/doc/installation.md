@@ -9,10 +9,6 @@ Windows.  We have named this CEF GDNative module `gdcef`.
 
 ## Prerequisites for compiling the native module
 
-In case of doubt, you can also read the
-[documentation](https://github.com/stigmee/install) for installing the original
-project it gives additional information.
-
 ### Operating System
 
 *IMPORTANT:* Currently this module is only working for Linux and for
@@ -61,6 +57,18 @@ python3 -m pip install -r requirements.txt
 
 ## Compilation for Linux and for Windows
 
+**Note concerning Linux:**
+
+For the moment, once the compilation done, the `libcef.so` (CEF), `libgdcef.so`
+(Godot native) and other shared libraries (`libvulkan.so` ...), as artifacts,
+are not found by the system (even if indicated in the .gdnlib file. So for the
+moment, you have to store the path of the build in your `LD_LIBRARY_PATH` (for
+example in your `~/.bashrc` file).
+
+```
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/your/path/gdcef/examples/build
+```
+
 ### Compilation of the native module for Godot 4.0
 
 Not tested. Probably not compatible.
@@ -88,18 +96,6 @@ has:
 - to extract CEF artifacts (*.so *.pak ...) into `build` folder (at the root of
   this repo).
 
-**Note concerning Linux:**
-
-For the moment, the `libcef.so` (CEF), `libgdcef.so` (Godot native) and other
-shared libraries (`libvulkan.so` ...), as artifacts, are not found by the system
-(even if indicated in the .gdnlib file. So for the moment, you have to store the
-path of the build in your `LD_LIBRARY_PATH` (for example in your `~/.bashrc`
-file).
-
-```
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/your/path/gdcef/examples/build
-```
-
 ### Compilation of the native module for Godot 3.4
 
 This module has not been tested with a Godot version lower than 3.4. For Godot
@@ -108,7 +104,7 @@ This module has not been tested with a Godot version lower than 3.4. For Godot
   "3.5"` and replaced with the desired version.
 - Run the build.py like explained for Godot 3.5.
 
-### Update the CEF version
+## Update the CEF version
 
 If desired, you can change the CEF version at any moment (even after having
 compiled CEF).
@@ -123,9 +119,9 @@ compiled CEF).
 - Rerun the `build.py` the older `thirdparty/cef_binary` folder will be replaced
   automatically by the new version.
 
-### I dislike the folder name `build` holding CEF artifacts
+## What to do if I dislike the folder name `build` holding CEF artifacts ?
 
-You can change it!
-Search in [build.py](../build.py) script the line `CEF_ARTIFACTS_FOLDER = "build"`
-and modifiy it. Rerun the `build.py` and adapt gdnlib files in `demos/*/libs/`
-folders.
+You can change it!  Search in [build.py](../build.py) script the line
+`CEF_ARTIFACTS_FOLDER = "build"` and modifiy it. Rerun the `build.py` and adapt
+gdnlib files in `demos/*/libs/` folders. Adapt the code of your gdscript for
+passing it to `$CEF.initialize({"artifacts": "res://build/", ... })`

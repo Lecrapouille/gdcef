@@ -38,12 +38,13 @@ from packaging import version
 
 ###############################################################################
 ### Global user settings
+# CEF version downloaded from https://cef-builds.spotifycdn.com/index.html
 CEF_VERSION = "107.1.11+g26c0b5e+chromium-107.0.5304.110"
-CEF_TARGET = "Release"     # "Debug"
-MODULE_TARGET = "release"  # "debug"
-GODOT_VERSION = "3.5"
-GODOT_CPP_TARGET = MODULE_TARGET
-CMAKE_MIN_VERSION = "3.19"
+CEF_TARGET = "Release"             # or "Debug"
+MODULE_TARGET = "release"          # or "debug"
+GODOT_CPP_TARGET = "release"       # or "debug"
+GODOT_VERSION = "3.5"              # or "3.4"
+CMAKE_MIN_VERSION = "3.19"         # Minimun CMake version needed for compiling CEF
 
 PWD = os.getcwd()
 GDCEF_PATH = os.path.join(PWD, "gdcef")
