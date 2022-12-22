@@ -12,7 +12,7 @@ See this complete [guide](doc/installation.md) for compiling this
 project with the Python3 build script for Linux and Windows. It also explains how
 to update the CEF version.
 
-For hurry people, here are direct steps:
+In summary, here are the direct steps:
 
 ```
 cd addons/gdcef
@@ -35,16 +35,16 @@ This repository contains the following things:
   Godot-cpp binding, the CEF tarball, compile CEF, compile the primary and
   secondary CEF process, and create the CEF artifacts.
 
-*Note:* We are using C++17, but we are not using fancy C++ features, we just to
-use the 17 because we need `filesystem`.
+*Note:* We are using C++17, but we are not using fancy C++ features, we just
+use C++17 because we need `filesystem`.
 
 ## Documentation
 
-We give some documents to help you understanding guts of this project:
+We also provide some documents to help you understanding the nuts and bolts of this project:
 
-- The details design is given in this
-  [document](doc/detailsdesign.md). This document will explain to you
-  the reason of the tree organization, how gdcef are compiled, why you need a
+- The design details are given in this
+  [document](doc/detailsdesign.md). This will explain to you
+  the reason of the tree organization, how gdcef is compiled, why you need a
   secondary process, ...
 
 - The software architecture is given in this
@@ -57,9 +57,9 @@ We give some documents to help you understanding guts of this project:
 ## Running demos
 
 Once the compilation of this project has ended with success, you
-can start your Godot editor 3.5 and goes into the `demos` folder, and try the
-2D demonstration and the 3D demonstration. They are ready to use. See this
-[README](demos/README.md) describing the given demos.
+can start your Godot editor 3.5 and go into the `demos` folder, and try the
+2D/3D example. They are ready to use. See this [README](demos/README.md)
+describing the given demos.
 
 ## What do I have to do next for using CEF in my personal project?
 
@@ -94,9 +94,9 @@ $TextureRect.texture = browser.get_texture()
 ```
 
 You should obtain a minimal CEF browser not reacting to your mouse and key
-binding. See the demo 3D to make your browser tab reacts to our input events.
+binding. See the 3D demo to make your browser tab reacts to our input events.
 
-When exporting your project, make Godot generates your binary application inside
+When exporting your project, Godot generates your binary application inside
 the `build` folder.
 
 ## Important note about the CEF License
@@ -105,10 +105,10 @@ the `build` folder.
 libraries under the LGPL license (see this
 [post](https://www.magpcss.org/ceforum/viewtopic.php?f=6&t=11182)) and compiling
 CEF as a static library will contaminate **your** project under the GPL license
-(which is not the case when compiled as a dynamic library). This will force you
-to shared the code source of your application.
+(which is not the case when compiled as a dynamic library), will force you
+to share the source code of your application.
 
 In our case, CEF is compiled as a static library for Windows (else we got issues,
 see our [patch](patches/CEF/win/)) and for Linux it is a shared library (`libcef.so`
-1 GB, which is heavy). I did not succeed to compile it as static library to make it
+1 GB, which is heavy). I did not succeed in compiling it as a static library to make it
 smaller.

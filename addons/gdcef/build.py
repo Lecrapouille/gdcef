@@ -39,7 +39,7 @@ from packaging import version
 ###############################################################################
 ### Global user settings
 # CEF version downloaded from https://cef-builds.spotifycdn.com/index.html
-CEF_VERSION = "107.1.11+g26c0b5e+chromium-107.0.5304.110"
+CEF_VERSION = "108.4.13+ga98cd4c+chromium-108.0.5359.125"
 CEF_TARGET = "Release"             # or "Debug"
 MODULE_TARGET = "release"          # or "debug"
 GODOT_CPP_TARGET = "release"       # or "debug"
@@ -203,7 +203,7 @@ def check_paths():
         elif p.is_dir():
             rmdir(CEF_ARTIFACTS_BUILD_PATH)
         elif p.exists():
-            fatal('Please remove manually ' + CEF_ARTIFACTS_BUILD_PATH + ' and recall this script')
+            fatal('Please remove ' + CEF_ARTIFACTS_BUILD_PATH + ' manually and recall this script')
 
 ###############################################################################
 ### Download prebuild Chromium Embedded Framework if folder is not present
