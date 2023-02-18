@@ -1,3 +1,8 @@
+Version 0.7.0:
+    * New API: get CEF version and allow to mute/unmute browser.
+	* Update CEF version to 110.
+	* Fix English in READMEs.
+
 Version 0.6.0:
 	* Beware: the API for this version is incompatible with previous version.
 	* Fix API: `on_mouse_wheel` scrolled horizontally and vertically: added `on_mouse_wheel_horizontal` function
