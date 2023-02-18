@@ -56,6 +56,14 @@ func _on_BrowserList_item_selected(index):
 	pass
 
 # ==============================================================================
+# 'M' button pressed: mute/unmute the sound
+# ==============================================================================
+func _on_Mute_pressed():
+	if current_browser != null:
+		current_browser.set_muted(not current_browser.is_muted())
+	pass # Replace with function body.
+
+# ==============================================================================
 # '+' button pressed: create a new browser node.
 # ==============================================================================
 func _on_Add_pressed():

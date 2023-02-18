@@ -64,6 +64,8 @@ void GDBrowserView::_register_methods()
     godot::register_method("on_mouse_middle_up", &GDBrowserView::middleMouseUp);
     godot::register_method("on_mouse_wheel_vertical", &GDBrowserView::mouseWheelVertical);
     godot::register_method("on_mouse_wheel_horizontal", &GDBrowserView::mouseWheelHorizontal);
+    godot::register_method("set_muted", &GDBrowserView::mute);
+    godot::register_method("is_muted", &GDBrowserView::muted);
 
     godot::register_signal<GDBrowserView>("page_loaded", "node", GODOT_VARIANT_TYPE_OBJECT);
 }
@@ -380,4 +382,25 @@ void GDBrowserView::close()
     host->CloseBrowser(true); // TryCloseBrowser();
     m_browser = nullptr;
     m_impl = nullptr;
+}
+
+//------------------------------------------------------------------------------
+bool GDBrowserView::mute(bool mute)
+{
+    CEF_REQUIRE_UI_THREAD();
+    if (m_browser == nullptr)
+        return true;
+
+    m_browser->GetHost()->SetAudioMuted(mute);
+    return m_browser->GetHost()->IsAudioMuted();
+}
+
+//------------------------------------------------------------------------------
+bool GDBrowserView::muted()
+{
+    CEF_REQUIRE_UI_THREAD();
+    if (m_browser == nullptr)
+        return true;
+
+    return m_browser->GetHost()->IsAudioMuted();
 }

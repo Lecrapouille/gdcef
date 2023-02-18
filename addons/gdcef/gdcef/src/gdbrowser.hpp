@@ -399,6 +399,19 @@ public:
     // -------------------------------------------------------------------------
     void keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl);
 
+    //--------------------------------------------------------------------------
+    //! \brief Mute or unmute the browser audio.
+    //! \param[in] state set true for muting the audio else false to unmute.
+    //! \return true if the audio has been muted.
+    //--------------------------------------------------------------------------
+    bool mute(bool state);
+
+    //--------------------------------------------------------------------------
+    //! \brief Return if the browser has its audio muted.
+    //! \return true if the audio is muted.
+    //--------------------------------------------------------------------------
+    bool muted();
+
 private:
 
     // -------------------------------------------------------------------------
