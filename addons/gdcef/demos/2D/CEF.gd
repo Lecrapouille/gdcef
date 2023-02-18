@@ -178,7 +178,7 @@ func _ready():
 		$Panel/VBox/HBox/Info.set_text($CEF.get_error())
 		push_error($CEF.get_error())
 		return
-
+	push_warning("CEF version: " + $CEF.get_full_version())
 	current_browser = create_browser(HOME_PAGE)
 	pass
 

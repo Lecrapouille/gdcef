@@ -127,6 +127,8 @@ func _ready():
 	if !$CEF.initialize({"artifacts":resource_path, "incognito":true, "locale":"en-US"}):
 		push_error("Failed initializing CEF")
 		get_tree().quit()
+	else:
+		push_warning("CEF version: " + $CEF.get_full_version())
 		pass
 
 	### Browsers ###############################################################
@@ -157,7 +159,7 @@ func _ready():
 	# Connect the event when a page has bee loaded and wait 6 seconds before
 	# loading the page.
 	right.connect("page_loaded", self, "_on_page_loaded")
-	$Timer.connect("timeout", self, "_on_Timer_timeout")
+	var _err = $Timer.connect("timeout", self, "_on_Timer_timeout")
 	pass
 
 # ==============================================================================

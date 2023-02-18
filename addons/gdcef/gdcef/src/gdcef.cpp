@@ -86,6 +86,8 @@ void GDCef::_register_methods()
 
     godot::register_method("initialize", &GDCef::initialize);
     godot::register_method("_process", &GDCef::_process);
+    godot::register_method("get_full_version", &GDCef::version);
+    godot::register_method("get_version_part", &GDCef::versionPart);
     godot::register_method("create_browser", &GDCef::createBrowser);
     godot::register_method("shutdown", &GDCef::shutdown);
     godot::register_method("is_alive", &GDCef::isAlive);
@@ -173,6 +175,18 @@ bool GDCef::initialize(godot::Dictionary config)
 bool GDCef::isAlive()
 {
     return m_initialized && m_impl;
+}
+
+//------------------------------------------------------------------------------
+int GDCef::versionPart(int entry)
+{
+    return cef_version_info(entry);
+}
+
+//------------------------------------------------------------------------------
+godot::String GDCef::version()
+{
+    return CEF_VERSION;
 }
 
 //------------------------------------------------------------------------------

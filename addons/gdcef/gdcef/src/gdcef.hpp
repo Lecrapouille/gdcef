@@ -64,6 +64,7 @@
 // Chromium Embedded Framework
 #  include "cef_client.h"
 #  include "cef_app.h"
+#  include "cef_version.h"
 
 class GDBrowserView;
 
@@ -86,8 +87,8 @@ public: // Godot interfaces.
     //! \note Since _init() does not accept parameters, you have to call this
     //! method instead !
     //! \param[in] config dictionary of CEF config with default values:
-    //!   - cef_folder_path := {"artifacts", CEF_ARTIFACTS_FOLDER}
-    //!   - cef_folder_path := {"exported_artifacts", application_real_path()}
+    //!  : Cef_folder_path := {"artifacts", CEF_ARTIFACTS_FOLDER}
+    //!  : Cef_folder_path := {"exported_artifacts", application_real_path()}
     //!   - {"incognito", false}
     //!   - {"cache_path", cef_folder_path / "cache"}
     //!   - {"root_cache_path", cef_folder_path / "cache"}
@@ -202,6 +203,26 @@ public:
     //! \brief Allow Godot script to release CEF.
     // -------------------------------------------------------------------------
     void shutdown();
+
+    // -------------------------------------------------------------------------
+    //! \brief Return CEF version formatted as string.
+    // -------------------------------------------------------------------------
+    godot::String version();
+
+    // -------------------------------------------------------------------------
+    //! \brief Return CEF version information for the libcef library.
+    //! \param[in] entry parameter describes which version component will be
+    //! returned:
+    //!   0: CEF_VERSION_MAJOR
+    //!   1: CEF_VERSION_MINOR
+    //!   2: CEF_VERSION_PATCH
+    //!   3: CEF_COMMIT_NUMBER
+    //!   4: CHROME_VERSION_MAJOR
+    //!   5: CHROME_VERSION_MINOR
+    //!   6: CHROME_VERSION_BUILD
+    //!   7: CHROME_VERSION_PATCH
+    // -------------------------------------------------------------------------
+    int versionPart(int entry);
 
     // -------------------------------------------------------------------------
     //! \brief Const getter CEF settings.

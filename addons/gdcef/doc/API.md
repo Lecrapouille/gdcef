@@ -13,13 +13,25 @@ Chromium Embedded Framework. This class can create instances of `GDBrowserView`
 
 | Godot function name | Arguments                                       | Return         | Comment                                                                                                                                                                                                 |
 |---------------------|-------------------------------------------------|----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `_init`             |                                                 |                | Dummy function. Use instead `initialize`. |
+| `_init`             |                                                 |                | Dummy function. Use instead `initialize`.                                                                                                                                                               |
 | `initialize`        | `config`: godot::Dictionary                     | bool           | Replace Godot _init() and passing optional CEF configuration. Return false in case of failure or double initialisation.                                                                                 |
-| `is_alive`          |                                                 | bool           | Return if the `GDCef` is alive.                                                                                                                                                                                |
+| `is_alive`          |                                                 | bool           | Return if the `GDCef` is alive.                                                                                                                                                                         |
 | `_process`          | `dt`: float                                     | void           | Hidden function called automatically by Godot and call CEF internal pump messages. `dt` is not used.                                                                                                    |
 | `create_browser`    | `url`: string, `name`: string, `width`: int, `height`: int, `settings`: godot::Dictionary | GDBrowserView* | Create a browser tab and store its instance as child node. `url`: the page link. `name`: the browser name to be searched inside the scene graph. `width`: the initial width dimension of the document. `height`: the initial height dimension of the document. `settings` optional settings for the created browser. |
-| `shutdown`          |                                                 |                | Release CEF memory and sub CEF processes are notified that the application is exiting. All browsers are destroyed. `GDCef` is no more alive.                                                                                     |
+| `shutdown`          |                                                 |                | Release CEF memory and sub CEF processes are notified that the application is exiting. All browsers are destroyed. `GDCef` is no more alive.                                                            |
 | `get_error`         |                                                 | String         | Return the latest error.                                                                                                                                                                                |
+| `get_version`       |                                                 | String         | Return the full CEF version as string.                                                                                                                                                                  |
+| `get_version_part`  | `entry`: int                                    | int            | Return part of the CEF version as integer.                                                                                                                                                              |
+
+Depending for `entry` concerning the `get_version_part`:
+- 0: CEF_VERSION_MAJOR
+- 1: CEF_VERSION_MINOR
+- 2: CEF_VERSION_PATCH
+- 3: CEF_COMMIT_NUMBER
+- 4: CHROME_VERSION_MAJOR
+- 5: CHROME_VERSION_MINOR
+- 6: CHROME_VERSION_BUILD
+- 7: CHROME_VERSION_PATCH
 
 ### CEF configuration: initialize()
 
