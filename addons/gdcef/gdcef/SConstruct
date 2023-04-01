@@ -146,13 +146,13 @@ elif platform == 'windows':
 # Unix compilation flags
 if platform == 'linux' or platform == 'osx':
     # gcc/clang compilation flags
-    env.Append(CXXFLAGS=['-Wall', '-Wextra', '-Wuninitialized', '-Wundef',
-                         '-Wunused', '-Wunused-result', '-Wunused-parameter',
-                         '-Wtype-limits', '-Wcast-align', '-Wcast-qual',
-                         '-Wconversion', '-Wfloat-equal', '-Wpointer-arith',
-                         '-Wswitch-enum', '-Wpacked', '-Wold-style-cast',
-                         '-Wdeprecated', '-Wvariadic-macros', '-Wvla',
-                         '-Wsign-conversion'])
+#    env.Append(CXXFLAGS=['-Wall', '-Wextra', '-Wuninitialized', '-Wundef',
+#                         '-Wunused', '-Wunused-result', '-Wunused-parameter',
+#                         '-Wtype-limits', '-Wcast-align', '-Wcast-qual',
+#                         '-Wconversion', '-Wfloat-equal', '-Wpointer-arith',
+#                         '-Wswitch-enum', '-Wpacked', '-Wold-style-cast',
+#                         '-Wdeprecated', '-Wvariadic-macros', '-Wvla',
+#                         '-Wsign-conversion'])
 
     # clang specific flags
     if env['use_llvm']:
@@ -172,13 +172,20 @@ env.Append(CXXFLAGS=['-DCEF_ARTIFACTS_FOLDER=' + env['cef_artifacts_folder']])
 
 # Pathes of Godot header files
 env.Append(CPPPATH=['.',
+                    # Godot-4
+                    godot_api_path + '/include/godot_cpp',
+                    godot_api_path + '/gdextension',
+                    godot_api_path + '/gen/include/godot_cpp/classes',
+                    godot_api_path + '/gen/include',
+                    # Godot-3
                     godot_api_path + '/godot-headers',
                     godot_api_path + '/include',
                     godot_api_path + '/include/core',
                     godot_api_path + '/include/gen'])
 
 # Godot library that is linked against our library
-libgodot = 'libgodot-cpp.' + platform + '.' + compile_mode + '.' + arch_ext
+#libgodot = 'libgodot-cpp.' + platform + '.' + compile_mode + '.' + arch_ext
+libgodot = libgodot = 'libgodot-cpp.' + platform + '.template_debug.x86_64.a'
 env.Append(LIBS=[libgodot], LIBPATH=[godot_api_path + '/bin'])
 
 # Pathes of CEF header files
@@ -206,7 +213,9 @@ env.Append(LIBS = [libcef, 'libcef_dll_wrapper'],
 env.Append(CPPPATH=['src/'])
 
 # Compile the library
-sources = Glob('src/*.cpp')
+sources = ['src/helper_files.cpp', 'src/browser_io.cpp', 'src/gdcef.cpp', 'src/gdbrowser.cpp', 'src/gdextension.cpp']
+# sources = Glob('src/*.cpp')
+# sources = ['src/helper_files.cpp', 'src/browser_io.cpp', 'src/gdcef.cpp', 'src/gdbrowser.cpp', 'src/gdnative.cpp']
 library = env.SharedLibrary(target=target_path + '/' + target_library, source=sources)
 Default(library)
 

@@ -37,6 +37,7 @@
 #      pragma GCC diagnostic ignored "-Wfloat-equal"
 #      pragma GCC diagnostic ignored "-Wpedantic"
 #      pragma GCC diagnostic ignored "-Wshadow"
+#      pragma GCC diagnostic ignored "-Wundef"
 #      if defined(__clang__)
 #        pragma clang diagnostic push
 #        pragma clang diagnostic ignored "-Wcast-align"
@@ -47,12 +48,19 @@
 #      endif
 #  endif
 
-// Godot
-#  include "Godot.hpp"
-#  include "GDScript.hpp"
-#  include "Node.hpp"
-#  include "ImageTexture.hpp"
-#  include "GlobalConstants.hpp"
+// Godot 3
+//#  include "Godot.hpp"
+//#  include "GDScript.hpp"
+//#  include "Node.hpp"
+//#  include "ImageTexture.hpp"
+//#  include "GlobalConstants.hpp"
+
+// Godot 4
+#  include "godot.hpp"
+#  include "gd_script.hpp"
+#  include "node.hpp"
+#  include "image_texture.hpp"
+#  include "global_constants.hpp"
 
 // Chromium Embedded Framework
 #  include "cef_render_handler.h"
@@ -82,12 +90,19 @@ public: // Godot interfaces
     //! \brief Static function that Godot will call to find out which methods
     //! can be called on our NativeScript and which properties it exposes.
     // -------------------------------------------------------------------------
-    static void _register_methods();
+    //static void _register_methods();
+
+//private:
 
     // -------------------------------------------------------------------------
     //! \brief Godot stuff
     // -------------------------------------------------------------------------
-    GODOT_CLASS(GDBrowserView, godot::Node);
+    //GODOT_CLASS(GDBrowserView, godot::Node);
+    GDCLASS(GDBrowserView, godot::Node);
+
+protected:
+
+    static void _bind_methods();
 
 private: // CEF interfaces
 
@@ -456,7 +471,8 @@ private:
     //! \brief Godot's temporary image (CEF => Godot)
     godot::Ref<godot::ImageTexture> m_texture;
     godot::Ref<godot::Image> m_image;
-    godot::PoolByteArray m_data;
+    // godot::PoolByteArray m_data;
+    godot::PackedByteArray m_data;
 
     //! \brief Mouse cursor position on the main window
     int m_mouse_x = 0;

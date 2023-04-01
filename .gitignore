@@ -6,6 +6,7 @@ addons/gdcef/demos/*/build
 GPUCache
 demo/build
 DawnCache
+extension_api.json
 
 # Backup files
 *~

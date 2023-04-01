@@ -43,8 +43,9 @@ CEF_VERSION = "110.0.27+g1296c82+chromium-110.0.5481.100"
 CEF_TARGET = "Release"             # or "Debug"
 MODULE_TARGET = "release"          # or "debug"
 GODOT_CPP_TARGET = "release"       # or "debug"
-GODOT_VERSION = "3.5"              # or "3.4"
+GODOT_VERSION = "4.0"              # or "master" or "3.5" or "3.4"
 CMAKE_MIN_VERSION = "3.19"         # Minimun CMake version needed for compiling CEF
+GODOT_EXECUTABLE = "godot"         # Adapt the path to your Godot-4 path (not used for Godot-3)
 
 PWD = os.getcwd()
 GDCEF_PATH = os.path.join(PWD, "gdcef")
@@ -206,6 +207,12 @@ def check_paths():
             fatal('Please remove manually ' + CEF_ARTIFACTS_BUILD_PATH + ' and recall this script')
 
 ###############################################################################
+### Check if the Godot used is Godot-4
+# FIXME do proper check
+def is_godot4():
+    return (GODOT_VERSION == "4.0") or (GODOT_VERSION == "master")
+
+###############################################################################
 ### Download prebuild Chromium Embedded Framework if folder is not present
 def download_cef():
     if OSTYPE == "Linux":
@@ -344,26 +351,30 @@ def download_godot_cpp():
         mkdir(GODOT_CPP_API_PATH)
         run(["git", "clone", "--recursive", "-b", GODOT_VERSION,
              "https://github.com/godotengine/godot-cpp", GODOT_CPP_API_PATH])
+        if is_godot4():
+            run([GODOT_EXECUTABLE, "--dump-extension-api", "extension_api.json"])
 
 ###############################################################################
 ### Compile Godot cpp wrapper needed for our gdnative code: CEF ...
 def compile_godot_cpp():
-    lib = os.path.join(GODOT_CPP_API_PATH, "bin", "libgodot-cpp*" + GODOT_CPP_TARGET + "*")
-    if not os.path.exists(lib):
+    #lib = os.path.join(GODOT_CPP_API_PATH, "bin", "libgodot-cpp.linux.template_debug.x86_64.a") # "libgodot-cpp*" + GODOT_CPP_TARGET + "*")
+    if 1 == 1: #not os.path.exists(lib):
         info("Compiling Godot C++ API (inside " + GODOT_CPP_API_PATH + ") ...")
         os.chdir(GODOT_CPP_API_PATH)
         if OSTYPE == "Linux":
-            run(["scons", "platform=linux", "target=" + GODOT_CPP_TARGET,
-                 "--jobs=" + NPROC], check=True)
+            run(["scons", "platform=linux", #"target=" + GODOT_CPP_TARGET,
+                 "custom_api_file=" + os.path.join(PWD, "extension_api.json"), "--jobs=" + NPROC], check=True)
         elif OSTYPE == "Darwin":
             run(["scons", "platform=osx", "macos_arch=" + ARCHI,
-                 "target=" + GODOT_CPP_TARGET, "--jobs=" + NPROC], check=True)
+                 "custom_api_file=extension_api.json", "target=" + GODOT_CPP_TARGET,
+                 "--jobs=" + NPROC], check=True)
         elif OSTYPE == "MinGW":
             run(["scons", "platform=windows", "use_mingw=True",
-                 "target=" + GODOT_CPP_TARGET, "--jobs=" + NPROC], check=True)
+                 "custom_api_file=extension_api.json", "target=" + GODOT_CPP_TARGET,
+                 "--jobs=" + NPROC], check=True)
         elif OSTYPE == "Windows":
             run(["scons", "platform=windows", "target=" + GODOT_CPP_TARGET,
-                 "--jobs=" + NPROC], check=True)
+                 "custom_api_file=extension_api.json", "--jobs=" + NPROC], check=True)
         else:
             fatal("Unknown architecture " + OSTYPE + ": I dunno how to compile Godot-cpp")
 
@@ -379,6 +390,7 @@ def gdnative_scons_cmd(plateform):
              "target=" + MODULE_TARGET, "--jobs=" + NPROC,
              "arch=" + ARCHI, "platform=" + plateform], check=True)
     else:
+        info("QQQQQQ")
         run(["scons", "api_path=" + GODOT_CPP_API_PATH,
              "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER + "\\\"",
              "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
