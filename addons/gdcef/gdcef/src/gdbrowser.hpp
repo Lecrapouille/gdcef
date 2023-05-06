@@ -97,6 +97,7 @@ private: // CEF interfaces
     //! To avoid this we have to create this intermediate class.
     // *************************************************************************
     class Impl: public CefRenderHandler,
+                public CefAudioHandler,
                 public CefLoadHandler,
                 public CefClient
     {
@@ -127,6 +128,11 @@ private: // CEF interfaces
         //! \brief Return the handler for off-screen rendering events.
         // ---------------------------------------------------------------------
         virtual CefRefPtr<CefRenderHandler> GetRenderHandler() override
+        {
+            return this;
+        }
+
+        virtual CefRefPtr<CefAudioHandler> GetAudioHandler() override
         {
             return this;
         }
@@ -168,6 +174,34 @@ private: // CEF interfaces
         {
             m_owner.onPaint(browser, type, dirtyRects, buffer, width, height);
         }
+
+    private: // CefAudioHandler interfaces
+
+        // 
+        virtual void OnAudioStreamStarted(CefRefPtr<CefBrowser> browser,
+            const CefAudioParameters& params,
+            int channels) override
+        {
+            m_owner.onAudioStart(browser, params, channels);
+        }
+
+        //
+        virtual void OnAudioStreamPacket(CefRefPtr<CefBrowser> browser,
+                              const float** data, int frames, int64 pts) override
+        {
+            m_owner.onAudio(browser, data, frames, pts);
+        }
+
+        //
+        virtual void OnAudioStreamStopped(CefRefPtr<CefBrowser> browser) override
+        {
+        }
+
+        //
+        virtual void OnAudioStreamError(CefRefPtr<CefBrowser> browser, const CefString& message) override
+        {
+        }
+        
 
     private: // CefLoadHandler interfaces
 
@@ -434,6 +468,12 @@ private:
                  CefRenderHandler::PaintElementType type,
                  const CefRenderHandler::RectList& dirtyRects,
                  const void* buffer, int width, int height);
+    
+    void onAudioStart(CefRefPtr<CefBrowser> browser,
+        const CefAudioParameters& params, int channels);
+    // 
+    void onAudio(CefRefPtr<CefBrowser> browser,
+        const float** data, int frames, int64 pts);
 
     // -------------------------------------------------------------------------
     //! \brief GDBrowserView::Impl::GetViewRect
@@ -457,6 +497,11 @@ private:
     godot::Ref<godot::ImageTexture> m_texture;
     godot::Ref<godot::Image> m_image;
     godot::PoolByteArray m_data;
+
+    // Audio
+    godot::PoolVector2Array audioBuffer;
+    int audioChannelLayoutSize = -1;
+
 
     //! \brief Mouse cursor position on the main window
     int m_mouse_x = 0;

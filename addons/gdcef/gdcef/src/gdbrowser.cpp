@@ -68,6 +68,7 @@ void GDBrowserView::_register_methods()
     godot::register_method("is_muted", &GDBrowserView::muted);
 
     godot::register_signal<GDBrowserView>("page_loaded", "node", GODOT_VARIANT_TYPE_OBJECT);
+    godot::register_signal<GDBrowserView>("audio_data", "data", GODOT_VARIANT_TYPE_POOL_VECTOR2_ARRAY);
 }
 
 //------------------------------------------------------------------------------
@@ -174,6 +175,37 @@ void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
     m_image->create_from_data(width, height, false, godot::Image::FORMAT_RGBA8,
                               m_data);
     m_texture->create_from_image(m_image, godot::Texture::FLAG_VIDEO_SURFACE);
+}
+
+
+//------------------------------------------------------------------------------
+  /// Called on the audio stream thread when a PCM packet is received for the
+  /// stream. |data| is an array representing the raw PCM data as a floating
+  /// point type, i.e. 4-byte value(s). |frames| is the number of frames in the
+  /// PCM packet. |pts| is the presentation timestamp (in milliseconds since the
+  /// Unix Epoch) and represents the time at which the decompressed packet
+  /// should be presented to the user. Based on |frames| and the
+  /// |channel_layout| value passed to OnAudioStreamStarted you can calculate
+  /// the size of the |data| array in bytes.
+
+void GDBrowserView::onAudioStart(CefRefPtr<CefBrowser> browser,
+    const CefAudioParameters& params, int channels)
+{
+    audioChannelLayoutSize = (int)params.channel_layout;
+}
+
+void GDBrowserView::onAudio(CefRefPtr<CefBrowser> browser,
+    const float** data, int frames, int64 pts)
+{
+    if (data == nullptr || frames == 0 || audioChannelLayoutSize == -1) {
+        return;
+    }
+
+    audioBuffer.resize(frames);
+    for (int i = 0; i < frames; i++){
+        audioBuffer.set(i, godot::Vector2(data[0][i], data[0][i]));
+    }
+    emit_signal("audio_data", audioBuffer);
 }
 
 //------------------------------------------------------------------------------
