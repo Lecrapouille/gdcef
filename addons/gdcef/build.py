@@ -39,7 +39,7 @@ from packaging import version
 ###############################################################################
 ### Global user settings
 # CEF version downloaded from https://cef-builds.spotifycdn.com/index.html
-CEF_VERSION = "110.0.27+g1296c82+chromium-110.0.5481.100"
+CEF_VERSION = "113.3.5+g0b33855+chromium-113.0.5672.129"
 CEF_TARGET = "Release"             # or "Debug"
 MODULE_TARGET = "release"          # or "debug"
 GODOT_CPP_TARGET = "release"       # or "debug"
