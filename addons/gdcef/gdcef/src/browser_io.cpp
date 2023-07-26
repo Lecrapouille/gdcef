@@ -199,7 +199,7 @@ void GDBrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool c
         return;
 
     CefKeyEvent event;
-    char16 key16b = char16(key);
+    char16_t key16b = char16_t(key);
     if (pressed == true)
     {
         // set the event modifier if they are activated
@@ -249,7 +249,7 @@ void GDBrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool c
                 event.unmodified_character = 13;
             }
 
-            event.character = char16(event.windows_key_code);
+            event.character = char16_t(event.windows_key_code);
             event.native_key_code = event.windows_key_code;
             event.type = KEYEVENT_KEYDOWN;
             m_browser->GetHost()->SendKeyEvent(event);
@@ -323,7 +323,7 @@ void GDBrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool c
             }
 
             event.type = KEYEVENT_KEYDOWN;
-            event.character = char16(event.windows_key_code);
+            event.character = char16_t(event.windows_key_code);
             event.native_key_code = event.windows_key_code;
             m_browser->GetHost()->SendKeyEvent(event);
         }
