@@ -31,14 +31,17 @@ use the 17 because we need `filesystem`.
   [script](https://github.com/stigmee/doc-internal/blob/master/doc/install_latest_cmake.sh).
 - For macOS X you can install [homebrew](https://brew.sh/index_fr).
 - For Windows users you will have to install:
-  - Visual Studio: https://visualstudio.microsoft.com/en/vs/ (mandatory)
+  - Visual Studio: https://visualstudio.microsoft.com/en/vs/ (mandatory). Do not forget to
+    install Windows SDK (i.e. 10.0.20348.0) in Visual Studio.
   - Python3: https://www.python.org/downloads/windows/
   - CMake: https://cmake.org/download/
   - Ninja: https://ninja-build.org/
   - Git: https://git-scm.com/download/win
+  - *Note:* I have installed them for their official website, I did not tried to install them
+    from the `winget` command.
 
 To compile GDCef for Windows:
-- Ensure VS2022 is installed
+- Ensure VS2022 is installed.
 - Open an **x64 Native Tools Command Prompt for VS 2022**, with
   **Administrator** privilege (this should be available in the start menu under
   Visual Studio 2022). This ensures the environment is correctly set to use the
@@ -71,7 +74,8 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/your/path/gdcef/examples/build
 
 ### Compilation of the native module for Godot 4.0
 
-Not tested. Probably not compatible.
+This module is not compatible with Godot 4.
+See the [dev-godot-4 branch](https://github.com/Lecrapouille/gdcef/tree/dev-godot-4).
 
 ### Compilation of the native module for Godot 3.5
 
@@ -87,7 +91,7 @@ cd addons/gdcef
 Please be patient! The script needs some time for completing its job since it
 has:
 - to download CEF from this website https://cef-builds.spotifycdn.com/index.html
-  (600 MB) and extract the tarball inside `../thirdparty/cef_binary`
+  (+600 MB) and extract the tarball inside `../thirdparty/cef_binary`
   and compile it.
 - to git clone [godot-cpp](https://github.com/godotengine/godot-cpp) into
   `../thirdparty/godot-3.5` and compile it.
@@ -96,7 +100,7 @@ has:
 - to extract CEF artifacts (*.so *.pak ...) into `build` folder (at the root of
   this repo).
 
-### Compilation of the native module for Godot 3.4
+### Compilation of the native module for Godot 3.4 and under
 
 This module has not been tested with a Godot version lower than 3.4. For Godot
 3.4:
@@ -121,7 +125,12 @@ compiled CEF).
 
 ## What to do if I dislike the folder name `build` holding CEF artifacts ?
 
-You can change it!  Search in [build.py](../build.py) script the line
+You can change it! Search in [build.py](../build.py) script the line
 `CEF_ARTIFACTS_FOLDER = "build"` and modifiy it. Rerun the `build.py` and adapt
-gdnlib files in `demos/*/libs/` folders. Adapt the code of your gdscript for
-passing it to `$CEF.initialize({"artifacts": "res://build/", ... })`
+gdnlib files in `demos/*/libs/` folders. This method will force Godot knowing
+default path. Alternatively, adapt the code of your gdscript for
+passing the path (see the API for more information):
+
+```
+$CEF.initialize({"artifacts": "res://build/", ... })
+```

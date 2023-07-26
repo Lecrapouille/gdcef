@@ -1,7 +1,7 @@
 # CEF gdscript API
 
 Two classes:
-- the CEF process `GDCef` making alive browsers
+- the CEF process `GDCef` making alive browsers.
 - the browser `GDBrowserView` displaying web document.
 
 ## GDCef
