@@ -60,6 +60,9 @@ GDCEF_EXAMPLES_PATH = os.path.join(PWD, "demos")
 CEF_ARTIFACTS_FOLDER = "build"
 CEF_ARTIFACTS_BUILD_PATH = os.path.realpath(os.path.join("../../" + CEF_ARTIFACTS_FOLDER))
 
+# Build system used by Godot
+SCONS = ["scons"] # For some people ["python", "-m", "SCons"]
+
 ###############################################################################
 ### Type of operating system, AMD64, ARM64 ...
 ARCHI = machine()
@@ -353,16 +356,16 @@ def compile_godot_cpp():
         info("Compiling Godot C++ API (inside " + GODOT_CPP_API_PATH + ") ...")
         os.chdir(GODOT_CPP_API_PATH)
         if OSTYPE == "Linux":
-            run(["scons", "platform=linux", "target=" + GODOT_CPP_TARGET,
+            run(SCONS + ["platform=linux", "target=" + GODOT_CPP_TARGET,
                  "--jobs=" + NPROC], check=True)
         elif OSTYPE == "Darwin":
-            run(["scons", "platform=osx", "macos_arch=" + ARCHI,
+            run(SCONS + ["platform=osx", "macos_arch=" + ARCHI,
                  "target=" + GODOT_CPP_TARGET, "--jobs=" + NPROC], check=True)
         elif OSTYPE == "MinGW":
-            run(["scons", "platform=windows", "use_mingw=True",
+            run(SCONS + ["platform=windows", "use_mingw=True",
                  "target=" + GODOT_CPP_TARGET, "--jobs=" + NPROC], check=True)
         elif OSTYPE == "Windows":
-            run(["scons", "platform=windows", "target=" + GODOT_CPP_TARGET,
+            run(SCONS + ["platform=windows", "target=" + GODOT_CPP_TARGET,
                  "--jobs=" + NPROC], check=True)
         else:
             fatal("Unknown architecture " + OSTYPE + ": I dunno how to compile Godot-cpp")
@@ -373,13 +376,13 @@ def gdnative_scons_cmd(plateform):
     if GODOT_CPP_API_PATH == '':
         fatal('Please download and compile https://github.com/godotengine/godot-cpp and set GODOT_CPP_API_PATH')
     if OSTYPE == "Darwin":
-        run(["scons", "api_path=" + GODOT_CPP_API_PATH,
+        run(SCONS + ["api_path=" + GODOT_CPP_API_PATH,
              "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER + "\\\"",
              "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
              "target=" + MODULE_TARGET, "--jobs=" + NPROC,
              "arch=" + ARCHI, "platform=" + plateform], check=True)
     else:
-        run(["scons", "api_path=" + GODOT_CPP_API_PATH,
+        run(SCONS + ["api_path=" + GODOT_CPP_API_PATH,
              "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER + "\\\"",
              "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
              "target=" + MODULE_TARGET, "--jobs=" + NPROC,
