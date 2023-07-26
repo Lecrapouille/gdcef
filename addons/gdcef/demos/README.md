@@ -45,15 +45,15 @@ directly (no prerequesites).
 
 ## Demo 00: Hello CEF
 
-A "Hello-world" demo showing a 2D GUI with multiple CEF browser tabs. Only mouse and keyboard
-events for the left browser are managed since a timer is loading URLs one by one
-for the right one.
+A "Hello-world" demo showing a 2D GUI split vertically in two browsers. Only the left browser
+accept mouse and keyboard events. The right browser does not allow interaction since a timer
+is used for loading different URLs one by one.
 
 ![Screenshot](HelloCEF/icon.png)
 
 ## Demo 01: CEF browser in 2D
 
-Basic browser with multiple tabs (work in progress).
+Basic browser with multiple tabs to show all API features.
 
 Type inside the URL entry your desired URL. It loads dynamicaly the URL. While the URL is not
 complete the page is not yet loaded. Once the URL is correct and the page loaded, the URL is saved
@@ -66,7 +66,7 @@ The 'color' button shows a basic Javascript injection: it changes the background
 
 ## Demo 02: CEF browser in 3D
 
-A demo showing a 2D GUI with a single CEF browser tab. The tab is rotating inside a 3D scene.
+A demo showing a 3D GUI with a single CEF browser tab. The tab is rotating inside a 3D scene.
 You can use your mouse and keyboard to surf on the web :)
 
 This demo is based on the asset library: https://godotengine.org/asset-library/asset/127

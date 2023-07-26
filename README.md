@@ -40,12 +40,12 @@ project and add gdns and gdnlib files to refer `libgdcef.so` or `libgdcef.dll`.
 
 ## Gallery
 
-Projects interested in / using this module. Please do not hesitate to share your
-project links and pictures by making a GitHub pull request.
+If you are using this project, please do not hesitate to share your project links and
+pictures by making a GitHub pull request, I'll add them in this gallery. Thanks to
+teams for having shared the current gallery:
 
-- https://elitemeta.city/
+- https://elitemeta.city
 
-Click to see on the image to see the Elitemeta video shared on IPFS.
 [![elitemeta](addons/gdcef/doc/gallery/elitemeta.jpg)](https://ipfs.io/ipfs/QmaL7NY5qs3AtAdcX8vFhqaHwJeTMKfP3PbzcHZBLmo1QQ?filename=elitemeta_0.mp4)
-Thanks to the team for having shared this video.
 
+*Click to see on the image to see the Elitemeta video shared on IPFS.*
