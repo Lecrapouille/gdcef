@@ -39,7 +39,7 @@ from packaging import version
 ###############################################################################
 ### Global user settings
 # CEF version downloaded from https://cef-builds.spotifycdn.com/index.html
-CEF_VERSION = "115.3.9+gaa348cb+chromium-115.0.5790.99"
+CEF_VERSION = "119.4.3+gc76a3b9+chromium-119.0.6045.159"
 CEF_TARGET = "Release"             # or "Debug"
 MODULE_TARGET = "release"          # or "debug"
 GODOT_CPP_TARGET = "release"       # or "debug"
@@ -468,7 +468,8 @@ def run_godot_example():
         info("For Unix systems you have to make your system know where to find shared"
              " libraries needed for CEF. Save the following command in your environment"
              " (~/.bashrc i.e.):\n\n"
-             "   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:" + CEF_ARTIFACTS_BUILD_PATH + "\n")
+             "   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:" + CEF_ARTIFACTS_BUILD_PATH + "\n"
+             "   export LD_PRELOAD=" + CEF_ARTIFACTS_BUILD_PATH + "/libcef.so\n")
     info("Once done, you can run your Godot editor " + GODOT_VERSION + " and try"
          " one of the demos located in '" + GDCEF_EXAMPLES_PATH + "'.\n\nHave fun!")
 
