@@ -111,7 +111,6 @@ func _input(event):
 			browser.on_key_pressed(event.unicode, event.pressed, event.shift, event.alt, event.control)
 		else:
 			browser.on_key_pressed(event.scancode, event.pressed, event.shift, event.alt, event.control)
-
 	pass
 
 # ==============================================================================

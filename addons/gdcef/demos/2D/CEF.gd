@@ -173,9 +173,20 @@ func _input(event):
 		return
 	if not event is InputEventKey:
 		return
-	current_browser.on_key_pressed(
-		event.unicode if event.unicode != 0 else event.scancode,
-		event.pressed, event.shift, event.alt, event.control)
+	if event is InputEventKey:
+		if event.unicode != 0:
+			current_browser.on_key_pressed(event.unicode, event.pressed, event.shift, event.alt, event.control)
+		else:
+			current_browser.on_key_pressed(event.scancode, event.pressed, event.shift, event.alt, event.control)
+	pass
+
+# ==============================================================================
+# Windows has resized
+# ==============================================================================
+func _on_TextureRect_resized():
+	if current_browser == null:
+		return
+	current_browser.resize($Panel/VBox/TextureRect.get_size().x, $Panel/VBox/TextureRect.get_size().y)
 	pass
 
 # ==============================================================================
