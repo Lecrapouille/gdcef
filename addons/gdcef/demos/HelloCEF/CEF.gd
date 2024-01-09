@@ -70,17 +70,17 @@ func _on_TextureRect_gui_input(event):
 		$Panel/Label.set_text("Failed getting Godot node " + browser1)
 		return
 	if event is InputEventMouseButton:
-		if event.button_index == BUTTON_WHEEL_UP:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			browser.on_mouse_wheel_vertical(2)
-		elif event.button_index == BUTTON_WHEEL_DOWN:
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			browser.on_mouse_wheel_vertical(-2)
-		elif event.button_index == BUTTON_LEFT:
+		elif event.button_index == MOUSE_BUTTON_LEFT:
 			mouse_pressed = event.pressed
 			if event.pressed == true:
 				browser.on_mouse_left_down()
 			else:
 				browser.on_mouse_left_up()
-		elif event.button_index == BUTTON_RIGHT:
+		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			mouse_pressed = event.pressed
 			if event.pressed == true:
 				browser.on_mouse_right_down()
@@ -107,10 +107,7 @@ func _input(event):
 		$Panel/Label.set_text("Failed getting Godot node " + browser1)
 		return
 	if event is InputEventKey:
-		if event.unicode != 0:
-			browser.on_key_pressed(event.unicode, event.pressed, event.shift, event.alt, event.control)
-		else:
-			browser.on_key_pressed(event.scancode, event.pressed, event.shift, event.alt, event.control)
+		browser.on_key_pressed(event.unicode, event.pressed, event.shift, event.alt, event.control)
 
 	pass
 
@@ -145,7 +142,7 @@ func _ready():
 
 	var S = $Panel/TextureRect.get_size()
 	var browser = $CEF.create_browser("https://github.com/Lecrapouille/gdcef", browser1, S.x, S.y, {"javascript":true})
-	browser.connect("page_loaded", self, "_on_page_loaded")
+	browser.connect("page_loaded", _on_page_loaded)
 	$Panel/TextureRect.texture = browser.get_texture()
 
 # ==============================================================================

@@ -48,17 +48,17 @@ func _on_Texture1_gui_input(event):
 		$Panel/Label.set_text("Failed getting Godot node 'left'")
 		return
 	if event is InputEventMouseButton:
-		if event.button_index == BUTTON_WHEEL_UP:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			browser.on_mouse_wheel_vertical(2)
-		elif event.button_index == BUTTON_WHEEL_DOWN:
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			browser.on_mouse_wheel_vertical(-2)
-		elif event.button_index == BUTTON_LEFT:
+		elif event.button_index == MOUSE_BUTTON_LEFT:
 			mouse_pressed = event.pressed
 			if event.pressed == true:
 				browser.on_mouse_left_down()
 			else:
 				browser.on_mouse_left_up()
-		elif event.button_index == BUTTON_RIGHT:
+		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			mouse_pressed = event.pressed
 			if event.pressed == true:
 				browser.on_mouse_right_down()

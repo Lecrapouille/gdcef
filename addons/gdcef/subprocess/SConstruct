@@ -80,7 +80,7 @@ if platform == '':
 archi = env['arch']
 arch_ext = archi
 if archi == 'x86_64':
-    if platform != 'osx':
+    if platform != 'osx' and platform != 'windows':
         arch_ext = '64'
 
 # Check if Godot exists
@@ -181,8 +181,7 @@ env.Append(CPPPATH=['.',
                     godot_api_path + '/include/gen'])
 
 # Godot library that is linked against our library
-#libgodot = 'libgodot-cpp.' + platform + '.' + compile_mode + '.' + arch_ext
-libgodot = 'libgodot-cpp.' + platform + '.template_debug.x86_64.a'
+libgodot = 'libgodot-cpp.' + platform + '.template_' + compile_mode + '.' + arch_ext
 env.Append(LIBS=[libgodot], LIBPATH=[godot_api_path + '/bin'])
 
 # Pathes of CEF header files

@@ -81,7 +81,7 @@ if platform == '':
 archi = env['arch']
 arch_ext = archi
 if archi == 'x86_64':
-    if platform != 'osx':
+    if platform != 'osx' and platform != 'windows':
         arch_ext = '64'
 
 # Check if Godot exists
@@ -132,7 +132,7 @@ elif platform == 'windows':
     # This makes sure to keep the session environment variables on windows,
     # that way you can run scons in a vs 2017 prompt and it will find all the required tools
     env.Append(ENV=os.environ)
-    env.Append(CPPDEFINES=['WIN32', '_WIN32', '_WINDOWS', '_CRT_SECURE_NO_WARNINGS'])
+    env.Append(CPPDEFINES=['WIN32', '_WIN32', '_WINDOWS', '_CRT_SECURE_NO_WARNINGS', 'TYPED_METHOD_BIND'])
     env.Append(CCFLAGS=['-W3', '-GR'])
     env.Append(CXXFLAGS='/std:c++17')
     if compile_mode == 'debug':
@@ -184,8 +184,7 @@ env.Append(CPPPATH=['.',
                     godot_api_path + '/include/gen'])
 
 # Godot library that is linked against our library
-#libgodot = 'libgodot-cpp.' + platform + '.' + compile_mode + '.' + arch_ext
-libgodot = libgodot = 'libgodot-cpp.' + platform + '.template_debug.x86_64.a'
+libgodot = 'libgodot-cpp.' + platform + '.template_' + compile_mode + '.' + arch_ext
 env.Append(LIBS=[libgodot], LIBPATH=[godot_api_path + '/bin'])
 
 # Pathes of CEF header files
@@ -213,7 +212,7 @@ env.Append(LIBS = [libcef, 'libcef_dll_wrapper'],
 env.Append(CPPPATH=['src/'])
 
 # Compile the library
-sources = ['src/helper_files.cpp', 'src/browser_io.cpp', 'src/gdcef.cpp', 'src/gdbrowser.cpp', 'src/gdextension.cpp']
+sources = ['src/helper_files.cpp', 'src/browser_io.cpp', 'src/gdcef.cpp', 'src/gdbrowser.cpp', 'src/register_types.cpp']
 # sources = Glob('src/*.cpp')
 # sources = ['src/helper_files.cpp', 'src/browser_io.cpp', 'src/gdcef.cpp', 'src/gdbrowser.cpp', 'src/gdnative.cpp']
 library = env.SharedLibrary(target=target_path + '/' + target_library, source=sources)
