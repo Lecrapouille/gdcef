@@ -7,7 +7,7 @@
 extends Control
 
 # Default pages
-const DEFAULT_PAGE = "http://kpjkradio.com/"
+const DEFAULT_PAGE = "https://mytuner-radio.com/fr/radio/kpjk-radio-472355/"
 const HOME_PAGE = "https://github.com/Lecrapouille/gdcef"
 
 # The current browser as Godot node
@@ -22,7 +22,8 @@ const HOME_PAGE = "https://github.com/Lecrapouille/gdcef"
 func create_browser(url):
 	var browserName = str($Panel/VBox/HBox/BrowserList.get_item_count())
 	print("Create browser " + browserName + ": " + url)
-	await get_tree().process_frame // wait one frame for the texture rect to get its size
+	# wait one frame for the texture rect to get its size
+	await get_tree().process_frame
 	var browserSize = $Panel/VBox/TextureRect.get_size()
 	var browser = $CEF.create_browser(url, browserName, browserSize.x, browserSize.y, {"javascript":true})
 	if browser == null:
@@ -144,24 +145,24 @@ func _on_TextureRect_gui_input(event):
 			current_browser.on_mouse_wheel_vertical(-2)
 		elif event.button_index == MOUSE_BUTTON_LEFT:
 			mouse_pressed = event.pressed
-			if event.pressed == true:
+			if mouse_pressed:
 				current_browser.on_mouse_left_down()
 			else:
 				current_browser.on_mouse_left_up()
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			mouse_pressed = event.pressed
-			if event.pressed == true:
+			if mouse_pressed:
 				current_browser.on_mouse_right_down()
 			else:
 				current_browser.on_mouse_right_up()
 		else:
 			mouse_pressed = event.pressed
-			if event.pressed == true:
+			if mouse_pressed:
 				current_browser.on_mouse_middle_down()
 			else:
 				current_browser.on_mouse_middle_up()
 	elif event is InputEventMouseMotion:
-		if mouse_pressed == true :
+		if mouse_pressed:
 			current_browser.on_mouse_left_down()
 		current_browser.on_mouse_moved(event.position.x, event.position.y)
 	pass
@@ -172,11 +173,19 @@ func _on_TextureRect_gui_input(event):
 func _input(event):
 	if current_browser == null:
 		return
-	if not event is InputEventKey:
+	if event is InputEventKey:
+		current_browser.on_key_pressed(
+			event.unicode if event.unicode != 0 else event.scancode,
+			event.pressed, event.shift, event.alt, event.control)
+	pass
+
+# ==============================================================================
+# Windows has resized
+# ==============================================================================
+func _on_texture_rect_resized():
+	if current_browser == null:
 		return
-	current_browser.on_key_pressed(
-		event.unicode,
-		event.pressed, event.shift, event.alt, event.control)
+	current_browser.resize($Panel/VBox/TextureRect.get_size().x, $Panel/VBox/TextureRect.get_size().y)
 	pass
 
 # ==============================================================================
