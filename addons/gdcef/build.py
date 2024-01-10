@@ -265,18 +265,28 @@ def download_cef():
         os.remove(CEF_TARBALL + ".sha1")
 
 ###############################################################################
+### Patch Chromium Embedded Framework cefsimple example if not already made
+def patch_cef():
+    if os.path.isdir(THIRDPARTY_CEF_PATH):
+        os.chdir(THIRDPARTY_CEF_PATH)
+        info("Patching Chromium Embedded Framework")
+
+        # Apply patches for Windows
+        if OSTYPE == "Windows":
+            shutil.copyfile(os.path.join(PATCHES_PATH, "CEF", "win", "libcef_dll_wrapper_cmake"),
+                            "CMakeLists.txt")
+
+###############################################################################
 ### Compile Chromium Embedded Framework cefsimple example if not already made
 def compile_cef():
     if os.path.isdir(THIRDPARTY_CEF_PATH):
+        # TODO Godot 4: don't know why these patches were necessary in the past, but they seem to break things now
+        # Apply patches for Windows
+        # patch_cef()
+
         os.chdir(THIRDPARTY_CEF_PATH)
         info("Compiling Chromium Embedded Framework in " + CEF_TARGET +
              " mode (inside " + THIRDPARTY_CEF_PATH + ") ...")
-
-        # TODO Godot 4: don't know why these patches were necessary in the past, but they seem to break things now
-        # Apply patches for Windows
-        #if OSTYPE == "Windows":
-        #    shutil.copyfile(os.path.join(PATCHES_PATH, "CEF", "win", "libcef_dll_wrapper_cmake"),
-        #                    "CMakeLists.txt")
 
         # Windows: force compiling CEF as static library.
         if OSTYPE == "Windows":
