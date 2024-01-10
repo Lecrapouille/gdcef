@@ -1,135 +1,99 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=2 format=3]
 
-[ext_resource path="res://CEF.gd" type="Script" id=1]
-[ext_resource path="res://libs/gdcef.gdns" type="Script" id=2]
+[ext_resource type="Script" path="res://CEF.gd" id="1"]
 
 [node name="GUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 1
-script = ExtResource( 1 )
+script = ExtResource("1")
 
-[node name="CEF" type="Node" parent="."]
-script = ExtResource( 2 )
+[node name="CEF" type="GDCef" parent="."]
 
 [node name="Panel" type="Panel" parent="."]
+layout_mode = 0
 anchor_right = 2.504
 anchor_bottom = 1.856
-margin_left = -1.0
-margin_right = -1541.1
-margin_bottom = -513.6
+offset_right = -1604.61
+offset_bottom = -482.688
 grow_horizontal = 2
 grow_vertical = 2
 
 [node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 size_flags_vertical = 3
 
 [node name="HBox" type="HBoxContainer" parent="Panel/VBox"]
-margin_right = 1023.0
-margin_bottom = 24.0
+layout_mode = 2
 
 [node name="Mute" type="Button" parent="Panel/VBox/HBox"]
-margin_right = 24.0
-margin_bottom = 24.0
+layout_mode = 2
 text = "M"
 
 [node name="Add" type="Button" parent="Panel/VBox/HBox"]
-margin_left = 28.0
-margin_right = 48.0
-margin_bottom = 24.0
+layout_mode = 2
 text = "+"
 
 [node name="Tabs" type="Label" parent="Panel/VBox/HBox"]
-margin_left = 52.0
-margin_top = 5.0
-margin_right = 85.0
-margin_bottom = 19.0
-rect_pivot_offset = Vector2( 34, 14 )
+layout_mode = 2
 mouse_filter = 0
 text = "Tabs:"
 
 [node name="BrowserList" type="OptionButton" parent="Panel/VBox/HBox"]
-margin_left = 89.0
-margin_right = 336.0
-margin_bottom = 24.0
+layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="URL" type="Label" parent="Panel/VBox/HBox"]
-margin_left = 340.0
-margin_top = 5.0
-margin_right = 369.0
-margin_bottom = 19.0
-rect_pivot_offset = Vector2( 34, 14 )
+layout_mode = 2
 mouse_filter = 0
 text = "URL:"
 
 [node name="TextEdit" type="LineEdit" parent="Panel/VBox/HBox"]
-margin_left = 373.0
-margin_right = 620.0
-margin_bottom = 24.0
+layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="Prev" type="Button" parent="Panel/VBox/HBox"]
-margin_left = 624.0
-margin_right = 644.0
-margin_bottom = 24.0
+layout_mode = 2
 text = "<"
 
 [node name="Home" type="Button" parent="Panel/VBox/HBox"]
-margin_left = 648.0
-margin_right = 699.0
-margin_bottom = 24.0
+layout_mode = 2
 text = "Home"
 
 [node name="BGColor" type="Button" parent="Panel/VBox/HBox"]
-margin_left = 703.0
-margin_right = 748.0
-margin_bottom = 24.0
+layout_mode = 2
 text = "Color"
 
 [node name="Next" type="Button" parent="Panel/VBox/HBox"]
-margin_left = 752.0
-margin_right = 772.0
-margin_bottom = 24.0
+layout_mode = 2
 text = ">"
 
 [node name="Info" type="Label" parent="Panel/VBox/HBox"]
-margin_left = 776.0
-margin_top = 5.0
-margin_right = 1023.0
-margin_bottom = 19.0
-mouse_filter = 0
+layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 0
 text = "info"
 
 [node name="TextureRect" type="TextureRect" parent="Panel/VBox"]
-margin_top = 28.0
-margin_right = 1023.0
-margin_bottom = 600.0
-rect_min_size = Vector2( 1, 1 )
-mouse_filter = 0
+layout_mode = 2
 size_flags_vertical = 3
-expand = true
+mouse_filter = 0
+expand_mode = 1
 stretch_mode = 3
 
-[node name="ColorPopup" type="WindowDialog" parent="."]
-margin_left = 348.0
-margin_top = 81.0
-margin_right = 664.0
-margin_bottom = 501.0
-window_title = "Javascript Injection Example: Color Picker"
+[node name="ColorPopup" type="Popup" parent="."]
 
 [node name="ColorPicker" type="ColorPicker" parent="ColorPopup"]
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = 12.0
-margin_top = 12.0
-margin_right = 12.0
-margin_bottom = 12.0
 edit_alpha = false
-presets_enabled = false
 presets_visible = false
 
 [connection signal="pressed" from="Panel/VBox/HBox/Mute" to="." method="_on_Mute_pressed"]
@@ -139,7 +103,7 @@ presets_visible = false
 [connection signal="pressed" from="Panel/VBox/HBox/Prev" to="." method="_on_Prev_pressed"]
 [connection signal="pressed" from="Panel/VBox/HBox/Home" to="." method="_on_Home_pressed"]
 [connection signal="pressed" from="Panel/VBox/HBox/BGColor" to="." method="_on_BGColor_pressed"]
-[connection signal="pressed" from="Panel/VBox/HBox/Next" to="." method="_on_Prev_pressed"]
 [connection signal="pressed" from="Panel/VBox/HBox/Next" to="." method="_on_Next_pressed"]
+[connection signal="pressed" from="Panel/VBox/HBox/Next" to="." method="_on_Prev_pressed"]
 [connection signal="gui_input" from="Panel/VBox/TextureRect" to="." method="_on_TextureRect_gui_input"]
 [connection signal="color_changed" from="ColorPopup/ColorPicker" to="." method="_on_ColorPicker_color_changed"]

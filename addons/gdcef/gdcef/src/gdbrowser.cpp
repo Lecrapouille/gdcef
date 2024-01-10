@@ -74,7 +74,8 @@ void GDBrowserView::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_muted"), &GDBrowserView::mute);
     ClassDB::bind_method(D_METHOD("is_muted"), &GDBrowserView::muted);
 
-    //godot::register_signal<GDBrowserView>("page_loaded", "node", GODOT_VARIANT_TYPE_OBJECT);
+    ADD_SIGNAL(MethodInfo("page_loaded", PropertyInfo(Variant::OBJECT, "node")));
+    ADD_SIGNAL(MethodInfo("on_browser_paint", PropertyInfo(Variant::OBJECT, "node")));
 }
 
 //------------------------------------------------------------------------------
@@ -157,7 +158,6 @@ void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
                             const CefRenderHandler::RectList& /*dirtyRects*/,
                             const void* buffer, int width, int height)
 {
-#if 0
     // Sanity check
     if ((width <= 0) || (height <= 0) || (buffer == nullptr))
         return ;
@@ -169,20 +169,21 @@ void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
 
     // Copy CEF image buffer to Godot PoolByteArray
     m_data.resize(TEXTURE_SIZE);
-    godot::PoolByteArray::Write w = m_data.write();
-    memcpy(&w[0], buffer, size_t(TEXTURE_SIZE));
 
     // Color conversion BGRA8 -> RGBA8: swap B and R chanels
+    const unsigned char* cbuffer = (const unsigned char*)buffer;
     for (int i = 0; i < TEXTURE_SIZE; i += COLOR_CHANELS)
     {
-        std::swap(w[i], w[i + 2]);
+        m_data[i] = cbuffer[i + 2];
+        m_data[i + 1] = cbuffer[i + 1];
+        m_data[i + 2] = cbuffer[i];
+        m_data[i + 3] = cbuffer[i + 3];
     }
 
     // Copy Godot PoolByteArray to Godot texture.
-    m_image->create_from_data(width, height, false, godot::Image::FORMAT_RGBA8,
-                              m_data);
-    m_texture->create_from_image(m_image, godot::Texture::FLAG_VIDEO_SURFACE);
-#endif
+    m_image->set_data(width, height, false, godot::Image::FORMAT_RGBA8, m_data);
+    m_texture->set_image(m_image);
+    emit_signal("on_browser_paint", this);
 }
 
 //------------------------------------------------------------------------------

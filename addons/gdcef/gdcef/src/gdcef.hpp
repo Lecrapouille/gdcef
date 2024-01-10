@@ -130,7 +130,7 @@ public: // Godot interfaces.
     //! \brief Process automatically called by Godot engine. Call the CEF pomp
     //! loop message.
     // -------------------------------------------------------------------------
-    void _process(float delta);
+    void _process(double delta) override;
 
 protected:
 

@@ -92,7 +92,6 @@ void GDCef::_bind_methods()
     std::cout << "[GDCEF][GDCef::_register_methods]" << std::endl;
 
     ClassDB::bind_method(D_METHOD("initialize"), &GDCef::initialize);
-    ClassDB::bind_method(D_METHOD("_process"), &GDCef::_process);
     ClassDB::bind_method(D_METHOD("get_full_version"), &GDCef::version);
     ClassDB::bind_method(D_METHOD("get_version_part"), &GDCef::versionPart);
     ClassDB::bind_method(D_METHOD("create_browser"), &GDCef::createBrowser);
@@ -205,7 +204,7 @@ godot::String GDCef::getError()
 }
 
 //------------------------------------------------------------------------------
-void GDCef::_process(float /*delta*/)
+void GDCef::_process(double /*delta*/)
 {
     if (m_impl != nullptr)
     {
@@ -445,7 +444,6 @@ GDBrowserView* GDCef::createBrowser(godot::String const url, godot::String const
 {
     GDCEF_DEBUG_VAL("name: " << name.utf8().get_data() <<
                     ", url: " << url.utf8().get_data());
-
     if (m_impl == nullptr)
     {
         GDCEF_ERROR("CEF was not initialized");
@@ -453,12 +451,7 @@ GDBrowserView* GDCef::createBrowser(godot::String const url, godot::String const
     }
 
     // Godot node creation (note Godot cannot pass arguments to _new())
-    GDBrowserView* browser = new GDBrowserView();//::_new();
-    if (browser == nullptr)
-    {
-        GDCEF_ERROR("new BrowserView() failed");
-        return nullptr;
-    }
+    GDBrowserView* browser = memnew(GDBrowserView);
 
     // Complete BrowserView constructor (complete _new())
     CefBrowserSettings settings;

@@ -11,25 +11,26 @@ const DEFAULT_PAGE = "http://kpjkradio.com/"
 const HOME_PAGE = "https://github.com/Lecrapouille/gdcef"
 
 # The current browser as Godot node
-onready var current_browser = null
+@onready var current_browser = null
 
 # Memorize if the mouse was pressed
-onready var mouse_pressed : bool = false
+@onready var mouse_pressed : bool = false
 
 # ==============================================================================
 # Create a new browser and return it or return null if failed.
 # ==============================================================================
 func create_browser(url):
-	var name = str($Panel/VBox/HBox/BrowserList.get_item_count())
-	print("Create browser " + name + ": " + url)
-	var S = $Panel/VBox/TextureRect.get_size()
-	var browser = $CEF.create_browser(url, name, S.x, S.y, {"javascript":true})
+	var browserName = str($Panel/VBox/HBox/BrowserList.get_item_count())
+	print("Create browser " + browserName + ": " + url)
+	await get_tree().process_frame // wait one frame for the texture rect to get its size
+	var browserSize = $Panel/VBox/TextureRect.get_size()
+	var browser = $CEF.create_browser(url, browserName, browserSize.x, browserSize.y, {"javascript":true})
 	if browser == null:
 		$Panel/VBox/HBox/Info.set_text($CEF.get_error())
 		return null
 	$Panel/VBox/HBox/BrowserList.add_item(url)
 	$Panel/VBox/HBox/BrowserList.select($Panel/VBox/HBox/BrowserList.get_item_count() - 1)
-	browser.connect("page_loaded", self, "_on_page_loaded")
+	browser.connect("page_loaded", _on_page_loaded)
 	$Panel/VBox/TextureRect.texture = browser.get_texture()
 	return browser
 
@@ -37,12 +38,12 @@ func create_browser(url):
 # Search the desired by its name. Return the browser as Godot node or null if
 # not found.
 # ==============================================================================
-func get_browser(name):
+func get_browser(browserName):
 	if not $CEF.is_alive():
 		return null
-	var browser = $CEF.get_node(name)
+	var browser = $CEF.get_node(browserName)
 	if browser == null:
-		$Panel/VBox/HBox/Info.set_text("Unknown browser " + name)
+		$Panel/VBox/HBox/Info.set_text("Unknown browser " + browserName)
 		return null
 	return browser
 
@@ -67,7 +68,7 @@ func _on_Mute_pressed():
 # '+' button pressed: create a new browser node.
 # ==============================================================================
 func _on_Add_pressed():
-	var browser = create_browser(DEFAULT_PAGE)
+	var browser = await create_browser(DEFAULT_PAGE)
 	if browser != null:
 		current_browser = browser
 	pass
@@ -137,17 +138,17 @@ func _on_TextureRect_gui_input(event):
 	if current_browser == null:
 		return
 	if event is InputEventMouseButton:
-		if event.button_index == BUTTON_WHEEL_UP:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			current_browser.on_mouse_wheel_vertical(2)
-		elif event.button_index == BUTTON_WHEEL_DOWN:
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			current_browser.on_mouse_wheel_vertical(-2)
-		elif event.button_index == BUTTON_LEFT:
+		elif event.button_index == MOUSE_BUTTON_LEFT:
 			mouse_pressed = event.pressed
 			if event.pressed == true:
 				current_browser.on_mouse_left_down()
 			else:
 				current_browser.on_mouse_left_up()
-		elif event.button_index == BUTTON_RIGHT:
+		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			mouse_pressed = event.pressed
 			if event.pressed == true:
 				current_browser.on_mouse_right_down()
@@ -174,7 +175,7 @@ func _input(event):
 	if not event is InputEventKey:
 		return
 	current_browser.on_key_pressed(
-		event.unicode if event.unicode != 0 else event.scancode,
+		event.unicode,
 		event.pressed, event.shift, event.alt, event.control)
 	pass
 
@@ -187,7 +188,7 @@ func _ready():
 		push_error($CEF.get_error())
 		return
 	push_warning("CEF version: " + $CEF.get_full_version())
-	current_browser = create_browser(HOME_PAGE)
+	current_browser = await create_browser(HOME_PAGE)
 	pass
 
 # ==============================================================================
