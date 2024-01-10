@@ -320,6 +320,8 @@ void GDBrowserView::navigateForward()
 //------------------------------------------------------------------------------
 void GDBrowserView::reshape(int w, int h)
 {
+    if (w <= 0) { w = 2; }
+    if (h <= 0) { h = 2; }
     BROWSER_DEBUG_VAL(w << " x " << h);
 
     m_width = float(w);
