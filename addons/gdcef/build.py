@@ -473,7 +473,8 @@ def run_godot_example():
         info("For Unix systems you have to make your system know where to find shared"
              " libraries needed for CEF. Save the following command in your environment"
              " (~/.bashrc i.e.):\n\n"
-             "   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:" + CEF_ARTIFACTS_BUILD_PATH + "\n")
+             "   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:" + CEF_ARTIFACTS_BUILD_PATH + "\n"
+             "   export LD_PRELOAD=" + CEF_ARTIFACTS_BUILD_PATH + "/libcef.so\n")
     info("Once done, you can run your Godot editor " + GODOT_VERSION + " and try"
          " one of the demos located in '" + GDCEF_EXAMPLES_PATH + "'.\n\nHave fun!")
 
