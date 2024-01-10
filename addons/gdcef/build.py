@@ -198,15 +198,15 @@ def check_paths():
         if not os.path.isdir(path):
             fatal('Folder ' + path + ' does not exist!')
 
-        # Remove the example build folder to avoid messed up with your
-        # application build using alias.
-        p = Path(CEF_ARTIFACTS_BUILD_PATH);
-        if p.is_symlink():
-            os.remove(CEF_ARTIFACTS_BUILD_PATH)
-        elif p.is_dir():
-            rmdir(CEF_ARTIFACTS_BUILD_PATH)
-        elif p.exists():
-            fatal('Please remove manually ' + CEF_ARTIFACTS_BUILD_PATH + ' and recall this script')
+    # Remove the example build folder to avoid messed up with your
+    # application build using alias.
+    p = Path(CEF_ARTIFACTS_BUILD_PATH);
+    if p.is_symlink():
+        os.remove(CEF_ARTIFACTS_BUILD_PATH)
+    elif p.is_dir():
+        rmdir(CEF_ARTIFACTS_BUILD_PATH)
+    elif p.exists():
+        fatal('Please remove manually ' + CEF_ARTIFACTS_BUILD_PATH + ' and recall this script')
 
 ###############################################################################
 ### Download prebuild Chromium Embedded Framework if folder is not present
