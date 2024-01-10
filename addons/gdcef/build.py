@@ -35,6 +35,7 @@ from pathlib import Path
 from subprocess import run
 from multiprocessing import cpu_count
 from packaging import version
+from shutil import move, copymode
 
 ###############################################################################
 ### Global user settings
@@ -95,6 +96,7 @@ def copyfile(file_name, folder):
     dest = os.path.join(folder, os.path.basename(file_name))
     print("Copy " + file_name + " => " + dest)
     shutil.copyfile(file_name, dest)
+    copymode(file_name, dest)
 
 ###############################################################################
 ### Equivalent to mkdir -p
