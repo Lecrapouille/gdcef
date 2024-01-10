@@ -54,19 +54,19 @@ func _on_Texture1_gui_input(event):
 			browser.on_mouse_wheel_vertical(-2)
 		elif event.button_index == MOUSE_BUTTON_LEFT:
 			mouse_pressed = event.pressed
-			if event.pressed == true:
+			if event.button_pressed == true:
 				browser.on_mouse_left_down()
 			else:
 				browser.on_mouse_left_up()
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			mouse_pressed = event.pressed
-			if event.pressed == true:
+			if event.button_pressed == true:
 				browser.on_mouse_right_down()
 			else:
 				browser.on_mouse_right_up()
 		else:
 			mouse_pressed = event.pressed
-			if event.pressed == true:
+			if event.button_pressed == true:
 				browser.on_mouse_middle_down()
 			else:
 				browser.on_mouse_middle_up()
@@ -88,7 +88,7 @@ func _input(event):
 		if event.unicode != 0:
 			browser.on_key_pressed(event.unicode, event.pressed, event.shift, event.alt, event.control)
 		else:
-			browser.on_key_pressed(event.scancode, event.pressed, event.shift, event.alt, event.control)
+			browser.on_key_pressed(event.keycode, event.pressed, event.shift, event.alt, event.control)
 
 	pass
 
@@ -158,8 +158,8 @@ func _ready():
 
 	# Connect the event when a page has bee loaded and wait 6 seconds before
 	# loading the page.
-	right.connect("page_loaded", self, "_on_page_loaded")
-	var _err = $Timer.connect("timeout", self, "_on_Timer_timeout")
+	right.connect("page_loaded", Callable(self, "_on_page_loaded"))
+	var _err = $Timer.connect("timeout", Callable(self, "_on_Timer_timeout"))
 	pass
 
 # ==============================================================================

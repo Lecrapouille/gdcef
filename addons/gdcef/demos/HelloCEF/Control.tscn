@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://ckewd5tjvl4rj"]
 
 [ext_resource type="Script" path="res://Control.gd" id="2"]
 
