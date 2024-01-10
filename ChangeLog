@@ -1,5 +1,11 @@
+Version 0.7.1:
+	* Update CEF version to 120.
+	* Doc fixes.
+	* Fix 2D demo window reshape.
+	* Fix minor bugs in build script and in API.
+
 Version 0.7.0:
-    * New API: get CEF version and allow to mute/unmute browser.
+	* New API: get CEF version and allow to mute/unmute browser.
 	* Update CEF version to 110.
 	* Fix English in READMEs.
 
