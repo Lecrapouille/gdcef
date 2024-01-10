@@ -1,10 +1,10 @@
-# Chromium Embedded Framework as Godot 3.5 native module
+# Chromium Embedded Framework as Godot 4.2 native module
 
 This repository contains the source code of some C++ classes wrapping a subset
 of the [Chromium Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home)
-API into a Godot 3.4 or Godot 3.5 native module (GDNative) which allows you to
+API into a Godot 4.2 native module (GDExtension) which allows you to
 implement a web browser for your 2D and 3D games through your gdscripts for
-Linux and Windows. We have named this CEF GDNative module `gdcef`.
+Linux and Windows. We have named this CEF GDExtension module `gdcef`.
 
 ## Installation steps
 
