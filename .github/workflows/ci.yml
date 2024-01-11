@@ -3,12 +3,15 @@ on:
   workflow_dispatch:
     branches:
       - master
+      - dev-godot-4
   push:
     branches:
       - master
+      - dev-godot-4
   pull_request:
     branches:
       - master
+      - dev-godot-4
 
 jobs:
 
