@@ -121,10 +121,10 @@ window_title = "Javascript Injection Example: Color Picker"
 [node name="ColorPicker" type="ColorPicker" parent="ColorPopup"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = 20.0
-margin_top = 20.0
-margin_right = 20.0
-margin_bottom = 20.0
+margin_left = 24.0
+margin_top = 24.0
+margin_right = 24.0
+margin_bottom = 24.0
 edit_alpha = false
 presets_enabled = false
 presets_visible = false
