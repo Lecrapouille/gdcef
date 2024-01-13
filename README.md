@@ -1,14 +1,15 @@
-# Chromium Embedded Framework as Godot 3.5 native module
+# Chromium Embedded Framework as Godot 4.2 native extension
 
 This repository contains the source code of some C++ classes wrapping a subset
 of the [Chromium Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home)
-API into a Godot 3.4 or Godot 3.5 native module (GDNative) which allows you to
+API into a Godot 4.2 native extension (GDExtension) which allows you to
 implement a web browser for your 2D and 3D games through your gdscripts for
-Linux and Windows. We have named this CEF GDNative module `gdcef`.
+Linux and Windows. We have named this CEF GDExtension module `gdcef`.
 
 This module can be downloaded directly from the Godot asset library:
+- <not yet available>
 
-https://godotengine.org/asset-library/asset/1426
+**Note: You are a Godot-3 dev? You are on the wrong branch. Please go to https://github.com/Lecrapouille/gdcef/tree/godot-3.x instead!**
 
 *Note:* This current repository is a fork of [the following
 repo](https://github.com/stigmee/gdnative-cef) (under GPLv3) with a more
@@ -25,7 +26,7 @@ library, all details are referred in the following
 this module, how to run demos, describe the architecture, details design and
 more ...
 
-## TL;DR: Installation
+## TL;DR: Compilation
 
 To compile this project with the Python3 build script for Linux and Windows:
 
@@ -37,6 +38,13 @@ python3 -m pip install -r requirements.txt
 
 This will generate artifacts in the `build/` folder. Use this folder for your Godot
 project and add gdns and gdnlib files to refer `libgdcef.so` or `libgdcef.dll`.
+
+## TL;DR: I do not want to compile, I want CEF artifacts
+
+Check for releases. Since tag 0.7.2 CEF artifacts are given for Linux and Windows for
+x86_64 architectures. Uncompress the tarball and move the folder inside your project.
+Do no forget to add gdns and gdnlib files in your project to tell Godot where to find
+shared lib. They are given in the demos folders.
 
 ## Gallery
 
