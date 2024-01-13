@@ -288,9 +288,7 @@ def patch_cef():
 ### Compile Chromium Embedded Framework cefsimple example if not already made
 def compile_cef():
     if os.path.isdir(THIRDPARTY_CEF_PATH):
-        # TODO Godot 4: don't know why these patches were necessary in the past, but they seem to break things now
-        # Apply patches for Windows
-        # patch_cef()
+        patch_cef()
 
         os.chdir(THIRDPARTY_CEF_PATH)
         info("Compiling Chromium Embedded Framework in " + CEF_TARGET +
