@@ -272,15 +272,15 @@ entry_symbol = "gdcef_library_init"
 compatibility_minimum = 4.1
 
 [libraries]
-linux.x86_64.debug = "res://build/libgdcef.so"
-linux.x86_64.release = "res://build/libgdcef.so"
-linux.x86_32.debug = "res://build/libgdcef.so"
-linux.x86_32.release = "res://build/libgdcef.so"
+linux.x86_64.debug = "res://cef_artifacts/libgdcef.so"
+linux.x86_64.release = "res://cef_artifacts/libgdcef.so"
+linux.x86_32.debug = "res://cef_artifacts/libgdcef.so"
+linux.x86_32.release = "res://cef_artifacts/libgdcef.so"
 
-windows.x86_64.debug = "res://build/libgdcef.dll"
-windows.x86_64.release = "res://build/libgdcef.dll"
-windows.x86_32.debug = "res://build/libgdcef.dll"
-windows.x86_32.release = "res://build/libgdcef.dll"
+windows.x86_64.debug = "res://cef_artifacts/libgdcef.dll"
+windows.x86_64.release = "res://cef_artifacts/libgdcef.dll"
+windows.x86_32.debug = "res://cef_artifacts/libgdcef.dll"
+windows.x86_32.release = "res://cef_artifacts/libgdcef.dll"
 ```
 
 This file lets Godot know what dynamic libraries should be loaded for each platform

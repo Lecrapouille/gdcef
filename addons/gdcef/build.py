@@ -57,7 +57,7 @@ CEF_BUILD_FOLDER_NAME = "build"
 # CEF_ARTIFACTS_BUILD_PATH. If you modify this variable, do not forget to also change
 # Godot .gdns and .gdnlib files inside the libs folders in GDCEF_EXAMPLES_PATH the
 # demos folder.
-CEF_ARTIFACTS_FOLDER_NAME = "build"
+CEF_ARTIFACTS_FOLDER_NAME = "cef_artifacts"
 
 ###############################################################################
 ### Project internal paths local from this script. Do not change them!
