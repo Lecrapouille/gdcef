@@ -132,5 +132,5 @@ default path. Alternatively, adapt the code of your gdscript for
 passing the path (see the API for more information):
 
 ```
-$CEF.initialize({"artifacts": "res://build/", ... })
+$CEF.initialize({"artifacts": "res://cef_artifacts/", ... })
 ```

@@ -70,7 +70,7 @@ describing the given demos.
 - In the case you dislike the folder name holding CEF artifacts `build`, you can change it.
   Search in [build.py](../build.py) script the line `CEF_ARTIFACTS_FOLDER = "build"`
   and rename it. Rerun the `build.py`. This will force Godot knowing default path.
-  Else you can refer it explictely when calling `initialize({"artifacts": "res://build/", ... })`.
+  Else you can refer it explictely when calling `initialize({"artifacts": "res://cef_artifacts/", ... })`.
 - Copy and adapt the `gdcef.gdns` and `gdcef.gdnlib` inside your Godot
   project and adapt the path to shared libraries. See more information in the last
   section of this [document](doc/detailsdesign.md).

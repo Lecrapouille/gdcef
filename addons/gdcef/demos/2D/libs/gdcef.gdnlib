@@ -8,11 +8,11 @@ reloadable=false
 [entry]
 
 OSX.64="res://Frameworks/Chromium\ Embedded\ Framework.framework/Libraries/libgdcef.dylib"
-Windows.64="res://build/libgdcef.dll"
-X11.64="res://build/libgdcef.so"
+Windows.64="res://cef_artifacts/libgdcef.dll"
+X11.64="res://cef_artifacts/libgdcef.so"
 
 [dependencies]
 
 OSX.64=[  ]
-Windows.64=[ "res://build/libcef.dll" ]
-X11.64=[ "res://build/libcef.so" ]
+Windows.64=[ "res://cef_artifacts/libcef.dll" ]
+X11.64=[ "res://cef_artifacts/libcef.so" ]

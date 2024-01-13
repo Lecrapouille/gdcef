@@ -290,15 +290,15 @@ reloadable=false
 
 [entry]
 
-OSX.64="res://build/libgdcef.dylib"
-Windows.64="res://build/libgdcef.dll"
-X11.64="res://build/libgdcef.so"
+OSX.64="res://cef_artifacts/libgdcef.dylib"
+Windows.64="res://cef_artifacts/libgdcef.dll"
+X11.64="res://cef_artifacts/libgdcef.so"
 
 [dependencies]
 
-OSX.64=[ "res://build/libcef.dylib" ]
-Windows.64=[ "res://build/libcef.dll" ]
-X11.64=[ "res://build/libcef.so" ]
+OSX.64=[ "res://cef_artifacts/libcef.dylib" ]
+Windows.64=[ "res://cef_artifacts/libcef.dll" ]
+X11.64=[ "res://cef_artifacts/libcef.so" ]
 ```
 
 This file holds information on how to find your gdnative library and the library
