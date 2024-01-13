@@ -46,7 +46,21 @@ MODULE_TARGET = "release"          # or "debug"
 GODOT_CPP_TARGET = "template_release"       # or "template_debug"
 GODOT_VERSION = "4.2"              # or "master" or "3.5" or "3.4"
 CMAKE_MIN_VERSION = "3.19"         # Minimun CMake version needed for compiling CEF
+# Scons is the build system used by Godot. For some people "scons" command does not
+# work, they need to call "python -m SCons" command. The array is needed by the func
+# calling scons.
+SCONS = ["scons"]                  # or ["python", "-m", "SCons"]
+# The name of the folder that will hold all CEF built artifacts.
+CEF_BUILD_FOLDER_NAME = "build"
+# When we are compiling demos we are creating a folder holding CEF build artifacts.
+# But, in the aim to save space on your hard disk the folder is a pointer to folder
+# CEF_ARTIFACTS_BUILD_PATH. If you modify this variable, do not forget to also change
+# Godot .gdns and .gdnlib files inside the libs folders in GDCEF_EXAMPLES_PATH the
+# demos folder.
+CEF_ARTIFACTS_FOLDER_NAME = "build"
 
+###############################################################################
+### Project internal paths local from this script. Do not change them!
 PWD = os.getcwd()
 GDCEF_PATH = os.path.join(PWD, "gdcef")
 GDCEF_PROCESSES_PATH = os.path.join(PWD, "subprocess")
@@ -56,13 +70,7 @@ THIRDPARTY_GODOT_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "godot-" + GODOT_VER
 GODOT_CPP_API_PATH = os.path.join(THIRDPARTY_GODOT_PATH, "cpp")
 PATCHES_PATH = os.path.join(PWD, "patches")
 GDCEF_EXAMPLES_PATH = os.path.join(PWD, "demos")
-# If you modify CEF_ARTIFACTS_BUILD_PATH, do not forget to also change Godot
-# .gdns and .gdnlib files inside GDCEF_EXAMPLES_PATH.
-CEF_ARTIFACTS_FOLDER = "build"
-CEF_ARTIFACTS_BUILD_PATH = os.path.realpath(os.path.join("../../" + CEF_ARTIFACTS_FOLDER))
-
-# Build system used by Godot
-SCONS = ["scons"] # For some people ["python", "-m", "SCons"]
+CEF_ARTIFACTS_BUILD_PATH = os.path.realpath(os.path.join("../../" + CEF_BUILD_FOLDER_NAME))
 
 ###############################################################################
 ### Type of operating system, AMD64, ARM64 ...
@@ -392,13 +400,13 @@ def gdnative_scons_cmd(plateform):
         fatal('Please download and compile https://github.com/godotengine/godot-cpp and set GODOT_CPP_API_PATH')
     if OSTYPE == "Darwin":
         run(SCONS + ["api_path=" + GODOT_CPP_API_PATH,
-             "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER + "\\\"",
+             "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER_NAME + "\\\"",
              "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
              "target=" + MODULE_TARGET, "--jobs=" + NPROC,
              "arch=" + ARCHI, "platform=" + plateform], check=True)
     else:
         run(SCONS + ["api_path=" + GODOT_CPP_API_PATH,
-             "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER + "\\\"",
+             "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER_NAME + "\\\"",
              "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
              "target=" + MODULE_TARGET, "--jobs=" + NPROC,
              "platform=" + plateform], check=True)
@@ -474,7 +482,7 @@ def prepare_godot_examples():
         path = os.path.join(GDCEF_EXAMPLES_PATH, filename)
         if os.path.isdir(path) and os.path.isfile(os.path.join(path, "project.godot")):
             info("  - Demo " + path)
-            symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(path, CEF_ARTIFACTS_FOLDER))
+            symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(path, CEF_ARTIFACTS_FOLDER_NAME))
 
 ###############################################################################
 ### Run Godot example
