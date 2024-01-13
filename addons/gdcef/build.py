@@ -469,9 +469,12 @@ def check_cmake_version():
 ### on the build folder. On a real example you do not have to do it: simply
 ### install the build/ folder inside your Godot application.
 def prepare_godot_examples():
-    info("Alias examples to CEF artifacts")
-    symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(GDCEF_EXAMPLES_PATH, "2D", CEF_ARTIFACTS_FOLDER))
-    symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(GDCEF_EXAMPLES_PATH, "3D", CEF_ARTIFACTS_FOLDER))
+    info("Creating symbolic link to CEF artifacts for demos:")
+    for filename in os.listdir(GDCEF_EXAMPLES_PATH):
+        path = os.path.join(GDCEF_EXAMPLES_PATH, filename)
+        if os.path.isdir(path) and os.path.isfile(os.path.join(path, "project.godot")):
+            info("  - Demo " + path)
+            symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(path, CEF_ARTIFACTS_FOLDER))
 
 ###############################################################################
 ### Run Godot example
