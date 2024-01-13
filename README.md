@@ -7,8 +7,9 @@ implement a web browser for your 2D and 3D games through your gdscripts for
 Linux and Windows. We have named this CEF GDNative module `gdcef`.
 
 This module can be downloaded directly from the Godot asset library:
+- https://godotengine.org/asset-library/asset/1426
 
-https://godotengine.org/asset-library/asset/1426
+**Note: You are a Godot-4 dev? You are on the wrong branch. Please go to https://github.com/Lecrapouille/gdcef/tree/godot-4.x instead!**
 
 *Note:* This current repository is a fork of [the following
 repo](https://github.com/stigmee/gdnative-cef) (under GPLv3) with a more
@@ -25,7 +26,7 @@ library, all details are referred in the following
 this module, how to run demos, describe the architecture, details design and
 more ...
 
-## TL;DR: Installation
+## TL;DR: Compilation
 
 To compile this project with the Python3 build script for Linux and Windows:
 
@@ -37,6 +38,13 @@ python3 -m pip install -r requirements.txt
 
 This will generate artifacts in the `build/` folder. Use this folder for your Godot
 project and add gdns and gdnlib files to refer `libgdcef.so` or `libgdcef.dll`.
+
+## TL;DR: I do not want to compile, I want CEF artifacts
+
+Check for releases. Since tag 0.7.2 CEF artifacts are given for Linux and Windows for
+x86_64 architectures. Uncompress the tarball and move the folder inside your project.
+Do no forget to add gdns and gdnlib files in your project to tell Godot where to find
+shared lib. They are given in the demos folders.
 
 ## Gallery
 
