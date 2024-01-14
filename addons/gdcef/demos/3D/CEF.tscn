@@ -1,77 +1,85 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=2 format=3 uid="uid://omfv5yo3uhfr"]
 
-[ext_resource path="res://GUI.gd" type="Script" id=1]
-[ext_resource path="res://libs/gdcef.gdns" type="Script" id=2]
+[ext_resource type="Script" path="res://GUI.gd" id="1"]
 
 [node name="GUI" type="Control"]
-margin_right = 280.0
-margin_bottom = 180.0
+layout_mode = 3
+anchors_preset = 0
+offset_right = 280.0
+offset_bottom = 180.0
 mouse_filter = 1
-script = ExtResource( 1 )
+script = ExtResource("1")
 
-[node name="CEF" type="Node" parent="."]
-script = ExtResource( 2 )
+[node name="CEF" type="GDCef" parent="."]
 
 [node name="Panel" type="Panel" parent="."]
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 
 [node name="TextureRect" type="TextureRect" parent="Panel"]
+layout_mode = 0
 anchor_top = 0.015
 anchor_bottom = 0.015
-margin_left = 5.0
-margin_top = 28.3
-margin_right = 273.0
-margin_bottom = 158.3
+offset_left = 5.0
+offset_top = 28.3
+offset_right = 273.0
+offset_bottom = 158.3
 mouse_filter = 0
-expand = true
+expand_mode = 1
 
 [node name="Label" type="Label" parent="Panel"]
-margin_left = 4.0
-margin_top = 163.0
-margin_right = 81.0
-margin_bottom = 177.0
+layout_mode = 0
+offset_left = 4.0
+offset_top = 163.0
+offset_right = 81.0
+offset_bottom = 177.0
 mouse_filter = 0
 text = "Hello world!"
 
 [node name="Label2" type="Label" parent="Panel"]
-margin_left = 7.0
-margin_top = 7.0
-margin_right = 41.0
-margin_bottom = 21.0
+layout_mode = 0
+offset_left = 7.0
+offset_top = 7.0
+offset_right = 41.0
+offset_bottom = 21.0
 mouse_filter = 0
 text = "URL:"
 
 [node name="Home" type="Button" parent="Panel"]
-margin_left = 208.0
-margin_top = 3.0
-margin_right = 259.0
-margin_bottom = 25.0
+layout_mode = 0
+offset_left = 208.0
+offset_top = 3.0
+offset_right = 259.0
+offset_bottom = 25.0
 text = "Home"
 
 [node name="Prev" type="Button" parent="Panel"]
-margin_left = 186.0
-margin_top = 3.0
-margin_right = 206.0
-margin_bottom = 25.0
+layout_mode = 0
+offset_left = 186.0
+offset_top = 3.0
+offset_right = 206.0
+offset_bottom = 25.0
 text = "<"
 
 [node name="Next" type="Button" parent="Panel"]
-margin_left = 259.0
-margin_top = 3.0
-margin_right = 279.0
-margin_bottom = 25.0
+layout_mode = 0
+offset_left = 259.0
+offset_top = 3.0
+offset_right = 279.0
+offset_bottom = 25.0
 text = ">"
 
 [node name="TextEdit" type="LineEdit" parent="Panel"]
-margin_left = 43.0
-margin_top = 2.0
-margin_right = 185.0
-margin_bottom = 26.0
+layout_mode = 0
+offset_left = 43.0
+offset_top = 2.0
+offset_right = 185.0
+offset_bottom = 26.0
 
 [connection signal="gui_input" from="Panel/TextureRect" to="." method="_on_TextureRect_gui_input"]
 [connection signal="pressed" from="Panel/Home" to="." method="_on_Home_pressed"]
 [connection signal="pressed" from="Panel/Prev" to="." method="_on_Prev_pressed"]
-[connection signal="pressed" from="Panel/Next" to="." method="_on_Prev_pressed"]
 [connection signal="pressed" from="Panel/Next" to="." method="_on_Next_pressed"]
+[connection signal="pressed" from="Panel/Next" to="." method="_on_Prev_pressed"]
 [connection signal="text_changed" from="Panel/TextEdit" to="." method="_on_TextEdit_text_changed"]

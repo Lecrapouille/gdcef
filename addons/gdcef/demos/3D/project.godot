@@ -6,29 +6,20 @@
 ;   [section] ; section goes between []
 ;   param=value ; assign values to parameters
 
-config_version=4
-
-_global_script_classes=[ {
-"base": "",
-"class": "GDCef",
-"language": "NativeScript",
-"path": "res://libs/gdcef.gdns"
-} ]
-_global_script_class_icons={
-"GDCef": ""
-}
+config_version=5
 
 [application]
 
-config/name="CEF in 3D"
-config/description="A demo showing a CEF instanced within a 3D scene using viewports,
+config/name="GUI in 3D"
+config/description="A demo showing a GUI instanced within a 3D scene using viewports,
 as well as forwarding mouse and keyboard input to the GUI."
 run/main_scene="res://gui_in_3d.tscn"
+config/features=PackedStringArray("4.2")
 config/icon="res://icon.png"
 
 [gdnative]
 
-singletons=[  ]
+singletons=[]
 
 [layer_names]
 
@@ -36,11 +27,7 @@ singletons=[  ]
 
 [rendering]
 
-quality/driver/fallback_to_gles2=true
-quality/intended_usage/framebuffer_allocation=3
-vram_compression/import_etc=true
-quality/shadow_atlas/size=2048
-quality/shadow_atlas/size.mobile=1024
-quality/shadows/filter_mode=2
-quality/filters/msaa=2
+renderer/rendering_method="gl_compatibility"
+anti_aliasing/quality/msaa_3d=2
+anti_aliasing/quality/use_debanding=true
 environment/default_environment="res://default_env.tres"

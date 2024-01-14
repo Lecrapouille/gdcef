@@ -175,8 +175,8 @@ func _input(event):
 		return
 	if event is InputEventKey:
 		current_browser.on_key_pressed(
-			event.unicode if event.unicode != 0 else event.scancode,
-			event.pressed, event.shift, event.alt, event.control)
+			event.unicode if event.unicode != 0 else event.keycode, # Godot3: event.scancode,
+			event.pressed, event.shift_pressed, event.alt_pressed, event.is_command_or_control_pressed())
 	pass
 
 # ==============================================================================

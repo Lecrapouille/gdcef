@@ -8,7 +8,7 @@ extends Control
 
 # ==============================================================================
 # Hold URLs we want to load.
-var pages = [
+const pages = [
 	"https://github.com/Lecrapouille/gdcef",
 	"https://bitbucket.org/chromiumembedded/cef/wiki/Home",
 	"https://docs.godotengine.org/",
@@ -17,14 +17,14 @@ var pages = [
 	"https://www.localeplanet.com/support/browser.html"
 ]
 # Iterator on the array holding URLs.
-var iterator = 0
+@onready var iterator = 0
 
 # The left browser is allowed for mouse and keyboard interaction.
 # The right browser is disable because we are automatically switching of pages.
-var active_browser = "left"
+@onready var active_browser = "left"
 
 # Memorize if the mouse was pressed
-var mouse_pressed : bool = false
+@onready var mouse_pressed : bool = false
 
 # ==============================================================================
 # Timer callback: every 6 seconds load a new webpage.
@@ -54,19 +54,19 @@ func _on_Texture1_gui_input(event):
 			browser.on_mouse_wheel_vertical(-2)
 		elif event.button_index == MOUSE_BUTTON_LEFT:
 			mouse_pressed = event.pressed
-			if event.button_pressed == true:
+			if mouse_pressed:
 				browser.on_mouse_left_down()
 			else:
 				browser.on_mouse_left_up()
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			mouse_pressed = event.pressed
-			if event.button_pressed == true:
+			if mouse_pressed:
 				browser.on_mouse_right_down()
 			else:
 				browser.on_mouse_right_up()
 		else:
 			mouse_pressed = event.pressed
-			if event.button_pressed == true:
+			if mouse_pressed:
 				browser.on_mouse_middle_down()
 			else:
 				browser.on_mouse_middle_up()
@@ -85,11 +85,9 @@ func _input(event):
 		$Panel/Label.set_text("Failed getting Godot node 'left'")
 		return
 	if event is InputEventKey:
-		if event.unicode != 0:
-			browser.on_key_pressed(event.unicode, event.pressed, event.shift, event.alt, event.control)
-		else:
-			browser.on_key_pressed(event.keycode, event.pressed, event.shift, event.alt, event.control)
-
+		browser.on_key_pressed(
+			event.unicode if event.unicode != 0 else event.keycode, # Godot3: event.scancode,
+			event.pressed, event.shift_pressed, event.alt_pressed, event.is_command_or_control_pressed())
 	pass
 
 # ==============================================================================
@@ -133,6 +131,8 @@ func _ready():
 
 	### Browsers ###############################################################
 
+	# wait one frame for the texture rect to get its size
+	await get_tree().process_frame
 	# Left browser is displaying the first webpage with a 3D scene, we are
 	# enabling webgl. Other default configuration are:
 	#   {"frame_rate", 30}
