@@ -9,7 +9,7 @@ gdscripts for Linux and Windows (Mac OS could work, help is needed).
 We have named this CEF module/extension `gdcef`. It can be downloaded directly from
 the Godot asset library:
 - For Godot 3.5: https://godotengine.org/asset-library/asset/1426
-- For Godot 4.2: todo
+- For Godot 4.2: https://godotengine.org/asset-library/asset/2508
 
 For developpers, since Godot 3.x GDNative and Godot 4.x GDExtension are not compatible,
 there are two branches:
