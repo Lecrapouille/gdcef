@@ -7,7 +7,7 @@ implement a web browser for your 2D and 3D games through your gdscripts for
 Linux and Windows. We have named this CEF GDExtension module `gdcef`.
 
 This module can be downloaded directly from the Godot asset library:
-- <not yet available>
+- https://godotengine.org/asset-library/asset/2508
 
 **Note: You are a Godot-3 dev? You are on the wrong branch. Please go to https://github.com/Lecrapouille/gdcef/tree/godot-3.x instead!**
 
