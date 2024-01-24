@@ -31,22 +31,15 @@ size_flags_vertical = 3
 [node name="HBox" type="HBoxContainer" parent="Panel/VBox"]
 layout_mode = 2
 
-[node name="Mute" type="Button" parent="Panel/VBox/HBox"]
+[node name="New" type="Button" parent="Panel/VBox/HBox"]
 layout_mode = 2
-text = "M"
+tooltip_text = "New empty document"
+text = "New"
 
-[node name="Add" type="Button" parent="Panel/VBox/HBox"]
+[node name="Home" type="Button" parent="Panel/VBox/HBox"]
 layout_mode = 2
-text = "+"
-
-[node name="TabBar" type="Label" parent="Panel/VBox/HBox"]
-layout_mode = 2
-mouse_filter = 0
-text = "TabBar:"
-
-[node name="BrowserList" type="OptionButton" parent="Panel/VBox/HBox"]
-layout_mode = 2
-size_flags_horizontal = 3
+tooltip_text = "Go to home page"
+text = "Home"
 
 [node name="URL" type="Label" parent="Panel/VBox/HBox"]
 layout_mode = 2
@@ -56,28 +49,32 @@ text = "URL:"
 [node name="TextEdit" type="LineEdit" parent="Panel/VBox/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
+tooltip_text = "Type your desired URl and then click on the go button"
+
+[node name="Go" type="Button" parent="Panel/VBox/HBox"]
+layout_mode = 2
+tooltip_text = "Load a page given its URL"
+text = "Go"
 
 [node name="Prev" type="Button" parent="Panel/VBox/HBox"]
 layout_mode = 2
+tooltip_text = "Go to previous page"
 text = "<"
-
-[node name="Home" type="Button" parent="Panel/VBox/HBox"]
-layout_mode = 2
-text = "Home"
-
-[node name="BGColor" type="Button" parent="Panel/VBox/HBox"]
-layout_mode = 2
-text = "Color"
 
 [node name="Next" type="Button" parent="Panel/VBox/HBox"]
 layout_mode = 2
+tooltip_text = "Go to next page"
 text = ">"
 
-[node name="Info" type="Label" parent="Panel/VBox/HBox"]
+[node name="TabBar" type="Label" parent="Panel/VBox/HBox"]
+layout_mode = 2
+mouse_filter = 0
+text = "Opened:"
+
+[node name="BrowserList" type="OptionButton" parent="Panel/VBox/HBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_filter = 0
-text = "info"
+tooltip_text = "Select opened pages"
 
 [node name="TextureRect" type="TextureRect" parent="Panel/VBox"]
 layout_mode = 2
@@ -85,6 +82,36 @@ size_flags_vertical = 3
 mouse_filter = 0
 expand_mode = 1
 stretch_mode = 3
+
+[node name="HBox2" type="HBoxContainer" parent="Panel/VBox"]
+layout_mode = 2
+
+[node name="BGColor" type="Button" parent="Panel/VBox/HBox2"]
+layout_mode = 2
+tooltip_text = "Inject java script changing the body color of the html page"
+text = "Body color"
+
+[node name="Radio" type="Button" parent="Panel/VBox/HBox2"]
+layout_mode = 2
+tooltip_text = "Load a page with sound"
+text = "Radio"
+
+[node name="Mute" type="Button" parent="Panel/VBox/HBox2"]
+layout_mode = 2
+tooltip_text = "Mute/unmute the sound"
+text = "Mute sound"
+
+[node name="Info2" type="Label" parent="Panel/VBox/HBox2"]
+layout_mode = 2
+size_flags_horizontal = 0
+mouse_filter = 0
+text = "Info:"
+horizontal_alignment = 3
+
+[node name="Info" type="Label" parent="Panel/VBox/HBox2"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
 
 [node name="ColorPopup" type="Popup" parent="."]
 
@@ -95,15 +122,16 @@ anchor_bottom = 1.0
 edit_alpha = false
 presets_visible = false
 
-[connection signal="pressed" from="Panel/VBox/HBox/Mute" to="." method="_on_Mute_pressed"]
-[connection signal="pressed" from="Panel/VBox/HBox/Add" to="." method="_on_Add_pressed"]
-[connection signal="item_selected" from="Panel/VBox/HBox/BrowserList" to="." method="_on_BrowserList_item_selected"]
-[connection signal="text_changed" from="Panel/VBox/HBox/TextEdit" to="." method="_on_TextEdit_text_changed"]
-[connection signal="pressed" from="Panel/VBox/HBox/Prev" to="." method="_on_Prev_pressed"]
+[connection signal="pressed" from="Panel/VBox/HBox/New" to="." method="_on_Add_pressed"]
 [connection signal="pressed" from="Panel/VBox/HBox/Home" to="." method="_on_Home_pressed"]
-[connection signal="pressed" from="Panel/VBox/HBox/BGColor" to="." method="_on_BGColor_pressed"]
+[connection signal="pressed" from="Panel/VBox/HBox/Go" to="." method="_on_go_pressed"]
+[connection signal="pressed" from="Panel/VBox/HBox/Prev" to="." method="_on_Prev_pressed"]
 [connection signal="pressed" from="Panel/VBox/HBox/Next" to="." method="_on_Next_pressed"]
 [connection signal="pressed" from="Panel/VBox/HBox/Next" to="." method="_on_Prev_pressed"]
+[connection signal="item_selected" from="Panel/VBox/HBox/BrowserList" to="." method="_on_BrowserList_item_selected"]
 [connection signal="gui_input" from="Panel/VBox/TextureRect" to="." method="_on_TextureRect_gui_input"]
 [connection signal="resized" from="Panel/VBox/TextureRect" to="." method="_on_texture_rect_resized"]
+[connection signal="pressed" from="Panel/VBox/HBox2/BGColor" to="." method="_on_BGColor_pressed"]
+[connection signal="pressed" from="Panel/VBox/HBox2/Radio" to="." method="_on_radio_pressed"]
+[connection signal="pressed" from="Panel/VBox/HBox2/Mute" to="." method="_on_Mute_pressed"]
 [connection signal="color_changed" from="ColorPopup/ColorPicker" to="." method="_on_ColorPicker_color_changed"]

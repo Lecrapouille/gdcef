@@ -7,7 +7,8 @@
 extends Control
 
 # Default pages
-const DEFAULT_PAGE = "https://mytuner-radio.com/fr/radio/kpjk-radio-472355/"
+const DEFAULT_PAGE = "user://default_page.html"
+const RADIO_PAGE = "https://mytuner-radio.com/fr/radio/kpjk-radio-472355/"
 const HOME_PAGE = "https://github.com/Lecrapouille/gdcef"
 
 # The current browser as Godot node
@@ -32,6 +33,7 @@ func create_browser(url):
 	$Panel/VBox/HBox/BrowserList.add_item(url)
 	$Panel/VBox/HBox/BrowserList.select($Panel/VBox/HBox/BrowserList.get_item_count() - 1)
 	browser.connect("page_loaded", _on_page_loaded)
+	browser.connect("page_failed_loading", _on_page_failed_loading)
 	$Panel/VBox/TextureRect.texture = browser.get_texture()
 	return browser
 
@@ -69,7 +71,7 @@ func _on_Mute_pressed():
 # '+' button pressed: create a new browser node.
 # ==============================================================================
 func _on_Add_pressed():
-	var browser = await create_browser(DEFAULT_PAGE)
+	var browser = await create_browser("file://" + ProjectSettings.globalize_path(DEFAULT_PAGE))
 	if browser != null:
 		current_browser = browser
 	pass
@@ -80,6 +82,14 @@ func _on_Add_pressed():
 func _on_Home_pressed():
 	if current_browser != null:
 		current_browser.load_url(HOME_PAGE)
+	pass
+
+# ==============================================================================
+# Radio button pressed: load a page with radio for testing the sound.
+# ==============================================================================
+func _on_radio_pressed():
+	if current_browser != null:
+		current_browser.load_url(RADIO_PAGE)
 	pass
 
 # ==============================================================================
@@ -116,21 +126,36 @@ func _on_Next_pressed():
 	pass
 
 # ==============================================================================
-# Callback when a page has ended to load: we print a message
+# Go to the URL given by the text edit widget.
+# ==============================================================================
+func _on_go_pressed():
+	if current_browser != null:
+		current_browser.load_url($Panel/VBox/HBox/TextEdit.text)
+	pass
+
+# ==============================================================================
+# Callback when a page has ended to load with success (200): we print a message
 # ==============================================================================
 func _on_page_loaded(node):
 	var L = $Panel/VBox/HBox/BrowserList
 	var url = node.get_url()
 	L.set_item_text(L.get_selected_id(), url)
-	$Panel/VBox/HBox/Info.set_text("Tab " + node.name + ": " + url + " loaded")
+	$Panel/VBox/HBox2/Info.set_text(url + " loaded as ID " + node.name)
 	print("Browser " + str(L.get_selected_id()) + ": " + url)
+	pass
 
 # ==============================================================================
-# On new URL entered
+# Callback when a page has ended to load with failure.
+# Display a load error message using a data: URI.
 # ==============================================================================
-func _on_TextEdit_text_changed(new_text):
-	if current_browser != null:
-		current_browser.load_url(new_text)
+func _on_page_failed_loading(aborted, msg_err, node):
+	var html = "<html><body bgcolor=\"white\"><h2>Failed to load URL " + node.get_url()
+	if aborted:
+		html = html + " aborted by the user!</h2></body></html>"
+	else:
+		html = html + " with error " + msg_err + "!</h2></body></html>"
+	node.load_data_uri(html, "text/html")
+	pass
 
 # ==============================================================================
 # Get mouse events and broadcast them to CEF
@@ -192,6 +217,10 @@ func _on_texture_rect_resized():
 # Create a single briwser named "current_browser" that is attached as child node to $CEF.
 # ==============================================================================
 func _ready():
+	var file = FileAccess.open(DEFAULT_PAGE, FileAccess.WRITE)
+	file.store_string("<html><body bgcolor=\"white\"><h2>Welcome to gdCEF !</h2><p>This a generated page.</p></body></html>")
+	file = null
+	
 	if !$CEF.initialize({"locale":"en-US"}):
 		$Panel/VBox/HBox/Info.set_text($CEF.get_error())
 		push_error($CEF.get_error())
