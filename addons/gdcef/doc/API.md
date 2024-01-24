@@ -125,5 +125,6 @@ texture to Godot instance knowing how to render it (ie. `TextureRect`).
 
 | Godot callback name   | Arguments                                                   | Return            | Comment                                                                                              |
 |-----------------------|-------------------------------------------------------------|-------------------|------------------------------------------------------------------------------------------------------|
+| `on_browser_paint`    | `node`: GDBrowserView                                       |                   | Triggered when a page has been painted in the texture.                                               |
 | `page_loaded`         | `node`: GDBrowserView                                       |                   | Triggered when a page has been successfuly loaded.                                                   |
 | `page_failed_loading` | `aborted`: bool, `err_msg`: string, `node`: GDBrowserView   |                   | Triggered when a page has been failed loading: aborted by the user or failure                        |
