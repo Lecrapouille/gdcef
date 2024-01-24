@@ -76,6 +76,8 @@ void GDBrowserView::_bind_methods()
     ClassDB::bind_method(D_METHOD("is_muted"), &GDBrowserView::muted);
 
     ADD_SIGNAL(MethodInfo("page_loaded", PropertyInfo(Variant::OBJECT, "node")));
+    ADD_SIGNAL(MethodInfo("page_failed_loading", PropertyInfo(Variant::BOOL, "aborted"),
+        PropertyInfo(Variant::STRING, "err_msg"), PropertyInfo(Variant::OBJECT, "node")));
     ADD_SIGNAL(MethodInfo("on_browser_paint", PropertyInfo(Variant::OBJECT, "node")));
 }
 
@@ -199,6 +201,21 @@ void GDBrowserView::onLoadEnd(CefRefPtr<CefBrowser> /*browser*/,
 
         // Emit signal for Godot script
         emit_signal("page_loaded", this);
+    }
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::onLoadError(CefRefPtr<CefBrowser> /*browser*/,
+                                CefRefPtr<CefFrame> frame,
+                                const bool aborted, const CefString& errorText)
+{
+    if (frame->IsMain())
+    {
+        std::string str = errorText.ToString();
+        BROWSER_ERROR("has failed loading " << frame->GetURL() << ": " << str);
+        godot::String err = str.c_str();
+        // Emit signal for Godot script
+        emit_signal("page_failed_loading", aborted, err, this);
     }
 }
 

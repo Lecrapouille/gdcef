@@ -204,6 +204,18 @@ private: // CEF interfaces
             m_owner.onLoadEnd(browser, frame, httpStatusCode);
         }
 
+        // ---------------------------------------------------------------------
+        //! \brief Called when a navigation fails or is canceled.
+        // ---------------------------------------------------------------------
+        virtual void OnLoadError(CefRefPtr<CefBrowser> browser,
+                           CefRefPtr<CefFrame> frame,
+                           ErrorCode errorCode,
+                           const CefString& errorText,
+                           const CefString& failedUrl) override
+        {
+            m_owner.onLoadError(browser, frame, errorCode == ERR_ABORTED, errorText);
+        }
+
     private:
 
         GDBrowserView& m_owner;
@@ -462,6 +474,12 @@ private:
     // -------------------------------------------------------------------------
     void onLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                    int httpStatusCode);
+
+    // -------------------------------------------------------------------------
+    //! \brief Called by GDBrowserView::Impl::OnLoadError
+    // -------------------------------------------------------------------------
+    void onLoadError(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
+                     const bool aborted, const CefString& errorText);
 
 private:
 

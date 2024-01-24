@@ -123,6 +123,7 @@ texture to Godot instance knowing how to render it (ie. `TextureRect`).
 
 ### GDBrowserView Callbacks
 
-| Godot callback name   | Arguments                                                   | Return            | Comment                                                                                                                                                                                                                                     |
-|-----------------------|-------------------------------------------------------------|-------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `page_loaded`         | `node`: GDBrowserView                                       |                   | Triggered when a page has been successfuly loaded.                                                                                                                                                                                          |
+| Godot callback name   | Arguments                                                   | Return            | Comment                                                                                              |
+|-----------------------|-------------------------------------------------------------|-------------------|------------------------------------------------------------------------------------------------------|
+| `page_loaded`         | `node`: GDBrowserView                                       |                   | Triggered when a page has been successfuly loaded.                                                   |
+| `page_failed_loading` | `aborted`: bool, `err_msg`: string, `node`: GDBrowserView   |                   | Triggered when a page has been failed loading: aborted by the user or failure                        |
