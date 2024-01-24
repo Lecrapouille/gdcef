@@ -48,6 +48,7 @@ void GDBrowserView::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_texture"), &GDBrowserView::texture);
     ClassDB::bind_method(D_METHOD("set_zoom_level"), &GDBrowserView::setZoomLevel);
     ClassDB::bind_method(D_METHOD("load_url"), &GDBrowserView::loadURL);
+    ClassDB::bind_method(D_METHOD("load_data_uri"), &GDBrowserView::loadDataURI);
     ClassDB::bind_method(D_METHOD("is_loaded"), &GDBrowserView::loaded);
     ClassDB::bind_method(D_METHOD("get_url"), &GDBrowserView::getURL);
     ClassDB::bind_method(D_METHOD("stop_loading"), &GDBrowserView::stopLoading);
@@ -218,6 +219,17 @@ void GDBrowserView::loadURL(godot::String url)
     BROWSER_DEBUG_VAL(url.utf8().get_data());
 
     m_browser->GetMainFrame()->LoadURL(url.utf8().get_data());
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::loadDataURI(godot::String html, godot::String mime_type)
+{
+    auto const& d = html.utf8();
+    std::string uri("data:");
+    uri += mime_type.utf8().get_data();
+    uri += ";base64,";
+    uri += CefURIEncode(CefBase64Encode(d.ptr(), d.length()), false).ToString();
+    m_browser->GetMainFrame()->LoadURL(uri);
 }
 
 //------------------------------------------------------------------------------

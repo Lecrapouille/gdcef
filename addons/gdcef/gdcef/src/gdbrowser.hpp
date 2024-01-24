@@ -66,6 +66,7 @@
 #  include "cef_render_handler.h"
 #  include "cef_client.h"
 #  include "cef_app.h"
+#  include "cef_parser.h"
 #  include "wrapper/cef_helpers.h"
 
 #  include <iostream>
@@ -251,10 +252,16 @@ public:
     void setZoomLevel(double delta);
 
     // -------------------------------------------------------------------------
-    //! \brief Exported method to Godot script. Load the given web page
+    //! \brief Exported method to Godot script. Load the given web page from URL.
     //! \fixme Godot does not like String const& url why ?
     // -------------------------------------------------------------------------
     void loadURL(godot::String url);
+
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Load the given web page from
+    //! string content.
+    // -------------------------------------------------------------------------
+    void loadDataURI(godot::String html, godot::String mime_type);
 
     // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Return true if a document has
