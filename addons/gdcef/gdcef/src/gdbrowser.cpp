@@ -59,24 +59,24 @@ void GDBrowserView::_bind_methods()
     ClassDB::bind_method(D_METHOD("next_page"), &GDBrowserView::navigateForward);
     ClassDB::bind_method(D_METHOD("resize"), &GDBrowserView::reshape);
     ClassDB::bind_method(D_METHOD("set_viewport"), &GDBrowserView::viewport);
-    ClassDB::bind_method(D_METHOD("on_key_pressed"), &GDBrowserView::keyPress);
-    ClassDB::bind_method(D_METHOD("on_mouse_moved"), &GDBrowserView::mouseMove);
-    ClassDB::bind_method(D_METHOD("on_mouse_left_click"), &GDBrowserView::leftClick);
-    ClassDB::bind_method(D_METHOD("on_mouse_right_click"), &GDBrowserView::rightClick);
-    ClassDB::bind_method(D_METHOD("on_mouse_middle_click"), &GDBrowserView::middleClick);
-    ClassDB::bind_method(D_METHOD("on_mouse_left_down"), &GDBrowserView::leftMouseDown);
-    ClassDB::bind_method(D_METHOD("on_mouse_left_up"), &GDBrowserView::leftMouseUp);
-    ClassDB::bind_method(D_METHOD("on_mouse_right_down"), &GDBrowserView::rightMouseDown);
-    ClassDB::bind_method(D_METHOD("on_mouse_right_up"), &GDBrowserView::rightMouseUp);
-    ClassDB::bind_method(D_METHOD("on_mouse_middle_down"), &GDBrowserView::middleMouseDown);
-    ClassDB::bind_method(D_METHOD("on_mouse_middle_up"), &GDBrowserView::middleMouseUp);
-    ClassDB::bind_method(D_METHOD("on_mouse_wheel_vertical"), &GDBrowserView::mouseWheelVertical);
-    ClassDB::bind_method(D_METHOD("on_mouse_wheel_horizontal"), &GDBrowserView::mouseWheelHorizontal);
+    ClassDB::bind_method(D_METHOD("set_key_pressed"), &GDBrowserView::keyPress);
+    ClassDB::bind_method(D_METHOD("set_mouse_moved"), &GDBrowserView::mouseMove);
+    ClassDB::bind_method(D_METHOD("set_mouse_left_click"), &GDBrowserView::leftClick);
+    ClassDB::bind_method(D_METHOD("set_mouse_right_click"), &GDBrowserView::rightClick);
+    ClassDB::bind_method(D_METHOD("set_mouse_middle_click"), &GDBrowserView::middleClick);
+    ClassDB::bind_method(D_METHOD("set_mouse_left_down"), &GDBrowserView::leftMouseDown);
+    ClassDB::bind_method(D_METHOD("set_mouse_left_up"), &GDBrowserView::leftMouseUp);
+    ClassDB::bind_method(D_METHOD("set_mouse_right_down"), &GDBrowserView::rightMouseDown);
+    ClassDB::bind_method(D_METHOD("set_mouse_right_up"), &GDBrowserView::rightMouseUp);
+    ClassDB::bind_method(D_METHOD("set_mouse_middle_down"), &GDBrowserView::middleMouseDown);
+    ClassDB::bind_method(D_METHOD("set_mouse_middle_up"), &GDBrowserView::middleMouseUp);
+    ClassDB::bind_method(D_METHOD("set_mouse_wheel_vertical"), &GDBrowserView::mouseWheelVertical);
+    ClassDB::bind_method(D_METHOD("set_mouse_wheel_horizontal"), &GDBrowserView::mouseWheelHorizontal);
     ClassDB::bind_method(D_METHOD("set_muted"), &GDBrowserView::mute);
     ClassDB::bind_method(D_METHOD("is_muted"), &GDBrowserView::muted);
 
-    ADD_SIGNAL(MethodInfo("page_loaded", PropertyInfo(Variant::OBJECT, "node")));
-    ADD_SIGNAL(MethodInfo("page_failed_loading", PropertyInfo(Variant::BOOL, "aborted"),
+    ADD_SIGNAL(MethodInfo("on_page_loaded", PropertyInfo(Variant::OBJECT, "node")));
+    ADD_SIGNAL(MethodInfo("on_page_failed_loading", PropertyInfo(Variant::BOOL, "aborted"),
         PropertyInfo(Variant::STRING, "err_msg"), PropertyInfo(Variant::OBJECT, "node")));
     ADD_SIGNAL(MethodInfo("on_browser_paint", PropertyInfo(Variant::OBJECT, "node")));
 }
@@ -200,7 +200,7 @@ void GDBrowserView::onLoadEnd(CefRefPtr<CefBrowser> /*browser*/,
         GDCEF_DEBUG_VAL("has ended loading " << frame->GetURL());
 
         // Emit signal for Godot script
-        emit_signal("page_loaded", this);
+        emit_signal("on_page_loaded", this);
     }
 }
 
@@ -215,7 +215,7 @@ void GDBrowserView::onLoadError(CefRefPtr<CefBrowser> /*browser*/,
         BROWSER_ERROR("has failed loading " << frame->GetURL() << ": " << str);
         godot::String err = str.c_str();
         // Emit signal for Godot script
-        emit_signal("page_failed_loading", aborted, err, this);
+        emit_signal("on_page_failed_loading", aborted, err, this);
     }
 }
 

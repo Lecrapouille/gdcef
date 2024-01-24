@@ -32,8 +32,8 @@ func create_browser(url):
 		return null
 	$Panel/VBox/HBox/BrowserList.add_item(url)
 	$Panel/VBox/HBox/BrowserList.select($Panel/VBox/HBox/BrowserList.get_item_count() - 1)
-	browser.connect("page_loaded", _on_page_loaded)
-	browser.connect("page_failed_loading", _on_page_failed_loading)
+	browser.connect("on_page_loaded", _on_page_loaded)
+	browser.connect("on_page_failed_loading", _on_page_failed_loading)
 	$Panel/VBox/TextureRect.texture = browser.get_texture()
 	return browser
 
@@ -165,31 +165,31 @@ func _on_TextureRect_gui_input(event):
 		return
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			current_browser.on_mouse_wheel_vertical(2)
+			current_browser.set_mouse_wheel_vertical(2)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			current_browser.on_mouse_wheel_vertical(-2)
+			current_browser.set_mouse_wheel_vertical(-2)
 		elif event.button_index == MOUSE_BUTTON_LEFT:
 			mouse_pressed = event.pressed
 			if mouse_pressed:
-				current_browser.on_mouse_left_down()
+				current_browser.set_mouse_left_down()
 			else:
-				current_browser.on_mouse_left_up()
+				current_browser.set_mouse_left_up()
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			mouse_pressed = event.pressed
 			if mouse_pressed:
-				current_browser.on_mouse_right_down()
+				current_browser.set_mouse_right_down()
 			else:
-				current_browser.on_mouse_right_up()
+				current_browser.set_mouse_right_up()
 		else:
 			mouse_pressed = event.pressed
 			if mouse_pressed:
-				current_browser.on_mouse_middle_down()
+				current_browser.set_mouse_middle_down()
 			else:
-				current_browser.on_mouse_middle_up()
+				current_browser.set_mouse_middle_up()
 	elif event is InputEventMouseMotion:
 		if mouse_pressed:
-			current_browser.on_mouse_left_down()
-		current_browser.on_mouse_moved(event.position.x, event.position.y)
+			current_browser.set_mouse_left_down()
+		current_browser.set_mouse_moved(event.position.x, event.position.y)
 	pass
 
 # ==============================================================================
@@ -199,7 +199,7 @@ func _input(event):
 	if current_browser == null:
 		return
 	if event is InputEventKey:
-		current_browser.on_key_pressed(
+		current_browser.set_key_pressed(
 			event.unicode if event.unicode != 0 else event.keycode, # Godot3: event.scancode,
 			event.pressed, event.shift_pressed, event.alt_pressed, event.is_command_or_control_pressed())
 	pass
@@ -220,7 +220,7 @@ func _ready():
 	var file = FileAccess.open(DEFAULT_PAGE, FileAccess.WRITE)
 	file.store_string("<html><body bgcolor=\"white\"><h2>Welcome to gdCEF !</h2><p>This a generated page.</p></body></html>")
 	file = null
-	
+
 	if !$CEF.initialize({"locale":"en-US"}):
 		$Panel/VBox/HBox/Info.set_text($CEF.get_error())
 		push_error($CEF.get_error())

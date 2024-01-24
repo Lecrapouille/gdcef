@@ -19,10 +19,6 @@ const pages = [
 # Iterator on the array holding URLs.
 @onready var iterator = 0
 
-# The left browser is allowed for mouse and keyboard interaction.
-# The right browser is disable because we are automatically switching of pages.
-@onready var active_browser = "left"
-
 # Memorize if the mouse was pressed
 @onready var mouse_pressed : bool = false
 
@@ -49,31 +45,31 @@ func _on_Texture1_gui_input(event):
 		return
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			browser.on_mouse_wheel_vertical(2)
+			browser.set_mouse_wheel_vertical(2)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			browser.on_mouse_wheel_vertical(-2)
+			browser.set_mouse_wheel_vertical(-2)
 		elif event.button_index == MOUSE_BUTTON_LEFT:
 			mouse_pressed = event.pressed
 			if mouse_pressed:
-				browser.on_mouse_left_down()
+				browser.set_mouse_left_down()
 			else:
-				browser.on_mouse_left_up()
+				browser.set_mouse_left_up()
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			mouse_pressed = event.pressed
 			if mouse_pressed:
-				browser.on_mouse_right_down()
+				browser.set_mouse_right_down()
 			else:
-				browser.on_mouse_right_up()
+				browser.set_mouse_right_up()
 		else:
 			mouse_pressed = event.pressed
 			if mouse_pressed:
-				browser.on_mouse_middle_down()
+				browser.set_mouse_middle_down()
 			else:
-				browser.on_mouse_middle_up()
+				browser.set_mouse_middle_up()
 	elif event is InputEventMouseMotion:
 		if mouse_pressed == true :
-			browser.on_mouse_left_down()
-		browser.on_mouse_moved(event.position.x, event.position.y)
+			browser.set_mouse_left_down()
+		browser.set_mouse_moved(event.position.x, event.position.y)
 	pass
 
 # ==============================================================================
@@ -85,7 +81,7 @@ func _input(event):
 		$Panel/Label.set_text("Failed getting Godot node 'left'")
 		return
 	if event is InputEventKey:
-		browser.on_key_pressed(
+		browser.set_key_pressed(
 			event.unicode if event.unicode != 0 else event.keycode, # Godot3: event.scancode,
 			event.pressed, event.shift_pressed, event.alt_pressed, event.is_command_or_control_pressed())
 	pass
@@ -158,7 +154,7 @@ func _ready():
 
 	# Connect the event when a page has bee loaded and wait 6 seconds before
 	# loading the page.
-	right.connect("page_loaded", Callable(self, "_on_page_loaded"))
+	right.connect("on_page_loaded", Callable(self, "_on_page_loaded"))
 	var _err = $Timer.connect("timeout", Callable(self, "_on_Timer_timeout"))
 	pass
 

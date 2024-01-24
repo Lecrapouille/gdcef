@@ -71,31 +71,31 @@ func _on_TextureRect_gui_input(event):
 		return
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			browser.on_mouse_wheel_vertical(2)
+			browser.set_mouse_wheel_vertical(2)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			browser.on_mouse_wheel_vertical(-2)
+			browser.set_mouse_wheel_vertical(-2)
 		elif event.button_index == MOUSE_BUTTON_LEFT:
 			mouse_pressed = event.pressed
 			if mouse_pressed:
-				browser.on_mouse_left_down()
+				browser.set_mouse_left_down()
 			else:
-				browser.on_mouse_left_up()
+				browser.set_mouse_left_up()
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			mouse_pressed = event.pressed
 			if mouse_pressed:
-				browser.on_mouse_right_down()
+				browser.set_mouse_right_down()
 			else:
-				browser.on_mouse_right_up()
+				browser.set_mouse_right_up()
 		else:
 			mouse_pressed = event.pressed
 			if mouse_pressed:
-				browser.on_mouse_middle_down()
+				browser.set_mouse_middle_down()
 			else:
-				browser.on_mouse_middle_up()
+				browser.set_mouse_middle_up()
 	elif event is InputEventMouseMotion:
 		if mouse_pressed == true :
-			browser.on_mouse_left_down()
-		browser.on_mouse_moved(event.position.x, event.position.y)
+			browser.set_mouse_left_down()
+		browser.set_mouse_moved(event.position.x, event.position.y)
 	pass
 
 # ==============================================================================
@@ -107,7 +107,7 @@ func _input(event):
 		$Panel/Label.set_text("Failed getting Godot node " + browser_name)
 		return
 	if event is InputEventKey:
-		browser.on_key_pressed(
+		browser.set_key_pressed(
 			event.unicode if event.unicode != 0 else event.keycode, # Godot3: event.scancode,
 			event.pressed, event.shift_pressed, event.alt_pressed, event.is_command_or_control_pressed())
 	pass
@@ -144,7 +144,7 @@ func _ready():
 	await get_tree().process_frame
 	var S = $Panel/TextureRect.get_size()
 	var browser = $CEF.create_browser("https://github.com/Lecrapouille/gdcef", browser_name, S.x, S.y, {"javascript":true})
-	browser.connect("page_loaded", Callable(self, "_on_page_loaded"))
+	browser.connect("on_page_loaded", Callable(self, "_on_page_loaded"))
 	$Panel/TextureRect.texture = browser.get_texture()
 
 # ==============================================================================
