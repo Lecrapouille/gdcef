@@ -438,12 +438,12 @@ private:
              CefWindowInfo const& window_info, godot::String const& name);
 
     // -------------------------------------------------------------------------
-    //! \brief GDBrowserView::Impl::GetViewRect
+    //! \brief Called by GDBrowserView::Impl::GetViewRect
     // -------------------------------------------------------------------------
     void getViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect);
 
     // -------------------------------------------------------------------------
-    //! \brief GDBrowserView::Impl::GetViewRect
+    //! \brief Called by GDBrowserView::Impl::OnPaint
     // -------------------------------------------------------------------------
     void onPaint(CefRefPtr<CefBrowser> browser,
                  CefRenderHandler::PaintElementType type,
@@ -451,7 +451,7 @@ private:
                  const void* buffer, int width, int height);
 
     // -------------------------------------------------------------------------
-    //! \brief GDBrowserView::Impl::GetViewRect
+    //! \brief Called by GDBrowserView::Impl::OnLoadEnd
     // -------------------------------------------------------------------------
     void onLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                    int httpStatusCode);

@@ -34,8 +34,8 @@
 
 //------------------------------------------------------------------------------
 // in a GDNative module, "_bind_methods" is replaced by the "_register_methods"
-// method CefRefPtr<CefBrowser> m_browser;this is used to expose various methods of this class to Godot
-//void GDBrowserView::_register_methods()
+// method CefRefPtr<CefBrowser> m_browser; this is used to expose various methods
+// of this class to Godot.
 void GDBrowserView::_bind_methods()
 {
     using namespace godot;
