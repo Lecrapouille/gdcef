@@ -16,7 +16,7 @@ For busy people, here are the direct steps:
 ```
 cd addons/gdcef
 python3 -m pip install -r requirements.txt
-./build.py
+python3 build.py
 ```
 
 If successful, a `build` folder at the root of the project shall have been created.

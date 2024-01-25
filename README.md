@@ -33,7 +33,7 @@ To compile this project with the Python3 build script for Linux and Windows:
 ```
 cd addons/gdcef
 python3 -m pip install -r requirements.txt
-./build.py
+python3 build.py
 ```
 
 This will generate artifacts in the `build/` folder. Use this folder for your Godot

@@ -88,7 +88,7 @@ Godot 4.2.
 
 ```
 cd addons/gdcef
-./build.py
+python3 build.py
 ```
 
 Please be patient! The script needs some time for completing its job since it
