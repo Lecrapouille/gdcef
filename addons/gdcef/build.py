@@ -459,12 +459,12 @@ def check_cmake_version():
     DOC_URL = "https://github.com/stigmee/doc-internal/blob/master/doc/install_latest_cmake.sh"
     info("Checking cmake version ...")
     if shutil.which("cmake") == None:
-        fatal("Your did not have CMake installed. For Linux see " + DOC_URL +
+        fatal("It seems you have not CMake installed. For Linux see " + DOC_URL +
               " to update it before running this script. For Windows install "
               "the latest exe.")
     output = subprocess.check_output(["cmake", "--version"]).decode("utf-8")
     line = output.splitlines()[0]
-    current_version = line.split()[2]
+    current_version = line.split()[2].split('-')[0]
     if version.parse(current_version) < version.parse(CMAKE_MIN_VERSION):
         fatal("Your CMake version is " + current_version + " but shall be >= "
               + CMAKE_MIN_VERSION + "\nSee " + DOC_URL + " to update it before "
