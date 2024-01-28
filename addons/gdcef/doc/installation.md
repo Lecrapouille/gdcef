@@ -1,13 +1,13 @@
-# Chromium Embedded Framework as Godot 3.4+ native module
+# Chromium Embedded Framework as Godot 4.2+ GDExtension
 
 This repository contains the source code of some C++ classes wrapping a subset
 of the [Chromium Embedded
 Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home) API into a
-Godot 3.4+ native module (GDNative) which allows you to implement a web
+Godot 4.2+ GDExtension which allows you to implement a web
 browser for your 2D and 3D games through your gdscripts for Linux and for
-Windows.  We have named this CEF GDNative module `gdcef`.
+Windows.  We have named this CEF GDExtension `gdcef`.
 
-## Prerequisites for compiling the native module
+## Prerequisites for compiling the GDExtension
 
 ### Operating System
 
@@ -31,14 +31,17 @@ use the 17 because we need `filesystem`.
   [script](https://github.com/stigmee/doc-internal/blob/master/doc/install_latest_cmake.sh).
 - For macOS X you can install [homebrew](https://brew.sh/index_fr).
 - For Windows users you will have to install:
-  - Visual Studio: https://visualstudio.microsoft.com/en/vs/ (mandatory)
+  - Visual Studio: https://visualstudio.microsoft.com/en/vs/ (mandatory). Do not forget to
+    install Windows SDK (i.e. 10.0.20348.0) in Visual Studio.
   - Python3: https://www.python.org/downloads/windows/
   - CMake: https://cmake.org/download/
   - Ninja: https://ninja-build.org/
   - Git: https://git-scm.com/download/win
+  - *Note:* I have installed them for their official website, I did not tried to install them
+    from the `winget` command.
 
 To compile GDCef for Windows:
-- Ensure VS2022 is installed
+- Ensure VS2022 is installed.
 - Open an **x64 Native Tools Command Prompt for VS 2022**, with
   **Administrator** privilege (this should be available in the start menu under
   Visual Studio 2022). This ensures the environment is correctly set to use the
@@ -69,40 +72,36 @@ example in your `~/.bashrc` file).
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/your/path/gdcef/examples/build
 ```
 
-### Compilation of the native module for Godot 4.0
+### Compilation of the GDExtension for Godot 3.4+
 
-Not tested. Probably not compatible.
+This module is not compatible with Godot 3.X.
+See the [dev-godot-3 branch](https://github.com/Lecrapouille/gdcef/blob/master/addons/gdcef/build.py)
+instead.
 
-### Compilation of the native module for Godot 3.5
+### Compilation of the GDExtension for Godot 4.2+
+
+This module is not compatible with Godot 4.0 and 4.1.
 
 The [build.py](../build.py) does not have the command line. It deals with all cases by itself (your
 operating system, the number of cores of your CPU ...). By default, it deals with
-Godot 3.5.
+Godot 4.2.
 
 ```
 cd addons/gdcef
-./build.py
+python3 build.py
 ```
 
 Please be patient! The script needs some time for completing its job since it
 has:
 - to download CEF from this website https://cef-builds.spotifycdn.com/index.html
-  (600 MB) and extract the tarball inside `../thirdparty/cef_binary`
+  (+600 MB) and extract the tarball inside `../thirdparty/cef_binary`
   and compile it.
 - to git clone [godot-cpp](https://github.com/godotengine/godot-cpp) into
-  `../thirdparty/godot-3.5` and compile it.
+  `../thirdparty/godot-4.2` and compile it.
 - to compile the [primary CEF process](../gdcef/).
 - to compile the  [secondary CEF process](../subprocess/).
 - to extract CEF artifacts (*.so *.pak ...) into `build` folder (at the root of
   this repo).
-
-### Compilation of the native module for Godot 3.4
-
-This module has not been tested with a Godot version lower than 3.4. For Godot
-3.4:
-- Search in [build.py](../build.py) script the line `GODOT_VERSION =
-  "3.5"` and replaced with the desired version.
-- Run the build.py like explained for Godot 3.5.
 
 ## Update the CEF version
 
@@ -112,7 +111,7 @@ compiled CEF).
 - Check this website https://cef-builds.spotifycdn.com/index.html and select
   your desired operating system.
 - Copy the desired CEF version **without the name of the operating system** (for
-  example `100.0.24+g0783cf8+chromium-100.0.4896.127`) and search in
+  example `120.2.4+gc129304+chromium-120.0.6099.199`) and search in
   [build.py](../build.py) script the line `CEF_VERSION=` and paste the
   new version.
 - **Be sure your CEF version contains `+` symbols but not the URL-encode `%2B` format.**
@@ -121,7 +120,12 @@ compiled CEF).
 
 ## What to do if I dislike the folder name `build` holding CEF artifacts ?
 
-You can change it!  Search in [build.py](../build.py) script the line
+You can change it! Search in [build.py](../build.py) script the line
 `CEF_ARTIFACTS_FOLDER = "build"` and modifiy it. Rerun the `build.py` and adapt
-gdnlib files in `demos/*/libs/` folders. Adapt the code of your gdscript for
-passing it to `$CEF.initialize({"artifacts": "res://build/", ... })`
+gdnlib files in `demos/*/libs/` folders. This method will force Godot knowing
+default path. Alternatively, adapt the code of your gdscript for
+passing the path (see the API for more information):
+
+```
+$CEF.initialize({"artifacts": "res://cef_artifacts/", ... })
+```

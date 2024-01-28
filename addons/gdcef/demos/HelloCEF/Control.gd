@@ -8,7 +8,7 @@ extends Control
 
 # ==============================================================================
 # Hold URLs we want to load.
-var pages = [
+const pages = [
 	"https://github.com/Lecrapouille/gdcef",
 	"https://bitbucket.org/chromiumembedded/cef/wiki/Home",
 	"https://docs.godotengine.org/",
@@ -17,14 +17,10 @@ var pages = [
 	"https://www.localeplanet.com/support/browser.html"
 ]
 # Iterator on the array holding URLs.
-var iterator = 0
-
-# The left browser is allowed for mouse and keyboard interaction.
-# The right browser is disable because we are automatically switching of pages.
-var active_browser = "left"
+@onready var iterator = 0
 
 # Memorize if the mouse was pressed
-var mouse_pressed : bool = false
+@onready var mouse_pressed : bool = false
 
 # ==============================================================================
 # Timer callback: every 6 seconds load a new webpage.
@@ -48,32 +44,32 @@ func _on_Texture1_gui_input(event):
 		$Panel/Label.set_text("Failed getting Godot node 'left'")
 		return
 	if event is InputEventMouseButton:
-		if event.button_index == BUTTON_WHEEL_UP:
-			browser.on_mouse_wheel_vertical(2)
-		elif event.button_index == BUTTON_WHEEL_DOWN:
-			browser.on_mouse_wheel_vertical(-2)
-		elif event.button_index == BUTTON_LEFT:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			browser.set_mouse_wheel_vertical(2)
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			browser.set_mouse_wheel_vertical(-2)
+		elif event.button_index == MOUSE_BUTTON_LEFT:
 			mouse_pressed = event.pressed
-			if event.pressed == true:
-				browser.on_mouse_left_down()
+			if mouse_pressed:
+				browser.set_mouse_left_down()
 			else:
-				browser.on_mouse_left_up()
-		elif event.button_index == BUTTON_RIGHT:
+				browser.set_mouse_left_up()
+		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			mouse_pressed = event.pressed
-			if event.pressed == true:
-				browser.on_mouse_right_down()
+			if mouse_pressed:
+				browser.set_mouse_right_down()
 			else:
-				browser.on_mouse_right_up()
+				browser.set_mouse_right_up()
 		else:
 			mouse_pressed = event.pressed
-			if event.pressed == true:
-				browser.on_mouse_middle_down()
+			if mouse_pressed:
+				browser.set_mouse_middle_down()
 			else:
-				browser.on_mouse_middle_up()
+				browser.set_mouse_middle_up()
 	elif event is InputEventMouseMotion:
 		if mouse_pressed == true :
-			browser.on_mouse_left_down()
-		browser.on_mouse_moved(event.position.x, event.position.y)
+			browser.set_mouse_left_down()
+		browser.set_mouse_moved(event.position.x, event.position.y)
 	pass
 
 # ==============================================================================
@@ -85,11 +81,9 @@ func _input(event):
 		$Panel/Label.set_text("Failed getting Godot node 'left'")
 		return
 	if event is InputEventKey:
-		if event.unicode != 0:
-			browser.on_key_pressed(event.unicode, event.pressed, event.shift, event.alt, event.control)
-		else:
-			browser.on_key_pressed(event.scancode, event.pressed, event.shift, event.alt, event.control)
-
+		browser.set_key_pressed(
+			event.unicode if event.unicode != 0 else event.keycode, # Godot3: event.scancode,
+			event.pressed, event.shift_pressed, event.alt_pressed, event.is_command_or_control_pressed())
 	pass
 
 # ==============================================================================
@@ -120,10 +114,10 @@ func _ready():
 	# Configurate CEF. In incognito mode cache directories not used and in-memory
 	# caches are used instead and no data is persisted to disk.
 	#
-	# artifacts: allows path such as "build" or "res://build/". Note that "res://"
+	# artifacts: allows path such as "build" or "res://cef_artifacts/". Note that "res://"
 	# will use ProjectSettings.globalize_path but exported projects don't support globalize_path:
 	# https://docs.godotengine.org/en/3.5/classes/class_projectsettings.html#class-projectsettings-method-globalize-path
-	var resource_path = "res://build/"
+	var resource_path = "res://cef_artifacts/"
 	if !$CEF.initialize({"artifacts":resource_path, "incognito":true, "locale":"en-US"}):
 		push_error("Failed initializing CEF")
 		get_tree().quit()
@@ -133,6 +127,8 @@ func _ready():
 
 	### Browsers ###############################################################
 
+	# wait one frame for the texture rect to get its size
+	await get_tree().process_frame
 	# Left browser is displaying the first webpage with a 3D scene, we are
 	# enabling webgl. Other default configuration are:
 	#   {"frame_rate", 30}
@@ -158,8 +154,8 @@ func _ready():
 
 	# Connect the event when a page has bee loaded and wait 6 seconds before
 	# loading the page.
-	right.connect("page_loaded", self, "_on_page_loaded")
-	var _err = $Timer.connect("timeout", self, "_on_Timer_timeout")
+	right.connect("on_page_loaded", Callable(self, "_on_page_loaded"))
+	var _err = $Timer.connect("timeout", Callable(self, "_on_Timer_timeout"))
 	pass
 
 # ==============================================================================

@@ -54,12 +54,19 @@
 #      endif
 #  endif
 
-// Godot
-#  include "Godot.hpp"
-#  include "ProjectSettings.hpp"
-#  include "OS.hpp"
-#  include "Node.hpp"
-#  include "ImageTexture.hpp"
+// Godot 3
+//#  include "Godot.hpp"
+//#  include "ProjectSettings.hpp"
+//#  include "OS.hpp"
+//#  include "Node.hpp"
+//#  include "ImageTexture.hpp"
+
+// Godot 4
+#  include "godot.hpp"
+#  include "project_settings.hpp"
+#  include "os.hpp"
+#  include "node.hpp"
+#  include "image_texture.hpp"
 
 // Chromium Embedded Framework
 #  include "cef_client.h"
@@ -117,13 +124,17 @@ public: // Godot interfaces.
     //! \brief Method automatically called by Godot engine to register the
     //! desired C++ methods that will be callable from gdscript.
     // -------------------------------------------------------------------------
-    static void _register_methods();
+    //static void _register_methods();
 
     // -------------------------------------------------------------------------
     //! \brief Process automatically called by Godot engine. Call the CEF pomp
     //! loop message.
     // -------------------------------------------------------------------------
-    void _process(float delta);
+    void _process(double delta) override;
+
+protected:
+
+    static void _bind_methods();
 
 private: // Godot interfaces.
 
@@ -131,7 +142,8 @@ private: // Godot interfaces.
     //! \brief Godot reference counting. Beware can conflict with CEF reference
     //! counting: this is why wehave to implement the sub class Impl.
     // -------------------------------------------------------------------------
-    GODOT_CLASS(GDCef, godot::Node);
+    //GODOT_CLASS(GDCef, godot::Node);
+    GDCLASS(GDCef, godot::Node);
 
 private: // CEF interfaces.
 

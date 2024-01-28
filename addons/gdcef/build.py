@@ -35,17 +35,32 @@ from pathlib import Path
 from subprocess import run
 from multiprocessing import cpu_count
 from packaging import version
+from shutil import move, copymode
 
 ###############################################################################
 ### Global user settings
 # CEF version downloaded from https://cef-builds.spotifycdn.com/index.html
-CEF_VERSION = "110.0.27+g1296c82+chromium-110.0.5481.100"
+CEF_VERSION = "120.2.4+gc129304+chromium-120.0.6099.199"
 CEF_TARGET = "Release"             # or "Debug"
 MODULE_TARGET = "release"          # or "debug"
-GODOT_CPP_TARGET = "release"       # or "debug"
-GODOT_VERSION = "3.5"              # or "3.4"
+GODOT_CPP_TARGET = "template_release"       # or "template_debug"
+GODOT_VERSION = "4.2"              # or "master" or "3.5" or "3.4"
 CMAKE_MIN_VERSION = "3.19"         # Minimun CMake version needed for compiling CEF
+# Scons is the build system used by Godot. For some people "scons" command does not
+# work, they need to call "python -m SCons" command. The array is needed by the func
+# calling scons.
+SCONS = ["scons"]                  # or ["python", "-m", "SCons"]
+# The name of the folder that will hold all CEF built artifacts.
+CEF_BUILD_FOLDER_NAME = "build"
+# When we are compiling demos we are creating a folder holding CEF build artifacts.
+# But, in the aim to save space on your hard disk the folder is a pointer to folder
+# CEF_ARTIFACTS_BUILD_PATH. If you modify this variable, do not forget to also change
+# Godot .gdns and .gdnlib files inside the libs folders in GDCEF_EXAMPLES_PATH the
+# demos folder.
+CEF_ARTIFACTS_FOLDER_NAME = "cef_artifacts"
 
+###############################################################################
+### Project internal paths local from this script. Do not change them!
 PWD = os.getcwd()
 GDCEF_PATH = os.path.join(PWD, "gdcef")
 GDCEF_PROCESSES_PATH = os.path.join(PWD, "subprocess")
@@ -55,10 +70,7 @@ THIRDPARTY_GODOT_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "godot-" + GODOT_VER
 GODOT_CPP_API_PATH = os.path.join(THIRDPARTY_GODOT_PATH, "cpp")
 PATCHES_PATH = os.path.join(PWD, "patches")
 GDCEF_EXAMPLES_PATH = os.path.join(PWD, "demos")
-# If you modify CEF_ARTIFACTS_BUILD_PATH, do not forget to also change Godot
-# .gdns and .gdnlib files inside GDCEF_EXAMPLES_PATH.
-CEF_ARTIFACTS_FOLDER = "build"
-CEF_ARTIFACTS_BUILD_PATH = os.path.realpath(os.path.join("../../" + CEF_ARTIFACTS_FOLDER))
+CEF_ARTIFACTS_BUILD_PATH = os.path.realpath(os.path.join("../../" + CEF_BUILD_FOLDER_NAME))
 
 ###############################################################################
 ### Type of operating system, AMD64, ARM64 ...
@@ -95,6 +107,7 @@ def copyfile(file_name, folder):
     dest = os.path.join(folder, os.path.basename(file_name))
     print("Copy " + file_name + " => " + dest)
     shutil.copyfile(file_name, dest)
+    copymode(file_name, dest)
 
 ###############################################################################
 ### Equivalent to mkdir -p
@@ -195,15 +208,15 @@ def check_paths():
         if not os.path.isdir(path):
             fatal('Folder ' + path + ' does not exist!')
 
-        # Remove the example build folder to avoid messed up with your
-        # application build using alias.
-        p = Path(CEF_ARTIFACTS_BUILD_PATH);
-        if p.is_symlink():
-            os.remove(CEF_ARTIFACTS_BUILD_PATH)
-        elif p.is_dir():
-            rmdir(CEF_ARTIFACTS_BUILD_PATH)
-        elif p.exists():
-            fatal('Please remove manually ' + CEF_ARTIFACTS_BUILD_PATH + ' and recall this script')
+    # Remove the example build folder to avoid messed up with your
+    # application build using alias.
+    p = Path(CEF_ARTIFACTS_BUILD_PATH);
+    if p.is_symlink():
+        os.remove(CEF_ARTIFACTS_BUILD_PATH)
+    elif p.is_dir():
+        rmdir(CEF_ARTIFACTS_BUILD_PATH)
+    elif p.exists():
+        fatal('Please remove manually ' + CEF_ARTIFACTS_BUILD_PATH + ' and recall this script')
 
 ###############################################################################
 ### Download prebuild Chromium Embedded Framework if folder is not present
@@ -260,17 +273,26 @@ def download_cef():
         os.remove(CEF_TARBALL + ".sha1")
 
 ###############################################################################
-### Compile Chromium Embedded Framework cefsimple example if not already made
-def compile_cef():
+### Patch Chromium Embedded Framework cefsimple example if not already made
+def patch_cef():
     if os.path.isdir(THIRDPARTY_CEF_PATH):
         os.chdir(THIRDPARTY_CEF_PATH)
-        info("Compiling Chromium Embedded Framework in " + CEF_TARGET +
-             " mode (inside " + THIRDPARTY_CEF_PATH + ") ...")
+        info("Patching Chromium Embedded Framework")
 
         # Apply patches for Windows
         if OSTYPE == "Windows":
             shutil.copyfile(os.path.join(PATCHES_PATH, "CEF", "win", "libcef_dll_wrapper_cmake"),
                             "CMakeLists.txt")
+
+###############################################################################
+### Compile Chromium Embedded Framework cefsimple example if not already made
+def compile_cef():
+    if os.path.isdir(THIRDPARTY_CEF_PATH):
+        patch_cef()
+
+        os.chdir(THIRDPARTY_CEF_PATH)
+        info("Compiling Chromium Embedded Framework in " + CEF_TARGET +
+             " mode (inside " + THIRDPARTY_CEF_PATH + ") ...")
 
         # Windows: force compiling CEF as static library.
         if OSTYPE == "Windows":
@@ -353,16 +375,18 @@ def compile_godot_cpp():
         info("Compiling Godot C++ API (inside " + GODOT_CPP_API_PATH + ") ...")
         os.chdir(GODOT_CPP_API_PATH)
         if OSTYPE == "Linux":
-            run(["scons", "platform=linux", "target=" + GODOT_CPP_TARGET,
+            run(SCONS + ["platform=linux", "target=" + GODOT_CPP_TARGET, "use_static_cpp=no",
                  "--jobs=" + NPROC], check=True)
         elif OSTYPE == "Darwin":
-            run(["scons", "platform=osx", "macos_arch=" + ARCHI,
-                 "target=" + GODOT_CPP_TARGET, "--jobs=" + NPROC], check=True)
+            run(SCONS + ["platform=osx", "macos_arch=" + ARCHI,
+                 "target=" + GODOT_CPP_TARGET, "use_static_cpp=no",
+                 "--jobs=" + NPROC], check=True)
         elif OSTYPE == "MinGW":
-            run(["scons", "platform=windows", "use_mingw=True",
-                 "target=" + GODOT_CPP_TARGET, "--jobs=" + NPROC], check=True)
+            run(SCONS + ["platform=windows", "use_mingw=True",
+                 "target=" + GODOT_CPP_TARGET, "use_static_cpp=no",
+                 "--jobs=" + NPROC], check=True)
         elif OSTYPE == "Windows":
-            run(["scons", "platform=windows", "target=" + GODOT_CPP_TARGET,
+            run(SCONS + ["platform=windows", "target=" + GODOT_CPP_TARGET, "use_static_cpp=no",
                  "--jobs=" + NPROC], check=True)
         else:
             fatal("Unknown architecture " + OSTYPE + ": I dunno how to compile Godot-cpp")
@@ -373,14 +397,14 @@ def gdnative_scons_cmd(plateform):
     if GODOT_CPP_API_PATH == '':
         fatal('Please download and compile https://github.com/godotengine/godot-cpp and set GODOT_CPP_API_PATH')
     if OSTYPE == "Darwin":
-        run(["scons", "api_path=" + GODOT_CPP_API_PATH,
-             "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER + "\\\"",
+        run(SCONS + ["api_path=" + GODOT_CPP_API_PATH,
+             "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER_NAME + "\\\"",
              "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
              "target=" + MODULE_TARGET, "--jobs=" + NPROC,
              "arch=" + ARCHI, "platform=" + plateform], check=True)
     else:
-        run(["scons", "api_path=" + GODOT_CPP_API_PATH,
-             "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER + "\\\"",
+        run(SCONS + ["api_path=" + GODOT_CPP_API_PATH,
+             "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER_NAME + "\\\"",
              "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
              "target=" + MODULE_TARGET, "--jobs=" + NPROC,
              "platform=" + plateform], check=True)
@@ -435,12 +459,12 @@ def check_cmake_version():
     DOC_URL = "https://github.com/stigmee/doc-internal/blob/master/doc/install_latest_cmake.sh"
     info("Checking cmake version ...")
     if shutil.which("cmake") == None:
-        fatal("Your did not have CMake installed. For Linux see " + DOC_URL +
+        fatal("It seems you have not CMake installed. For Linux see " + DOC_URL +
               " to update it before running this script. For Windows install "
               "the latest exe.")
     output = subprocess.check_output(["cmake", "--version"]).decode("utf-8")
     line = output.splitlines()[0]
-    current_version = line.split()[2]
+    current_version = line.split()[2].split('-')[0]
     if version.parse(current_version) < version.parse(CMAKE_MIN_VERSION):
         fatal("Your CMake version is " + current_version + " but shall be >= "
               + CMAKE_MIN_VERSION + "\nSee " + DOC_URL + " to update it before "
@@ -451,9 +475,12 @@ def check_cmake_version():
 ### on the build folder. On a real example you do not have to do it: simply
 ### install the build/ folder inside your Godot application.
 def prepare_godot_examples():
-    info("Alias examples to CEF artifacts")
-    symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(GDCEF_EXAMPLES_PATH, "2D", CEF_ARTIFACTS_FOLDER))
-    symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(GDCEF_EXAMPLES_PATH, "3D", CEF_ARTIFACTS_FOLDER))
+    info("Creating symbolic link to CEF artifacts for demos:")
+    for filename in os.listdir(GDCEF_EXAMPLES_PATH):
+        path = os.path.join(GDCEF_EXAMPLES_PATH, filename)
+        if os.path.isdir(path) and os.path.isfile(os.path.join(path, "project.godot")):
+            info("  - Demo " + path)
+            symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(path, CEF_ARTIFACTS_FOLDER_NAME))
 
 ###############################################################################
 ### Run Godot example
@@ -465,7 +492,8 @@ def run_godot_example():
         info("For Unix systems you have to make your system know where to find shared"
              " libraries needed for CEF. Save the following command in your environment"
              " (~/.bashrc i.e.):\n\n"
-             "   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:" + CEF_ARTIFACTS_BUILD_PATH + "\n")
+             "   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:" + CEF_ARTIFACTS_BUILD_PATH + "\n"
+             "   export LD_PRELOAD=" + CEF_ARTIFACTS_BUILD_PATH + "/libcef.so\n")
     info("Once done, you can run your Godot editor " + GODOT_VERSION + " and try"
          " one of the demos located in '" + GDCEF_EXAMPLES_PATH + "'.\n\nHave fun!")
 

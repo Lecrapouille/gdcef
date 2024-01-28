@@ -37,6 +37,7 @@
 #      pragma GCC diagnostic ignored "-Wfloat-equal"
 #      pragma GCC diagnostic ignored "-Wpedantic"
 #      pragma GCC diagnostic ignored "-Wshadow"
+#      pragma GCC diagnostic ignored "-Wundef"
 #      if defined(__clang__)
 #        pragma clang diagnostic push
 #        pragma clang diagnostic ignored "-Wcast-align"
@@ -47,17 +48,25 @@
 #      endif
 #  endif
 
-// Godot
-#  include "Godot.hpp"
-#  include "GDScript.hpp"
-#  include "Node.hpp"
-#  include "ImageTexture.hpp"
-#  include "GlobalConstants.hpp"
+// Godot 3
+//#  include "Godot.hpp"
+//#  include "GDScript.hpp"
+//#  include "Node.hpp"
+//#  include "ImageTexture.hpp"
+//#  include "GlobalConstants.hpp"
+
+// Godot 4
+#  include "godot.hpp"
+#  include "gd_script.hpp"
+#  include "node.hpp"
+#  include "image_texture.hpp"
+#  include "global_constants.hpp"
 
 // Chromium Embedded Framework
 #  include "cef_render_handler.h"
 #  include "cef_client.h"
 #  include "cef_app.h"
+#  include "cef_parser.h"
 #  include "wrapper/cef_helpers.h"
 
 #  include <iostream>
@@ -82,12 +91,19 @@ public: // Godot interfaces
     //! \brief Static function that Godot will call to find out which methods
     //! can be called on our NativeScript and which properties it exposes.
     // -------------------------------------------------------------------------
-    static void _register_methods();
+    //static void _register_methods();
+
+//private:
 
     // -------------------------------------------------------------------------
     //! \brief Godot stuff
     // -------------------------------------------------------------------------
-    GODOT_CLASS(GDBrowserView, godot::Node);
+    //GODOT_CLASS(GDBrowserView, godot::Node);
+    GDCLASS(GDBrowserView, godot::Node);
+
+protected:
+
+    static void _bind_methods();
 
 private: // CEF interfaces
 
@@ -222,6 +238,18 @@ private: // CEF interfaces
             m_owner.onLoadEnd(browser, frame, httpStatusCode);
         }
 
+        // ---------------------------------------------------------------------
+        //! \brief Called when a navigation fails or is canceled.
+        // ---------------------------------------------------------------------
+        virtual void OnLoadError(CefRefPtr<CefBrowser> browser,
+                           CefRefPtr<CefFrame> frame,
+                           ErrorCode errorCode,
+                           const CefString& errorText,
+                           const CefString& failedUrl) override
+        {
+            m_owner.onLoadError(browser, frame, errorCode == ERR_ABORTED, errorText);
+        }
+
     private:
 
         GDBrowserView& m_owner;
@@ -270,10 +298,16 @@ public:
     void setZoomLevel(double delta);
 
     // -------------------------------------------------------------------------
-    //! \brief Exported method to Godot script. Load the given web page
+    //! \brief Exported method to Godot script. Load the given web page from URL.
     //! \fixme Godot does not like String const& url why ?
     // -------------------------------------------------------------------------
     void loadURL(godot::String url);
+
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Load the given web page from
+    //! string content.
+    // -------------------------------------------------------------------------
+    void loadDataURI(godot::String html, godot::String mime_type);
 
     // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Return true if a document has
@@ -457,12 +491,12 @@ private:
              CefWindowInfo const& window_info, godot::String const& name);
 
     // -------------------------------------------------------------------------
-    //! \brief GDBrowserView::Impl::GetViewRect
+    //! \brief Called by GDBrowserView::Impl::GetViewRect
     // -------------------------------------------------------------------------
     void getViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect);
 
     // -------------------------------------------------------------------------
-    //! \brief GDBrowserView::Impl::GetViewRect
+    //! \brief Called by GDBrowserView::Impl::OnPaint
     // -------------------------------------------------------------------------
     void onPaint(CefRefPtr<CefBrowser> browser,
                  CefRenderHandler::PaintElementType type,
@@ -476,10 +510,16 @@ private:
         const float** data, int frames, int64 pts);
 
     // -------------------------------------------------------------------------
-    //! \brief GDBrowserView::Impl::GetViewRect
+    //! \brief Called by GDBrowserView::Impl::OnLoadEnd
     // -------------------------------------------------------------------------
     void onLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                    int httpStatusCode);
+
+    // -------------------------------------------------------------------------
+    //! \brief Called by GDBrowserView::Impl::OnLoadError
+    // -------------------------------------------------------------------------
+    void onLoadError(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
+                     const bool aborted, const CefString& errorText);
 
 private:
 
@@ -496,7 +536,8 @@ private:
     //! \brief Godot's temporary image (CEF => Godot)
     godot::Ref<godot::ImageTexture> m_texture;
     godot::Ref<godot::Image> m_image;
-    godot::PoolByteArray m_data;
+    // godot::PoolByteArray m_data;
+    godot::PackedByteArray m_data;
 
     // Audio
     godot::PoolVector2Array audioBuffer;

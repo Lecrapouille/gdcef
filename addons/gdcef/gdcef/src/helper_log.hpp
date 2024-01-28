@@ -47,7 +47,6 @@
 #define BROWSER_ERROR(x)                                                   \
   m_error << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "] "   \
           << x << std::endl;                                               \
-  godot::Godot::print(m_error.str().c_str());                              \
   std::cerr << m_error.str()
 
 #endif // STIGMEE_GDCEF_HELPER_LOG_HPP

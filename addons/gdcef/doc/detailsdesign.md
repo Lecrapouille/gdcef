@@ -254,8 +254,7 @@ startup.
 📦YourProject                        ⬅️ Godot res://
  ┣ 📜project.godot                   ⬅️ Your Godot project (here YourProject)
  ┣ 📂libs
- ┃ ┣ 📜gdcef.gdns                    ⬅️ CEF native script for gdcef.gdnlib
- ┃ ┗ 📜gdcef.gdnlib                  ⬅️ CEF native script for ../build/libgdcef.dll
+ ┃ ┗ 📜gdcef.gdextension             ⬅️ Godot know what dynamic libraries should be loaded for each platform
  ┗ 📂build
     ┣ 📜 ...                         ⬅️ CEF libs and artifacts (see previously)
     ┣ 📦YourProject                  ⬅️ YourProject executable
@@ -263,53 +262,32 @@ startup.
     ┗ 📜libgdcef.dll                 ⬅️ Our CEF native module library for Godot
 ```
 
-- gdcef.gdns:
-```
-[gd_resource type="NativeScript" load_steps=2 format=2]
-
-[ext_resource path="res://libs/gdcef.gdnlib" type="GDNativeLibrary" id=1]
-
-[resource]
-resource_name = "gdcef"
-class_name = "GDCef"
-library = ExtResource( 1 )
-script_class_name = "GDCef"
-```
-
 This file holds information on the C++ exported class name `GDCef`, its name on
-Godot and refers to the second file `gdcef.gdnlib`.
+Godot and refers to the second file `gdcef.gdextension`.
 
-- gdcef.gdnlib:
+- gdcef.gdextension:
 ```
-[general]
+[configuration]
+entry_symbol = "gdcef_library_init"
+compatibility_minimum = 4.1
 
-singleton=false
-load_once=true
-symbol_prefix="godot_"
-reloadable=false
+[libraries]
+linux.x86_64.debug = "res://cef_artifacts/libgdcef.so"
+linux.x86_64.release = "res://cef_artifacts/libgdcef.so"
+linux.x86_32.debug = "res://cef_artifacts/libgdcef.so"
+linux.x86_32.release = "res://cef_artifacts/libgdcef.so"
 
-[entry]
-
-OSX.64="res://build/libgdcef.dylib"
-Windows.64="res://build/libgdcef.dll"
-X11.64="res://build/libgdcef.so"
-
-[dependencies]
-
-OSX.64=[ "res://build/libcef.dylib" ]
-Windows.64=[ "res://build/libcef.dll" ]
-X11.64=[ "res://build/libcef.so" ]
+windows.x86_64.debug = "res://cef_artifacts/libgdcef.dll"
+windows.x86_64.release = "res://cef_artifacts/libgdcef.dll"
+windows.x86_32.debug = "res://cef_artifacts/libgdcef.dll"
+windows.x86_32.release = "res://cef_artifacts/libgdcef.dll"
 ```
 
-This file holds information on how to find your gdnative library and the library
-it depends on.
+This file lets Godot know what dynamic libraries should be loaded for each platform
+and the entry function for the module.
 
 To use the native module inside Godot, ensure libraries are correctly loaded
-into your project (open the lib in the Godot editor, make sure GDCef can be
-instantiated in GDScript). Then create a `Spatial` node in the scene graph and
-attach to it the `gdcef.gdns` file as `NativeScript` (in the language
-selector). If Godot is complaining is probably your node is incompatible. Select
-the correct node.
+into your project. Then create a `GDCEF` node in the scene graph.
 
 ![CEFnode](scenegraph/cef.png)
 

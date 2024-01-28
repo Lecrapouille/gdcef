@@ -79,10 +79,6 @@ if platform == '':
 
 # X86 or ARM
 archi = env['arch']
-arch_ext = archi
-if archi == 'x86_64':
-    if platform != 'osx':
-        arch_ext = '64'
 
 # Check if Godot exists
 godot_api_path = env['api_path']
@@ -132,7 +128,7 @@ elif platform == 'windows':
     # This makes sure to keep the session environment variables on windows,
     # that way you can run scons in a vs 2017 prompt and it will find all the required tools
     env.Append(ENV=os.environ)
-    env.Append(CPPDEFINES=['WIN32', '_WIN32', '_WINDOWS', '_CRT_SECURE_NO_WARNINGS'])
+    env.Append(CPPDEFINES=['WIN32', '_WIN32', '_WINDOWS', '_CRT_SECURE_NO_WARNINGS', 'TYPED_METHOD_BIND'])
     env.Append(CCFLAGS=['-W3', '-GR'])
     env.Append(CXXFLAGS='/std:c++17')
     if compile_mode == 'debug':
@@ -146,13 +142,13 @@ elif platform == 'windows':
 # Unix compilation flags
 if platform == 'linux' or platform == 'osx':
     # gcc/clang compilation flags
-    env.Append(CXXFLAGS=['-Wall', '-Wextra', '-Wuninitialized', '-Wundef',
-                         '-Wunused', '-Wunused-result', '-Wunused-parameter',
-                         '-Wtype-limits', '-Wcast-align', '-Wcast-qual',
-                         '-Wconversion', '-Wfloat-equal', '-Wpointer-arith',
-                         '-Wswitch-enum', '-Wpacked', '-Wold-style-cast',
-                         '-Wdeprecated', '-Wvariadic-macros', '-Wvla',
-                         '-Wsign-conversion'])
+#    env.Append(CXXFLAGS=['-Wall', '-Wextra', '-Wuninitialized', '-Wundef',
+#                         '-Wunused', '-Wunused-result', '-Wunused-parameter',
+#                         '-Wtype-limits', '-Wcast-align', '-Wcast-qual',
+#                         '-Wconversion', '-Wfloat-equal', '-Wpointer-arith',
+#                         '-Wswitch-enum', '-Wpacked', '-Wold-style-cast',
+#                         '-Wdeprecated', '-Wvariadic-macros', '-Wvla',
+#                         '-Wsign-conversion'])
 
     # clang specific flags
     if env['use_llvm']:
@@ -172,13 +168,19 @@ env.Append(CXXFLAGS=['-DCEF_ARTIFACTS_FOLDER=' + env['cef_artifacts_folder']])
 
 # Pathes of Godot header files
 env.Append(CPPPATH=['.',
+                    # Godot-4
+                    godot_api_path + '/include/godot_cpp',
+                    godot_api_path + '/gdextension',
+                    godot_api_path + '/gen/include/godot_cpp/classes',
+                    godot_api_path + '/gen/include',
+                    # Godot-3
                     godot_api_path + '/godot-headers',
                     godot_api_path + '/include',
                     godot_api_path + '/include/core',
                     godot_api_path + '/include/gen'])
 
 # Godot library that is linked against our library
-libgodot = 'libgodot-cpp.' + platform + '.' + compile_mode + '.' + arch_ext
+libgodot = 'libgodot-cpp.' + platform + '.template_' + compile_mode + '.' + archi
 env.Append(LIBS=[libgodot], LIBPATH=[godot_api_path + '/bin'])
 
 # Pathes of CEF header files
@@ -206,7 +208,9 @@ env.Append(LIBS = [libcef, 'libcef_dll_wrapper'],
 env.Append(CPPPATH=['src/'])
 
 # Compile the library
-sources = Glob('src/*.cpp')
+sources = ['src/helper_files.cpp', 'src/browser_io.cpp', 'src/gdcef.cpp', 'src/gdbrowser.cpp', 'src/register_types.cpp']
+# sources = Glob('src/*.cpp')
+# sources = ['src/helper_files.cpp', 'src/browser_io.cpp', 'src/gdcef.cpp', 'src/gdbrowser.cpp', 'src/gdnative.cpp']
 library = env.SharedLibrary(target=target_path + '/' + target_library, source=sources)
 Default(library)
 
