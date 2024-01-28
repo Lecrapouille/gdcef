@@ -88,17 +88,8 @@ public: // Godot interfaces
     void _init();
 
     // -------------------------------------------------------------------------
-    //! \brief Static function that Godot will call to find out which methods
-    //! can be called on our NativeScript and which properties it exposes.
-    // -------------------------------------------------------------------------
-    //static void _register_methods();
-
-//private:
-
-    // -------------------------------------------------------------------------
     //! \brief Godot stuff
     // -------------------------------------------------------------------------
-    //GODOT_CLASS(GDBrowserView, godot::Node);
     GDCLASS(GDBrowserView, godot::Node);
 
 protected:
@@ -496,7 +487,6 @@ private:
     //! \brief Godot's temporary image (CEF => Godot)
     godot::Ref<godot::ImageTexture> m_texture;
     godot::Ref<godot::Image> m_image;
-    // godot::PoolByteArray m_data;
     godot::PackedByteArray m_data;
 
     //! \brief Mouse cursor position on the main window

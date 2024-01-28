@@ -446,12 +446,12 @@ GDBrowserView* GDCef::createBrowser(godot::String const url, godot::String const
                     ", url: " << url.utf8().get_data());
     if (m_impl == nullptr)
     {
-        GDCEF_ERROR("CEF was not initialized");
+        GDCEF_ERROR("CEF was not created");
         return nullptr;
     }
 
     // Godot node creation (note Godot cannot pass arguments to _new())
-    GDBrowserView* browser = memnew(GDBrowserView);
+    GDBrowserView* browser = memnew(GDBrowserView(/*config.qqq*/));
 
     // Complete BrowserView constructor (complete _new())
     CefBrowserSettings settings;

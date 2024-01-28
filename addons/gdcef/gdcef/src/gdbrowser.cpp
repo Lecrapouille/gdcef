@@ -119,9 +119,6 @@ int GDBrowserView::init(godot::String const& url, CefBrowserSettings const& sett
         set_name(name);
 
         m_id = m_browser->GetIdentifier();
-//        BROWSER_DEBUG_VAL("CreateBrowserSync #" << m_id << " "
-//                          << get_name().utf8().get_data()
-//                          << " succeeded");
         m_browser->GetHost()->WasResized();
     }
 
