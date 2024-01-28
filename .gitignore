@@ -2,7 +2,7 @@
 godot-cpp/
 thirdparty/
 build/
-addons/gdcef/demos/*/build
+addons/gdcef/demos/*/cef_artifacts
 GPUCache
 demo/build
 DawnCache
@@ -20,7 +20,7 @@ DawnCache
 
 # Godot-specific ignores
 .import/
-export.cfg
+#export.cfg
 export_presets.cfg
 
 # Imported translations (automatically generated from CSV files)
