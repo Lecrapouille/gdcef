@@ -8,7 +8,8 @@ extends Control
 
 # Default pages
 const DEFAULT_PAGE = "user://default_page.html"
-const RADIO_PAGE = "https://www.programmes-radio.com/fr/stream-e8BxeoRhsz9jY9mXXRiFTE/ecouter-KPJK"
+const RADIO_PAGE = "http://streaming.radio.co/s9378c22ee/listen"
+# "https://www.programmes-radio.com/fr/stream-e8BxeoRhsz9jY9mXXRiFTE/ecouter-KPJK"
 const HOME_PAGE = "https://github.com/Lecrapouille/gdcef"
 
 # The current browser as Godot node
@@ -16,6 +17,8 @@ const HOME_PAGE = "https://github.com/Lecrapouille/gdcef"
 
 # Memorize if the mouse was pressed
 @onready var mouse_pressed : bool = false
+
+@onready var playback = null
 
 # ==============================================================================
 # Callback when a page has ended to load with success (200): we print a message
@@ -33,6 +36,9 @@ func _on_page_loaded(node):
 # Display a load error message using a data: URI.
 # ==============================================================================
 func _on_page_failed_loading(aborted, msg_err, node):
+	# FIXME: I dunno why the radio page is considered as canceled by the user
+	if node.get_url() == RADIO_PAGE:
+		return
 	var html = "<html><body bgcolor=\"white\"><h2>Failed to load URL " + node.get_url()
 	if aborted:
 		html = html + " aborted by the user!</h2></body></html>"
@@ -183,9 +189,11 @@ func _on_radio_pressed():
 # ==============================================================================
 # Mute/unmute the sound
 # ==============================================================================
-func _on_Mute_pressed():
-	if current_browser != null:
-		current_browser.set_muted(not current_browser.is_muted())
+func _on_mute_pressed():
+	if current_browser == null:
+		return
+	current_browser.set_muted($Panel/VBox/HBox2/Mute.button_pressed)
+	$AudioStreamPlayer2D.stream_paused = $Panel/VBox/HBox2/Mute.button_pressed
 	pass
 
 ####
@@ -285,6 +293,7 @@ func _ready():
 		push_error($CEF.get_error())
 		return
 	print("CEF version: " + $CEF.get_full_version())
+	print("You are listening CEF native audio")
 
 	# Wait one frame for the texture rect to get its size
 	current_browser = await create_browser(HOME_PAGE)
@@ -294,4 +303,27 @@ func _ready():
 # $CEF is periodically updated
 # ==============================================================================
 func _process(_delta):
+	pass
+
+# ==============================================================================
+# CEF audio will be routed to this Godot stream object.
+# ==============================================================================
+func _on_routing_audio_pressed():
+	if current_browser == null:
+		return
+	if $Panel/VBox/HBox2/RoutingAudio.button_pressed:
+		print("You are listening CEF audio routed to Godot and filtered with reverberation effect")
+		$AudioStreamPlayer2D.stream = AudioStreamGenerator.new()
+		$AudioStreamPlayer2D.stream.set_buffer_length(1)
+		$AudioStreamPlayer2D.playing = true
+		current_browser.audio_stream = $AudioStreamPlayer2D.get_stream_playback()
+	else:
+		print("You are listening CEF native audio")
+		current_browser.audio_stream = null
+		current_browser.set_muted(false)
+	$Panel/VBox/HBox2/Mute.button_pressed = false
+	# Not necessary, but, I do not know what, to apply the new mode, the user
+	# shall click on the html halt button and click on the html button. To avoid
+	# this, we reload the page.
+	current_browser.reload()
 	pass

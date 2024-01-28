@@ -78,6 +78,10 @@ void GDBrowserView::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_mouse_wheel_horizontal"), &GDBrowserView::mouseWheelHorizontal);
     ClassDB::bind_method(D_METHOD("set_muted"), &GDBrowserView::mute);
     ClassDB::bind_method(D_METHOD("is_muted"), &GDBrowserView::muted);
+    ClassDB::bind_method(D_METHOD("set_audio_stream", "audio"), &GDBrowserView::setAudioStreamer);
+    ClassDB::bind_method(D_METHOD("get_audio_stream"), &GDBrowserView::getAudioStreamer);
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "audio_stream", PROPERTY_HINT_NODE_TYPE,
+        "AudioStreamGeneratorPlayback"), "set_audio_stream", "get_audio_stream");
 
     ADD_SIGNAL(MethodInfo("on_page_loaded", PropertyInfo(Variant::OBJECT, "node")));
     ADD_SIGNAL(MethodInfo("on_page_failed_loading", PropertyInfo(Variant::BOOL, "aborted"),
@@ -138,6 +142,7 @@ GDBrowserView::GDBrowserView()
     BROWSER_DEBUG_VAL("Create Godot texture");
 
     m_impl = new GDBrowserView::Impl(*this);
+    assert((m_impl != nullptr) && "Failed allocating GDBrowserView");
     m_image.instantiate();
     m_texture.instantiate();
 }
@@ -303,7 +308,6 @@ void GDBrowserView::stopLoading()
 //------------------------------------------------------------------------------
 void GDBrowserView::executeJavaScript(godot::String javascript)
 {
-
     if (m_browser && m_browser->GetMainFrame())
     {
         CefString codeStr;
@@ -461,4 +465,34 @@ bool GDBrowserView::muted()
         return true;
 
     return m_browser->GetHost()->IsAudioMuted();
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::onAudioStreamStarted(CefRefPtr<CefBrowser> browser,
+                                         const CefAudioParameters& params,
+                                         int channels)
+{
+    m_impl->m_audio.channels = int(params.channel_layout);
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::onAudioStreamPacket(CefRefPtr<CefBrowser> browser,
+                                        const float** data, int frames, int64_t pts)
+{
+    if ((m_impl == nullptr) || (m_impl->m_audio.streamer == nullptr))
+    {
+        return ;
+    }
+
+    if ((data == nullptr) || (frames <= 0) || (m_impl->m_audio.channels == -1))
+        return;
+
+    auto& streamer = *(m_impl->m_audio.streamer.ptr());
+    if (streamer.can_push_buffer(frames))
+    {
+        for (int i = 0; i < frames; i++)
+        {
+            streamer.push_frame(godot::Vector2(data[0][i], data[0][i]));
+        }
+    }
 }

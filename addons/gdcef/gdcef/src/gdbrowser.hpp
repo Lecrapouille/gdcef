@@ -60,6 +60,7 @@
 #  include "gd_script.hpp"
 #  include "node.hpp"
 #  include "image_texture.hpp"
+#  include "audio_stream_generator_playback.hpp"
 #  include "global_constants.hpp"
 
 // Chromium Embedded Framework
@@ -99,15 +100,31 @@ protected:
 private: // CEF interfaces
 
     // *************************************************************************
+    //! \brief Routing CEF audio to Godot streamer node.
+    // *************************************************************************
+    struct RoutingAudio
+    {
+        //! \brief Godot audio streamer
+        godot::Ref<godot::AudioStreamGeneratorPlayback> streamer = nullptr;
+        //! \brief Audio received from CEF
+        godot::PackedVector2Array buffer;
+        //! \brief Number of audio channels
+        int channels = -1;
+    };
+
+    // *************************************************************************
     //! \brief Mandatory since Godot ref counter is conflicting with CEF ref
     //! counting and therefore we reach with pure virtual destructor called.
     //! To avoid this we have to create this intermediate class.
     // *************************************************************************
-    class Impl: public CefRenderHandler,
+    class Impl: public CefClient,
+                public CefRenderHandler,
                 public CefLoadHandler,
-                public CefClient
+                public CefAudioHandler
     {
     public:
+
+        friend GDBrowserView;
 
         // ---------------------------------------------------------------------
         //! \brief Pass the owner instance.
@@ -144,6 +161,16 @@ private: // CEF interfaces
         virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override
         {
             return this;
+        }
+
+        // ---------------------------------------------------------------------
+        //! \brief Return the handler for audio rendering events.
+        // ---------------------------------------------------------------------
+        virtual CefRefPtr<CefAudioHandler> GetAudioHandler() override
+        {
+            // FIXME this is called once, so we cannot swap modes :( How to do that ?
+            std::cout << (m_audio.streamer == nullptr ? "GetAudioHandler CEF Audio" : "GetAudioHandler Godot audio") << "\n";
+            return m_audio.streamer != nullptr ? this : nullptr;
         }
 
     private: // CefRenderHandler interfaces
@@ -207,9 +234,32 @@ private: // CEF interfaces
             m_owner.onLoadError(browser, frame, errorCode == ERR_ABORTED, errorText);
         }
 
+    private: // CefAudioHandler interfaces
+
+        virtual void OnAudioStreamStarted(CefRefPtr<CefBrowser> browser,
+                                         const CefAudioParameters& params,
+                                         int channels) override
+        {
+            m_owner.onAudioStreamStarted(browser, params, channels);
+        }
+
+        virtual void OnAudioStreamPacket(CefRefPtr<CefBrowser> browser,
+                                         const float** data, int frames,
+                                         int64_t pts) override
+        {
+            m_owner.onAudioStreamPacket(browser, data, frames, pts);
+        }
+
+        virtual void OnAudioStreamStopped(CefRefPtr<CefBrowser> browser) override
+        {}
+
+        virtual void OnAudioStreamError(CefRefPtr<CefBrowser> browser, const CefString& message) override
+        {}
+
     private:
 
         GDBrowserView& m_owner;
+        RoutingAudio m_audio;
     };
 
 public:
@@ -445,6 +495,21 @@ public:
     //--------------------------------------------------------------------------
     bool muted();
 
+    void setAudioStreamer(godot::Ref<godot::AudioStreamGeneratorPlayback> streamer)
+    {
+        if (m_impl != nullptr)
+        {
+            m_impl->m_audio.streamer = streamer;
+        }
+    }
+
+    godot::Ref<godot::AudioStreamGeneratorPlayback> getAudioStreamer()
+    {
+        if (m_impl == nullptr)
+            return nullptr;
+        return m_impl->m_audio.streamer;
+    }
+
 private:
 
     void resize_(int width, int height);
@@ -481,6 +546,29 @@ private:
     // -------------------------------------------------------------------------
     void onLoadError(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
                      const bool aborted, const CefString& errorText);
+
+    // -------------------------------------------------------------------------
+    //! \brief Called on a browser audio capture thread when the browser starts
+    //! streaming audio. OnAudioStreamStopped will always be called after
+    //! OnAudioStreamStarted; both methods may be called multiple times
+    //! for the same browser. |params| contains the audio parameters like
+    //! sample rate and channel layout. |channels| is the number of channels.
+      // -------------------------------------------------------------------------
+    void onAudioStreamStarted(CefRefPtr<CefBrowser> browser,
+                              const CefAudioParameters& params, int channels);
+
+    // -------------------------------------------------------------------------
+    //! \brief Called on the audio stream thread when a PCM packet is received for the
+    //! stream. |data| is an array representing the raw PCM data as a floating
+    //! point type, i.e. 4-byte value(s). |frames| is the number of frames in the
+    //! PCM packet. |pts| is the presentation timestamp (in milliseconds since the
+    //! Unix Epoch) and represents the time at which the decompressed packet
+    //! should be presented to the user. Based on |frames| and the
+    //! |channel_layout| value passed to OnAudioStreamStarted you can calculate
+    //! the size of the |data| array in bytes.
+    // -------------------------------------------------------------------------
+    void onAudioStreamPacket(CefRefPtr<CefBrowser> browser, const float** data,
+                             int frames, int64_t pts);
 
 private:
 

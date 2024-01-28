@@ -7,7 +7,12 @@
 extends Control
 
 # Name of the browser
-const browser_name = "browser1"
+const browser_name = "browser"
+
+# Page with sound
+# "https://www.programmes-radio.com/fr/stream-e8BxeoRhsz9jY9mXXRiFTE/ecouter-KPJK"
+const RADIO_URL = "http://streaming.radio.co/s9378c22ee/listen"
+const HOME_URL = "https://github.com/Lecrapouille/gdcef"
 
 # Memorize if the mouse was pressed
 @onready var mouse_pressed : bool = false
@@ -20,7 +25,7 @@ func _on_Home_pressed():
 	if browser == null:
 		$Panel/Label.set_text("Failed getting Godot node " + browser_name)
 		return
-	browser.load_url("https://bitbucket.org/chromiumembedded/cef/wiki/Home")
+	browser.load_url(HOME_URL)
 	pass
 
 # ==============================================================================
@@ -161,10 +166,19 @@ func _ready():
 	#   {"image_loading", true}
 	#   {"databases", true}
 	#   {"webgl", true}
-	var browser = $CEF.create_browser("https://github.com/Lecrapouille/gdcef", $Panel/TextureRect, {"javascript":true})
+	var browser = $CEF.create_browser(RADIO_URL, $Panel/TextureRect, {"javascript":true})
 	browser.name = browser_name
 	browser.connect("on_page_loaded", _on_page_loaded)
 	browser.connect("on_page_failed_loading", _on_page_failed_loading)
+	browser.set_zoom_level(0.05)
+
+	# 3D sound
+	get_tree().get_root().print_tree_pretty()
+	var player = get_node("/root/GUIin3D/Background/Cube2/AudioStreamPlayer3D")
+	player.stream = AudioStreamGenerator.new()
+	player.stream.set_buffer_length(1)
+	player.playing = true
+	browser.audio_stream = player.get_stream_playback()
 	pass
 
 # ==============================================================================

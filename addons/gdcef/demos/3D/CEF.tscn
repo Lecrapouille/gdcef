@@ -35,7 +35,7 @@ offset_top = 155.0
 offset_right = 95.0
 offset_bottom = 178.0
 mouse_filter = 0
-text = "Hello world!"
+text = "Play the radio stream!"
 
 [node name="Label2" type="Label" parent="Panel"]
 layout_mode = 0
@@ -80,6 +80,6 @@ offset_bottom = 26.0
 [connection signal="gui_input" from="Panel/TextureRect" to="." method="_on_TextureRect_gui_input"]
 [connection signal="pressed" from="Panel/Home" to="." method="_on_Home_pressed"]
 [connection signal="pressed" from="Panel/Prev" to="." method="_on_Prev_pressed"]
-[connection signal="pressed" from="Panel/Next" to="." method="_on_Prev_pressed"]
 [connection signal="pressed" from="Panel/Next" to="." method="_on_Next_pressed"]
+[connection signal="pressed" from="Panel/Next" to="." method="_on_Prev_pressed"]
 [connection signal="text_changed" from="Panel/TextEdit" to="." method="_on_TextEdit_text_changed"]

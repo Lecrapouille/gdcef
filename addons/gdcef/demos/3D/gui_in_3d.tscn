@@ -52,7 +52,7 @@ environment = SubResource("Environment_niyks")
 [node name="GUIPanel3D" parent="." instance=ExtResource("1")]
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.999999, 0, 0, 3)
+transform = Transform3D(0.997487, 0, 0.0708434, 0, 1, 0, -0.0708434, 0, 0.997487, 0.372951, 0, 1.79731)
 fov = 74.0
 near = 0.1
 
@@ -97,5 +97,16 @@ surface_material_override/0 = SubResource("4")
 
 [node name="Cube2" type="MeshInstance3D" parent="Background"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.88761, 2.01326, 0.374871)
+mesh = SubResource("3")
+surface_material_override/0 = SubResource("4")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="Background/Cube2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.09059, 0, 8.36119)
+volume_db = 20.0
+emission_angle_enabled = true
+emission_angle_degrees = 17.0
+
+[node name="Cube3" type="MeshInstance3D" parent="Background"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.62461, 1.46641, -0.69153)
 mesh = SubResource("3")
 surface_material_override/0 = SubResource("4")
