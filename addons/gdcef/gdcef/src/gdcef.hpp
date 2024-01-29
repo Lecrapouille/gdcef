@@ -66,7 +66,7 @@
 #  include "project_settings.hpp"
 #  include "os.hpp"
 #  include "node.hpp"
-#  include "image_texture.hpp"
+#  include "texture_rect.hpp"
 
 // Chromium Embedded Framework
 #  include "cef_client.h"
@@ -142,7 +142,6 @@ private: // Godot interfaces.
     //! \brief Godot reference counting. Beware can conflict with CEF reference
     //! counting: this is why wehave to implement the sub class Impl.
     // -------------------------------------------------------------------------
-    //GODOT_CLASS(GDCef, godot::Node);
     GDCLASS(GDCef, godot::Node);
 
 private: // CEF interfaces.
@@ -253,15 +252,11 @@ public:
     }
 
     // -------------------------------------------------------------------------
-    //! \brief Create a browser view and store its instance inside the internal
-    //! container. Return the browser identifier or return nullptr in case of failure.
-    //! \param[in] url the page link (by copy needed by Godot).
-    //! \param[in] name the browser name (by copy needed by Godot).
-    //! \param[in] w the width dimension of the document.
-    //! \param[in] h the height dimension of the document.
-    //! \param[in] Return the address of the newly created browser (or nullptr
-    //! in case of error).
-    //! \param[in] browser_settings dictionary of Browser config with default values:
+    //! \brief Create a browser view and store its instance as child node.
+    //! Return the browser identifier or return nullptr in case of failure.
+    //! \param[in] url the page link.
+    //! \param[in] texture_rect the texture container in where to paint the CEF output.
+    //! \param[in] config dictionary of Browser config with default values:
     //!   - {"frame_rate", 30}
     //!   - {"javascript", STATE_ENABLED}
     //!   - {"javascript_close_windows", STATE_DISABLED}
@@ -271,9 +266,11 @@ public:
     //!   - {"databases", STATE_ENABLED}
     //!   - {"webgl", STATE_ENABLED}
     //!   Wherer STATE_DISABLED / STATE_ENABLED == false / true
+    //! \return the address of the newly created browser (or nullptr in case of error).
     // -------------------------------------------------------------------------
-    GDBrowserView* createBrowser(godot::String const url, godot::String const name,
-                                 int w, int h, godot::Dictionary browser_settings);
+    GDBrowserView* createBrowser(godot::String const& url,
+                                 godot::TextureRect* texture_rect,
+                                 godot::Dictionary config);
 
 private:
 

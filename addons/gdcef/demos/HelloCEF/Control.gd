@@ -22,10 +22,14 @@ const pages = [
 # Memorize if the mouse was pressed
 @onready var mouse_pressed : bool = false
 
+# Memorize the browser having the focus
+@onready var browser_focus = null
+
 # ==============================================================================
-# Timer callback: every 6 seconds load a new webpage.
+# Timer callback: every X seconds load a new webpage.
 # ==============================================================================
 func _on_Timer_timeout():
+	print("Timer is up! A new page will be reloaded!")
 	iterator = (iterator + 1) % pages.size()
 	get_node("CEF/right").load_url(pages[iterator])
 
@@ -36,12 +40,20 @@ func _on_page_loaded(node):
 	print("The browser " + node.name + " has loaded " + node.get_url())
 
 # ==============================================================================
-# Get mouse events and broadcast them to CEF
+# Callback when a page has ended to load with failure.
+# Display a load error message using a data: URI.
 # ==============================================================================
-func _on_Texture1_gui_input(event):
-	var browser = $CEF.get_node("left")
+func _on_page_failed_loading(aborted, msg_err, node):
+	print("The browser " + node.name + " did not load " + node.get_url())
+	pass
+
+# ==============================================================================
+# Make the CEF browser reacts to mouse events.
+# ==============================================================================
+func _react_to_mouse_event(event, name):
+	var browser = $CEF.get_node(name)
 	if browser == null:
-		$Panel/Label.set_text("Failed getting Godot node 'left'")
+		push_error("Failed getting Godot node '" + name + "'")
 		return
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
@@ -70,20 +82,51 @@ func _on_Texture1_gui_input(event):
 		if mouse_pressed == true :
 			browser.set_mouse_left_down()
 		browser.set_mouse_moved(event.position.x, event.position.y)
+
+# ==============================================================================
+# Get mouse events and broadcast them to CEF
+# ==============================================================================
+func _on_TextRectLeft_gui_input(event):
+	_react_to_mouse_event(event, "left")
+	pass
+
+func _on_TextRectRight_gui_input(event):
+	_react_to_mouse_event(event, "right")
 	pass
 
 # ==============================================================================
 # Make the CEF browser reacts from keyboard events.
 # ==============================================================================
 func _input(event):
-	var browser = $CEF.get_node("left")
-	if browser == null:
-		$Panel/Label.set_text("Failed getting Godot node 'left'")
+	if browser_focus == null:
 		return
+
 	if event is InputEventKey:
-		browser.set_key_pressed(
+		browser_focus.set_key_pressed(
 			event.unicode if event.unicode != 0 else event.keycode, # Godot3: event.scancode,
 			event.pressed, event.shift_pressed, event.alt_pressed, event.is_command_or_control_pressed())
+	pass
+
+# ==============================================================================
+# Memorize browser having the mouse focus
+# ==============================================================================
+func _on_text_rect_left_mouse_entered():
+	print("Focus on left browser")
+	browser_focus = $CEF.get_node("right")
+	if browser_focus == null:
+		push_error("Failed getting Godot node 'right'")
+		return
+	pass
+
+# ==============================================================================
+# Memorize browser having the mouse focus
+# ==============================================================================
+func _on_text_rect_right_mouse_entered():
+	print("Focus on right browser")
+	browser_focus = $CEF.get_node("left")
+	if browser_focus == null:
+		push_error("Failed getting Godot node 'left'")
+		return
 	pass
 
 # ==============================================================================
@@ -99,7 +142,7 @@ func _ready():
 
 	### CEF ####################################################################
 
-	# Configuration are:
+	# CEF Configuration are:
 	#   resource_path := {"artifacts", CEF_ARTIFACTS_FOLDER}
 	#   resource_path := {"exported_artifacts", application_real_path()}
 	#   {"incognito":false}
@@ -127,8 +170,15 @@ func _ready():
 
 	### Browsers ###############################################################
 
-	# wait one frame for the texture rect to get its size
+	# Split vertically the windows
+	$TextRectLeft.set_position(Vector2(0,0))
+	$TextRectLeft.set_size(Vector2(h/2, w))
+	$TextRectRight.set_position(Vector2(h/2,0))
+	$TextRectRight.set_size(Vector2(h/2, w))
+
+	# Wait one frame for the texture rect to get its size
 	await get_tree().process_frame
+
 	# Left browser is displaying the first webpage with a 3D scene, we are
 	# enabling webgl. Other default configuration are:
 	#   {"frame_rate", 30}
@@ -139,22 +189,18 @@ func _ready():
 	#   {"image_loading", true}
 	#   {"databases", true}
 	#   {"webgl", true}
-	var left = $CEF.create_browser(pages[4], "left", h/2, w, {})
-	$Texture1.set_position(Vector2(0,0))
-	$Texture1.set_size(Vector2(h/2, w/2))
-	$Texture1.texture = left.get_texture()
-	#left.set_viewport(0.25, 0.25, 0.25, 0.25)
+	var left = $CEF.create_browser(pages[4], $TextRectLeft, {})
+	var right = $CEF.create_browser(pages[0], $TextRectRight, {})
 
-	# Right browser is displaying the second webpage and the timer will
-	# make it load a new URL.
-	var right = $CEF.create_browser(pages[0], "right", h/2, w, {})
-	$Texture2.set_position(Vector2(h/2,0))
-	$Texture2.set_size(Vector2(h/2, w/2))
-	$Texture2.texture = right.get_texture()
+	left.name = "left"
+	right.name = "right"
 
 	# Connect the event when a page has bee loaded and wait 6 seconds before
 	# loading the page.
-	right.connect("on_page_loaded", Callable(self, "_on_page_loaded"))
+	right.connect("on_page_loaded", _on_page_loaded)
+	right.connect("on_page_failed_loading", _on_page_failed_loading)
+	left.connect("on_page_loaded", _on_page_loaded)
+	left.connect("on_page_failed_loading", _on_page_failed_loading)
 	var _err = $Timer.connect("timeout", Callable(self, "_on_Timer_timeout"))
 	pass
 

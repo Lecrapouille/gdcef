@@ -52,6 +52,14 @@ func _on_page_loaded(node):
 	$Panel/Label.set_text(node.name + ": page " + node.get_url() + " loaded")
 
 # ==============================================================================
+# Callback when a page has ended to load with failure.
+# Display a load error message using a data: URI.
+# ==============================================================================
+func _on_page_failed_loading(aborted, msg_err, node):
+	print("The browser " + node.name + " did not load " + node.get_url())
+	pass
+
+# ==============================================================================
 # On new URL entered
 # ==============================================================================
 func _on_TextEdit_text_changed(new_text):
@@ -116,7 +124,7 @@ func _input(event):
 # Create a single briwser named "browser_name" that is attached as child node to $CEF.
 # ==============================================================================
 func _ready():
-	# Configuration are:
+	# See API.md for more details. CEF Configuration is:
 	#   resource_path := {"artifacts", CEF_ARTIFACTS_FOLDER}
 	#   resource_path := {"exported_artifacts", application_real_path()}
 	#   {"incognito":false}
@@ -139,13 +147,25 @@ func _ready():
 		push_error($CEF.get_error())
 		get_tree().quit()
 		return
+	print("CEF version: " + $CEF.get_full_version())
 
-	# wait one frame for the texture rect to get its size
+	# Wait one frame for the texture rect to get its size
 	await get_tree().process_frame
-	var S = $Panel/TextureRect.get_size()
-	var browser = $CEF.create_browser("https://github.com/Lecrapouille/gdcef", browser_name, S.x, S.y, {"javascript":true})
-	browser.connect("on_page_loaded", Callable(self, "_on_page_loaded"))
-	$Panel/TextureRect.texture = browser.get_texture()
+
+	# See API.md for more details. Browser configuration is:
+	#   {"frame_rate", 30}
+	#   {"javascript", true}
+	#   {"javascript_close_windows", false}
+	#   {"javascript_access_clipboard", false}
+	#   {"javascript_dom_paste", false}
+	#   {"image_loading", true}
+	#   {"databases", true}
+	#   {"webgl", true}
+	var browser = $CEF.create_browser("https://github.com/Lecrapouille/gdcef", $Panel/TextureRect, {"javascript":true})
+	browser.name = browser_name
+	browser.connect("on_page_loaded", _on_page_loaded)
+	browser.connect("on_page_failed_loading", _on_page_failed_loading)
+	pass
 
 # ==============================================================================
 # $CEF is periodically updated

@@ -82,16 +82,18 @@ describing the given demos.
   `CEF`. Extend it to be a `GDCEF` by setting the path to `gdcef.gdns` as
   `Nativescript`.
 - Follow this [document](doc/API.md) describe the functions that can be called from your gdscripts.
-- When initializing CEF with `initialize` instead of the regular Godot `_init`.
 - Create a Godot `TextRect` that will receive your browser texture.
+- When initializing CEF with `initialize` instead of the regular Godot `_init`.
 - Create a gdscript and, for example, inside `func _ready():` from the `$CEF`
-  node, make create a new browser tab named `browser name` (it will be a Godot
-  child node that can be found with a function such as `$CEF.get_node`) and make
-  `TextRect` get the texture of your browser tab. See the following code:
+  node, make create a new browser with function `create_browser` taking the desired URL,
+  the `TextRect` and optional options. The created browser will be a Godot
+  child node with default name `browser_<id>` (with id a number starting from 0). You can give
+  a new name with the `get_name()` function. The browser has any Godot node can be found with
+  a function such as `$CEF.get_node("browser_0")`.
 
 ```
-var browser = $CEF.create_browser("https://github.com/Lecrapouille/gdcef", "browser name", dimension_with, dimension_height)
-$TextureRect.texture = browser.get_texture()
+var browser = $CEF.create_browser("https://github.com/Lecrapouille/gdcef", $TextureRect, {})
+browser.get_name("hello")
 ```
 - In Linux, you will have to write something like:
 ```

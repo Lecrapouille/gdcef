@@ -439,36 +439,44 @@ void GDCef::shutdown()
 }
 
 //------------------------------------------------------------------------------
-GDBrowserView* GDCef::createBrowser(godot::String const url, godot::String const
-                                    name, int w, int h, godot::Dictionary config)
+GDBrowserView* GDCef::createBrowser(godot::String const& url,
+                                    godot::TextureRect* texture_rect,
+                                    godot::Dictionary config)
 {
-    GDCEF_DEBUG_VAL("name: " << name.utf8().get_data() <<
-                    ", url: " << url.utf8().get_data());
     if (m_impl == nullptr)
     {
-        GDCEF_ERROR("CEF was not created");
+        GDCEF_ERROR("CEF was not created (memory allocation issue)");
+        return nullptr;
+    }
+    if (texture_rect == nullptr)
+    {
+        GDCEF_ERROR("You have passed a nullptr texture rectangle");
         return nullptr;
     }
 
     // Godot node creation (note Godot cannot pass arguments to _new())
-    GDBrowserView* browser = memnew(GDBrowserView(/*config.qqq*/));
+    GDBrowserView* browser = memnew(GDBrowserView());
 
     // Complete BrowserView constructor (complete _new())
     CefBrowserSettings settings;
     configureBrowser(settings, config);
-    int id = browser->init(url, settings, windowInfo(), name);
+    int id = browser->init(url, settings, windowInfo());
     if (id < 0)
     {
         GDCEF_ERROR("browser->init() failed");
         return nullptr;
     }
 
-    // Update the dimension of the document
-    browser->reshape(w, h);
+    // Update the dimension of the page to the texture size
+    browser->resize(texture_rect->get_size());
+    texture_rect->set_texture(browser->m_texture);
 
-    // Attach the new Godot node
+    // Attach the new Godot node as child node (sadly Godot does not show created
+    // nodes at run time)
     add_child(browser);
 
+    godot::String name = browser->get_name();
+    GDCEF_DEBUG_VAL("name: " << name.utf8().get_data() << ", url: " << url.utf8().get_data());
     return browser;
 }
 
@@ -517,7 +525,7 @@ void GDCef::Impl::OnBeforeClose(CefRefPtr<CefBrowser> browser)
         GDBrowserView* b = reinterpret_cast<GDBrowserView*>(node);
         if ((b != nullptr) && (b->id() == browser->GetIdentifier()))
         {
-            GDCEF_DEBUG_VAL("Removed " << b->id());
+            GDCEF_DEBUG_VAL("Removed browser ID " << b->id());
             m_owner.remove_child(node);
             node->queue_free();
         }

@@ -38,6 +38,8 @@
   std::cout << "[GDCEF][GDCEF::" << __func__ << "] " << x << std::endl
 #define GDCEF_ERROR(x)                                                     \
   m_error << "[GDCEF][GDCEF::" << __func__ << "] " << x << std::endl
+#define GDCEF_WARNING(x)                                                   \
+   std::cout << "[GDCEF][GDCEF::" << __func__ << "] " << x << std::endl
 #define BROWSER_DEBUG()                                                    \
   std::cout << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "]"  \
             << std::endl

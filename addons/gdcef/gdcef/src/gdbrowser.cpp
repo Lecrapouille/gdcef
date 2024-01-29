@@ -45,19 +45,23 @@ void GDBrowserView::_bind_methods()
     ClassDB::bind_method(D_METHOD("id"), &GDBrowserView::id);
     ClassDB::bind_method(D_METHOD("get_error"), &GDBrowserView::getError);
     ClassDB::bind_method(D_METHOD("is_valid"), &GDBrowserView::isValid);
-    ClassDB::bind_method(D_METHOD("get_texture"), &GDBrowserView::texture);
+    ClassDB::bind_method(D_METHOD("set_texture", "texture"), &GDBrowserView::setTexture);
+    ClassDB::bind_method(D_METHOD("get_texture"), &GDBrowserView::getTexture);
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_NODE_TYPE,
+        "ImageTexture"), "set_texture", "get_texture");
     ClassDB::bind_method(D_METHOD("set_zoom_level"), &GDBrowserView::setZoomLevel);
+    ClassDB::bind_method(D_METHOD("get_url"), &GDBrowserView::getURL);
     ClassDB::bind_method(D_METHOD("load_url"), &GDBrowserView::loadURL);
     ClassDB::bind_method(D_METHOD("load_data_uri"), &GDBrowserView::loadDataURI);
     ClassDB::bind_method(D_METHOD("is_loaded"), &GDBrowserView::loaded);
-    ClassDB::bind_method(D_METHOD("get_url"), &GDBrowserView::getURL);
+    ClassDB::bind_method(D_METHOD("reload"), &GDBrowserView::reload);
     ClassDB::bind_method(D_METHOD("stop_loading"), &GDBrowserView::stopLoading);
     ClassDB::bind_method(D_METHOD("execute_javascript"), &GDBrowserView::executeJavaScript);
     ClassDB::bind_method(D_METHOD("has_previous_page"), &GDBrowserView::canNavigateBackward);
     ClassDB::bind_method(D_METHOD("has_next_page"), &GDBrowserView::canNavigateForward);
     ClassDB::bind_method(D_METHOD("previous_page"), &GDBrowserView::navigateBackward);
     ClassDB::bind_method(D_METHOD("next_page"), &GDBrowserView::navigateForward);
-    ClassDB::bind_method(D_METHOD("resize"), &GDBrowserView::reshape);
+    ClassDB::bind_method(D_METHOD("resize"), &GDBrowserView::resize);
     ClassDB::bind_method(D_METHOD("set_viewport"), &GDBrowserView::viewport);
     ClassDB::bind_method(D_METHOD("set_key_pressed"), &GDBrowserView::keyPress);
     ClassDB::bind_method(D_METHOD("set_mouse_moved"), &GDBrowserView::mouseMove);
@@ -95,7 +99,7 @@ godot::String GDBrowserView::getError()
 
 //------------------------------------------------------------------------------
 int GDBrowserView::init(godot::String const& url, CefBrowserSettings const& settings,
-                        CefWindowInfo const& window_info, godot::String const& name)
+                        CefWindowInfo const& window_info)
 {
     // Create a new browser using the window parameters specified by
     // |windowInfo|.  If |request_context| is empty the global request context
@@ -115,8 +119,10 @@ int GDBrowserView::init(godot::String const& url, CefBrowserSettings const& sett
     }
     else
     {
-        // Set Godot name
-        set_name(name);
+        // Set Godot node default name
+        std::string name("browser_");
+        name += std::to_string(m_browser->GetIdentifier());
+        set_name(name.c_str());
 
         m_id = m_browser->GetIdentifier();
         m_browser->GetHost()->WasResized();
@@ -132,8 +138,8 @@ GDBrowserView::GDBrowserView()
     BROWSER_DEBUG_VAL("Create Godot texture");
 
     m_impl = new GDBrowserView::Impl(*this);
-    m_image.instantiate();//instance();
-    m_texture.instantiate();//instance();
+    m_image.instantiate();
+    m_texture.instantiate();
 }
 
 //------------------------------------------------------------------------------
@@ -247,6 +253,18 @@ void GDBrowserView::loadDataURI(godot::String html, godot::String mime_type)
 }
 
 //------------------------------------------------------------------------------
+bool GDBrowserView::reload() const
+{
+    BROWSER_DEBUG();
+
+    if (!m_browser)
+        return false;
+
+    m_browser->Reload();
+    return true;
+}
+
+//------------------------------------------------------------------------------
 bool GDBrowserView::loaded() const
 {
     BROWSER_DEBUG();
@@ -344,14 +362,16 @@ void GDBrowserView::navigateForward()
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::reshape(int w, int h)
+void GDBrowserView::resize_(int width, int height)
 {
-    if (w <= 0) { w = 2; }
-    if (h <= 0) { h = 2; }
-    BROWSER_DEBUG_VAL(w << " x " << h);
+        std::cout << "SIZE: " << width << ", " << height << std::endl;
 
-    m_width = float(w);
-    m_height = float(h);
+    if (width <= 0) { width = 2; }
+    if (height <= 0) { height = 2; }
+    BROWSER_DEBUG_VAL(width << " x " << height);
+
+    m_width = float(width);
+    m_height = float(height);
 
     if (!m_browser || !m_browser->GetHost())
         return;

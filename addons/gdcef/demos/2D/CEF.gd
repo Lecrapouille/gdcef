@@ -8,7 +8,7 @@ extends Control
 
 # Default pages
 const DEFAULT_PAGE = "user://default_page.html"
-const RADIO_PAGE = "https://mytuner-radio.com/fr/radio/kpjk-radio-472355/"
+const RADIO_PAGE = "https://www.programmes-radio.com/fr/stream-e8BxeoRhsz9jY9mXXRiFTE/ecouter-KPJK"
 const HOME_PAGE = "https://github.com/Lecrapouille/gdcef"
 
 # The current browser as Godot node
@@ -18,57 +18,80 @@ const HOME_PAGE = "https://github.com/Lecrapouille/gdcef"
 @onready var mouse_pressed : bool = false
 
 # ==============================================================================
+# Callback when a page has ended to load with success (200): we print a message
+# ==============================================================================
+func _on_page_loaded(node):
+	var L = $Panel/VBox/HBox/BrowserList
+	var url = node.get_url()
+	L.set_item_text(L.get_selected_id(), url)
+	$Panel/VBox/HBox2/Info.set_text(url + " loaded as ID " + node.name)
+	print("Browser named '" + node.name + "' inserted on list at index " + str(L.get_selected_id()) + ": " + url)
+	pass
+
+# ==============================================================================
+# Callback when a page has ended to load with failure.
+# Display a load error message using a data: URI.
+# ==============================================================================
+func _on_page_failed_loading(aborted, msg_err, node):
+	var html = "<html><body bgcolor=\"white\"><h2>Failed to load URL " + node.get_url()
+	if aborted:
+		html = html + " aborted by the user!</h2></body></html>"
+	else:
+		html = html + " with error " + msg_err + "!</h2></body></html>"
+	node.load_data_uri(html, "text/html")
+	pass
+
+# ==============================================================================
 # Create a new browser and return it or return null if failed.
 # ==============================================================================
 func create_browser(url):
-	var browserName = str($Panel/VBox/HBox/BrowserList.get_item_count())
-	print("Create browser " + browserName + ": " + url)
-	# wait one frame for the texture rect to get its size
+	# Wait one frame for the texture rect to get its size
 	await get_tree().process_frame
-	var browserSize = $Panel/VBox/TextureRect.get_size()
-	var browser = $CEF.create_browser(url, browserName, browserSize.x, browserSize.y, {"javascript":true})
+
+	# See API.md for more details. Browser configuration is:
+	#   {"frame_rate", 30}
+	#   {"javascript", true}
+	#   {"javascript_close_windows", false}
+	#   {"javascript_access_clipboard", false}
+	#   {"javascript_dom_paste", false}
+	#   {"image_loading", true}
+	#   {"databases", true}
+	#   {"webgl", true}
+	var browser = $CEF.create_browser(url, $Panel/VBox/TextureRect, {"javascript":true})
 	if browser == null:
-		$Panel/VBox/HBox/Info.set_text($CEF.get_error())
+		$Panel/VBox/HBox2/Info.set_text($CEF.get_error())
 		return null
-	$Panel/VBox/HBox/BrowserList.add_item(url)
-	$Panel/VBox/HBox/BrowserList.select($Panel/VBox/HBox/BrowserList.get_item_count() - 1)
+
+	# Loading callbacks
 	browser.connect("on_page_loaded", _on_page_loaded)
 	browser.connect("on_page_failed_loading", _on_page_failed_loading)
-	$Panel/VBox/TextureRect.texture = browser.get_texture()
+
+	# Add the URL to the list
+	$Panel/VBox/HBox/BrowserList.add_item(url)
+	$Panel/VBox/HBox/BrowserList.select($Panel/VBox/HBox/BrowserList.get_item_count() - 1)
+	print("Browser named '" + browser.name + "' created with URL " + url)
 	return browser
 
 # ==============================================================================
 # Search the desired by its name. Return the browser as Godot node or null if
 # not found.
 # ==============================================================================
-func get_browser(browserName):
+func get_browser(name):
 	if not $CEF.is_alive():
 		return null
-	var browser = $CEF.get_node(browserName)
+	var browser = $CEF.get_node(name)
 	if browser == null:
-		$Panel/VBox/HBox/Info.set_text("Unknown browser " + browserName)
+		$Panel/VBox/HBox/Info.set_text("Unknown browser with name '" + name + "'")
 		return null
 	return browser
 
-# ==============================================================================
-# Select the new desired browser from the list of tabs.
-# ==============================================================================
-func _on_BrowserList_item_selected(index):
-	current_browser = get_browser(str(index))
-	if current_browser != null:
-		$Panel/VBox/TextureRect.texture = current_browser.get_texture()
-	pass
+####
+#### Top menu
+####
 
 # ==============================================================================
-# 'M' button pressed: mute/unmute the sound
-# ==============================================================================
-func _on_Mute_pressed():
-	if current_browser != null:
-		current_browser.set_muted(not current_browser.is_muted())
-	pass # Replace with function body.
-
-# ==============================================================================
-# '+' button pressed: create a new browser node.
+# Create a new browser node. Note: Godot does not show children nodes so you
+# will not see created browsers as sub nodes.
 # ==============================================================================
 func _on_Add_pressed():
 	var browser = await create_browser("file://" + ProjectSettings.globalize_path(DEFAULT_PAGE))
@@ -77,7 +100,7 @@ func _on_Add_pressed():
 	pass
 
 # ==============================================================================
-# Home button pressed: get the browser node and load a new page.
+# Home button pressed: load a local HTML document.
 # ==============================================================================
 func _on_Home_pressed():
 	if current_browser != null:
@@ -85,29 +108,21 @@ func _on_Home_pressed():
 	pass
 
 # ==============================================================================
-# Radio button pressed: load a page with radio for testing the sound.
+# Go to the URL given by the text edit widget.
 # ==============================================================================
-func _on_radio_pressed():
+func _on_go_pressed():
 	if current_browser != null:
-		current_browser.load_url(RADIO_PAGE)
+		current_browser.load_url($Panel/VBox/HBox/TextEdit.text)
 	pass
 
 # ==============================================================================
-# Color button pressed: present a pop-up to change the background color
+# Reload the current page
 # ==============================================================================
-func _on_BGColor_pressed():
-	if $ColorPopup.visible:
-		$ColorPopup.popup_hide()
-	else:
-		$ColorPopup.popup_centered(Vector2(0,0))
-
-# ==============================================================================
-# Color picker changed: inject javascript to change the background color
-# ==============================================================================
-func _on_ColorPicker_color_changed(color):
-	if current_browser != null:
-		var js_string = 'document.body.style.background = "#%s"' % color.to_html(false)
-		current_browser.execute_javascript(js_string)
+func _on_refresh_pressed():
+	if current_browser == null:
+		return
+	current_browser.reload()
+	pass
 
 # ==============================================================================
 # Go to previously visited page
@@ -126,36 +141,56 @@ func _on_Next_pressed():
 	pass
 
 # ==============================================================================
-# Go to the URL given by the text edit widget.
+# Select the new desired browser from the list of tabs.
 # ==============================================================================
-func _on_go_pressed():
+func _on_BrowserList_item_selected(index):
+	current_browser = get_browser(str(index))
 	if current_browser != null:
-		current_browser.load_url($Panel/VBox/HBox/TextEdit.text)
+		$Panel/VBox/TextureRect.texture = current_browser.get_texture()
 	pass
 
-# ==============================================================================
-# Callback when a page has ended to load with success (200): we print a message
-# ==============================================================================
-func _on_page_loaded(node):
-	var L = $Panel/VBox/HBox/BrowserList
-	var url = node.get_url()
-	L.set_item_text(L.get_selected_id(), url)
-	$Panel/VBox/HBox2/Info.set_text(url + " loaded as ID " + node.name)
-	print("Browser " + str(L.get_selected_id()) + ": " + url)
-	pass
+####
+#### Bottom menu
+####
 
 # ==============================================================================
-# Callback when a page has ended to load with failure.
-# Display a load error message using a data: URI.
+# Color button pressed: present a pop-up to change the background color
 # ==============================================================================
-func _on_page_failed_loading(aborted, msg_err, node):
-	var html = "<html><body bgcolor=\"white\"><h2>Failed to load URL " + node.get_url()
-	if aborted:
-		html = html + " aborted by the user!</h2></body></html>"
+func _on_BGColor_pressed():
+	if $ColorPopup.visible:
+		$ColorPopup.popup_hide()
 	else:
-		html = html + " with error " + msg_err + "!</h2></body></html>"
-	node.load_data_uri(html, "text/html")
+		$ColorPopup.popup_centered(Vector2(0,0))
 	pass
+
+# ==============================================================================
+# Color picker changed: inject javascript to change the background color
+# ==============================================================================
+func _on_ColorPicker_color_changed(color):
+	if current_browser != null:
+		var js_string = 'document.body.style.background = "#%s"' % color.to_html(false)
+		current_browser.execute_javascript(js_string)
+	pass
+
+# ==============================================================================
+# Radio button pressed: load a page with radio for testing the sound.
+# ==============================================================================
+func _on_radio_pressed():
+	if current_browser != null:
+		current_browser.load_url(RADIO_PAGE)
+	pass
+
+# ==============================================================================
+# Mute/unmute the sound
+# ==============================================================================
+func _on_Mute_pressed():
+	if current_browser != null:
+		current_browser.set_muted(not current_browser.is_muted())
+	pass
+
+####
+#### CEF inputs
+####
 
 # ==============================================================================
 # Get mouse events and broadcast them to CEF
@@ -210,22 +245,48 @@ func _input(event):
 func _on_texture_rect_resized():
 	if current_browser == null:
 		return
-	current_browser.resize($Panel/VBox/TextureRect.get_size().x, $Panel/VBox/TextureRect.get_size().y)
+	current_browser.resize($Panel/VBox/TextureRect.get_size())
 	pass
+
+####
+#### Godot
+####
 
 # ==============================================================================
 # Create a single briwser named "current_browser" that is attached as child node to $CEF.
 # ==============================================================================
 func _ready():
+	# Create the home page
 	var file = FileAccess.open(DEFAULT_PAGE, FileAccess.WRITE)
 	file.store_string("<html><body bgcolor=\"white\"><h2>Welcome to gdCEF !</h2><p>This a generated page.</p></body></html>")
 	file = null
 
-	if !$CEF.initialize({"locale":"en-US"}):
+	# See API.md for more details. CEF Configuration is:
+	#   resource_path := {"artifacts", CEF_ARTIFACTS_FOLDER}
+	#   resource_path := {"exported_artifacts", application_real_path()}
+	#   {"incognito":false}
+	#   {"cache_path", resource_path / "cache"}
+	#   {"root_cache_path", resource_path / "cache"}
+	#   {"browser_subprocess_path", resource_path / SUBPROCESS_NAME }
+	#   {"log_file", resource_path / "debug.log"}
+	#   {log_severity", "warning"}
+	#   {"remote_debugging_port", 7777}
+	#   {"exception_stack_size", 5}
+	#
+	# Configurate CEF. In incognito mode cache directories not used and in-memory
+	# caches are used instead and no data is persisted to disk.
+	#
+	# artifacts: allows path such as "build" or "res://cef_artifacts/". Note that "res://"
+	# will use ProjectSettings.globalize_path but exported projects don't support globalize_path:
+	# https://docs.godotengine.org/en/3.5/classes/class_projectsettings.html#class-projectsettings-method-globalize-path
+	var resource_path = "res://cef_artifacts/"
+	if !$CEF.initialize({"artifacts":resource_path, "incognito":true, "locale":"en-US"}):
 		$Panel/VBox/HBox/Info.set_text($CEF.get_error())
 		push_error($CEF.get_error())
 		return
-	push_warning("CEF version: " + $CEF.get_full_version())
+	print("CEF version: " + $CEF.get_full_version())
+
+	# Wait one frame for the texture rect to get its size
 	current_browser = await create_browser(HOME_PAGE)
 	pass
 

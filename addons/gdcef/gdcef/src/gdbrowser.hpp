@@ -278,6 +278,11 @@ public:
     void stopLoading();
 
     // -------------------------------------------------------------------------
+    //! \brief Refresh the page.
+    // -------------------------------------------------------------------------
+    bool reload() const;
+
+    // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Execute  Execute a string of
     //  JavaScript code in this browser
     // -------------------------------------------------------------------------
@@ -296,13 +301,16 @@ public:
 
     // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Return the Godot texture holding
-    //! the page content to other Godot element that needs it for the rendering.
+    //! the page content to other Godot element that needs it for the rendering
+    //! (i.e. TextureRect: $TextureRect.texture = browser.get_texture()).
     //! \fixme FIXME Need mutex ?
     // -------------------------------------------------------------------------
-    inline godot::Ref<godot::ImageTexture> texture()
-    {
-        return m_texture;
-    }
+    inline godot::Ref<godot::ImageTexture> getTexture() { return m_texture; }
+
+    // -------------------------------------------------------------------------
+    //! \brief
+    // -------------------------------------------------------------------------
+    inline void setTexture(godot::Ref<godot::ImageTexture> t) { m_texture = t; }
 
     // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Return true if the browser can
@@ -329,9 +337,9 @@ public:
     void navigateForward();
 
     // -------------------------------------------------------------------------
-    //! \brief Exported method to Godot script. Set the windows size
+    //! \brief Exported method to Godot script. Set the new windows dimension.
     // -------------------------------------------------------------------------
-    void reshape(int w, int h);
+    inline void resize(godot::Vector2 const& dim) { resize_(dim.x, dim.y); }
 
     // -------------------------------------------------------------------------
     //! \brief Set the viewport: the rectangle on the surface where to display
@@ -439,13 +447,15 @@ public:
 
 private:
 
+    void resize_(int width, int height);
+
     // -------------------------------------------------------------------------
     //! \brief hack: since Godot does not like Constructor with parameters we
     //! have to finalize GDBrowserView::GDBrowserView().
     //! \return the browser unique identifier or -1 in case of failure.
     // -------------------------------------------------------------------------
     int init(godot::String const& url, CefBrowserSettings const& cef_settings,
-             CefWindowInfo const& window_info, godot::String const& name);
+             CefWindowInfo const& window_info);
 
     // -------------------------------------------------------------------------
     //! \brief Called by GDBrowserView::Impl::GetViewRect
