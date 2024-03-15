@@ -40,7 +40,7 @@ from shutil import move, copymode
 ###############################################################################
 ### Global user settings
 # CEF version downloaded from https://cef-builds.spotifycdn.com/index.html
-CEF_VERSION = "120.2.4+gc129304+chromium-120.0.6099.199"
+CEF_VERSION = "122.1.13+gde5b724+chromium-122.0.6261.130"
 CEF_TARGET = "Release"             # or "Debug"
 MODULE_TARGET = "release"          # or "debug"
 GODOT_CPP_TARGET = "template_release"       # or "template_debug"
