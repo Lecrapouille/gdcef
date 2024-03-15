@@ -22,7 +22,7 @@ given within the CEF tarball.
 
 ### Install system packages
 
-Install the following tools: `g++`, `ninja`, `cmake` (greater or equal to
+Install the following tools: `scons, g++, ninja, cmake, git, python3` (greater or equal to
 3.21.0). We are using C++17, but we are not using fancy C++ features, we just to
 use the 17 because we need `filesystem`.
 
@@ -36,6 +36,7 @@ use the 17 because we need `filesystem`.
   - Python3: https://www.python.org/downloads/windows/
   - CMake: https://cmake.org/download/
   - Ninja: https://ninja-build.org/
+  - Scons: https://scons.org/pages/download.html
   - Git: https://git-scm.com/download/win
   - *Note:* I have installed them for their official website, I did not tried to install them
     from the `winget` command.
