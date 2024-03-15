@@ -72,6 +72,7 @@
 
 #  include <iostream>
 #  include <array>
+#  include <chrono>
 
 // ****************************************************************************
 //! \brief Class wrapping the CefBrowser class and export methods for Godot
@@ -590,6 +591,13 @@ private:
     //! \brief Mouse cursor position on the main window
     int m_mouse_x = 0;
     int m_mouse_y = 0;
+
+    //! \brief Mouse button modifiers on the mouse event
+    uint32_t m_mouse_event_modifiers = 0;
+
+    //! \brief Left mouse button click counting for double-click and more
+    int m_left_click_count = 1;
+    std::chrono::system_clock::time_point m_last_left_down;
 
     //! \brief Browser's view dimension.
     //! Initial browser's view size. We expose it to Godot which can set the
