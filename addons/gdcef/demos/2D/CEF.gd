@@ -87,7 +87,7 @@ func get_browser(name):
 		return null
 	var browser = $CEF.get_node(name)
 	if browser == null:
-		$Panel/VBox/HBox/Info.set_text("Unknown browser with name '" + name + "'")
+		$Panel/VBox/HBox2/Info.set_text("Unknown browser with name '" + name + "'")
 		return null
 	return browser
 
@@ -289,7 +289,7 @@ func _ready():
 	# https://docs.godotengine.org/en/3.5/classes/class_projectsettings.html#class-projectsettings-method-globalize-path
 	var resource_path = "res://cef_artifacts/"
 	if !$CEF.initialize({"artifacts":resource_path, "incognito":true, "locale":"en-US"}):
-		$Panel/VBox/HBox/Info.set_text($CEF.get_error())
+		$Panel/VBox/HBox2/Info.set_text($CEF.get_error())
 		push_error($CEF.get_error())
 		return
 	print("CEF version: " + $CEF.get_full_version())
