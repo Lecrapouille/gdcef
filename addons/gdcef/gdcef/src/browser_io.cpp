@@ -25,6 +25,7 @@
 
 #include "gdbrowser.hpp"
 #include "helper_files.hpp"
+#include <godot_cpp/core/math.hpp>
 
 //------------------------------------------------------------------------------
 void GDBrowserView::leftClick()
@@ -53,12 +54,28 @@ void GDBrowserView::leftMouseDown()
     if (!m_browser)
         return;
 
+    // increase click count but max == 3
+    // double-click to select a word.
+    // triple-click to select a paragraph.
+    // more than triple-click keep paragraph selection.
+    m_left_click_count = godot::Math::clamp(m_left_click_count + 1, 1, 3);
+
+    using namespace std::chrono;
+    system_clock::time_point now = system_clock::now();
+    int64_t click_interval_ms = duration_cast<milliseconds>(now - m_last_left_down).count();
+    m_last_left_down = now;
+    if (click_interval_ms > 500)
+        m_left_click_count = 1;
+
+    m_mouse_event_modifiers |= EVENTFLAG_LEFT_MOUSE_BUTTON;
+
     CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_LEFT;
     CefMouseEvent evt;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
+    evt.modifiers = m_mouse_event_modifiers;
 
-    m_browser->GetHost()->SendMouseClickEvent(evt, btn, false, 1);
+    m_browser->GetHost()->SendMouseClickEvent(evt, btn, false, m_left_click_count);
 }
 
 //------------------------------------------------------------------------------
@@ -67,10 +84,13 @@ void GDBrowserView::rightMouseDown()
     if (!m_browser)
         return;
 
+    m_mouse_event_modifiers |= EVENTFLAG_RIGHT_MOUSE_BUTTON;
+
     CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_RIGHT;
     CefMouseEvent evt;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
+    evt.modifiers = m_mouse_event_modifiers;
 
     m_browser->GetHost()->SendMouseClickEvent(evt, btn, false, 1);
 }
@@ -81,10 +101,13 @@ void GDBrowserView::leftMouseUp()
     if (!m_browser)
         return;
 
+    m_mouse_event_modifiers &= ~EVENTFLAG_LEFT_MOUSE_BUTTON;
+
     CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_LEFT;
     CefMouseEvent evt;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
+    evt.modifiers = m_mouse_event_modifiers;
 
     m_browser->GetHost()->SendMouseClickEvent(evt, btn, true, 1);
 }
@@ -95,10 +118,13 @@ void GDBrowserView::rightMouseUp()
     if (!m_browser)
         return;
 
+    m_mouse_event_modifiers &= ~EVENTFLAG_RIGHT_MOUSE_BUTTON;
+
     CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_RIGHT;
     CefMouseEvent evt;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
+    evt.modifiers = m_mouse_event_modifiers;
 
     m_browser->GetHost()->SendMouseClickEvent(evt, btn, true, 1);
 }
@@ -109,10 +135,13 @@ void GDBrowserView::middleMouseDown()
     if (!m_browser)
         return;
 
+    m_mouse_event_modifiers |= EVENTFLAG_MIDDLE_MOUSE_BUTTON;
+
     CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_MIDDLE;
     CefMouseEvent evt;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
+    evt.modifiers = m_mouse_event_modifiers;
 
     m_browser->GetHost()->SendMouseClickEvent(evt, btn, false, 1);
 }
@@ -123,10 +152,13 @@ void GDBrowserView::middleMouseUp()
     if (!m_browser)
         return;
 
+    m_mouse_event_modifiers &= ~EVENTFLAG_MIDDLE_MOUSE_BUTTON;
+
     CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_MIDDLE;
     CefMouseEvent evt;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
+    evt.modifiers = m_mouse_event_modifiers;
 
     m_browser->GetHost()->SendMouseClickEvent(evt, btn, true, 1);
 }
@@ -143,6 +175,7 @@ void GDBrowserView::mouseMove(int x, int y)
     CefMouseEvent evt;
     evt.x = x;
     evt.y = y;
+    evt.modifiers = m_mouse_event_modifiers;
 
     bool mouse_leave = false; // TODO
     // AD - Adding focus just like what's done in BLUI
@@ -160,6 +193,7 @@ void GDBrowserView::mouseWheelVertical(const int wDelta)
     CefMouseEvent evt;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
+    evt.modifiers = m_mouse_event_modifiers;
 
     m_browser->GetHost()->SendMouseWheelEvent(evt, 0, wDelta * 10);
 }
@@ -173,6 +207,7 @@ void GDBrowserView::mouseWheelHorizontal(const int wDelta)
     CefMouseEvent evt;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
+    evt.modifiers = m_mouse_event_modifiers;
 
     m_browser->GetHost()->SendMouseWheelEvent(evt, wDelta * 10, 0);
 }
