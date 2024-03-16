@@ -1,5 +1,24 @@
+Version 0.8.0: (breaking API)
+	* Pass modifiers to mouse events for drag handling.
+	* Add API: allow routing CEF audio to Godot.
+	* Add API: load from URI.
+	* Add API: callback when page failed loading.
+	* Breaking API: consitence between on_X and set_X.
+	* Breaking API: simplification of create_browser and resize.
+	* Refresh the demo2D .
+	* Update CEF version to 122.
+	* Minor fixes.
+
+Version 0.7.2:
+	* Portage to Godot-4.
+	* Major git branches refactorization.
+	* Update CEF version to 120.
+	* Add basic CI.
+	* build: Allow to change the name of the build folder.
+	* Minor fixes (doc, build, demos).
+
 Version 0.7.0:
-    * New API: get CEF version and allow to mute/unmute browser.
+	* New API: get CEF version and allow to mute/unmute browser.
 	* Update CEF version to 110.
 	* Fix English in READMEs.
 
