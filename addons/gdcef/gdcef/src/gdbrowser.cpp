@@ -31,6 +31,10 @@
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/godot.hpp>
+#define USING_CONCURRENCY 1
+#if USING_CONCURRENCY
+#include <ppl.h>
+#endif
 
 //------------------------------------------------------------------------------
 // in a GDNative module, "_bind_methods" is replaced by the "_register_methods"
@@ -163,10 +167,9 @@ void GDBrowserView::getViewRect(CefRefPtr<CefBrowser> /*browser*/, CefRect& rect
 }
 
 //------------------------------------------------------------------------------
-// FIXME find a less naive algorithm and dirtyRects instead of the whole image
 void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
                             CefRenderHandler::PaintElementType /*type*/,
-                            const CefRenderHandler::RectList& /*dirtyRects*/,
+                            const CefRenderHandler::RectList& dirtyRects,
                             const void* buffer, int width, int height)
 {
     // Sanity check
@@ -178,22 +181,64 @@ void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
     int const SIZEOF_COLOR = COLOR_CHANELS * sizeof(char);
     int const TEXTURE_SIZE = SIZEOF_COLOR * width * height;
 
+    bool bResized = m_data.size() != TEXTURE_SIZE;
+
     // Copy CEF image buffer to Godot PoolByteArray
     m_data.resize(TEXTURE_SIZE);
 
-    // Color conversion BGRA8 -> RGBA8: swap B and R chanels
+    // Copy per line func for concurrency
+    unsigned char* imageData = m_data.ptrw();
     const unsigned char* cbuffer = (const unsigned char*)buffer;
-    for (int i = 0; i < TEXTURE_SIZE; i += COLOR_CHANELS)
+    auto doCopyLine = [imageData, cbuffer, width, COLOR_CHANELS](int line, int x, int copyWidth)
     {
-        m_data[i] = cbuffer[i + 2];
-        m_data[i + 1] = cbuffer[i + 1];
-        m_data[i + 2] = cbuffer[i];
-        m_data[i + 3] = cbuffer[i + 3];
+        int i = (line * width + x) * COLOR_CHANELS;
+        int end = i + (copyWidth * COLOR_CHANELS);
+        for (; i < end; i += COLOR_CHANELS)
+        {
+            // Color conversion BGRA8 -> RGBA8: swap B and R chanels
+            imageData[i + 0] = cbuffer[i + 2];
+            imageData[i + 1] = cbuffer[i + 1];
+            imageData[i + 2] = cbuffer[i + 0];
+            imageData[i + 3] = cbuffer[i + 3];
+        }
+    };
+
+    if (bResized)
+    {
+#if USING_CONCURRENCY
+        concurrency::parallel_for(0, height, 
+            std::bind(doCopyLine, std::placeholders::_1, 0, width));
+#else
+        for (int y = 0; y < height; ++y)
+        {
+            doCopyLine(y, 0, width);
+        }
+#endif
+
+        // Copy Godot PoolByteArray to Godot texture.
+        m_image->set_data(width, height, false, godot::Image::FORMAT_RGBA8, m_data);
+        m_texture->set_image(m_image);
+    }
+    else
+    {
+        for (const CefRect& rect : dirtyRects)
+        {
+#if USING_CONCURRENCY
+            concurrency::parallel_for(rect.y, rect.y + rect.height,
+                std::bind(doCopyLine, std::placeholders::_1, rect.x, rect.width));
+#else
+            for (int y = rect.y; y < rect.y + rect.height; ++y)
+            {
+                doCopyLine(y, rect.x, rect.width);
+            }
+#endif
+        }
+
+        // Copy Godot PoolByteArray to Godot texture.
+        m_image->set_data(width, height, false, godot::Image::FORMAT_RGBA8, m_data);
+        m_texture->update(m_image);
     }
 
-    // Copy Godot PoolByteArray to Godot texture.
-    m_image->set_data(width, height, false, godot::Image::FORMAT_RGBA8, m_data);
-    m_texture->set_image(m_image);
     emit_signal("on_browser_paint", this);
 }
 
