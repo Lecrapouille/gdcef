@@ -58,6 +58,8 @@ CEF_BUILD_FOLDER_NAME = "build"
 # Godot .gdns and .gdnlib files inside the libs folders in GDCEF_EXAMPLES_PATH the
 # demos folder.
 CEF_ARTIFACTS_FOLDER_NAME = "cef_artifacts"
+# Use OpenMP for using CPU parallelim (i.e. for copying textures)
+CEF_USE_CPU_PARALLELISM = "yes" # or "no"
 
 ###############################################################################
 ### Project internal paths local from this script. Do not change them!
@@ -401,13 +403,15 @@ def gdnative_scons_cmd(plateform):
              "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER_NAME + "\\\"",
              "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
              "target=" + MODULE_TARGET, "--jobs=" + NPROC,
-             "arch=" + ARCHI, "platform=" + plateform], check=True)
+             "arch=" + ARCHI, "platform=" + plateform,
+             "cpu_parallelism=" + CEF_USE_CPU_PARALLELISM], check=True)
     else:
         run(SCONS + ["api_path=" + GODOT_CPP_API_PATH,
              "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER_NAME + "\\\"",
              "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
              "target=" + MODULE_TARGET, "--jobs=" + NPROC,
-             "platform=" + plateform], check=True)
+             "platform=" + plateform,
+             "cpu_parallelism=" + CEF_USE_CPU_PARALLELISM], check=True)
 
 ###############################################################################
 ### Compile Godot CEF module named GDCef and its subprocess

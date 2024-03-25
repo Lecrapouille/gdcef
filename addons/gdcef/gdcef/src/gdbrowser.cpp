@@ -31,9 +31,9 @@
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/godot.hpp>
-#define USING_CONCURRENCY 1
-#if USING_CONCURRENCY
-#include <ppl.h>
+
+#ifdef _OPENMP
+#  include <omp.h>
 #endif
 
 //------------------------------------------------------------------------------
@@ -109,6 +109,14 @@ godot::String GDBrowserView::getError()
 int GDBrowserView::init(godot::String const& url, CefBrowserSettings const& settings,
                         CefWindowInfo const& window_info)
 {
+#ifdef _OPENMP
+    #pragma omp parallel
+    {
+        #pragma omp single
+        GDCEF_DEBUG_VAL("OpenMP number of threads = " << omp_get_num_threads());
+    }
+#endif
+
     // Create a new browser using the window parameters specified by
     // |windowInfo|.  If |request_context| is empty the global request context
     // will be used. This method can only be called on the browser process UI
@@ -186,7 +194,7 @@ void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
     // Copy CEF image buffer to Godot PoolByteArray
     m_data.resize(TEXTURE_SIZE);
 
-    // Copy per line func for concurrency
+    // Copy per line func for OpenMP/PPL
     unsigned char* imageData = m_data.ptrw();
     const unsigned char* cbuffer = (const unsigned char*)buffer;
     auto doCopyLine = [imageData, cbuffer, width, COLOR_CHANELS](int line, int x, int copyWidth)
@@ -205,15 +213,15 @@ void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
 
     if (bResized)
     {
-#if USING_CONCURRENCY
-        concurrency::parallel_for(0, height, 
-            std::bind(doCopyLine, std::placeholders::_1, 0, width));
-#else
+        // PPL
+        //concurrency::parallel_for(0, height,
+        //    std::bind(doCopyLine, std::placeholders::_1, 0, width));
+
+        #pragma omp parallel
         for (int y = 0; y < height; ++y)
         {
             doCopyLine(y, 0, width);
         }
-#endif
 
         // Copy Godot PoolByteArray to Godot texture.
         m_image->set_data(width, height, false, godot::Image::FORMAT_RGBA8, m_data);
@@ -223,15 +231,15 @@ void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
     {
         for (const CefRect& rect : dirtyRects)
         {
-#if USING_CONCURRENCY
-            concurrency::parallel_for(rect.y, rect.y + rect.height,
-                std::bind(doCopyLine, std::placeholders::_1, rect.x, rect.width));
-#else
+            //PPL
+            //concurrency::parallel_for(rect.y, rect.y + rect.height,
+            //    std::bind(doCopyLine, std::placeholders::_1, rect.x, rect.width));
+
+            #pragma omp parallel
             for (int y = rect.y; y < rect.y + rect.height; ++y)
             {
                 doCopyLine(y, rect.x, rect.width);
             }
-#endif
         }
 
         // Copy Godot PoolByteArray to Godot texture.
