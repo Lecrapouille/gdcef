@@ -534,7 +534,7 @@ void GDCef::Impl::OnBeforeClose(CefRefPtr<CefBrowser> browser)
 void GDCef::Impl::OnBeforeCommandLineProcessing(const CefString& ProcessType,
                CefRefPtr<CefCommandLine> command_line)
 {
-    CEF_REQUIRE_UI_THREAD();
+    //CEF_REQUIRE_UI_THREAD();
     GDCEF_DEBUG();
 
     if (command_line == nullptr)

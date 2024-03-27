@@ -133,8 +133,8 @@ elif platform == 'windows':
     env.Append(CCFLAGS=['-W3', '-GR'])
     env.Append(CXXFLAGS='/std:c++17')
     if compile_mode == 'debug':
-        env.Append(CPPDEFINES=['_DEBUG'])
-        env.Append(CCFLAGS=['-EHsc', '-MDd', '-ZI'])
+        env.Append(CPPDEFINES=['_DEBUG', '_ITERATOR_DEBUG_LEVEL=0'])
+        env.Append(CCFLAGS=['-EHsc', '-MDd', '-ZI', '-FS'])
         env.Append(LINKFLAGS=['-DEBUG'])
     else:
         env.Append(CPPDEFINES=['NDEBUG'])
@@ -166,9 +166,13 @@ if platform == 'linux' or platform == 'osx':
 
 # OpenMP
 if env['cpu_parallelism']:
-    env.Append(CCFLAGS=['-fopenmp'])
-    env.Append(CXXFLAGS=['-fopenmp'])
-    env.Append(LINKFLAGS=['-fopenmp'])
+    if platform == 'windows':
+        env.Append(CCFLAGS=['-openmp'])
+        env.Append(CXXFLAGS=['-openmp'])
+    else:
+        env.Append(CCFLAGS=['-fopenmp'])
+        env.Append(CXXFLAGS=['-fopenmp'])
+        env.Append(LINKFLAGS=['-fopenmp'])
 
 # User defines
 env.Append(CXXFLAGS=['-DCEF_ARTIFACTS_FOLDER=' + env['cef_artifacts_folder']])
