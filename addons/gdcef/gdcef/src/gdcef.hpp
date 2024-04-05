@@ -152,7 +152,8 @@ private: // CEF interfaces.
     //! called. To avoid this crash, we have to create this intermediate class.
     // *************************************************************************
     class Impl: public CefLifeSpanHandler,
-                public CefClient
+                public CefClient,
+                public CefApp, CefBrowserProcessHandler
     {
     public:
 
@@ -189,11 +190,28 @@ private: // CEF interfaces.
             return this;
         }
 
+        // ---------------------------------------------------------------------
+        //! \brief Return the handler for browser process callbacks.
+        // ---------------------------------------------------------------------
+        virtual CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override
+        {
+            return this;
+        }
+
     private: // CefLifeSpanHandler interfaces
 
         virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) override;
         virtual bool DoClose(CefRefPtr<CefBrowser> browser) override;
         virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) override;
+
+    private: // CefApp
+
+        // ---------------------------------------------------------------------
+        //! \brief Called before a child process is launched. Provides an
+        //! opportunity to modify the child process command line.
+        // ---------------------------------------------------------------------
+        virtual void OnBeforeCommandLineProcessing(const CefString& ProcessType,
+            CefRefPtr<CefCommandLine> command_line) override;
 
     private:
 

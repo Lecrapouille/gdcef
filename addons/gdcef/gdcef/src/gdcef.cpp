@@ -160,13 +160,13 @@ bool GDCef::initialize(godot::Dictionary config)
     configureCEF(folder, m_cef_settings, m_window_info, config);
 
     // This function should be called on the main application thread to
-    // initialize the CEF browser process. The |application| parameter may be
-    // empty. A return value of true indicates that it succeeded and false
-    // indicates that it failed.  The |windows_sandbox_info| parameter is only
-    // used on Windows and may be NULL (see cef_sandbox_win.h for details).
+    // initialize the CEF browser process. A return value of true indicates
+    // that it succeeded and false indicates that it failed.
+    // Note: passed m_impl as 3th argument (as CefApp) because this is needed
+    // to call OnBeforeCommandLineProcessing().
     CefMainArgs args;
     GDCEF_DEBUG_VAL("[GDCEF][GDCef::_init] CefInitialize");
-    if (!CefInitialize(args, m_cef_settings, nullptr, nullptr))
+    if (!CefInitialize(args, m_cef_settings, m_impl, nullptr))
     {
         GDCEF_ERROR("CefInitialize failed");
         m_impl = nullptr;
@@ -530,4 +530,15 @@ void GDCef::Impl::OnBeforeClose(CefRefPtr<CefBrowser> browser)
             node->queue_free();
         }
     }
+}
+
+//------------------------------------------------------------------------------
+void GDCef::Impl::OnBeforeCommandLineProcessing(const CefString& ProcessType,
+               CefRefPtr<CefCommandLine> command_line)
+{
+    CEF_REQUIRE_UI_THREAD();
+    GDCEF_DEBUG();
+
+    if (command_line == nullptr)
+        return ;
 }
