@@ -59,6 +59,7 @@ the behavior for CEF. Default values are:
 - `{"remote_debugging_port":7777}` : the port for debbuging CEF.
 - `{"exception_stack_size":5}`
 - `{"locale":"en-US"}` : Select your language.
+- `{"enable_media_stream", false}` : allow CEF to access to your camera and microphones.
 
 See [cef_types.h](../thirdparty/cef_binary/include/internal/cef_types.h) for more information about settings.
 

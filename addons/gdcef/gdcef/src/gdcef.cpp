@@ -158,6 +158,7 @@ bool GDCef::initialize(godot::Dictionary config)
     // Since we cannot configure CEF from the command line main(argc, argv)
     // because we cannot access to it, we have to configure CEF directly.
     configureCEF(folder, m_cef_settings, m_window_info, config);
+    m_enable_media_stream = getConfig(config, "enable_media_stream", false);
 
     // This function should be called on the main application thread to
     // initialize the CEF browser process. A return value of true indicates
@@ -541,4 +542,12 @@ void GDCef::Impl::OnBeforeCommandLineProcessing(const CefString& ProcessType,
 
     if (command_line == nullptr)
         return ;
+
+    // Allow accessing to the camera and microphones.
+    // See https://github.com/Lecrapouille/gdcef/issues/49
+    if (m_owner.m_enable_media_stream)
+    {
+        GDCEF_DEBUG_VAL("Allow enable-media-stream");
+        command_line->AppendSwitch("enable-media-stream");
+    }
 }

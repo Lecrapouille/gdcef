@@ -280,6 +280,7 @@ func _ready():
 	#   {log_severity", "warning"}
 	#   {"remote_debugging_port", 7777}
 	#   {"exception_stack_size", 5}
+	#   {"enable_media_stream", false}
 	#
 	# Configurate CEF. In incognito mode cache directories not used and in-memory
 	# caches are used instead and no data is persisted to disk.
@@ -288,7 +289,12 @@ func _ready():
 	# will use ProjectSettings.globalize_path but exported projects don't support globalize_path:
 	# https://docs.godotengine.org/en/3.5/classes/class_projectsettings.html#class-projectsettings-method-globalize-path
 	var resource_path = "res://cef_artifacts/"
-	if !$CEF.initialize({"artifacts":resource_path, "incognito":true, "locale":"en-US"}):
+	if !$CEF.initialize({
+			"artifacts":resource_path,
+			"incognito":true,
+			"locale":"en-US",
+			"enable_media_stream": true
+		}):
 		$Panel/VBox/HBox2/Info.set_text($CEF.get_error())
 		push_error($CEF.get_error())
 		return

@@ -306,6 +306,8 @@ private:
     bool m_initialized = false;
     //! \brief Hold last error messages
     mutable std::stringstream m_error;
+    //! \brief Allow accessing to camera and microphones
+    bool m_enable_media_stream = false;
 };
 
 #  if !defined(_WIN32)

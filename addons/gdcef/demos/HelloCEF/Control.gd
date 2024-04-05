@@ -153,6 +153,7 @@ func _ready():
 	#   {log_severity", "warning"}
 	#   {"remote_debugging_port", 7777}
 	#   {"exception_stack_size", 5}
+	#   {"enable_media_stream", false}
 	#
 	# Configurate CEF. In incognito mode cache directories not used and in-memory
 	# caches are used instead and no data is persisted to disk.
