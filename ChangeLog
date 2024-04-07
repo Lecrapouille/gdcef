@@ -1,3 +1,7 @@
+Version 0.9.0:
+	* Optimized onPaint() refreshing only dirty areas.
+	* API: Add option to allow accessing to the camera.
+
 Version 0.8.0: (breaking API)
 	* Pass modifiers to mouse events for drag handling.
 	* Add API: allow routing CEF audio to Godot.
