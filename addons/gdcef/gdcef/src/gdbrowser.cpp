@@ -217,7 +217,7 @@ void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
         //concurrency::parallel_for(0, height,
         //    std::bind(doCopyLine, std::placeholders::_1, 0, width));
 
-        #pragma omp parallel
+        #pragma omp parallel for
         for (int y = 0; y < height; ++y)
         {
             doCopyLine(y, 0, width);
@@ -235,7 +235,7 @@ void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
             //concurrency::parallel_for(rect.y, rect.y + rect.height,
             //    std::bind(doCopyLine, std::placeholders::_1, rect.x, rect.width));
 
-            #pragma omp parallel
+            #pragma omp parallel for
             for (int y = rect.y; y < rect.y + rect.height; ++y)
             {
                 doCopyLine(y, rect.x, rect.width);
