@@ -109,11 +109,12 @@ void GDCef::_init()
 //------------------------------------------------------------------------------
 bool GDCef::initialize(godot::Dictionary config)
 {
-    if (m_initialized)
+    if (m_impl != nullptr)
     {
         GDCEF_ERROR("Already initialized");
         return false;
     }
+    m_impl = new GDCef::Impl(*this);
 
     // Get the folder path in which your application and CEF artifacts are present
     fs::path folder;
@@ -173,7 +174,6 @@ bool GDCef::initialize(godot::Dictionary config)
         m_impl = nullptr;
         return false;
     }
-    m_initialized = true;
     GDCEF_DEBUG_VAL("CefInitialize done with success");
     return true;
 }
@@ -181,7 +181,7 @@ bool GDCef::initialize(godot::Dictionary config)
 //------------------------------------------------------------------------------
 bool GDCef::isAlive()
 {
-    return m_initialized && m_impl;
+    return m_impl != nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -416,12 +416,6 @@ static void configureBrowser(CefBrowserSettings& browser_settings,
 }
 
 //------------------------------------------------------------------------------
-GDCef::GDCef()
-{
-    m_impl = new GDCef::Impl(*this);
-}
-
-//------------------------------------------------------------------------------
 GDCef::~GDCef()
 {
     shutdown();
@@ -434,9 +428,8 @@ void GDCef::shutdown()
     if (m_impl != nullptr)
     {
         CefQuitMessageLoop();
-        m_impl = nullptr;
     }
-    m_initialized = false;
+    m_impl = nullptr;
 }
 
 //------------------------------------------------------------------------------

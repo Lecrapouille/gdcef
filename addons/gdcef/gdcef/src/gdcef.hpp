@@ -220,8 +220,6 @@ private: // CEF interfaces.
 
 public:
 
-    GDCef();
-
     // -------------------------------------------------------------------------
     //! \brief Destructor. Release CEF memory and sub CEF processes are notified
     //! that the application is exiting. All browsers are destroyed.
@@ -300,10 +298,6 @@ private:
     CefWindowInfo m_window_info;
     //! \brief
     CefSettings m_cef_settings;
-    //! \brief Since we have to pass parameter to Godot _init() which is not possible.
-    //! We have to call initialize() method which can be potentially be called several
-    //! times.
-    bool m_initialized = false;
     //! \brief Hold last error messages
     mutable std::stringstream m_error;
     //! \brief Allow accessing to camera and microphones
