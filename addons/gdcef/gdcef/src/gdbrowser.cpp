@@ -82,6 +82,10 @@ void GDBrowserView::_bind_methods()
     ClassDB::bind_method(D_METHOD("is_loaded"), &GDBrowserView::loaded);
     ClassDB::bind_method(D_METHOD("reload"), &GDBrowserView::reload);
     ClassDB::bind_method(D_METHOD("stop_loading"), &GDBrowserView::stopLoading);
+    ClassDB::bind_method(D_METHOD("copy"), &GDBrowserView::copy);
+    ClassDB::bind_method(D_METHOD("paste"), &GDBrowserView::paste);
+    ClassDB::bind_method(D_METHOD("undo"), &GDBrowserView::undo);
+    ClassDB::bind_method(D_METHOD("redo"), &GDBrowserView::redo);
     ClassDB::bind_method(D_METHOD("request_html_content"), &GDBrowserView::requestHtmlContent);
     ClassDB::bind_method(D_METHOD("execute_javascript"), &GDBrowserView::executeJavaScript);
     ClassDB::bind_method(D_METHOD("has_previous_page"), &GDBrowserView::canNavigateBackward);
@@ -381,6 +385,98 @@ void GDBrowserView::stopLoading()
         return;
 
     m_browser->StopLoad();
+}
+
+//------------------------------------------------------------------------------
+// FIXME https://github.com/chromiumembedded/cef/issues/3117
+void GDBrowserView::copy() const
+{
+    BROWSER_DEBUG();
+
+    if (m_browser && m_browser->GetMainFrame())
+    {
+        m_browser->GetMainFrame()->Copy();
+    }
+    else
+    {
+        BROWSER_ERROR("copy failed");
+    }
+}
+
+//------------------------------------------------------------------------------
+// FIXME https://github.com/chromiumembedded/cef/issues/3117
+void GDBrowserView::paste() const
+{
+    BROWSER_DEBUG();
+
+    if (m_browser && m_browser->GetMainFrame())
+    {
+        m_browser->GetMainFrame()->Paste();
+    }
+    else
+    {
+        BROWSER_ERROR("paste failed");
+    }
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::cut() const
+{
+    BROWSER_DEBUG();
+
+    if (m_browser && m_browser->GetMainFrame())
+    {
+        m_browser->GetMainFrame()->Cut();
+    }
+    else
+    {
+        BROWSER_ERROR("cut failed");
+    }
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::delete_() const
+{
+    BROWSER_DEBUG();
+
+    if (m_browser && m_browser->GetMainFrame())
+    {
+        m_browser->GetMainFrame()->Delete();
+    }
+    else
+    {
+        BROWSER_ERROR("delete failed");
+    }
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::undo() const
+{
+    BROWSER_DEBUG();
+
+    if (m_browser && m_browser->GetMainFrame())
+    {
+        m_browser->GetMainFrame()->Undo();
+    }
+    else
+    {
+        BROWSER_ERROR("undo failed");
+    }
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::redo() const
+{
+    BROWSER_DEBUG();
+
+    if (m_browser && m_browser->GetMainFrame())
+    {
+        m_browser->GetMainFrame()->Redo();
+    }
+    else
+    {
+        BROWSER_ERROR("redo failed");
+    }
 }
 
 //------------------------------------------------------------------------------

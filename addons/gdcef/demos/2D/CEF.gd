@@ -272,6 +272,20 @@ func _input(event):
 			if event.keycode == KEY_S:
 				# Will call the callback 'on_html_content_requested'
 				current_browser.request_html_content()
+			# FIXME copy()/paste() inside a Godot text entry will freeze the application
+			# https://github.com/chromiumembedded/cef/issues/3117
+			#if event.keycode == KEY_C:
+			#	current_browser.copy()
+			#elif event.keycode == KEY_V:
+			#	current_browser.paste()
+			#elif event.keycode == KEY_X:
+			#	current_browser.cut()
+			#elif event.keycode == KEY_DELETE:
+			#	current_browser.delete()
+			#elif event.keycode == KEY_Z:
+			#	current_browser.undo()
+			#elif event.shift_pressed && event.keycode == KEY_Z:
+			#	current_browser.redo()
 		else:
 			current_browser.set_key_pressed(
 				event.unicode if event.unicode != 0 else event.keycode,

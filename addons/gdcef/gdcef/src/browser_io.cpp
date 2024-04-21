@@ -76,6 +76,13 @@ void GDBrowserView::leftMouseDown()
     evt.modifiers = m_mouse_event_modifiers;
 
     m_browser->GetHost()->SendMouseClickEvent(evt, btn, false, m_left_click_count);
+
+    // Copy selected text
+    // FIXME https://github.com/chromiumembedded/cef/issues/3117
+    //if ((m_left_click_count > 1) && m_browser->GetMainFrame())
+    //{
+    //    m_browser->GetMainFrame()->Copy();
+    //}
 }
 
 //------------------------------------------------------------------------------
