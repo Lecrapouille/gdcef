@@ -249,8 +249,8 @@ void GDBrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool c
             event.type = KEYEVENT_CHAR;
             m_browser->GetHost()->SendKeyEvent(event);
         }
-        else if (key == godot/*::GlobalConstants*/::KEY_SPACE ||
-                 key == godot/*::GlobalConstants*/::KEY_TAB)
+        else if (key == godot::KEY_SPACE ||
+                 key == godot::KEY_TAB)
         {
             BROWSER_DEBUG_VAL("KEY_SPACE / KEY_TAB");
             event.windows_key_code = key;
@@ -261,23 +261,23 @@ void GDBrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool c
             event.type = KEYEVENT_CHAR;
             m_browser->GetHost()->SendKeyEvent(event);
         }
-        else if (key == godot/*::GlobalConstants*/::KEY_BACKSPACE ||
-                 key == godot/*::GlobalConstants*/::KEY_ENTER ||
-                 key == godot/*::GlobalConstants*/::KEY_KP_ENTER )
+        else if (key == godot::KEY_BACKSPACE ||
+                 key == godot::KEY_ENTER ||
+                 key == godot::KEY_KP_ENTER )
         {
-            if (key == godot/*::GlobalConstants*/::KEY_BACKSPACE) {
+            if (key == godot::KEY_BACKSPACE) {
                 BROWSER_DEBUG_VAL("KEY_BACKSPACE");
                 event.windows_key_code = 8;
                 event.character = 8;
                 event.unmodified_character = 8;
             }
-            else if (key == godot/*::GlobalConstants*/::KEY_ENTER) {
+            else if (key == godot::KEY_ENTER) {
                 BROWSER_DEBUG_VAL("KEY_ENTER");
                 event.windows_key_code = 13;
                 event.character = 13;
                 event.unmodified_character = 13;
             }
-            else if (key == godot/*::GlobalConstants*/::KEY_KP_ENTER) {
+            else if (key == godot::KEY_KP_ENTER) {
                 BROWSER_DEBUG_VAL("KEY_KP_ENTER");
                 event.windows_key_code = 13;
                 event.character = 13;
@@ -303,56 +303,56 @@ void GDBrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool c
             event.type = KEYEVENT_CHAR;
             m_browser->GetHost()->SendKeyEvent(event);
         }
-        else if (key == godot/*::GlobalConstants*/::KEY_RIGHT ||
-                 key == godot/*::GlobalConstants*/::KEY_LEFT ||
-                 key == godot/*::GlobalConstants*/::KEY_UP ||
-                 key == godot/*::GlobalConstants*/::KEY_DOWN ||
-                 key == godot/*::GlobalConstants*/::KEY_PAGEUP ||
-                 key == godot/*::GlobalConstants*/::KEY_PAGEDOWN ||
-                 key == godot/*::GlobalConstants*/::KEY_HOME ||
-                 key == godot/*::GlobalConstants*/::KEY_END ||
-                 key == godot/*::GlobalConstants*/::KEY_INSERT ||
-                 key == godot/*::GlobalConstants*/::KEY_DELETE) // ARROWS
+        else if (key == godot::KEY_RIGHT ||
+                 key == godot::KEY_LEFT ||
+                 key == godot::KEY_UP ||
+                 key == godot::KEY_DOWN ||
+                 key == godot::KEY_PAGEUP ||
+                 key == godot::KEY_PAGEDOWN ||
+                 key == godot::KEY_HOME ||
+                 key == godot::KEY_END ||
+                 key == godot::KEY_INSERT ||
+                 key == godot::KEY_DELETE) // ARROWS
         {
             // https://keycode.info/
 
-            if (key == godot/*::GlobalConstants*/::KEY_RIGHT) {
+            if (key == godot::KEY_RIGHT) {
                 BROWSER_DEBUG_VAL("KEY_RIGHT");
                 event.windows_key_code = 39;
             }
-            else if (key == godot/*::GlobalConstants*/::KEY_LEFT) {
+            else if (key == godot::KEY_LEFT) {
                 BROWSER_DEBUG_VAL("KEY_LEFT");
                 event.windows_key_code = 37;
             }
-            else if (key == godot/*::GlobalConstants*/::KEY_UP) {
+            else if (key == godot::KEY_UP) {
                 BROWSER_DEBUG_VAL("KEY_UP");
                 event.windows_key_code = 38;
             }
-            else if (key == godot/*::GlobalConstants*/::KEY_DOWN) {
+            else if (key == godot::KEY_DOWN) {
                 BROWSER_DEBUG_VAL("KEY_DOWN");
                 event.windows_key_code = 40;
             }
-            else if (key == godot/*::GlobalConstants*/::KEY_PAGEUP) {
+            else if (key == godot::KEY_PAGEUP) {
                 BROWSER_DEBUG_VAL("KEY_PAGEUP");
                 event.windows_key_code = 33;
             }
-            else if (key == godot/*::GlobalConstants*/::KEY_PAGEDOWN) {
+            else if (key == godot::KEY_PAGEDOWN) {
                 BROWSER_DEBUG_VAL("KEY_PAGEDOWN");
                 event.windows_key_code = 34;
             }
-            else if (key == godot/*::GlobalConstants*/::KEY_HOME) {
+            else if (key == godot::KEY_HOME) {
                 BROWSER_DEBUG_VAL("KEY_HOME");
                 event.windows_key_code = 36; // Debut
             }
-            else if (key == godot/*::GlobalConstants*/::KEY_END) {
+            else if (key == godot::KEY_END) {
                 BROWSER_DEBUG_VAL("KEY_END");
                 event.windows_key_code = 35; // Fin
             }
-            else if (key == godot/*::GlobalConstants*/::KEY_INSERT) {
+            else if (key == godot::KEY_INSERT) {
                 BROWSER_DEBUG_VAL("KEY_INSERT");
                 event.windows_key_code = 45; // Insert
             }
-            else if (key == godot/*::GlobalConstants*/::KEY_DELETE) {
+            else if (key == godot::KEY_DELETE) {
                 BROWSER_DEBUG_VAL("KEY_DELETE");
                 event.windows_key_code = 46; // Del (not dot when no char event)
             }
