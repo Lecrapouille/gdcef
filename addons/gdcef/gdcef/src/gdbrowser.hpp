@@ -334,6 +334,12 @@ public:
     bool reload() const;
 
     // -------------------------------------------------------------------------
+    //! \brief Request the HTML content of the page. The result is given by the
+    //! Godot callback
+    // -------------------------------------------------------------------------
+    void requestHtmlContent();
+
+    // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Execute  Execute a string of
     //  JavaScript code in this browser.
     // -------------------------------------------------------------------------

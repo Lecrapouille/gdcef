@@ -37,6 +37,28 @@
 #endif
 
 //------------------------------------------------------------------------------
+// Visit the html content of the current page.
+class Visitor : public CefStringVisitor
+{
+public:
+    Visitor(GDBrowserView& node)
+        : m_node(node)
+    {}
+
+    virtual void Visit(const CefString& string) override
+    {
+        godot::String html = string.ToString().c_str();
+
+        m_node.emit_signal("on_html_content_requested", html, &m_node);
+    }
+
+private:
+
+    GDBrowserView& m_node;
+    IMPLEMENT_REFCOUNTING(Visitor);
+};
+
+//------------------------------------------------------------------------------
 // in a GDNative module, "_bind_methods" is replaced by the "_register_methods"
 // method CefRefPtr<CefBrowser> m_browser; this is used to expose various methods
 // of this class to Godot.
@@ -60,6 +82,7 @@ void GDBrowserView::_bind_methods()
     ClassDB::bind_method(D_METHOD("is_loaded"), &GDBrowserView::loaded);
     ClassDB::bind_method(D_METHOD("reload"), &GDBrowserView::reload);
     ClassDB::bind_method(D_METHOD("stop_loading"), &GDBrowserView::stopLoading);
+    ClassDB::bind_method(D_METHOD("request_html_content"), &GDBrowserView::requestHtmlContent);
     ClassDB::bind_method(D_METHOD("execute_javascript"), &GDBrowserView::executeJavaScript);
     ClassDB::bind_method(D_METHOD("has_previous_page"), &GDBrowserView::canNavigateBackward);
     ClassDB::bind_method(D_METHOD("has_next_page"), &GDBrowserView::canNavigateForward);
@@ -91,6 +114,8 @@ void GDBrowserView::_bind_methods()
     ADD_SIGNAL(MethodInfo("on_page_failed_loading", PropertyInfo(Variant::BOOL, "aborted"),
         PropertyInfo(Variant::STRING, "err_msg"), PropertyInfo(Variant::OBJECT, "node")));
     ADD_SIGNAL(MethodInfo("on_browser_paint", PropertyInfo(Variant::OBJECT, "node")));
+    ADD_SIGNAL(MethodInfo("on_html_content_requested", PropertyInfo(Variant::STRING, "html"),
+        PropertyInfo(Variant::OBJECT, "node")));
 }
 
 //------------------------------------------------------------------------------
@@ -356,6 +381,18 @@ void GDBrowserView::stopLoading()
         return;
 
     m_browser->StopLoad();
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::requestHtmlContent()
+{
+    CefRefPtr<Visitor> visitor = new Visitor(*this);
+    if (m_browser && m_browser->GetMainFrame())
+    {
+        m_browser->GetMainFrame()->GetSource(visitor);
+    }
+
+    BROWSER_ERROR("Not possible to retrieving text");
 }
 
 //------------------------------------------------------------------------------

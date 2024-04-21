@@ -123,6 +123,7 @@ size_flags_horizontal = 3
 mouse_filter = 0
 
 [node name="ColorPopup" type="Popup" parent="."]
+size = Vector2i(298, 471)
 
 [node name="ColorPicker" type="ColorPicker" parent="ColorPopup"]
 anchors_preset = 15
@@ -132,6 +133,8 @@ edit_alpha = false
 presets_visible = false
 
 [node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+
+[node name="AcceptDialog" type="AcceptDialog" parent="."]
 
 [connection signal="pressed" from="Panel/VBox/HBox/New" to="." method="_on_Add_pressed"]
 [connection signal="pressed" from="Panel/VBox/HBox/Home" to="." method="_on_Home_pressed"]

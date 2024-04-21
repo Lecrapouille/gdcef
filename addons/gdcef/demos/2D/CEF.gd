@@ -6,29 +6,54 @@
 
 extends Control
 
-# Default pages
+# URL
 const DEFAULT_PAGE = "user://default_page.html"
-const RADIO_PAGE = "http://streaming.radio.co/s9378c22ee/listen"
-# "https://www.programmes-radio.com/fr/stream-e8BxeoRhsz9jY9mXXRiFTE/ecouter-KPJK"
+const SAVED_PAGE = "user://saved_page.html"
 const HOME_PAGE = "https://github.com/Lecrapouille/gdcef"
+const RADIO_PAGE = "http://streaming.radio.co/s9378c22ee/listen"
+#const RADIO_PAGE = "https://www.programmes-radio.com/fr/stream-e8BxeoRhsz9jY9mXXRiFTE/ecouter-KPJK"
 
 # The current browser as Godot node
 @onready var current_browser = null
-
 # Memorize if the mouse was pressed
 @onready var mouse_pressed : bool = false
 
-@onready var playback = null
+# ==============================================================================
+# Create the home page.
+# ==============================================================================
+func create_default_page():
+	var file = FileAccess.open(DEFAULT_PAGE, FileAccess.WRITE)
+	file.store_string("<html><body bgcolor=\"white\"><h2>Welcome to gdCEF !</h2><p>This a generated page.</p></body></html>")
+	file.close()
+	pass
+
+# ==============================================================================
+# Save page as html.
+# ==============================================================================
+func _on_saving_page(html, brower):
+	var path = ProjectSettings.globalize_path(SAVED_PAGE)
+	var file = FileAccess.open(SAVED_PAGE, FileAccess.WRITE)
+	if (file != null):
+		file.store_string(html)
+		file.close()
+		$AcceptDialog.title = brower.get_url()
+		$AcceptDialog.dialog_text = "Page saved at:\n" + path
+	else:
+		$AcceptDialog.title = "Alert!"
+		$AcceptDialog.dialog_text = "Failed creating the file " + path
+	$AcceptDialog.popup_centered(Vector2(0,0))
+	$AcceptDialog.show()
+	pass
 
 # ==============================================================================
 # Callback when a page has ended to load with success (200): we print a message
 # ==============================================================================
-func _on_page_loaded(node):
+func _on_page_loaded(brower):
 	var L = $Panel/VBox/HBox/BrowserList
-	var url = node.get_url()
+	var url = brower.get_url()
 	L.set_item_text(L.get_selected_id(), url)
-	$Panel/VBox/HBox2/Info.set_text(url + " loaded as ID " + node.name)
-	print("Browser named '" + node.name + "' inserted on list at index " + str(L.get_selected_id()) + ": " + url)
+	$Panel/VBox/HBox2/Info.set_text(url + " loaded as ID " + brower.name)
+	print("Browser named '" + brower.name + "' inserted on list at index " + str(L.get_selected_id()) + ": " + url)
 	pass
 
 # ==============================================================================
@@ -69,6 +94,7 @@ func create_browser(url):
 		return null
 
 	# Loading callbacks
+	browser.connect("on_html_content_requested", _on_saving_page)
 	browser.connect("on_page_loaded", _on_page_loaded)
 	browser.connect("on_page_failed_loading", _on_page_failed_loading)
 
@@ -242,9 +268,15 @@ func _input(event):
 	if current_browser == null:
 		return
 	if event is InputEventKey:
-		current_browser.set_key_pressed(
-			event.unicode if event.unicode != 0 else event.keycode, # Godot3: event.scancode,
-			event.pressed, event.shift_pressed, event.alt_pressed, event.is_command_or_control_pressed())
+		if event.is_command_or_control_pressed() && event.pressed && not event.echo:
+			if event.keycode == KEY_S:
+				# Will call the callback 'on_html_content_requested'
+				current_browser.request_html_content()
+		else:
+			current_browser.set_key_pressed(
+				event.unicode if event.unicode != 0 else event.keycode,
+				event.pressed, event.shift_pressed, event.alt_pressed,
+				event.is_command_or_control_pressed())
 	pass
 
 # ==============================================================================
@@ -264,10 +296,7 @@ func _on_texture_rect_resized():
 # Create a single briwser named "current_browser" that is attached as child node to $CEF.
 # ==============================================================================
 func _ready():
-	# Create the home page
-	var file = FileAccess.open(DEFAULT_PAGE, FileAccess.WRITE)
-	file.store_string("<html><body bgcolor=\"white\"><h2>Welcome to gdCEF !</h2><p>This a generated page.</p></body></html>")
-	file = null
+	create_default_page()
 
 	# See API.md for more details. CEF Configuration is:
 	#   resource_path := {"artifacts", CEF_ARTIFACTS_FOLDER}
