@@ -335,7 +335,7 @@ public:
 
     // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Execute  Execute a string of
-    //  JavaScript code in this browser
+    //  JavaScript code in this browser.
     // -------------------------------------------------------------------------
     void executeJavaScript(godot::String javascript);
 

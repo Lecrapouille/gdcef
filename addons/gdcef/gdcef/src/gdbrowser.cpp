@@ -340,7 +340,7 @@ godot::String GDBrowserView::getURL() const
     {
         std::string str = m_browser->GetMainFrame()->GetURL().ToString();
         BROWSER_DEBUG_VAL(str);
-        return str.c_str();
+        return {str.c_str()};
     }
 
     BROWSER_ERROR("Not possible to retrieving URL");
@@ -361,6 +361,8 @@ void GDBrowserView::stopLoading()
 //------------------------------------------------------------------------------
 void GDBrowserView::executeJavaScript(godot::String javascript)
 {
+    BROWSER_DEBUG();
+
     if (m_browser && m_browser->GetMainFrame())
     {
         CefString codeStr;
@@ -370,7 +372,7 @@ void GDBrowserView::executeJavaScript(godot::String javascript)
     }
     else
     {
-        BROWSER_ERROR("execute_javascript failed");
+        BROWSER_ERROR("executeJavaScript failed");
     }
 }
 
@@ -421,7 +423,7 @@ void GDBrowserView::navigateForward()
 //------------------------------------------------------------------------------
 void GDBrowserView::resize_(int width, int height)
 {
-        std::cout << "SIZE: " << width << ", " << height << std::endl;
+    std::cout << "SIZE: " << width << ", " << height << std::endl;
 
     if (width <= 0) { width = 2; }
     if (height <= 0) { height = 2; }
