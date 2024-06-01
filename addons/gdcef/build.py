@@ -428,7 +428,7 @@ def compile_gdnative_cef(path):
 ###############################################################################
 ### Compile Godot CEF module named GDCef and its subprocess
 def create_gdextension_file():
-    info("Create Godot .gdextension file")
+    info("Creating Godot .gdextension file")
     with open(os.path.join(GDCEF_PATH, "gdcef.gdextension.in"), "r") as f:
         extension = f.read().replace("CEF_ARTIFACTS_FOLDER_NAME", CEF_ARTIFACTS_FOLDER_NAME)
     with open(os.path.join(CEF_ARTIFACTS_BUILD_PATH, "gdcef.gdextension"), "w") as f:
@@ -486,7 +486,7 @@ def check_cmake_version():
 ### on the build folder. On a real example you do not have to do it: simply
 ### install the build/ folder inside your Godot application.
 def prepare_godot_examples():
-    info("Creating symbolic link to CEF artifacts for demos:")
+    info("Adding CEF artifacts for Godot demos:")
     for filename in os.listdir(GDCEF_EXAMPLES_PATH):
         path = os.path.join(GDCEF_EXAMPLES_PATH, filename)
         if os.path.isdir(path) and os.path.isfile(os.path.join(path, "project.godot")):
@@ -496,19 +496,21 @@ def prepare_godot_examples():
             symlink(CEF_ARTIFACTS_BUILD_PATH, artifacts_path)
 
 ###############################################################################
-### Run Godot example
-def run_godot_example():
-    info("Compilation done with success! Your CEF artifacts have been generated"
-         " into '" + CEF_ARTIFACTS_BUILD_PATH + "' and can be used for your Godot"
-         " project.\n")
-    if OSTYPE == "Linux":
-        info("`" + CEF_ARTIFACTS_FOLDER_NAME + "` path is used to find shared libraries"
-             " needed for CEF. Put `" + CEF_ARTIFACTS_BUILD_PATH + "` as `" +
-             CEF_ARTIFACTS_FOLDER_NAME + "` into your project to avoid having to set"
-             " LD_LIBRARY_PATH environment variable. If you want use other folder name,"
-             " edit value of CEF_ARTIFACTS_FOLDER_NAME in build.py and rebuild project.\n")
-    info("You can run your Godot editor " + GODOT_VERSION + " and try"
-         " one of the demos located in '" + GDCEF_EXAMPLES_PATH + "'.\n\nHave fun!")
+### Final instructions to run Godot demos
+def final_instructions():
+    rename_instruction = ""
+    if CEF_BUILD_FOLDER_NAME != CEF_ARTIFACTS_FOLDER_NAME:
+        rename_instruction = " and renamed as '" + CEF_ARTIFACTS_FOLDER_NAME + "'"
+
+    print("")
+    info("Compilation done with success!\n\n"
+         "You can run your Godot editor " + GODOT_VERSION + " and try one of the demos located in '" + GDCEF_EXAMPLES_PATH + "'.\n"
+         "All your CEF and Godot artifacts have been generated inside '" + CEF_ARTIFACTS_BUILD_PATH + "'.\n"
+         "This folder can be used directly in your Godot project by copying it inside your project" + rename_instruction + ".\n"
+         "Note: If you want use a different folder name, edit the value of CEF_ARTIFACTS_FOLDER_NAME in build.py and relaunch it.\n"
+         "Note: in demos '" + CEF_ARTIFACTS_FOLDER_NAME + "' is not a folder but a pointer. We used a pointer since artifacts are heavy (+1GB) and we\n"
+         "wanted to avoid you to loose space disk by copying the folder for each demo. For your application case, a folder is\nprobably what you want.\n")
+    info("Have fun now! :)\n\n")
 
 ###############################################################################
 ### Entry point
@@ -525,4 +527,4 @@ if __name__ == "__main__":
     compile_gdnative_cef(GDCEF_PROCESSES_PATH)
     create_gdextension_file()
     prepare_godot_examples()
-    run_godot_example()
+    final_instructions()
