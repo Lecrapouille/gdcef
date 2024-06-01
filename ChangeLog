@@ -1,3 +1,9 @@
+Version 0.10.0:
+	* No longer to export LD_LIBRARY_PATH
+	* API: Get HTML content, WIP Adding copy/paste commands.
+	* Update CEF version to 125.
+	* Minor fixes.
+
 Version 0.9.0:
 	* Optimized onPaint() refreshing only dirty areas.
 	* API: Add option to allow accessing to the camera.
