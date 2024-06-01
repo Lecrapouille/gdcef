@@ -491,7 +491,9 @@ def prepare_godot_examples():
         path = os.path.join(GDCEF_EXAMPLES_PATH, filename)
         if os.path.isdir(path) and os.path.isfile(os.path.join(path, "project.godot")):
             info("  - Demo " + path)
-            symlink(CEF_ARTIFACTS_BUILD_PATH, os.path.join(path, CEF_ARTIFACTS_FOLDER_NAME))
+            artifacts_path = os.path.join(path, CEF_ARTIFACTS_FOLDER_NAME)
+            mkdir(os.path.dirname(artifacts_path))
+            symlink(CEF_ARTIFACTS_BUILD_PATH, artifacts_path)
 
 ###############################################################################
 ### Run Godot example
