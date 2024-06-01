@@ -2,6 +2,7 @@
 godot-cpp/
 thirdparty/
 build/
+cef_artifacts/
 addons/gdcef/demos/*/cef_artifacts
 GPUCache
 demo/build

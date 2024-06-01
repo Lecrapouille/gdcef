@@ -51,7 +51,7 @@ CMAKE_MIN_VERSION = "3.19"         # Minimun CMake version needed for compiling 
 # calling scons.
 SCONS = ["scons"]                  # or ["python", "-m", "SCons"]
 # The name of the folder that will hold all CEF built artifacts.
-CEF_BUILD_FOLDER_NAME = "build"
+CEF_BUILD_FOLDER_NAME = "cef_artifacts"
 # When we are compiling demos we are creating a folder holding CEF build artifacts.
 # But, in the aim to save space on your hard disk the folder is a pointer to folder
 # CEF_ARTIFACTS_BUILD_PATH.
