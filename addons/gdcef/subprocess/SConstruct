@@ -48,6 +48,7 @@ opts.Add(EnumVariable('arch', 'Platform architecture', 'x86_64', ['x86_64', 'arm
 opts.Add(BoolVariable('use_llvm', 'Use the LLVM / Clang compiler', 'no'))
 opts.Add(PathVariable('api_path', 'Godot C++ API', ''))
 opts.Add(PathVariable('build_path', 'Build path', ''))
+opts.Add(PathVariable('cef_artifacts_folder', 'CEF artifacts folder', '', PathVariable.PathAccept))
 
 # Updates the environment with the option variables.
 opts.Update(env)
@@ -203,6 +204,10 @@ env.Append(LIBS = [libcef, 'libcef_dll_wrapper'],
 
 # Pathes header files of our module
 env.Append(CPPPATH=['src/'])
+
+# Add artifacts folder to (embedded into output binary file) list of paths to search for shared libraries
+# [2:-2] because we need value of cef_artifacts_folder without protected quotation marks
+env.Append(RPATH=[env['cef_artifacts_folder'][2:-2]])
 
 # Compile the application
 sources = Glob('src/*.cpp')

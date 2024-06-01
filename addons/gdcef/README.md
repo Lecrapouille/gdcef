@@ -95,12 +95,6 @@ describing the given demos.
 var browser = $CEF.create_browser("https://github.com/Lecrapouille/gdcef", $TextureRect, {})
 browser.get_name("hello")
 ```
-- In Linux, you will have to write something like:
-```
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/your/path/gdcef/examples/build
-```
-
-to make your system finds shared libraries such as `libcef.so`.
 
 - You should obtain a minimal CEF browser not reacting to your mouse and key
 binding. See the 2D and 3D demos to make your browser tab reacts to your input events.

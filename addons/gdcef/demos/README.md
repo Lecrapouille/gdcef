@@ -18,15 +18,6 @@ No command line is needed. This script will:
 **Workaround For Windows:** You need **x64 Native Tools Command Prompt for VS 2022**, with
   **Administrator** privilege!
 
-**Workaround For Linux:** for the moment, the `libcef.so` and other shared libraries,
-as artifcats, are not found by the systeme (even if indicated in the `.gdnlib` file.
-So for the moment, you have to store the path of the `build` in your `LD_LIBRARY_PATH`
-(for example in your `~/.bashrc` file).
-
-```
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/your/path/gdcef/examples/build
-```
-
 **Note concerning the build folder**:
 
 CEF artifcats are searched inside the `build` folder at the root of your Godot project.

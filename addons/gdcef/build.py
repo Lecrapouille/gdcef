@@ -493,12 +493,12 @@ def run_godot_example():
          " into '" + CEF_ARTIFACTS_BUILD_PATH + "' and can be used for your Godot"
          " project. Do not forget to add .gdns and .gdnlib files refering to libgdcef.so/dll.\n")
     if OSTYPE == "Linux":
-        info("For Unix systems you have to make your system know where to find shared"
-             " libraries needed for CEF. Save the following command in your environment"
-             " (~/.bashrc i.e.):\n\n"
-             "   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:" + CEF_ARTIFACTS_BUILD_PATH + "\n"
-             "   export LD_PRELOAD=" + CEF_ARTIFACTS_BUILD_PATH + "/libcef.so\n")
-    info("Once done, you can run your Godot editor " + GODOT_VERSION + " and try"
+        info("`" + CEF_ARTIFACTS_FOLDER_NAME + "` path is used to find shared libraries"
+             " needed for CEF. Put `" + CEF_ARTIFACTS_BUILD_PATH + "` as `" +
+             CEF_ARTIFACTS_FOLDER_NAME + "` into your project to avoid having to set"
+             " LD_LIBRARY_PATH environment variable. If you want use other folder name,"
+             " edit value of CEF_ARTIFACTS_FOLDER_NAME in build.py and rebuild project.\n")
+    info("You can run your Godot editor " + GODOT_VERSION + " and try"
          " one of the demos located in '" + GDCEF_EXAMPLES_PATH + "'.\n\nHave fun!")
 
 ###############################################################################

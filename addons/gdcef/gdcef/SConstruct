@@ -214,6 +214,10 @@ env.Append(LIBS = [libcef, 'libcef_dll_wrapper'],
 # Pathes header files of our module
 env.Append(CPPPATH=['src/'])
 
+# Add artifacts folder to (embedded into output binary file) list of paths to search for shared libraries
+# [2:-2] because we need value of cef_artifacts_folder without protected quotation marks
+env.Append(RPATH=[env['cef_artifacts_folder'][2:-2]])
+
 # Compile the library
 sources = ['src/helper_files.cpp', 'src/browser_io.cpp', 'src/gdcef.cpp', 'src/gdbrowser.cpp', 'src/register_types.cpp']
 # sources = Glob('src/*.cpp')
