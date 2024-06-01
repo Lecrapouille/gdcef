@@ -54,9 +54,7 @@ SCONS = ["scons"]                  # or ["python", "-m", "SCons"]
 CEF_BUILD_FOLDER_NAME = "build"
 # When we are compiling demos we are creating a folder holding CEF build artifacts.
 # But, in the aim to save space on your hard disk the folder is a pointer to folder
-# CEF_ARTIFACTS_BUILD_PATH. If you modify this variable, do not forget to also change
-# Godot .gdns and .gdnlib files inside the libs folders in GDCEF_EXAMPLES_PATH the
-# demos folder.
+# CEF_ARTIFACTS_BUILD_PATH.
 CEF_ARTIFACTS_FOLDER_NAME = "cef_artifacts"
 # Use OpenMP for using CPU parallelim (i.e. for copying textures)
 CEF_USE_CPU_PARALLELISM = "yes" # or "no"
@@ -428,6 +426,15 @@ def compile_gdnative_cef(path):
         fatal("Unknown archi " + OSTYPE + ": I dunno how to compile CEF module primary process")
 
 ###############################################################################
+### Compile Godot CEF module named GDCef and its subprocess
+def create_gdextension_file():
+    info("Create Godot .gdextension file")
+    with open(os.path.join(GDCEF_PATH, "gdcef.gdextension.in"), "r") as f:
+        extension = f.read().replace("CEF_ARTIFACTS_FOLDER_NAME", CEF_ARTIFACTS_FOLDER_NAME)
+    with open(os.path.join(CEF_ARTIFACTS_BUILD_PATH, "gdcef.gdextension"), "w") as f:
+        f.write(extension)
+
+###############################################################################
 ### Check if compilers are present (Windows)
 def check_compiler():
     if OSTYPE == "Windows":
@@ -514,5 +521,6 @@ if __name__ == "__main__":
     install_cef_assets()
     compile_gdnative_cef(GDCEF_PATH)
     compile_gdnative_cef(GDCEF_PROCESSES_PATH)
+    create_gdextension_file()
     prepare_godot_examples()
     run_godot_example()
