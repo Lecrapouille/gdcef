@@ -500,7 +500,7 @@ def prepare_godot_examples():
 def run_godot_example():
     info("Compilation done with success! Your CEF artifacts have been generated"
          " into '" + CEF_ARTIFACTS_BUILD_PATH + "' and can be used for your Godot"
-         " project. Do not forget to add .gdns and .gdnlib files refering to libgdcef.so/dll.\n")
+         " project.\n")
     if OSTYPE == "Linux":
         info("`" + CEF_ARTIFACTS_FOLDER_NAME + "` path is used to find shared libraries"
              " needed for CEF. Put `" + CEF_ARTIFACTS_BUILD_PATH + "` as `" +
