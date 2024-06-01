@@ -331,9 +331,7 @@ func _ready():
 	# artifacts: allows path such as "build" or "res://cef_artifacts/". Note that "res://"
 	# will use ProjectSettings.globalize_path but exported projects don't support globalize_path:
 	# https://docs.godotengine.org/en/3.5/classes/class_projectsettings.html#class-projectsettings-method-globalize-path
-	var resource_path = "res://cef_artifacts/"
 	if !$CEF.initialize({
-			"artifacts":resource_path,
 			"incognito":true,
 			"locale":"en-US",
 			"enable_media_stream": true
