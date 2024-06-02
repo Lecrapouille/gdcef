@@ -1,3 +1,5 @@
+**Announcement: for Linux users for version >= 0.10.0, exporting LD_LIBRARY_PATH or LD_PRELOAD is no longer needed! Do not forget to remove them from your environment (i.e. bashrc)!**
+
 # Chromium Embedded Framework as Godot 4.2 native extension
 
 This repository contains the source code of some C++ classes wrapping a subset
@@ -26,6 +28,13 @@ library, all details are referred in the following
 this module, how to run demos, describe the architecture, details design and
 more ...
 
+## TL;DR: I do not want to loose time for compiling, I want CEF artifacts right now :)
+
+Check for [releases](https://github.com/Lecrapouille/gdcef/releases). Since tag 0.7.2
+CEF artifacts are given for Linux and Windows for x86_64 architectures. Uncompress
+the tarball and move the folder inside your project. Rename it as `cef_artifacts`.
+The Godot extension is present, you do not have to create one.
+
 ## TL;DR: Compilation
 
 To compile this project with the Python3 build script for Linux and Windows:
@@ -36,15 +45,9 @@ python3 -m pip install -r requirements.txt
 python3 build.py
 ```
 
-This will generate artifacts in the `build/` folder. Use this folder for your Godot
-project and add gdns and gdnlib files to refer `libgdcef.so` or `libgdcef.dll`.
-
-## TL;DR: I do not want to compile, I want CEF artifacts
-
-Check for releases. Since tag 0.7.2 CEF artifacts are given for Linux and Windows for
-x86_64 architectures. Uncompress the tarball and move the folder inside your project.
-Do no forget to add gdns and gdnlib files in your project to tell Godot where to find
-shared lib. They are given in the demos folders.
+This will generate CEF and Godot artifacts inside a created folder `cef_artifacts/`
+at the root of this project. Copy this folder inside your Godot project folder.
+The Godot extension is present, you do not have to create one.
 
 ## Gallery
 
