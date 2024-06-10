@@ -116,49 +116,52 @@ bool GDCef::initialize(godot::Dictionary config)
     }
     m_impl = new GDCef::Impl(*this);
 
-    // Get the folder path in which your application and CEF artifacts are present
-    fs::path folder;
+    // Folder path in which your application and CEF artifacts are present.
+    fs::path cef_folder_path;
 
     // Check if this process is executing from the Godot editor or from the
     // your standalone application.
     if (IS_STARTED_FROM_GODOT_EDITOR())
     {
-        std::string cef_folder_path =
-                getConfig(config, "artifacts", std::string(CEF_ARTIFACTS_FOLDER));
-        if (cef_folder_path.rfind("res://", 0) == 0)
+        std::string cef_artifacts_folder =
+            getConfig(config, "artifacts", std::string(CEF_ARTIFACTS_FOLDER));
+
+        if (cef_artifacts_folder.rfind("res://", 0) == 0)
         {
             // Note: exported projects don't support globalize_path, see:
             // https://docs.godotengine.org/en/3.5/classes/class_projectsettings.html
             // Section: class-projectsettings-method-globalize-path
-            folder = GLOBALIZE_PATH(cef_folder_path);
+            cef_folder_path = GLOBALIZE_PATH(cef_artifacts_folder);
         }
         else
         {
-            folder = std::filesystem::current_path() / cef_folder_path;
+            cef_folder_path = std::filesystem::current_path() / cef_artifacts_folder;
         }
         GDCEF_DEBUG_VAL("Launching CEF from Godot editor");
         GDCEF_DEBUG_VAL("Path where your project Godot files shall be located:"
-                        << folder);
+                        << cef_folder_path);
     }
     else
     {
-        folder = getConfig(config, "exported_artifacts", real_path());
+        cef_folder_path = getConfig(config, "exported_artifacts",
+            real_path() / std::string(CEF_ARTIFACTS_FOLDER));
         GDCEF_DEBUG_VAL("Launching CEF from your executable");
         GDCEF_DEBUG_VAL("Path where your application files shall be located:"
-                        << folder);
+                        << cef_folder_path);
     }
 
     // Check if needed files to make CEF working are present.
-    if (!sanity_checks(folder))
+    if (!sanity_checks(cef_folder_path))
     {
-        GDCEF_ERROR("Error: at least one CEF artifacts not found at path: " << folder);
+        GDCEF_ERROR("Error: at least one CEF artifacts not found in folder "
+            << cef_folder_path);
         m_impl = nullptr;
         return false;
     }
 
     // Since we cannot configure CEF from the command line main(argc, argv)
     // because we cannot access to it, we have to configure CEF directly.
-    configureCEF(folder, m_cef_settings, m_window_info, config);
+    configureCEF(cef_folder_path, m_cef_settings, m_window_info, config);
     m_enable_media_stream = getConfig(config, "enable_media_stream", false);
 
     // This function should be called on the main application thread to
