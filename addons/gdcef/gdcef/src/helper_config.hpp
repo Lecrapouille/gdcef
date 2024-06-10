@@ -32,10 +32,10 @@
 //! \brief  CEF can be run either from the binary (standalone application) or
 //! from the Godot editor. We have to distinguish the both case.
 // ****************************************************************************
-#define isStartedFromGodotEditor()                                            \
+#define IS_STARTED_FROM_GODOT_EDITOR()                                        \
    godot::OS::get_singleton()->has_feature("editor")
 
-#define globalize_path(path)                                                  \
+#define GLOBALIZE_PATH(path)                                                  \
    godot::ProjectSettings::get_singleton()->globalize_path(path.c_str()).utf8().get_data()
 
 // ****************************************************************************

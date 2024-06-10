@@ -121,7 +121,7 @@ bool GDCef::initialize(godot::Dictionary config)
 
     // Check if this process is executing from the Godot editor or from the
     // your standalone application.
-    if (isStartedFromGodotEditor())
+    if (IS_STARTED_FROM_GODOT_EDITOR())
     {
         std::string cef_folder_path =
                 getConfig(config, "artifacts", std::string(CEF_ARTIFACTS_FOLDER));
@@ -130,7 +130,7 @@ bool GDCef::initialize(godot::Dictionary config)
             // Note: exported projects don't support globalize_path, see:
             // https://docs.godotengine.org/en/3.5/classes/class_projectsettings.html
             // Section: class-projectsettings-method-globalize-path
-            folder = globalize_path(cef_folder_path);
+            folder = GLOBALIZE_PATH(cef_folder_path);
         }
         else
         {
@@ -167,7 +167,7 @@ bool GDCef::initialize(godot::Dictionary config)
     // Note: passed m_impl as 3th argument (as CefApp) because this is needed
     // to call OnBeforeCommandLineProcessing().
     CefMainArgs args;
-    GDCEF_DEBUG_VAL("[GDCEF][GDCef::_init] CefInitialize");
+    GDCEF_DEBUG_VAL("CefInitialize");
     if (!CefInitialize(args, m_cef_settings, m_impl, nullptr))
     {
         GDCEF_ERROR("CefInitialize failed");
