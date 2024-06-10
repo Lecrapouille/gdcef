@@ -556,8 +556,6 @@ void GDBrowserView::navigateForward()
 //------------------------------------------------------------------------------
 void GDBrowserView::resize_(int width, int height)
 {
-    std::cout << "SIZE: " << width << ", " << height << std::endl;
-
     if (width <= 0) { width = 2; }
     if (height <= 0) { height = 2; }
     BROWSER_DEBUG_VAL(width << " x " << height);

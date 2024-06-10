@@ -28,27 +28,69 @@
 
 #  include <iostream>
 #  include <sstream>
+#  include "godot_cpp/variant/utility_functions.hpp"
 
 // ****************************************************************************
 // Logging
 // ****************************************************************************
 #define GDCEF_DEBUG()                                                      \
-  std::cout << "[GDCEF][GDCEF::" << __func__ << "]" << std::endl
+do {                                                                       \
+  std::stringstream ss;                                                    \
+  ss << "[DEBUG][GDCEF][GDCEF::" << __func__ << "]" << std::endl;          \
+  godot::UtilityFunctions::print_verbose(ss.str().c_str());                \
+} while (0)
+
 #define GDCEF_DEBUG_VAL(x)                                                 \
-  std::cout << "[GDCEF][GDCEF::" << __func__ << "] " << x << std::endl
+do {                                                                       \
+  std::stringstream ss;                                                    \
+  ss << "[DEBUG][GDCEF][GDCEF::" << __func__ << "] " << x << std::endl;    \
+  godot::UtilityFunctions::print_verbose(ss.str().c_str());                \
+} while (0)
+
 #define GDCEF_ERROR(x)                                                     \
-  m_error << "[GDCEF][GDCEF::" << __func__ << "] " << x << std::endl
-#define GDCEF_WARNING(x)                                                   \
-   std::cout << "[GDCEF][GDCEF::" << __func__ << "] " << x << std::endl
-#define BROWSER_DEBUG()                                                    \
-  std::cout << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "]"  \
-            << std::endl
-#define BROWSER_DEBUG_VAL(x)                                               \
-  std::cout << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "] " \
-            << x << std::endl
-#define BROWSER_ERROR(x)                                                   \
-  m_error << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "] "   \
+do {                                                                       \
+  m_error.str(std::string());                                              \
+  m_error << "[ERROR][GDCEF][GDCEF::" << __func__ << "] "                  \
           << x << std::endl;                                               \
-  std::cerr << m_error.str()
+  godot::UtilityFunctions::push_error(m_error.str().c_str());              \
+} while (0)
+
+#define GDCEF_WARNING(x)                                                   \
+do {                                                                       \
+  std::stringstream ss;                                                    \
+  ss << "[WARNING][GDCEF][GDCEF::" << __func__ << "] " << x << std::endl;  \
+  godot::UtilityFunctions::push_warning(ss.str().c_str());                 \
+} while (0)
+
+#define BROWSER_DEBUG()                                                    \
+do {                                                                       \
+  std::stringstream ss;                                                    \
+  ss << "[DEBUG][GDCEF][BrowserView::" << __func__ << "][" << m_id << "]"  \
+     << std::endl;                                                         \
+  godot::UtilityFunctions::print_verbose(m_error.str().c_str());           \
+} while (0)
+
+#define BROWSER_DEBUG_VAL(x)                                               \
+do {                                                                       \
+  std::stringstream ss;                                                    \
+  ss << "[DEBUG][GDCEF][BrowserView::" << __func__ << "]["                 \
+     << m_id << "] " << x << std::endl;                                    \
+  godot::UtilityFunctions::print_verbose(ss.str().c_str());                \
+} while (0)
+
+#define BROWSER_ERROR(x)                                                   \
+do {                                                                       \
+  m_error.str(std::string());                                              \
+  m_error << "[ERROR][GDCEF][BrowserView::" << __func__ << "]["            \
+          << m_id << "] " << x << std::endl;                               \
+  godot::UtilityFunctions::push_error(m_error.str().c_str());              \
+} while (0)
+
+#define STATIC_GDCEF_ERROR(x)                                              \
+do {                                                                       \
+  std::stringstream ss;                                                    \
+  ss << "[ERROR][GDCEF][" << __func__ << "]" << x << std::endl;            \
+  godot::UtilityFunctions::push_error(ss.str().c_str());                   \
+} while (0)
 
 #endif // STIGMEE_GDCEF_HELPER_LOG_HPP

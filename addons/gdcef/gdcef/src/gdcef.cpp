@@ -89,7 +89,7 @@ static bool sanity_checks(fs::path const& folder)
 void GDCef::_bind_methods()
 {
     using namespace godot;
-    std::cout << "[GDCEF][GDCef::_register_methods]" << std::endl;
+    GDCEF_DEBUG_VAL("[GDCEF][GDCef::_register_methods]");
 
     ClassDB::bind_method(D_METHOD("initialize"), &GDCef::initialize);
     ClassDB::bind_method(D_METHOD("get_full_version"), &GDCef::version);
@@ -230,10 +230,8 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     fs::path sub_process_path =
         getConfig(config, "browser_subprocess_path", folder / SUBPROCESS_NAME);
 
-    std::cout << "[GDCEF][GDCef::configureCEF] Setting SubProcess path: "
-              << sub_process_path.string() << std::endl;
-    CefString(&cef_settings.browser_subprocess_path)
-            .FromString(sub_process_path.string());
+    GDCEF_DEBUG_VAL("Setting SubProcess path: " << sub_process_path.string());
+    CefString(&cef_settings.browser_subprocess_path).FromString(sub_process_path.string());
 
     // Incognito mode: cache directories not used.
     if (!getConfig(config, "incognito", false))
@@ -251,8 +249,7 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
         fs::path sub_process_cache =
             getConfig(config, "cache_path", folder / "cache");
 
-        std::cout << "[GDCEF][GDCef::configureCEF] Setting cache path: "
-                  << sub_process_cache.string() << std::endl;
+        GDCEF_DEBUG_VAL("Setting cache path: " << sub_process_cache.string());
         CefString(&cef_settings.cache_path)
                 .FromString(sub_process_cache.string());
 
