@@ -46,10 +46,10 @@ CEF_VERSION = "125.0.19+g3d8f1c9+chromium-125.0.6422.112"
 # Do not use version 4.1 since gdextension is probably not compatible.
 # Do not use version 3.4 or 3.5 with this current gdcef git branch. Please git
 # checkout gdcef to its branch godot-3.x.
-GODOT_VERSION = "4.2.2"                                   # or "4.2"
-# Tag "godot-xxx-stable" on https://github.com/godotengine/godot-cpp
-# Else you can use the HEAD of your desired branch (i.e. "4.2")
-GODOT_CPP_GIT_TAG = "godot-" + GODOT_VERSION + "-stable"  # or GODOT_VERSION
+GODOT_VERSION = "4.2"                                   # or "4.2.2" for tag
+# Use "godot-<version>-stable" for a tag on https://github.com/godotengine/godot-cpp
+# Else "<version>" to track the HEAD of your desired branch version (i.e. "4.2")
+GODOT_CPP_GIT_TAG = GODOT_VERSION                         # or "godot-" + GODOT_VERSION + "-stable"
 # Compilation mode for the thirdpart CEF
 CEF_TARGET = "Release"                                    # or "Debug"
 # Compilation mode for the thirdpart godot-cpp
