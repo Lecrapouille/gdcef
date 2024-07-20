@@ -45,7 +45,9 @@ bool are_valid_files(fs::path const& folder,
         // TODO Compute SHA1 on files to check if they are correct
         if (!fs::exists(f))
         {
-            STATIC_GDCEF_ERROR("File " << f << " does not exist and is needed for CEF");
+            std::cout << "[GDCEF] [" << __func__ << "] File "
+                      << f << " does not exist and is needed for CEF"
+                      << std::endl;
             failure = true;
         }
     }
