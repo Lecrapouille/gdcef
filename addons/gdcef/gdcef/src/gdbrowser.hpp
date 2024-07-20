@@ -427,7 +427,7 @@ public:
     // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Set the new windows dimension.
     // -------------------------------------------------------------------------
-    inline void resize(godot::Vector2 const& dim) { resize_(dim.x, dim.y); }
+    inline void resize(godot::Vector2 const& dim) { resize_(int(dim.x), int(dim.y)); }
 
     // -------------------------------------------------------------------------
     //! \brief Set the viewport: the rectangle on the surface where to display
