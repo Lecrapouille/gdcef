@@ -364,6 +364,7 @@ def download_godot_cpp():
     if not os.path.exists(GODOT_CPP_API_PATH):
         info("Clone cpp wrapper for Godot " + GODOT_VERSION + " into " + GODOT_CPP_API_PATH)
         mkdir(GODOT_CPP_API_PATH)
+        run(["git", "ls-remote", "https://github.com/godotengine/godot-cpp", GODOT_VERSION])
         run(["git", "clone", "--recursive", "-b", GODOT_VERSION,
              "https://github.com/godotengine/godot-cpp", GODOT_CPP_API_PATH])
 
