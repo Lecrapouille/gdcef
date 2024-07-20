@@ -23,8 +23,8 @@
 // SOFTWARE.
 //*****************************************************************************
 
-#ifndef STIGMEE_GDCEF_HELPER_LOG_HPP
-#  define STIGMEE_GDCEF_HELPER_LOG_HPP
+#ifndef GDCEF_HELPER_LOG_HPP
+#  define GDCEF_HELPER_LOG_HPP
 
 #  include <iostream>
 #  include <sstream>
@@ -93,4 +93,4 @@ do {                                                                       \
   godot::UtilityFunctions::push_error(ss.str().c_str());                   \
 } while (0)
 
-#endif // STIGMEE_GDCEF_HELPER_LOG_HPP
+#endif // GDCEF_HELPER_LOG_HPP

@@ -23,8 +23,8 @@
 // SOFTWARE.
 //*****************************************************************************
 
-#ifndef STIGMEE_GDCEF_BROWSER_HPP
-#  define STIGMEE_GDCEF_BROWSER_HPP
+#ifndef GDCEF_BROWSER_HPP
+#  define GDCEF_BROWSER_HPP
 
 #  if !defined(_WIN32)
 #    pragma GCC diagnostic push
@@ -660,4 +660,4 @@ private:
 #    pragma GCC diagnostic pop
 #  endif
 
-#endif // STIGMEE_GDCEF_BROWSER_HPP
+#endif // GDCEF_BROWSER_HPP

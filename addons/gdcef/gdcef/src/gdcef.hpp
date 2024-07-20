@@ -23,8 +23,8 @@
 // SOFTWARE.
 //*****************************************************************************
 
-#ifndef STIGMEE_GDCEF_HPP
-#  define STIGMEE_GDCEF_HPP
+#ifndef GDCEF_HPP
+#  define GDCEF_HPP
 
 // *****************************************************************************
 //! \file Wrap Chromium Embedded Framework (that can be find at

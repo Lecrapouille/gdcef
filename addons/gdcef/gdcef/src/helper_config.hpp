@@ -23,10 +23,10 @@
 // SOFTWARE.
 //*****************************************************************************
 
-#ifndef STIGMEE_GDCEF_HELPER_CONFIG_HPP
-#  define STIGMEE_GDCEF_HELPER_CONFIG_HPP
 
 #  include "gdcef.hpp"
+#ifndef GDCEF_HELPER_CONFIG_HPP
+#  define GDCEF_HELPER_CONFIG_HPP
 
 // ****************************************************************************
 //! \brief  CEF can be run either from the binary (standalone application) or
@@ -86,4 +86,4 @@ cef_state_t getConfig<cef_state_t>(godot::Dictionary const& config,
     return default_value;
 }
 
-#endif // STIGMEE_GDCEF_HELPER_CONFIG_HPP
+#endif // GDCEF_HELPER_CONFIG_HPP
