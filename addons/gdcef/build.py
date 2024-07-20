@@ -41,15 +41,27 @@ from shutil import move, copymode
 ### Global user settings
 # CEF version downloaded from https://cef-builds.spotifycdn.com/index.html
 CEF_VERSION = "125.0.19+g3d8f1c9+chromium-125.0.6422.112"
-CEF_TARGET = "Release"             # or "Debug"
-MODULE_TARGET = "release"          # or "debug"
-GODOT_CPP_TARGET = "template_release"       # or "template_debug"
-GODOT_VERSION = "4.2"              # or "master" or "3.5" or "3.4"
-CMAKE_MIN_VERSION = "3.19"         # Minimun CMake version needed for compiling CEF
+# Version of your Godot editor that shall match one of godot-<version>-stable tags
+# on https://github.com/godotengine/godot-cpp
+# Do not use version 4.1 since gdextension is probably not compatible.
+# Do not use version 3.4 or 3.5 with this current gdcef git branch. Please git
+# checkout gdcef to its branch godot-3.x.
+GODOT_VERSION = "4.2.2"                                   # or "4.2"
+# Tag "godot-xxx-stable" on https://github.com/godotengine/godot-cpp
+# Else you can use the HEAD of your desired branch (i.e. "4.2")
+GODOT_CPP_GIT_TAG = "godot-" + GODOT_VERSION + "-stable"  # or GODOT_VERSION
+# Compilation mode for the thirdpart CEF
+CEF_TARGET = "Release"                                    # or "Debug"
+# Compilation mode for the thirdpart godot-cpp
+GODOT_CPP_TARGET = "template_release"                     # or "template_debug"
+# Compilation mode for gdcef as Godot module
+MODULE_TARGET = "release"                                 # or "debug"
+# Minimun CMake version needed for compiling CEF
+CMAKE_MIN_VERSION = "3.19"
 # Scons is the build system used by Godot. For some people "scons" command does not
 # work, they need to call "python -m SCons" command. The array is needed by the func
 # calling scons.
-SCONS = ["scons"]                  # or ["python", "-m", "SCons"]
+SCONS = ["scons"]                                         # or ["python", "-m", "SCons"]
 # The name of the folder that will hold all CEF built artifacts.
 CEF_BUILD_FOLDER_NAME = "cef_artifacts"
 # When we are compiling demos we are creating a folder holding CEF build artifacts.
@@ -57,7 +69,7 @@ CEF_BUILD_FOLDER_NAME = "cef_artifacts"
 # CEF_ARTIFACTS_BUILD_PATH.
 CEF_ARTIFACTS_FOLDER_NAME = "cef_artifacts"
 # Use OpenMP for using CPU parallelim (i.e. for copying textures)
-CEF_USE_CPU_PARALLELISM = "yes" # or "no"
+CEF_USE_CPU_PARALLELISM = "yes"                           # or "no"
 
 ###############################################################################
 ### Project internal paths local from this script. Do not change them!
@@ -364,8 +376,8 @@ def download_godot_cpp():
     if not os.path.exists(GODOT_CPP_API_PATH):
         info("Clone cpp wrapper for Godot " + GODOT_VERSION + " into " + GODOT_CPP_API_PATH)
         mkdir(GODOT_CPP_API_PATH)
-        run(["git", "ls-remote", "https://github.com/godotengine/godot-cpp", GODOT_VERSION])
-        run(["git", "clone", "--recursive", "-b", GODOT_VERSION,
+        run(["git", "ls-remote", "https://github.com/godotengine/godot-cpp", GODOT_CPP_GIT_TAG])
+        run(["git", "clone", "--recursive", "-b", GODOT_CPP_GIT_TAG,
              "https://github.com/godotengine/godot-cpp", GODOT_CPP_API_PATH])
 
 ###############################################################################
