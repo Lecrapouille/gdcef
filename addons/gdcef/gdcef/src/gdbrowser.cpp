@@ -111,6 +111,7 @@ void GDBrowserView::_bind_methods()
     ClassDB::bind_method(D_METHOD("is_muted"), &GDBrowserView::muted);
     ClassDB::bind_method(D_METHOD("set_audio_stream", "audio"), &GDBrowserView::setAudioStreamer);
     ClassDB::bind_method(D_METHOD("get_audio_stream"), &GDBrowserView::getAudioStreamer);
+    ClassDB::bind_method(D_METHOD("get_pixel_color", "x", "y"), &GDBrowserView::getPixelColor);
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "audio_stream", PROPERTY_HINT_NODE_TYPE,
         "AudioStreamGeneratorPlayback"), "set_audio_stream", "get_audio_stream");
 
@@ -683,4 +684,21 @@ void GDBrowserView::onAudioStreamPacket(CefRefPtr<CefBrowser> browser,
             streamer.push_frame(godot::Vector2(data[0][i], data[0][i]));
         }
     }
+}
+
+//------------------------------------------------------------------------------
+godot::Color GDBrowserView::getPixelColor(int x, int y) const
+{
+    // Ensure the browser is valid and coordinates are within bounds
+    if (x < 0 || y < 0 || x >= m_width || y >= m_height || m_data.size() == 0)
+        return godot::Color(1, 1, 1, 1);  // Return full white as fallback
+
+        
+    int index = (y * m_width + x) * 4;
+    unsigned char r = m_data[index + 0];
+    unsigned char g = m_data[index + 1];
+    unsigned char b = m_data[index + 2];
+    unsigned char a = m_data[index + 3];
+
+    return godot::Color(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
 }

@@ -547,6 +547,12 @@ public:
             return nullptr;
         return m_impl->m_audio.streamer;
     }
+    
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Get the color of the currently 
+    //! hovered on pixel
+    // -------------------------------------------------------------------------
+    godot::Color getPixelColor(int x, int y) const;
 
 private:
 
