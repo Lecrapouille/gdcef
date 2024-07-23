@@ -302,6 +302,8 @@ private:
     mutable std::stringstream m_error;
     //! \brief Allow accessing to camera and microphones
     bool m_enable_media_stream = false;
+    //! \brief To be usable with cef_settings.remote_debugging_port.
+    std::string m_remote_allow_origin;
 };
 
 #  if !defined(_WIN32)

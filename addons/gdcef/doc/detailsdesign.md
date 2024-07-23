@@ -289,7 +289,7 @@ and the entry function for the module.
 To use the native module inside Godot, ensure libraries are correctly loaded
 into your project. Then create a `GDCEF` node in the scene graph.
 
-![CEFnode](scenegraph/cef.png)
+![CEFnode](pics/cef.png)
 
 **Beware:** In Linux, you will have to write something like:
 ```

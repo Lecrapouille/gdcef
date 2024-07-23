@@ -12,7 +12,7 @@ been created to wrap the CEF C++ API to be usable from Godot scripts. Derived
 from Godot Nodes, it allows instances of these classes to be attached inside to
 the scene-graph as depicted by the following picture.
 
-![CEFnode](scenegraph/cef.png)
+![CEFnode](pics/cef.png)
 
 See this
 [document](https://docs.godotengine.org/en/stable/classes/class_node.html)

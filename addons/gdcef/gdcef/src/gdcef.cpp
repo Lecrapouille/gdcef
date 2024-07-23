@@ -163,6 +163,7 @@ bool GDCef::initialize(godot::Dictionary config)
     // because we cannot access to it, we have to configure CEF directly.
     configureCEF(cef_folder_path, m_cef_settings, m_window_info, config);
     m_enable_media_stream = getConfig(config, "enable_media_stream", false);
+    m_remote_allow_origin = getConfig(config, "remote_allow_origin", std::string{});
 
     // This function should be called on the main application thread to
     // initialize the CEF browser process. A return value of true indicates
@@ -334,8 +335,8 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     cef_settings.command_line_args_disabled = true;
 
     // Set to a value between 1024 and 65535 to enable remote debugging on the
-    // specified port. For example, if 8080 is specified the remote debugging
-    // URL will be http://localhost:8080. CEF can be remotely debugged from any
+    // specified port. For example, if 7777 is specified the remote debugging
+    // URL will be http://localhost:7777. CEF can be remotely debugged from any
     // CEF or Chrome browser window. Also configurable using the
     // "remote-debugging-port" command-line switch.
     cef_settings.remote_debugging_port =
@@ -545,5 +546,13 @@ void GDCef::Impl::OnBeforeCommandLineProcessing(const CefString& ProcessType,
     {
         GDCEF_DEBUG_VAL("Allow enable-media-stream");
         command_line->AppendSwitch("enable-media-stream");
+    }
+
+    // To be usable with cef_settings.remote_debugging_port.
+    // Set to "*".
+    if (!m_owner.m_remote_allow_origin.empty())
+    {
+        command_line->AppendSwitchWithValue(
+            "remote-allow-origins", m_owner.m_remote_allow_origin.c_str());
     }
 }

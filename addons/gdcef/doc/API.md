@@ -38,25 +38,28 @@ Depending for `entry` concerning the `get_version_part`:
 Since Godot `_init` does not accept passing arguments, you have to use `initialize` function
 instead. You also have to pass a Godot dictionary to configurate
 the behavior for CEF. Default values are:
-- `{"artifcats":CEF_ARTIFACTS_FOLDER}` Path where the build CEF artifcats are stored. They are
+- `{"artifcats": CEF_ARTIFACTS_FOLDER}` Path where the build CEF artifcats are stored. They are
   needed to make CEF running and therefore your application. Fort this section, we will give the
   name `cef_folder_path` to the result. The default value is given during the compilation with
   the build.py script. You can specify either a local path or a global path or a Godot path
   (starting with `"res://"`).
-- `{"exported_artifcats":application_real_path()}` Path where the build CEF artifcats are stored
+- `{"exported_artifcats": application_real_path()}` Path where the build CEF artifcats are stored
   when the Godot application is exported. Artifcats are needed to make CEF running and therefore
   your application. It defines `cef_folder_path`.
-- `{"incognito":false}` : In incognito mode cache directories not used and in-memory caches are
+- `{"incognito": false}` : In incognito mode cache directories not used and in-memory caches are
   used instead and no data is persisted to disk.
-- `{"cache_path":cef_folder_path / "cache"}` : Folder path where to store CEF caches.
-- `{"root_cache_path":cef_folder_path / "cache"}`
-- `{"browser_subprocess_path":cef_folder_path / SUBPROCESS_NAME }` : canonical path to the CEF
+- `{"cache_path": cef_folder_path / "cache"}` : Folder path where to store CEF caches.
+- `{"root_cache_path": cef_folder_path / "cache"}`
+- `{"browser_subprocess_path": cef_folder_path / SUBPROCESS_NAME }` : canonical path to the CEF
   subprocess called during the `initialize()` function. The default name is determined during the
   compilation done with the build.py script.
-- `{"log_file":cef_folder_path / "debug.log"}` : Where to store logs.
-- `{log_severity":"warning"}` : Verbosity control of logs. Choose between `"verbose"`, `"info"`,
+- `{"log_file": cef_folder_path / "debug.log"}` : Where to store logs.
+- `{"log_severity": "warning"}` : Verbosity control of logs. Choose between `"verbose"`, `"info"`,
   `"warning"`, `"error"`, `"fatal"`.
-- `{"remote_debugging_port":7777}` : the port for debbuging CEF.
+- `{"remote_allow_origin": "*"}` : to allow debug connections from all origins.
+- `{"remote_debugging_port":7777}` : the port for debbuging gdcef from a Chrome browser.
+   From Chrome URL, type: `http://localhost:7777` you will see list of link. Click on one and you will
+   see your page for debugging. See this [screenshot](pics/debug.png).
 - `{"exception_stack_size":5}`
 - `{"locale":"en-US"}` : Select your language.
 - `{"enable_media_stream", false}` : allow CEF to access to your camera and microphones.

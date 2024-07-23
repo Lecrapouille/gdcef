@@ -150,3 +150,15 @@ information):
 ```
 $CEF.initialize({"artifacts": "res://cef_artifacts/", ... })
 ```
+
+## Debug gdcef
+
+In your gd script, when init CEF. Pass the following settings:
+
+```
+$CEF.initialize({"remote_debugging_port": 7777, "remote_allow_origin": "*", ... })
+```
+
+Open a Chrome browser and type in the URL: `http://localhost:7777`. You will see something like this:
+
+![Debug](pics/debug.png)

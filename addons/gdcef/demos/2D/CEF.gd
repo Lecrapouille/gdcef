@@ -322,6 +322,7 @@ func _ready():
 	#   {"log_file", resource_path / "debug.log"}
 	#   {log_severity", "warning"}
 	#   {"remote_debugging_port", 7777}
+	#   {"remote_allow_origin", "*"}
 	#   {"exception_stack_size", 5}
 	#   {"enable_media_stream", false}
 	#
@@ -334,7 +335,9 @@ func _ready():
 	if !$CEF.initialize({
 			"incognito":true,
 			"locale":"en-US",
-			"enable_media_stream": true
+			"enable_media_stream": true,
+			"remote_debugging_port": 7777,
+			"remote_allow_origin": "*"
 		}):
 		$Panel/VBox/HBox2/Info.set_text($CEF.get_error())
 		push_error($CEF.get_error())
