@@ -47,7 +47,7 @@ public:
 
     virtual void Visit(const CefString& string) override
     {
-        godot::String html = string.ToString().c_str();
+        godot::String html(string.ToString().c_str());
 
         m_node.emit_signal("on_html_content_requested", html, &m_node);
     }
@@ -304,7 +304,7 @@ void GDBrowserView::onLoadError(CefRefPtr<CefBrowser> /*browser*/,
     {
         std::string str = errorText.ToString();
         BROWSER_ERROR("has failed loading " << frame->GetURL() << ": " << str);
-        godot::String err = str.c_str();
+        godot::String err(str.c_str());
         // Emit signal for Godot script
         emit_signal("on_page_failed_loading", aborted, err, this);
     }
