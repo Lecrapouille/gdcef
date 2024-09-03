@@ -3,11 +3,11 @@ Initial authors:
 Alain Duron <duron.alain@gmail.com>
 Quentin Quadrat <lecrapouille@gmail.com>
 
-Contributors:
+Thanks to contributors:
 
 Raphipod (docs, fixes, Windows)
 Daniel Sanche (javascript injection, fixes)
 BlayTheNinth (portage to Godot 4.2)
 pixaline (Routing audio)
-eliopark-nsusla (modifiers for mouse events)
+eliopark-nsusla (multithreading for dirty texture regsions, modifiers for mouse events, Windows compilation)
 rpaciorek (suppressing LD_LIBRARY_PATH)

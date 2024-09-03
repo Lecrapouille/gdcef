@@ -1,3 +1,14 @@
+Version 0.11.0:
+	* Update CEF version to 128.
+	* Update script to use by default Godot version 4.3.
+	* Update script for accepting Godot git tag.
+	* Fix infinite loop callback on_page_failed_loading.
+	* Fix Windows compilation (openmp).
+	* Fix debuging CEF was always rejected.
+	* Add get_pixel_color function.
+	* Add dummy plugin gd/cfg files (to be seen by the plugin manager).
+	* Show SHA1 of cloned Godot
+
 Version 0.10.0:
 	* No longer to export LD_LIBRARY_PATH
 	* API: Get HTML content, WIP Adding copy/paste commands.
