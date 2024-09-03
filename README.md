@@ -1,10 +1,10 @@
 **Announcement: for Linux users for version >= 0.10.0, exporting LD_LIBRARY_PATH or LD_PRELOAD is no longer needed! Do not forget to remove them from your environment (i.e. bashrc)!**
 
-# Chromium Embedded Framework as Godot 4.2 native extension
+# Chromium Embedded Framework as Godot 4.3 native extension
 
 This repository contains the source code of some C++ classes wrapping a subset
 of the [Chromium Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home)
-API into a Godot 4.2 native extension (GDExtension) which allows you to
+API into a Godot > 4.2 native extension (GDExtension) which allows you to
 implement a web browser for your 2D and 3D games through your gdscripts for
 Linux and Windows. We have named this CEF GDExtension module `gdcef`.
 

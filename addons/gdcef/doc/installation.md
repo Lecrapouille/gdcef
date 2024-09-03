@@ -2,7 +2,7 @@
 
 This repository contains the source code of some C++ classes wrapping a subset
 of the [Chromium Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home)
-API into a Godot 4.2+ GDExtension which allows you to implement a web
+API into a Godot 4.3 GDExtension which allows you to implement a web
 browser for your 2D and 3D games through your gdscripts for Linux and for
 Windows. We have named this CEF GDExtension `gdcef`.
 
@@ -89,7 +89,7 @@ instead.
 
 ### Compilation of the GDExtension for Godot < 4.2
 
-This module is probably not compatible with Godot 4.0 and 4.1. Please use Godot 4.2.
+This module is probably not compatible with Godot 4.0 and 4.1. Please use Godot >= 4.2.
 
 ### Compilation of the GDExtension for Godot >= 4.2
 

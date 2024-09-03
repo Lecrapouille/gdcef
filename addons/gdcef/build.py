@@ -40,13 +40,13 @@ from shutil import move, copymode
 ###############################################################################
 ### Global user settings
 # CEF version downloaded from https://cef-builds.spotifycdn.com/index.html
-CEF_VERSION = "125.0.19+g3d8f1c9+chromium-125.0.6422.112"
+CEF_VERSION = "128.4.8+g88b5034+chromium-128.0.6613.114" # "125.0.19+g3d8f1c9+chromium-125.0.6422.112"
 # Version of your Godot editor that shall match one of godot-<version>-stable tags
 # on https://github.com/godotengine/godot-cpp
 # Do not use version 4.1 since gdextension is probably not compatible.
 # Do not use version 3.4 or 3.5 with this current gdcef git branch. Please git
 # checkout gdcef to its branch godot-3.x.
-GODOT_VERSION = "4.2"                                   # or "4.2.2" for tag
+GODOT_VERSION = "4.3"                                     # or "4.2.2" or "4.2" or tag
 # Use "godot-<version>-stable" for a tag on https://github.com/godotengine/godot-cpp
 # Else "<version>" to track the HEAD of your desired branch version (i.e. "4.2")
 GODOT_CPP_GIT_TAG = GODOT_VERSION                         # or "godot-" + GODOT_VERSION + "-stable"
