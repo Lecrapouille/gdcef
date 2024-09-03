@@ -27,9 +27,7 @@
 #  define GDCEF_HPP
 
 // *****************************************************************************
-//! \file Wrap Chromium Embedded Framework (that can be find at
-//! $WORKSPACE_STIGMEE/godot/gdnative/browser/thirdparty/cef_binary) as Godot
-//! native module
+//! \file Wrap Chromium Embedded Framework as Godot native module.
 // *****************************************************************************
 
 // Hide compilation warnings induced by Godot and by CEF
@@ -53,13 +51,6 @@
 #        pragma clang diagnostic ignored "-Wshadow-field"
 #      endif
 #  endif
-
-// Godot 3
-//#  include "Godot.hpp"
-//#  include "ProjectSettings.hpp"
-//#  include "OS.hpp"
-//#  include "Node.hpp"
-//#  include "ImageTexture.hpp"
 
 // Godot 4
 #  include "godot.hpp"

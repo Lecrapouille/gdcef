@@ -170,7 +170,7 @@ private: // CefBrowserProcessHandler methods
 
         // Create the first browser window.
         std::cout << "[SubProcess] [GDCefBrowser::OnContextInitialized] Create the browser" << std::endl;
-        CefBrowserHost::CreateBrowser(window_info, handler.get(), "https://mediatheque.stigmee.fr",
+        CefBrowserHost::CreateBrowser(window_info, handler.get(), "https://github.com/Lecrapouille/gdcef",
                                       browser_settings, nullptr, nullptr);
     }
 

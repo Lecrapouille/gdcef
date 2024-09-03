@@ -48,13 +48,6 @@
 #      endif
 #  endif
 
-// Godot 3
-//#  include "Godot.hpp"
-//#  include "GDScript.hpp"
-//#  include "Node.hpp"
-//#  include "ImageTexture.hpp"
-//#  include "GlobalConstants.hpp"
-
 // Godot 4
 #  include "godot.hpp"
 #  include "gd_script.hpp"
