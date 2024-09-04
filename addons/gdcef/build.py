@@ -24,8 +24,12 @@
 ## SOFTWARE.
 ###############################################################################
 ###
-### This python script allows to compile CEF helloworld project for Linux or
-### Windows.
+### This python script allows to compile a web viewer plugin based on Chromium
+### Embedded Framework (CEF) needed for your 2D and 3D applications. This plugin
+### works for Godot 4.2, 4.3, Linux and Windows. Do not hesitate to edit the
+### section "Global user settings" of this script to make a custom build.
+###
+### Note: if you are a Godot-3 user, you have git cloned the wrong branch :)
 ###
 ###############################################################################
 
@@ -38,41 +42,61 @@ from packaging import version
 from shutil import move, copymode
 
 ###############################################################################
-### Global user settings
+###
+### Global user settings.
+### Please edit this section to customize your build.
+###
+###############################################################################
+
+# The hard-coded name of the folder that will hold all CEF built artifacts.
+# /!\ BEWARE /!\
+#  - Do not give a path but just a folder name.
+#  - The folder name will used inside the C++ code of this plugin for finding
+#    automatically CEF prebuilt stuffs.
+CEF_ARTIFACTS_FOLDER_NAME = "cef_artifacts"
+
 # CEF version downloaded from https://cef-builds.spotifycdn.com/index.html
-CEF_VERSION = "128.4.8+g88b5034+chromium-128.0.6613.114" # "125.0.19+g3d8f1c9+chromium-125.0.6422.112"
-# Version of your Godot editor that shall match one of godot-<version>-stable tags
-# on https://github.com/godotengine/godot-cpp
-# Do not use version 4.1 since gdextension is probably not compatible.
-# Do not use version 3.4 or 3.5 with this current gdcef git branch. Please git
-# checkout gdcef to its branch godot-3.x.
+# Copy-paste the version given on the web page WITHOUT the operation system or
+# architecture since this script is enough smart to download the correct version :)
+CEF_VERSION = "128.4.8+g88b5034+chromium-128.0.6613.114"
+
+# Version of your Godot editor that shall match either:
+#  - a "godot-<version>-stable" tag on https://github.com/godotengine/godot-cpp/tags
+#  - or a "<version>"" branch on https://github.com/godotengine/godot-cpp/branches
+# /!\ BEWARE /!\
+#  - Do not use version 4.1 since gdextension is not compatible.
+#  - Do not use version 3.x since not compatible. git checkout godot-3.x the gdcef branch instead.
 GODOT_VERSION = "4.3"                                     # or "4.2.2" or "4.2" or tag
-# Use "godot-<version>-stable" for a tag on https://github.com/godotengine/godot-cpp
-# Else "<version>" to track the HEAD of your desired branch version (i.e. "4.2")
-GODOT_CPP_GIT_TAG = GODOT_VERSION                         # or "godot-" + GODOT_VERSION + "-stable"
+
+# Use "godot-<version>-stable" for a tag on https://github.com/godotengine/godot-cpp/tags
+# Else "<version>" to track the HEAD of a branch https://github.com/godotengine/godot-cpp/branches
+GODOT_CPP_GIT_TAG_OR_BRANCH = GODOT_VERSION               # or "godot-" + GODOT_VERSION + "-stable"
+
+# Compilation mode
+COMPILATION_MODE = "release"                              # or "debug"
 # Compilation mode for the thirdpart CEF
-CEF_TARGET = "Release"                                    # or "Debug"
+CEF_TARGET = COMPILATION_MODE.title()                     # "Release" or "Debug" (with upper 1st letter !!!)
 # Compilation mode for the thirdpart godot-cpp
-GODOT_CPP_TARGET = "template_release"                     # or "template_debug"
+GODOT_CPP_TARGET = "template_" + COMPILATION_MODE         # "template_release" or "template_debug"
 # Compilation mode for gdcef as Godot module
-MODULE_TARGET = "release"                                 # or "debug"
+MODULE_TARGET = COMPILATION_MODE                          # "release" or "debug"
+
+# Use OpenMP for using CPU parallelism (i.e. for copying CEF textures to Godot)
+CEF_USE_CPU_PARALLELISM = "yes"                           # or "no"
+
 # Minimun CMake version needed for compiling CEF
 CMAKE_MIN_VERSION = "3.19"
+
 # Scons is the build system used by Godot. For some people "scons" command does not
 # work, they need to call "python -m SCons" command. The array is needed by the func
 # calling scons.
 SCONS = ["scons"]                                         # or ["python", "-m", "SCons"]
-# The name of the folder that will hold all CEF built artifacts.
-CEF_BUILD_FOLDER_NAME = "cef_artifacts"
-# When we are compiling demos we are creating a folder holding CEF build artifacts.
-# But, in the aim to save space on your hard disk the folder is a pointer to folder
-# CEF_ARTIFACTS_BUILD_PATH.
-CEF_ARTIFACTS_FOLDER_NAME = "cef_artifacts"
-# Use OpenMP for using CPU parallelim (i.e. for copying textures)
-CEF_USE_CPU_PARALLELISM = "yes"                           # or "no"
 
 ###############################################################################
+###
 ### Project internal paths local from this script. Do not change them!
+###
+###############################################################################
 PWD = os.getcwd()
 GDCEF_PATH = os.path.join(PWD, "gdcef")
 GDCEF_PROCESSES_PATH = os.path.join(PWD, "subprocess")
@@ -82,29 +106,41 @@ THIRDPARTY_GODOT_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "godot-" + GODOT_VER
 GODOT_CPP_API_PATH = os.path.join(THIRDPARTY_GODOT_PATH, "cpp")
 PATCHES_PATH = os.path.join(PWD, "patches")
 GDCEF_EXAMPLES_PATH = os.path.join(PWD, "demos")
-CEF_ARTIFACTS_BUILD_PATH = os.path.realpath(os.path.join("../../" + CEF_BUILD_FOLDER_NAME))
+CEF_ARTIFACTS_BUILD_PATH = os.path.realpath(os.path.join("../../" + CEF_ARTIFACTS_FOLDER_NAME))
 
 ###############################################################################
+###
 ### Type of operating system, AMD64, ARM64 ...
+###
+###############################################################################
 ARCHI = machine()
 NPROC = str(cpu_count())
 OSTYPE = system()
 
 ###############################################################################
+###
 ### Green color message
+###
+###############################################################################
 def info(msg):
     print("\033[32m[INFO] " + msg + "\033[00m", flush=True)
 
 ###############################################################################
+###
 ### Red color message + abort
+###
+###############################################################################
 def fatal(msg):
     print("\033[31m[FATAL] " + msg + "\033[00m", flush=True)
     sys.exit(2)
 
 ###############################################################################
+###
 ### Equivalent to test -L e on alias + ln -s
+###
+###############################################################################
 def symlink(src, dst, force=False):
-    p = Path(dst);
+    p = Path(dst)
     if p.is_symlink():
         os.remove(p)
     elif force and p.is_file():
@@ -114,7 +150,10 @@ def symlink(src, dst, force=False):
     os.symlink(src, dst)
 
 ###############################################################################
+###
 ### Equivalent to cp --verbose
+###
+###############################################################################
 def copyfile(file_name, folder):
     dest = os.path.join(folder, os.path.basename(file_name))
     print("Copy " + file_name + " => " + dest)
@@ -122,12 +161,18 @@ def copyfile(file_name, folder):
     copymode(file_name, dest)
 
 ###############################################################################
+###
 ### Equivalent to mkdir -p
+###
+###############################################################################
 def mkdir(path):
     Path(path).mkdir(parents=True, exist_ok=True)
 
 ###############################################################################
+###
 ### Equivalent to rm -fr
+###
+###############################################################################
 def rmdir(top):
     if os.path.isdir(top):
         for root, dirs, files in os.walk(top, topdown=False):
@@ -138,7 +183,10 @@ def rmdir(top):
         os.rmdir(top)
 
 ###############################################################################
+###
 ### Equivalent to tar -xj
+###
+###############################################################################
 def untarbz2(tar_bz2_file_name, dest_dir):
     info("Unpacking " + tar_bz2_file_name + " ...")
     with tarfile.open(tar_bz2_file_name) as f:
@@ -156,7 +204,10 @@ def untarbz2(tar_bz2_file_name, dest_dir):
             f.extract(tarinfo, "")
 
 ###############################################################################
+###
 ### Search an expression (not a regexp) inside a file
+###
+###############################################################################
 def grep(file_name, what):
     try:
         file = open(file_name, "r")
@@ -168,8 +219,11 @@ def grep(file_name, what):
         return None
 
 ###############################################################################
+###
 ### Needed for urllib.request.urlretrieve
 ### See https://stackoverflow.com/a/53643011/8877076
+###
+###############################################################################
 class MyProgressBar():
     def __init__(self):
         self.pbar = None
@@ -186,14 +240,20 @@ class MyProgressBar():
             self.pbar.finish()
 
 ###############################################################################
+###
 ### Download artifacts
+###
+###############################################################################
 def download(url, destination):
     info("Download " + url + " into " + destination)
     urllib.request.urlretrieve(url, destination, reporthook=MyProgressBar())
     print('', flush=True)
 
 ###############################################################################
+###
 ### Compute the SHA1 of the given artifact file
+###
+###############################################################################
 def compute_sha1(artifact):
     CHUNK = 1 * 1024 * 1024
     sha1 = hashlib.sha1()
@@ -206,7 +266,10 @@ def compute_sha1(artifact):
     return "{0}".format(sha1.hexdigest())
 
 ###############################################################################
+###
 ### Read a text file holding a SHA1 value
+###
+###############################################################################
 def read_sha1_file(path_sha1):
     file = open(path_sha1, "r")
     for line in file:
@@ -214,7 +277,10 @@ def read_sha1_file(path_sha1):
     return None
 
 ###############################################################################
+###
 ### Give some path checks
+###
+###############################################################################
 def check_paths():
     for path in [PWD, GDCEF_PATH, GDCEF_PROCESSES_PATH, GDCEF_EXAMPLES_PATH]:
         if not os.path.isdir(path):
@@ -231,7 +297,10 @@ def check_paths():
         fatal('Please remove manually ' + CEF_ARTIFACTS_BUILD_PATH + ' and recall this script')
 
 ###############################################################################
+###
 ### Download prebuild Chromium Embedded Framework if folder is not present
+###
+###############################################################################
 def download_cef():
     if OSTYPE == "Linux":
         if ARCHI == "x86_64":
@@ -252,7 +321,9 @@ def download_cef():
         fatal("Unknown archi " + OSTYPE + ": Cannot download Chromium Embedded Framework")
 
     # CEF already installed ? Installed with a different version ?
-    # Compare our desired version with the one stored in the CEF README
+    # Compare the desired CEF version (to be downloaded) with the potentially
+    # installed CEF. The version is stored in the README and if not present
+    # or not matching that means the CEF shall be downloaded as "cef_binary" folder.
     if grep(os.path.join(THIRDPARTY_CEF_PATH, "README.txt"), CEF_VERSION) != None:
         info(CEF_VERSION + " already downloaded")
     else:
@@ -262,7 +333,7 @@ def download_cef():
         SHA1_CEF_TARBALL = CEF_TARBALL + ".sha1"
         info("Downloading Chromium Embedded Framework into " + THIRDPARTY_CEF_PATH + " ...")
 
-        # Remove the CEF folder if exist and partial downloaded folder
+        # Remove the CEF folder if existing or partially downloaded/compiled.
         mkdir(GDCEF_THIRDPARTY_PATH)
         os.chdir(GDCEF_THIRDPARTY_PATH)
         rmdir("cef_binary")
@@ -285,19 +356,28 @@ def download_cef():
         os.remove(CEF_TARBALL + ".sha1")
 
 ###############################################################################
-### Patch Chromium Embedded Framework cefsimple example if not already made
+###
+### Patch Chromium Embedded Framework for Windows, if not already made by this
+### script previously.
+###
+###############################################################################
 def patch_cef():
     if os.path.isdir(THIRDPARTY_CEF_PATH):
         os.chdir(THIRDPARTY_CEF_PATH)
         info("Patching Chromium Embedded Framework")
 
-        # Apply patches for Windows
+        # Apply patches for Windows for compiling as static lib. This is needed
+        # for beeing used with Godot.
         if OSTYPE == "Windows":
             shutil.copyfile(os.path.join(PATCHES_PATH, "CEF", "win", "libcef_dll_wrapper_cmake"),
                             "CMakeLists.txt")
 
 ###############################################################################
-### Compile Chromium Embedded Framework cefsimple example if not already made
+###
+### Compile Chromium Embedded Framework if not already made by this script
+### previously.
+###
+###############################################################################
 def compile_cef():
     if os.path.isdir(THIRDPARTY_CEF_PATH):
         patch_cef()
@@ -306,14 +386,16 @@ def compile_cef():
         info("Compiling Chromium Embedded Framework in " + CEF_TARGET +
              " mode (inside " + THIRDPARTY_CEF_PATH + ") ...")
 
-        # Windows: force compiling CEF as static library.
         if OSTYPE == "Windows":
+            # Windows: force compiling CEF as static library. This is needed
+            # for beeing used with Godot.
             run(["cmake", "-DCEF_RUNTIME_LIBRARY_FLAG=/MD", "-DCMAKE_BUILD_TYPE=" + CEF_TARGET, "."], check=True)
             run(["cmake", "--build", ".", "--config", CEF_TARGET], check=True)
         else:
+           # Linux, MacOS: Compile CEF if Ninja is available else use default
+           # GNU Makefile.
            mkdir("build")
            os.chdir("build")
-           # Compile CEF if Ninja is available else use default GNU Makefile
            if shutil.which('ninja') != None:
                run(["cmake", "-G", "Ninja", "-DCMAKE_BUILD_TYPE=" + CEF_TARGET, ".."], check=True)
                run(["ninja", "-v", "-j" + NPROC, "cefsimple"], check=True)
@@ -322,8 +404,11 @@ def compile_cef():
                run(["make", "cefsimple", "-j" + NPROC], check=True)
 
 ###############################################################################
+###
 ### Copy Chromium Embedded Framework assets to your application build folder
-def install_cef_assets():
+###
+###############################################################################
+def copy_cef_assets():
     build_path = CEF_ARTIFACTS_BUILD_PATH
     mkdir(build_path)
 
@@ -331,7 +416,7 @@ def install_cef_assets():
     info("Installing Chromium Embedded Framework to " + build_path + " ...")
     locales = os.path.join(build_path, "locales")
     mkdir(locales)
-    if OSTYPE == "Linux" or OSTYPE == "Darwin":
+    if OSTYPE == "Linux":
         # cp THIRDPARTY_CEF_PATH/build/tests/cefsimple/*.pak *.dat *.so locales/* build_path
         S = os.path.join(THIRDPARTY_CEF_PATH, "build", "tests", "cefsimple", CEF_TARGET)
         copyfile(os.path.join(S, "v8_context_snapshot.bin"), build_path)
@@ -357,31 +442,27 @@ def install_cef_assets():
             copyfile(f, build_path)
         for f in glob.glob(os.path.join(S, "locales/*")):
             copyfile(f, locales)
-    elif OSTYPE == "Darwin":
-        # For Mac OS X rename cef_sandbox.a to libcef_sandbox.a since Scons search
-        # library names starting by lib*
-        os.chdir(os.path.join(THIRDPARTY_CEF_PATH, CEF_TARGET))
-        shutil.copyfile("cef_sandbox.a", "libcef_sandbox.a")
-        S = os.path.join(THIRDPARTY_CEF_PATH, CEF_TARGET, "Chromium Embedded Framework.framework")
-        for f in glob.glob(S + "/Libraries*.dylib"):
-            copyfile(f, build_path)
-        for f in glob.glob(S + "/Resources/*"):
-            copyfile(f, build_path)
     else:
         fatal("Unknown architecture " + OSTYPE + ": I dunno how to extract CEF artifacts")
 
 ###############################################################################
+###
 ### Download Godot cpp wrapper needed for our gdnative code: CEF ...
+###
+###############################################################################
 def download_godot_cpp():
     if not os.path.exists(GODOT_CPP_API_PATH):
         info("Clone cpp wrapper for Godot " + GODOT_VERSION + " into " + GODOT_CPP_API_PATH)
         mkdir(GODOT_CPP_API_PATH)
-        run(["git", "ls-remote", "https://github.com/godotengine/godot-cpp", GODOT_CPP_GIT_TAG])
-        run(["git", "clone", "--recursive", "-b", GODOT_CPP_GIT_TAG,
+        run(["git", "ls-remote", "https://github.com/godotengine/godot-cpp", GODOT_CPP_GIT_TAG_OR_BRANCH])
+        run(["git", "clone", "--recursive", "-b", GODOT_CPP_GIT_TAG_OR_BRANCH,
              "https://github.com/godotengine/godot-cpp", GODOT_CPP_API_PATH])
 
 ###############################################################################
+###
 ### Compile Godot cpp wrapper needed for our gdnative code: CEF ...
+###
+###############################################################################
 def compile_godot_cpp():
     lib = os.path.join(GODOT_CPP_API_PATH, "bin", "libgodot-cpp*" + GODOT_CPP_TARGET + "*")
     if not os.path.exists(lib):
@@ -405,27 +486,23 @@ def compile_godot_cpp():
             fatal("Unknown architecture " + OSTYPE + ": I dunno how to compile Godot-cpp")
 
 ###############################################################################
+###
 ### Common Scons command for compiling our Godot gdnative modules
+###
+###############################################################################
 def gdnative_scons_cmd(plateform):
-    if GODOT_CPP_API_PATH == '':
-        fatal('Please download and compile https://github.com/godotengine/godot-cpp and set GODOT_CPP_API_PATH')
-    if OSTYPE == "Darwin":
-        run(SCONS + ["api_path=" + GODOT_CPP_API_PATH,
-             "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER_NAME + "\\\"",
-             "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
-             "target=" + MODULE_TARGET, "--jobs=" + NPROC,
-             "arch=" + ARCHI, "platform=" + plateform,
-             "cpu_parallelism=" + CEF_USE_CPU_PARALLELISM], check=True)
-    else:
-        run(SCONS + ["api_path=" + GODOT_CPP_API_PATH,
-             "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER_NAME + "\\\"",
-             "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
-             "target=" + MODULE_TARGET, "--jobs=" + NPROC,
-             "platform=" + plateform,
-             "cpu_parallelism=" + CEF_USE_CPU_PARALLELISM], check=True)
+    run(SCONS + ["api_path=" + GODOT_CPP_API_PATH,
+            "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER_NAME + "\\\"",
+            "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
+            "target=" + MODULE_TARGET, "--jobs=" + NPROC,
+            "platform=" + plateform,
+            "cpu_parallelism=" + CEF_USE_CPU_PARALLELISM], check=True)
 
 ###############################################################################
+###
 ### Compile Godot CEF module named GDCef and its subprocess
+###
+###############################################################################
 def compile_gdnative_cef(path):
     info("Compiling Godot CEF module " + path)
     os.chdir(path)
@@ -439,7 +516,10 @@ def compile_gdnative_cef(path):
         fatal("Unknown archi " + OSTYPE + ": I dunno how to compile CEF module primary process")
 
 ###############################################################################
+###
 ### Compile Godot CEF module named GDCef and its subprocess
+###
+###############################################################################
 def create_gdextension_file():
     info("Creating Godot .gdextension file")
     with open(os.path.join(GDCEF_PATH, "gdcef.gdextension.in"), "r") as f:
@@ -448,7 +528,10 @@ def create_gdextension_file():
         f.write(extension)
 
 ###############################################################################
+###
 ### Check if compilers are present (Windows)
+###
+###############################################################################
 def check_compiler():
     if OSTYPE == "Windows":
         cppfile = "win.cc"
@@ -478,7 +561,10 @@ def check_compiler():
         os.remove(objfile)
 
 ###############################################################################
+###
 ### Check for the minimal cmake version imposed by CEF
+###
+###############################################################################
 def check_cmake_version():
     DOC_URL = "https://github.com/stigmee/doc-internal/blob/master/doc/install_latest_cmake.sh"
     info("Checking cmake version ...")
@@ -495,9 +581,40 @@ def check_cmake_version():
               "running this script for Linux. For Windows install the latest exe.")
 
 ###############################################################################
-### Since we have multiple examples and CEF artifacts are heavy we make alias
-### on the build folder. On a real example you do not have to do it: simply
-### install the build/ folder inside your Godot application.
+###
+### Check if build tools are present.
+###
+###############################################################################
+def check_build_chain():
+    info("Checking if the build chain is present")
+    if not(shutil.which('cmake')):
+        fatal("You need to install 'cmake' tool")
+    if not(shutil.which('ninja') or shutil.which('make')):
+        fatal("You need to install either 'ninja' or 'gnu makefile' tool")
+    if not(shutil.which('scons')):
+        fatal("You need to install 'scons' tool")
+    check_cmake_version()
+    check_compiler()
+
+###############################################################################
+###
+### Check if we run this script as Windows administrator. (experimental)
+###
+###############################################################################
+def check_run_as_windows_administrator():
+    if OSTYPE == "Windows":
+        import ctypes
+        if not ctypes.windll.shell32.IsUserAnAdmin():
+            fatal("You shall run this script with administrator rights")
+
+###############################################################################
+###
+### Since we have multiple demos and CEF artifacts are heavy (> 1 GB) we use
+### aliases to fake Godot using a real local folder. This is an hack to save
+### space on the hard disk. But for Windows users, this maybe problematic since
+### Windows only allows aliases in admnistration mode.
+###
+###############################################################################
 def prepare_godot_examples():
     info("Adding CEF artifacts for Godot demos:")
     for filename in os.listdir(GDCEF_EXAMPLES_PATH):
@@ -506,36 +623,40 @@ def prepare_godot_examples():
             info("  - Demo " + path)
             artifacts_path = os.path.join(path, CEF_ARTIFACTS_FOLDER_NAME)
             mkdir(os.path.dirname(artifacts_path))
+            # For Windows user without admin rights: copy the created cef
+            # artifacts folder in each demo folders.
             symlink(CEF_ARTIFACTS_BUILD_PATH, artifacts_path)
 
 ###############################################################################
-### Final instructions to run Godot demos
+###
+### Final instructions for running GDCEF demos
+###
+###############################################################################
 def final_instructions():
-    rename_instruction = ""
-    if CEF_BUILD_FOLDER_NAME != CEF_ARTIFACTS_FOLDER_NAME:
-        rename_instruction = " and renamed as '" + CEF_ARTIFACTS_FOLDER_NAME + "'"
-
     print("")
     info("Compilation done with success!\n\n"
          "You can run your Godot editor " + GODOT_VERSION + " and try one of the demos located in '" + GDCEF_EXAMPLES_PATH + "'.\n"
          "All your CEF and Godot artifacts have been generated inside '" + CEF_ARTIFACTS_BUILD_PATH + "'.\n"
-         "This folder can be used directly in your Godot project by copying it inside your project" + rename_instruction + ".\n"
+         "This folder can be used directly in your Godot project by copying it inside your project.\n"
          "Note: If you want use a different folder name, edit the value of CEF_ARTIFACTS_FOLDER_NAME in build.py and relaunch it.\n"
          "Note: in demos '" + CEF_ARTIFACTS_FOLDER_NAME + "' is not a folder but a pointer. We used a pointer since artifacts are heavy (+1GB) and we\n"
          "wanted to avoid you to loose space disk by copying the folder for each demo. For your application case, a folder is\nprobably what you want.\n")
     info("Have fun now! :)\n\n")
 
 ###############################################################################
+###
 ### Entry point
+###
+###############################################################################
 if __name__ == "__main__":
+    check_run_as_windows_administrator()
     check_paths()
-    check_cmake_version()
-    check_compiler()
+    check_build_chain()
     download_godot_cpp()
     compile_godot_cpp()
     download_cef()
     compile_cef()
-    install_cef_assets()
+    copy_cef_assets()
     compile_gdnative_cef(GDCEF_PATH)
     compile_gdnative_cef(GDCEF_PROCESSES_PATH)
     create_gdextension_file()
