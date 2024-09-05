@@ -233,43 +233,50 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // "browser-subprocess-path" command-line switch.
     fs::path sub_process_path =
         getConfig(config, "browser_subprocess_path", folder / SUBPROCESS_NAME);
-
     std::cout << "[GDCEF][GDCef::configureCEF] Setting SubProcess path: "
               << sub_process_path.string() << std::endl;
     CefString(&cef_settings.browser_subprocess_path)
             .FromString(sub_process_path.string());
 
-    // Incognito mode: cache directories not used.
-    if (!getConfig(config, "incognito", false))
-    {
-        // The location where data for the global browser cache will be stored on
-        // disk. If this value is non-empty then it must be an absolute path that is
-        // either equal to or a child directory of CefSettings.root_cache_path. If
-        // this value is empty then browsers will be created in "incognito mode"
-        // where in-memory caches are used for storage and no data is persisted to
-        // disk.  HTML5 databases such as localStorage will only persist across
-        // sessions if a cache path is specified. Can be overridden for individual
-        // CefRequestContext instances via the CefRequestContextSettings.cache_path
-        // value. When using the Chrome runtime the "default" profile will be used
-        // if |cache_path| and |root_cache_path| have the same value.
-        fs::path sub_process_cache =
-            getConfig(config, "cache_path", folder / "cache");
+    // The root directory that all CefSettings.cache_path and
+    // CefRequestContextSettings.cache_path values must have in common. If this
+    // value is empty and CefSettings.cache_path is non-empty then it will
+    // default to the CefSettings.cache_path value. If this value is non-empty
+    // then it must be an absolute path. Failure to set this value correctly may
+    // result in the sandbox blocking read/write access to the cache_path
+    // directory.
+    fs::path root_cache = getConfig(config, "root_cache_path", folder / "cache");
+    std::cout << "[GDCEF][GDCef::configureCEF] Setting root cache path: "
+              << root_cache.string() << std::endl;
+    CefString(&cef_settings.root_cache_path).FromString(root_cache.string());
 
+    // Incognito mode: cache directories not used.
+
+    // The location where data for the global browser cache will be stored on
+    // disk. If this value is non-empty then it must be an absolute path that is
+    // either equal to or a child directory of CefSettings.root_cache_path. If
+    // this value is empty then browsers will be created in "incognito mode"
+    // where in-memory caches are used for storage and no data is persisted to
+    // disk.  HTML5 databases such as localStorage will only persist across
+    // sessions if a cache path is specified. Can be overridden for individual
+    // CefRequestContext instances via the CefRequestContextSettings.cache_path
+    // value. When using the Chrome runtime the "default" profile will be used
+    // if |cache_path| and |root_cache_path| have the same value.
+    const bool incognito = getConfig(config, "incognito", false);
+    if (incognito)
+    {
+        std::cout << "[GDCEF][GDCef::configureCEF] Setting cache path as incognito"
+            << std::endl;
+        CefString(&cef_settings.cache_path).FromString("");
+    }
+    else
+    {
+        fs::path sub_process_cache =
+            getConfig(config, "cache_path", root_cache);
         std::cout << "[GDCEF][GDCef::configureCEF] Setting cache path: "
                   << sub_process_cache.string() << std::endl;
         CefString(&cef_settings.cache_path)
                 .FromString(sub_process_cache.string());
-
-        // The root directory that all CefSettings.cache_path and
-        // CefRequestContextSettings.cache_path values must have in common. If this
-        // value is empty and CefSettings.cache_path is non-empty then it will
-        // default to the CefSettings.cache_path value. If this value is non-empty
-        // then it must be an absolute path. Failure to set this value correctly may
-        // result in the sandbox blocking read/write access to the cache_path
-        // directory.
-        fs::path root_cache = getConfig(config, "root_cache_path", sub_process_cache);
-        CefString(&cef_settings.root_cache_path)
-                .FromString(root_cache.string());
     }
 
     // The locale string that will be passed to WebKit. If empty the default
