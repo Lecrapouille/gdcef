@@ -60,8 +60,11 @@ func _on_page_loaded(node):
 # Callback when a page has ended to load with failure.
 # Display a load error message using a data: URI.
 # ==============================================================================
-func _on_page_failed_loading(aborted, msg_err, node):
-	print("The browser " + node.name + " did not load " + node.get_url())
+func _on_page_failed_loading(err_code, err_msg, node):
+	if err_code == -3:
+		return
+	push_error("The browser " + node.name + " failed loading " + \
+		node.get_url() + ": " + err_msg)
 	pass
 
 # ==============================================================================

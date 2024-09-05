@@ -58,17 +58,19 @@ func _on_page_loaded(brower):
 
 # ==============================================================================
 # Callback when a page has ended to load with failure.
-# Display a load error message using a data: URI.
+# Display an error message in a generated HTML page, using data URI.
+# List of error are defined in the following file:
+# gdcef/addons/gdcef/thirdparty/cef_binary/include/base/internal/cef_net_error_list.h
 # ==============================================================================
-func _on_page_failed_loading(aborted, msg_err, node):
-	# FIXME: I dunno why the radio page is considered as canceled by the user
-	if node.get_url() == RADIO_PAGE:
+func _on_page_failed_loading(err_code, err_msg, node):
+	#  Don't display an error for downloaded files.
+	if err_code == -3:
 		return
-	var html = "<html><body bgcolor=\"white\"><h2>Failed to load URL " + node.get_url()
-	if aborted:
-		html = html + " aborted by the user!</h2></body></html>"
-	else:
-		html = html + " with error " + msg_err + "!</h2></body></html>"
+	var html = "<html><body bgcolor=\"white\">" \
+		+ "<h2>Failed to load URL " + node.get_url() + "!</h2>" \
+		+ "<p>Error code: " + str(err_code) + "</p>" \
+		+ "<p>Error message: " + err_msg + "!</p>" \
+		+ "</body></html>"
 	node.load_data_uri(html, "text/html")
 	pass
 

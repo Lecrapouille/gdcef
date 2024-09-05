@@ -217,7 +217,12 @@ private: // CEF interfaces
         }
 
         // ---------------------------------------------------------------------
-        //! \brief Called when a navigation fails or is canceled.
+        //! \brief Called when a navigation fails or is canceled. This method may
+        //! be called by itself if before commit or in combination with
+        //! OnLoadStart/OnLoadEnd if after commit. |errorCode| is the error code
+        //! number, |errorText| is the error text and |failedUrl| is the URL that
+        //! failed to load. See net\base\net_error_list.h for complete descriptions
+        //! of the error codes.
         // ---------------------------------------------------------------------
         virtual void OnLoadError(CefRefPtr<CefBrowser> browser,
                            CefRefPtr<CefFrame> frame,
@@ -225,7 +230,7 @@ private: // CEF interfaces
                            const CefString& errorText,
                            const CefString& failedUrl) override
         {
-            m_owner.onLoadError(browser, frame, errorCode == ERR_ABORTED, errorText);
+            m_owner.onLoadError(browser, frame, int(errorCode), errorText);
         }
 
     private: // CefAudioHandler interfaces
@@ -582,7 +587,7 @@ private:
     //! \brief Called by GDBrowserView::Impl::OnLoadError
     // -------------------------------------------------------------------------
     void onLoadError(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
-                     const bool aborted, const CefString& errorText);
+                     const int errCode, const CefString& errorText);
 
     // -------------------------------------------------------------------------
     //! \brief Called on a browser audio capture thread when the browser starts

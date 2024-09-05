@@ -131,4 +131,4 @@ This class is instanciate by `GDCef` by `create_browser`.
 |-------------------------|-------------------------------------------------------------|-------------------|------------------------------------------------------------------------------------------------------|
 | `on_browser_paint`      | `node`: GDBrowserView                                       |                   | Triggered when a page has been painted in the texture.                                               |
 | `on_page_loaded`         | `node`: GDBrowserView                                       |                   | Triggered when a page has been successfuly loaded.                                                   |
-| `on_page_failed_loading` | `aborted`: bool, `err_msg`: string, `node`: GDBrowserView   |                   | Triggered when a page has been failed loading: aborted by the user or failure                        |
+| `on_page_failed_loading` | `err_code`: int, `err_msg`: string, `node`: GDBrowserView   |                   | Triggered when a page has been failed loading                        |
