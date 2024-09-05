@@ -693,7 +693,7 @@ godot::Color GDBrowserView::getPixelColor(int x, int y) const
     if (x < 0 || y < 0 || x >= m_width || y >= m_height || m_data.size() == 0)
         return godot::Color(1, 1, 1, 1);  // Return full white as fallback
 
-        
+
     int index = (y * m_width + x) * 4;
     unsigned char r = m_data[index + 0];
     unsigned char g = m_data[index + 1];

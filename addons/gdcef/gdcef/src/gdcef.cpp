@@ -555,4 +555,11 @@ void GDCef::Impl::OnBeforeCommandLineProcessing(const CefString& ProcessType,
         command_line->AppendSwitchWithValue(
             "remote-allow-origins", m_owner.m_remote_allow_origin.c_str());
     }
+
+    // https://magpcss.org/ceforum/viewtopic.php?f=17&t=18970
+    command_line->AppendSwitchWithValue("use-angle", "swiftshader");
+    command_line->AppendSwitchWithValue("use-gl", "angle");
+
+    // TBD: Do we have to allow gdscript to give command line ?
+    // https://peter.sh/experiments/chromium-command-line-switches/
 }
