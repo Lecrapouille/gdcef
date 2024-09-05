@@ -31,24 +31,35 @@
 
 // ****************************************************************************
 // Logging
+// TODO disable log in release mode or if log is required (from Godot)
+// TODO Use Godot print instead of cout/cerr
 // ****************************************************************************
 #define GDCEF_DEBUG()                                                      \
   std::cout << "[GDCEF][GDCEF::" << __func__ << "]" << std::endl
+
 #define GDCEF_DEBUG_VAL(x)                                                 \
   std::cout << "[GDCEF][GDCEF::" << __func__ << "] " << x << std::endl
+
 #define GDCEF_ERROR(x)                                                     \
   m_error << "[GDCEF][GDCEF::" << __func__ << "] " << x << std::endl
+
 #define GDCEF_WARNING(x)                                                   \
    std::cout << "[GDCEF][GDCEF::" << __func__ << "] " << x << std::endl
+
 #define BROWSER_DEBUG()                                                    \
   std::cout << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "]"  \
             << std::endl
+
 #define BROWSER_DEBUG_VAL(x)                                               \
   std::cout << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "] " \
             << x << std::endl
+
 #define BROWSER_ERROR(x)                                                   \
   m_error << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "] "   \
           << x << std::endl;                                               \
   std::cerr << m_error.str()
+
+#define STATIC_GDCEF_ERROR(x)                                              \
+  std::cerr << "[ERROR][GDCEF][" << __func__ << "]" << x << std::endl
 
 #endif // GDCEF_HELPER_LOG_HPP

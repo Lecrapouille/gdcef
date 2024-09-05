@@ -147,32 +147,7 @@ private: // CefApp methods
 private: // CefBrowserProcessHandler methods
 
     // -------------------------------------------------------------------------
-    virtual void OnContextInitialized() override
-    {
-        std::cout << "[SubProcess] [GDCefBrowser::OnContextInitialized] begin" << std::endl;
-        CEF_REQUIRE_UI_THREAD();
-
-        // Information used when creating the native window.
-        CefWindowInfo window_info;
-
-#if defined(OS_WIN)
-        // On Windows we need to specify certain flags that will be passed to
-        // CreateWindowEx().
-        window_info.SetAsPopup(NULL, "CEF");
-#endif
-
-        // GDCefClient implements browser-level callbacks.
-        std::cout << "[SubProcess] [GDCefBrowser::OnContextInitialized] Create client handler" << std::endl;
-        CefRefPtr<GDCefClient> handler(new GDCefClient());
-
-        // Specify CEF browser settings here.
-        CefBrowserSettings browser_settings;
-
-        // Create the first browser window.
-        std::cout << "[SubProcess] [GDCefBrowser::OnContextInitialized] Create the browser" << std::endl;
-        CefBrowserHost::CreateBrowser(window_info, handler.get(), "https://github.com/Lecrapouille/gdcef",
-                                      browser_settings, nullptr, nullptr);
-    }
+    virtual void OnContextInitialized() override;
 
 private:
 

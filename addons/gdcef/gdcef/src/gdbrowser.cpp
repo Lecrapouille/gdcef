@@ -145,6 +145,8 @@ int GDBrowserView::init(godot::String const& url, CefBrowserSettings const& sett
         #pragma omp single
         GDCEF_DEBUG_VAL("OpenMP number of threads = " << omp_get_num_threads());
     }
+#else
+    GDCEF_DEBUG_VAL("OpenMP is not enabled");
 #endif
 
     // Create a new browser using the window parameters specified by
@@ -557,8 +559,6 @@ void GDBrowserView::navigateForward()
 //------------------------------------------------------------------------------
 void GDBrowserView::resize_(int width, int height)
 {
-    std::cout << "SIZE: " << width << ", " << height << std::endl;
-
     if (width <= 0) { width = 2; }
     if (height <= 0) { height = 2; }
     BROWSER_DEBUG_VAL(width << " x " << height);
@@ -575,7 +575,7 @@ void GDBrowserView::resize_(int width, int height)
 //------------------------------------------------------------------------------
 bool GDBrowserView::viewport(float x, float y, float w, float h)
 {
-    BROWSER_DEBUG_VAL(x << ", " << y << ", " << w << ", " << h);
+    // BROWSER_DEBUG_VAL(x << ", " << y << ", " << w << ", " << h);
 
     if (!(x >= 0.0f) && (x < 1.0f))
         return false;

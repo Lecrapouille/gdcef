@@ -24,6 +24,7 @@
 //*****************************************************************************
 
 #include "helper_files.hpp"
+#include "helper_log.hpp"
 #include <iostream>
 #include <fstream>
 
@@ -45,9 +46,7 @@ bool are_valid_files(fs::path const& folder,
         // TODO Compute SHA1 on files to check if they are correct
         if (!fs::exists(f))
         {
-            std::cout << "[GDCEF] [" << __func__ << "] File "
-                      << f << " does not exist and is needed for CEF"
-                      << std::endl;
+            STATIC_GDCEF_ERROR("File " << f << " does not exist and is needed for CEF");
             failure = true;
         }
     }

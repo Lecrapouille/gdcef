@@ -88,9 +88,9 @@ static bool sanity_checks(fs::path const& folder)
 //void GDCef::_register_methods()
 void GDCef::_bind_methods()
 {
-    using namespace godot;
-    std::cout << "[GDCEF][GDCef::_register_methods]" << std::endl;
+    GDCEF_DEBUG_VAL("");
 
+    using namespace godot;
     ClassDB::bind_method(D_METHOD("initialize"), &GDCef::initialize);
     ClassDB::bind_method(D_METHOD("get_full_version"), &GDCef::version);
     ClassDB::bind_method(D_METHOD("get_version_part"), &GDCef::versionPart);
@@ -233,8 +233,7 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // "browser-subprocess-path" command-line switch.
     fs::path sub_process_path =
         getConfig(config, "browser_subprocess_path", folder / SUBPROCESS_NAME);
-    std::cout << "[GDCEF][GDCef::configureCEF] Setting SubProcess path: "
-              << sub_process_path.string() << std::endl;
+    GDCEF_DEBUG_VAL("Setting SubProcess path: " << sub_process_path.string());
     CefString(&cef_settings.browser_subprocess_path)
             .FromString(sub_process_path.string());
 
@@ -246,8 +245,7 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // result in the sandbox blocking read/write access to the cache_path
     // directory.
     fs::path root_cache = getConfig(config, "root_cache_path", folder / "cache");
-    std::cout << "[GDCEF][GDCef::configureCEF] Setting root cache path: "
-              << root_cache.string() << std::endl;
+    GDCEF_DEBUG_VAL("Setting root cache path: " << root_cache.string());
     CefString(&cef_settings.root_cache_path).FromString(root_cache.string());
 
     // Incognito mode: cache directories not used.
@@ -265,16 +263,14 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     const bool incognito = getConfig(config, "incognito", false);
     if (incognito)
     {
-        std::cout << "[GDCEF][GDCef::configureCEF] Setting cache path as incognito"
-            << std::endl;
+        GDCEF_DEBUG_VAL("Setting cache path as incognito");
         CefString(&cef_settings.cache_path).FromString("");
     }
     else
     {
         fs::path sub_process_cache =
             getConfig(config, "cache_path", root_cache);
-        std::cout << "[GDCEF][GDCef::configureCEF] Setting cache path: "
-                  << sub_process_cache.string() << std::endl;
+        GDCEF_DEBUG_VAL("Setting cache path: " << sub_process_cache.string());
         CefString(&cef_settings.cache_path)
                 .FromString(sub_process_cache.string());
     }
@@ -286,6 +282,7 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // configurable using the "lang" command-line switch.
     std::string locale = getConfig(config, "locale", std::string("en-US"));
     CefString(&cef_settings.locale).FromString(locale);
+    GDCEF_DEBUG_VAL("Default locale: " << locale);
 
     // The directory and file name to use for the debug log. If empty a default
     // log file name and location will be used. On Windows and Linux a
@@ -311,7 +308,6 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // not enable this value if the application does not use windowless
     // rendering as it may reduce rendering performance on some systems.
     cef_settings.windowless_rendering_enabled = true;
-        //getConfig(config, "windowless_rendering_enabled", true);
 
     // Create the browser using windowless (off-screen) rendering. No window
     // will be created for the browser and all rendering will occur via the
@@ -327,13 +323,11 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
 
     // To allow calling OnPaint()
     window_info.shared_texture_enabled = false;
-        // getConfig(config, "shared_texture_enabled", false);
 
     // Set to true (1) to disable the sandbox for sub-processes. See
     // cef_sandbox_win.h for requirements to enable the sandbox on Windows. Also
     // configurable using the "no-sandbox" command-line switch.
     cef_settings.no_sandbox = true;
-        // getConfig(config, "no_sandbox", true);
 
     // Set to true (1) to disable configuration of browser process features
     // using standard CEF and Chromium command-line arguments. Configuration can
@@ -379,11 +373,14 @@ static void configureBrowser(CefBrowserSettings& browser_settings,
     // CefBrowserHost::SetWindowlessFrameRate.
     browser_settings.windowless_frame_rate =
         getConfig(config, "frame_rate", 30);
+    GDCEF_DEBUG_VAL("Using windowless_frame_rate: "
+        << int(browser_settings.windowless_frame_rate));
 
     // Controls whether JavaScript can be executed. Also configurable using the
     // "disable-javascript" command-line switch.
     browser_settings.javascript =
         getConfig(config, "javascript", STATE_ENABLED);
+    GDCEF_DEBUG_VAL("Using javascript: " << int(browser_settings.javascript));
 
     // Controls whether JavaScript can be used to close windows that were not
     // opened via JavaScript. JavaScript can still be used to close windows that
@@ -392,11 +389,15 @@ static void configureBrowser(CefBrowserSettings& browser_settings,
     // switch.
     browser_settings.javascript_close_windows =
         getConfig(config, "javascript_close_windows", STATE_DISABLED);
+    GDCEF_DEBUG_VAL("Using javascript_close_windows: "
+        << int(browser_settings.javascript_close_windows));
 
     // Controls whether JavaScript can access the clipboard. Also configurable
     // using the "disable-javascript-access-clipboard" command-line switch.
     browser_settings.javascript_access_clipboard =
         getConfig(config, "javascript_access_clipboard", STATE_DISABLED);
+    GDCEF_DEBUG_VAL("Using javascript_access_clipboard: "
+        << int(browser_settings.javascript_access_clipboard));
 
     // Controls whether DOM pasting is supported in the editor via
     // execCommand("paste"). The |javascript_access_clipboard| setting must also
@@ -404,6 +405,8 @@ static void configureBrowser(CefBrowserSettings& browser_settings,
     // command-line switch.
     browser_settings.javascript_dom_paste =
         getConfig(config, "javascript_dom_paste", STATE_DISABLED);
+    GDCEF_DEBUG_VAL("Using javascript_dom_paste: "
+        << int(browser_settings.javascript_dom_paste));
 
     // Controls whether any plugins will be loaded. Also configurable using the
     // "disable-plugins" command-line switch.
@@ -415,15 +418,18 @@ static void configureBrowser(CefBrowserSettings& browser_settings,
     // "disable-image-loading" command-line switch.
     browser_settings.image_loading =
         getConfig(config, "image_loading", STATE_ENABLED);
+    GDCEF_DEBUG_VAL("Using image loading: " << int(browser_settings.image_loading));
 
     // Controls whether databases can be used. Also configurable using the
     // "disable-databases" command-line switch.
     browser_settings.databases = getConfig(config, "databases", STATE_ENABLED);
+    GDCEF_DEBUG_VAL("Using databases: " << int(browser_settings.databases));
 
     // Controls whether WebGL can be used. Note that WebGL requires hardware
     // support and may not work on all systems even when enabled. Also
     // configurable using the "disable-webgl" command-line switch.
     browser_settings.webgl = getConfig(config, "webgl", STATE_ENABLED);
+    GDCEF_DEBUG_VAL("Using webgl: " << int(browser_settings.webgl));
 }
 
 //------------------------------------------------------------------------------
