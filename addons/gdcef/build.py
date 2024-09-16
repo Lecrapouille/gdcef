@@ -36,10 +36,9 @@
 import os, sys, subprocess, hashlib, tarfile, shutil, glob, progressbar, urllib.request
 from platform import machine, system
 from pathlib import Path
-from subprocess import run
 from multiprocessing import cpu_count
 from packaging import version
-from shutil import move, copymode
+from shutil import copymode
 
 ###############################################################################
 ###
@@ -66,7 +65,7 @@ CEF_VERSION = "125.0.19+g3d8f1c9+chromium-125.0.6422.112"
 # /!\ BEWARE /!\
 #  - Do not use version 4.1 since gdextension is not compatible.
 #  - Do not use version 3.x since not compatible. git checkout godot-3.x the gdcef branch instead.
-GODOT_VERSION = "4.3"                                     # or "4.2.2" or "4.2" or tag
+GODOT_VERSION = "4.3"                                     # or "4.2" or tag
 
 # Use "godot-<version>-stable" for a tag on https://github.com/godotengine/godot-cpp/tags
 # Else "<version>" to track the HEAD of a branch https://github.com/godotengine/godot-cpp/branches
@@ -90,7 +89,7 @@ CMAKE_MIN_VERSION = "3.19"
 # Scons is the build system used by Godot. For some people "scons" command does not
 # work, they need to call "python -m SCons" command. The array is needed by the func
 # calling scons.
-SCONS = ["scons"]                                         # or ["python", "-m", "SCons"]
+SCONS = "scons"                                           # or ["python3", "-m", "SCons"]
 
 ###############################################################################
 ###
@@ -133,6 +132,29 @@ def info(msg):
 def fatal(msg):
     print("\033[31m[FATAL] " + msg + "\033[00m", flush=True)
     sys.exit(2)
+
+###############################################################################
+###
+### Wrap the subprocess command
+###
+###############################################################################
+def exec(*args):
+    command = list(args)
+    try:
+        subprocess.run(command, text=True, check=True)
+    except subprocess.CalledProcessError as e:
+        fatal("Failed executing the command " + ' '.join(map(str,command)))
+
+###############################################################################
+###
+### Wrap the scons command
+###
+###############################################################################
+def scons(*args):
+    if type(SCONS) == str:
+        exec(SCONS, *args, "--jobs=" + NPROC)
+    else:
+        exec(*SCONS, *args, "--jobs=" + NPROC)
 
 ###############################################################################
 ###
@@ -389,19 +411,19 @@ def compile_cef():
         if OSTYPE == "Windows":
             # Windows: force compiling CEF as static library. This is needed
             # for beeing used with Godot.
-            run(["cmake", "-DCEF_RUNTIME_LIBRARY_FLAG=/MD", "-DCMAKE_BUILD_TYPE=" + CEF_TARGET, "."], check=True)
-            run(["cmake", "--build", ".", "--config", CEF_TARGET], check=True)
+            exec("cmake", "-DCEF_RUNTIME_LIBRARY_FLAG=/MD", "-DCMAKE_BUILD_TYPE=" + CEF_TARGET, ".")
+            exec("cmake", "--build", ".", "--config", CEF_TARGET)
         else:
            # Linux, MacOS: Compile CEF if Ninja is available else use default
            # GNU Makefile.
            mkdir("build")
            os.chdir("build")
            if shutil.which('ninja') != None:
-               run(["cmake", "-G", "Ninja", "-DCMAKE_BUILD_TYPE=" + CEF_TARGET, ".."], check=True)
-               run(["ninja", "-v", "-j" + NPROC, "cefsimple"], check=True)
+               exec("cmake", "-G", "Ninja", "-DCMAKE_BUILD_TYPE=" + CEF_TARGET, "..")
+               exec("ninja", "-v", "-j" + NPROC, "cefsimple")
            else:
-               run(["cmake", "-G", "Unix Makefiles", "-DCMAKE_BUILD_TYPE=" + CEF_TARGET, ".."], check=True)
-               run(["make", "cefsimple", "-j" + NPROC], check=True)
+               exec("cmake", "-G", "Unix Makefiles", "-DCMAKE_BUILD_TYPE=" + CEF_TARGET, "..")
+               exec("make", "cefsimple", "-j" + NPROC)
 
 ###############################################################################
 ###
@@ -454,9 +476,9 @@ def download_godot_cpp():
     if not os.path.exists(GODOT_CPP_API_PATH):
         info("Clone cpp wrapper for Godot " + GODOT_VERSION + " into " + GODOT_CPP_API_PATH)
         mkdir(GODOT_CPP_API_PATH)
-        run(["git", "ls-remote", "https://github.com/godotengine/godot-cpp", GODOT_CPP_GIT_TAG_OR_BRANCH])
-        run(["git", "clone", "--recursive", "-b", GODOT_CPP_GIT_TAG_OR_BRANCH,
-             "https://github.com/godotengine/godot-cpp", GODOT_CPP_API_PATH])
+        exec("git", "ls-remote", "https://github.com/godotengine/godot-cpp", GODOT_CPP_GIT_TAG_OR_BRANCH)
+        exec("git", "clone", "--recursive", "-b", GODOT_CPP_GIT_TAG_OR_BRANCH,
+             "https://github.com/godotengine/godot-cpp", GODOT_CPP_API_PATH)
 
 ###############################################################################
 ###
@@ -469,19 +491,23 @@ def compile_godot_cpp():
         info("Compiling Godot C++ API (inside " + GODOT_CPP_API_PATH + ") ...")
         os.chdir(GODOT_CPP_API_PATH)
         if OSTYPE == "Linux":
-            run(SCONS + ["platform=linux", "target=" + GODOT_CPP_TARGET, "use_static_cpp=no",
-                 "--jobs=" + NPROC], check=True)
+            scons("platform=linux",
+                  "target=" + GODOT_CPP_TARGET,
+                  "use_static_cpp=no")
         elif OSTYPE == "Darwin":
-            run(SCONS + ["platform=osx", "macos_arch=" + ARCHI,
-                 "target=" + GODOT_CPP_TARGET, "use_static_cpp=no",
-                 "--jobs=" + NPROC], check=True)
+            scons("platform=osx",
+                  "macos_arch=" + ARCHI,
+                  "target=" + GODOT_CPP_TARGET,
+                  "use_static_cpp=no")
         elif OSTYPE == "MinGW":
-            run(SCONS + ["platform=windows", "use_mingw=True",
-                 "target=" + GODOT_CPP_TARGET, "use_static_cpp=no",
-                 "--jobs=" + NPROC], check=True)
+            scons("platform=windows",
+                  "use_mingw=True",
+                  "target=" + GODOT_CPP_TARGET,
+                  "use_static_cpp=no")
         elif OSTYPE == "Windows":
-            run(SCONS + ["platform=windows", "target=" + GODOT_CPP_TARGET, "use_static_cpp=no",
-                 "--jobs=" + NPROC], check=True)
+            scons("platform=windows",
+                  "target=" + GODOT_CPP_TARGET,
+                  "use_static_cpp=no")
         else:
             fatal("Unknown architecture " + OSTYPE + ": I dunno how to compile Godot-cpp")
 
@@ -491,12 +517,12 @@ def compile_godot_cpp():
 ###
 ###############################################################################
 def gdnative_scons_cmd(plateform):
-    run(SCONS + ["api_path=" + GODOT_CPP_API_PATH,
-            "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER_NAME + "\\\"",
-            "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
-            "target=" + MODULE_TARGET, "--jobs=" + NPROC,
-            "platform=" + plateform,
-            "cpu_parallelism=" + CEF_USE_CPU_PARALLELISM], check=True)
+    scons("api_path=" + GODOT_CPP_API_PATH,
+          "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER_NAME + "\\\"",
+          "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
+          "target=" + MODULE_TARGET,
+          "platform=" + plateform,
+          "cpu_parallelism=" + CEF_USE_CPU_PARALLELISM)
 
 ###############################################################################
 ###
@@ -510,7 +536,7 @@ def compile_gdnative_cef(path):
         gdnative_scons_cmd("x11")
     elif OSTYPE == "Darwin":
         gdnative_scons_cmd("osx")
-    elif OSTYPE == "Windows": # or OSTYPE == "MinGW":
+    elif OSTYPE == "Windows" or OSTYPE == "MinGW":
         gdnative_scons_cmd("windows")
     else:
         fatal("Unknown archi " + OSTYPE + ": I dunno how to compile CEF module primary process")
