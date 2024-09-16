@@ -58,7 +58,7 @@ CEF_ARTIFACTS_FOLDER_NAME = "cef_artifacts"
 # CEF version downloaded from https://cef-builds.spotifycdn.com/index.html
 # Copy-paste the version given on the web page WITHOUT the operation system or
 # architecture since this script is enough smart to download the correct version :)
-CEF_VERSION = "128.4.8+g88b5034+chromium-128.0.6613.114"
+CEF_VERSION = "125.0.19+g3d8f1c9+chromium-125.0.6422.112"
 
 # Version of your Godot editor that shall match either:
 #  - a "godot-<version>-stable" tag on https://github.com/godotengine/godot-cpp/tags
