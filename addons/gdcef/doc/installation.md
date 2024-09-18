@@ -151,6 +151,25 @@ information):
 $CEF.initialize({"artifacts": "res://cef_artifacts/", ... })
 ```
 
+## I do not want to compile GDCEF!
+
+There is an option inside the [build.py](../build.py) script. Modify the line:
+
+```
+GITHUB_GDCEF_RELEASE = None
+```
+
+See https://github.com/Lecrapouille/gdcef/releases to get your desired version
+(without 'v' and without godot version). For example:
+
+```
+GITHUB_GDCEF_RELEASE = "0.12.0"
+```
+
+Drawbacks:
+- You can choose the Godot version.
+- You can choose the CEF version.
+
 ## Debug gdcef
 
 In your gd script, when init CEF. Pass the following settings:

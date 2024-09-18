@@ -47,6 +47,13 @@ from shutil import copymode
 ###
 ###############################################################################
 
+# If set, then download prebuild GDCEF artifacts instead of compiling from
+# code source. See https://github.com/Lecrapouille/gdcef/releases to get the
+# desired version (without 'v' and without godot version). You cannot choose
+# neither Godot version not CEF version.
+# If unset, then compile GCEF sources.
+GITHUB_GDCEF_RELEASE = None                              # or "0.11.0"
+
 # The hard-coded name of the folder that will hold all CEF built artifacts.
 # /!\ BEWARE /!\
 #  - Do not give a path but just a folder name.
@@ -320,6 +327,30 @@ def check_paths():
 
 ###############################################################################
 ###
+### Download prebuild CEF artifacts from GitHub releases
+###
+###############################################################################
+def download_gdcef_release():
+    info("Download prebuilt GDCEF artifacts from GitHub instead of compiling sources")
+    if not ((OSTYPE == "Linux" or OSTYPE == "Windows") and (ARCHI == "x86_64")):
+        fatal("OS " + OSTYPE + " architecture " + ARCHI + " is not available as GitHub release")
+
+    GITHUB_URL = "https://github.com/Lecrapouille/gdcef/releases/download/"
+    TARBALL = "v" + GITHUB_GDCEF_RELEASE + "-godot" + GODOT_VERSION[0]
+    TARBALL = TARBALL + "/gdcef-artifacts-godot_" + GODOT_VERSION[0] + "-"
+    TARBALL = TARBALL + OSTYPE.lower() + "_" + ARCHI + ".tar.gz"
+    URL = GITHUB_URL + TARBALL
+
+    GDCEF_TARBALL = CEF_ARTIFACTS_FOLDER_NAME + ".tar.gz"
+    try:
+        download(URL, GDCEF_TARBALL)
+        untarbz2(GDCEF_TARBALL, CEF_ARTIFACTS_BUILD_PATH)
+        os.remove(GDCEF_TARBALL)
+    except Exception as err:
+        fatal(URL + " does not exist. Are you sure of the desired version ? Else try to compile GDCEF")
+
+###############################################################################
+###
 ### Download prebuild Chromium Embedded Framework if folder is not present
 ###
 ###############################################################################
@@ -340,7 +371,7 @@ def download_cef():
         else:
             CEF_ARCHI = "windowsarm64"
     else:
-        fatal("Unknown archi " + OSTYPE + ": Cannot download Chromium Embedded Framework")
+        fatal("Unknown OS/architecture " + OSTYPE + ": Cannot download Chromium Embedded Framework")
 
     # CEF already installed ? Installed with a different version ?
     # Compare the desired CEF version (to be downloaded) with the potentially
@@ -677,14 +708,17 @@ def final_instructions():
 if __name__ == "__main__":
     check_run_as_windows_administrator()
     check_paths()
-    check_build_chain()
-    download_godot_cpp()
-    compile_godot_cpp()
-    download_cef()
-    compile_cef()
-    copy_cef_assets()
-    compile_gdnative_cef(GDCEF_PATH)
-    compile_gdnative_cef(GDCEF_PROCESSES_PATH)
-    create_gdextension_file()
+    if GITHUB_GDCEF_RELEASE == None:
+        check_build_chain()
+        download_godot_cpp()
+        compile_godot_cpp()
+        download_cef()
+        compile_cef()
+        copy_cef_assets()
+        compile_gdnative_cef(GDCEF_PATH)
+        compile_gdnative_cef(GDCEF_PROCESSES_PATH)
+        create_gdextension_file()
+    else:
+        download_gdcef_release()
     prepare_godot_examples()
     final_instructions()
