@@ -58,9 +58,11 @@ We also provide some documents to help you understanding the nuts and bolts of t
 ## Running demos
 
 Once the compilation of this project has ended with success, you
-can start your Godot editor 3.5 and go into the [demos folder]](demos), and try the
-2D and 3D example. They are ready to use. See this [README](demos/README.md)
+can start your Godot editor 4 and go into the [demos folder]](demos), and try the
+2D and 3D demos. They are ready to use. See this [README](demos/README.md)
 describing the given demos.
+
+![CEFdemos](doc/pics/demos.png)
 
 ## What do I have to do next for using CEF in my personal project?
 
