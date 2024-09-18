@@ -28,4 +28,10 @@ For developers, you have to do:
 - `git checkout godot-3.x` for developing GDNative version for Godot 3.4 or 3.5.
 - `git checkout godot-4.x` for developing GDExtension version for Godot 4.2 and later.
 
-**Announcement: for Linux users for version >= 0.10.0, exporting LD_LIBRARY_PATH or LD_PRELOAD is no longer needed! Do not forget to remove them from your environment (i.e. bashrc)!**
+**Note:** After talking with some developpers who want only display their JS game
+but do not necessary need Godot. In this case there is a better alternative: when compiling CEF,
+the build system also compile a small CEF application which, by default, open google. You can
+adapt to launch your game (local or remote) as default page. See this
+repo https://github.com/Lecrapouille/exa-application and adapt these
+[lines](https://github.com/Lecrapouille/exa-application/blob/master/build.py#L47-L48)
+for your application name (title) and the URL.
