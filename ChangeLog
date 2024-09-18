@@ -1,3 +1,9 @@
+Version 0.12.0:
+	* Revert CEF version to 125 since 1st page may not be displayed.
+	* build script: cleaning code and allow downloading GDCEF releases on GitHub.
+	* Removing some CEF warnings and fix possible issue with cache folder.
+	* Breaking API: fix possible infinite loop callback on_page_failed. Update demos.
+
 Version 0.11.0:
 	* Update CEF version to 128.
 	* Update script to use by default Godot version 4.3.
