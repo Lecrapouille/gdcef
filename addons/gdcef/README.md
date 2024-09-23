@@ -58,13 +58,15 @@ We also provide some documents to help you understanding the nuts and bolts of t
 ## Running demos
 
 Once the compilation of this project has ended with success, you
-can start your Godot editor 4 and go into the [demos folder]](demos), and try the
+can start your Godot editor 4 and go into the [demos folder](demos), and try the
 2D and 3D demos. They are ready to use. See this [README](demos/README.md)
 describing the given demos.
 
 ![CEFdemos](doc/pics/demos.png)
 
-## What do I have to do next for using CEF in my personal project?
+## FAQ
+
+### What do I have to do next for using CEF in my personal project?
 
 - Copy the `build/` folder holding CEF artifacts that have been compiled into
   your Godot project.
@@ -104,14 +106,23 @@ binding. See the 2D and 3D demos to make your browser tab reacts to your input e
 When exporting your project, Godot generates your binary application inside
 the `build` folder.
 
-## Important note about some architectures
+Here some projects that can give you ideas:
+- https://github.com/face-hh/wattesigma
+
+### My CPU is 70% when running gdCEF !
+
+Try switching Godot graphic mode to "Compatibility" instead of "Forward+". See:
+
+![graphic mode](doc/pics/graphic_mode.png)
+
+### Important note about some architectures
 
 - CEF is working with MacOS but not this current Godot module. If you are a MacOS developper
   you can help me to make this module functional for Mac.
 - CEF is not working for IOS and Android devices!
 - Chrome extensions limited to version 2 but now everybody uses the version 3.
 
-## Important note about the CEF License
+### Important note about the CEF License
 
 **IMPORTANT:** I'm not a jurist but since CEF seems using some third-party
 libraries under the LGPL license (see this
