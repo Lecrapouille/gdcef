@@ -386,6 +386,11 @@ public:
     godot::String getURL() const;
 
     // -------------------------------------------------------------------------
+    //! \brief
+    // -------------------------------------------------------------------------
+    godot::String getTitle() const;
+
+    // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Return the Godot texture holding
     //! the page content to other Godot element that needs it for the rendering
     //! (i.e. TextureRect: $TextureRect.texture = browser.get_texture()).

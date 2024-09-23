@@ -76,6 +76,7 @@ void GDBrowserView::_bind_methods()
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_NODE_TYPE,
         "ImageTexture"), "set_texture", "get_texture");
     ClassDB::bind_method(D_METHOD("set_zoom_level"), &GDBrowserView::setZoomLevel);
+    ClassDB::bind_method(D_METHOD("get_title"), &GDBrowserView::getTitle);
     ClassDB::bind_method(D_METHOD("get_url"), &GDBrowserView::getURL);
     ClassDB::bind_method(D_METHOD("load_url"), &GDBrowserView::loadURL);
     ClassDB::bind_method(D_METHOD("load_data_uri"), &GDBrowserView::loadDataURI);
@@ -380,6 +381,23 @@ godot::String GDBrowserView::getURL() const
 
     BROWSER_ERROR("Not possible to retrieving URL");
     return {};
+}
+
+//------------------------------------------------------------------------------
+godot::String GDBrowserView::getTitle() const
+{
+    BROWSER_DEBUG();
+
+    if (!m_browser) return godot::String();
+
+    if (m_browser->GetMainFrame())
+    {
+        CefString title = m_browser->GetHost()->GetVisibleNavigationEntry()->GetTitle();
+        std::string utf8_title = title.ToString();
+        return godot::String::utf8(utf8_title.c_str());
+    }
+
+    return godot::String();
 }
 
 //------------------------------------------------------------------------------
