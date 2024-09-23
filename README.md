@@ -55,8 +55,14 @@ If you are using this project, please do not hesitate to share your project link
 pictures by making a GitHub pull request, I'll add them in this gallery. Thanks to
 teams for having shared the current gallery:
 
-- https://elitemeta.city
+- [Wattesigma](https://github.com/face-hh/wattesigma) by FaceDev
+
+[![Wattesigma](addons/gdcef/doc/gallery/wattesigma.png)](https://youtu.be/37ISfJ2NSXQ)
+
+*Click on the picture to watch the Youtube video "I made my own Browser" by FaceDev.*
+
+- https://elitemeta.city (dead metaverse project)
 
 [![elitemeta](addons/gdcef/doc/gallery/elitemeta.jpg)](https://ipfs.io/ipfs/QmaL7NY5qs3AtAdcX8vFhqaHwJeTMKfP3PbzcHZBLmo1QQ?filename=elitemeta_0.mp4)
 
-*Click to see on the image to see the Elitemeta video shared on IPFS.*
+*Click on the picture to watch the Elitemeta video shared on IPFS.*
