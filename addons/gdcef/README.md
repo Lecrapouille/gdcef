@@ -1,137 +1,89 @@
 # Chromium Embedded Framework as Godot 4.3 native module
 
-This repository contains the source code of some C++ classes wrapping a subset
-of the [Chromium Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home)
-API into a Godot > 4.2 native module (GDExtension) which allows you to
-implement a web browser for your 2D and 3D games through your gdscripts for
-Linux and Windows. We have named this CEF GDExtension module `gdcef`.
+This repository provides C++ classes that wrap part of the [Chromium Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home) (CEF) API into a native Godot > 4.2 module (GDExtension), enabling the integration of a web browser into your 2D and 3D games via GDScript on Linux and Windows. We have named this GDExtension module `gdcef`.
 
-## Installation steps
+## TLDR: Compilation steps
 
-The complete guide for compiling this project with the Python3 build script for Linux and Windows
-is given [here](doc/installation.md). It also explains how to update the CEF version.
-
-For busy people, here are the direct steps:
+The complete guide for compiling this project with the Python3 build script for Linux and Windows is given [here](doc/installation.md). It also explains how to update the CEF version. For busy people, the direct way is to follow these steps:
 
 ```
 cd addons/gdcef
-python3 -m pip install -r requirements.txt
 python3 build.py
 ```
 
-If successful, a `build` folder at the root of the project shall have been created.
-It holds all CEF/Godot artifacts. Use this folder for your Godot project and do not
-forget to add `.gdns` and `.gdnlib` files to refer `libgdcef.so` or `libgdcef.dll`
-like done for any Godot modules.
+If successful, a build folder named `cef_artifacts` at the root of the project shall have been created. It holds all CEF/Godot artifacts. Use this folder for your Godot project. You do not have to add `.gdextension` files refering to `libgdcef.so` or `libgdcef.dll` since automatically added.
+
+## Running demos
+
+After successfully compiling the project, open Godot Editor 4 and navigate to the [demos folder](demos) to try the 2D and 3D demos, which are ready to use. Refer to this [README](demos/README.md) for more details on the demos.
+
+![CEFdemos](doc/pics/demos.png)
 
 ## Repository overview
 
-This repository contains the following things:
-- C++17 code source for the [primary CEF process](gdcef/) (your
+This repository contains the following important elements:
+- C++ code source for the [primary CEF process](gdcef/) (your
   Godot application).
-- C++17 code source for the [secondary CEF process](subprocess/)
+- C++ code source for the [secondary CEF process](subprocess/)
   (called by the first CEF process).
-- A [2D demo](demos/2D/) and [3D demo](demos/3D/).
+- Some demos in [2D](demos/2D/) and [3D](demos/3D/). The 2D demo shows almost all the API.
 - A python-3 [build script](build.py) that will git clone the
   Godot-cpp binding, download the CEF tarball, extract it, compile CEF, compile the primary and
   secondary CEF process, and finally create the CEF artifacts in the `build` folder.
 
-*Note:* We are using C++17, but we are not using fancy C++ features, we just
-use C++17 because we need `filesystem`.
+*Note:* While we are using C++17, we aren't utilizing advanced features, but we require this version for the `filesystem` library.
 
 ## Documentation
 
-We also provide some documents to help you understanding the nuts and bolts of this project:
-
+We've included documentation to help you understand the core aspects of this project:
 - The Godot gdscript API is given in this [document](doc/API.md).
   This document will describe the functions that can be called from your gdscripts.
-
 - The design details are given in this
   [document](doc/detailsdesign.md). This will explain to you
   the reason of the tree organization, how gdcef is compiled, why you need a
   secondary process, ...
-
 - The software architecture is given in this
   [document](doc/architecture.md). This document explains how CEF
   works internally. **Note: this document is a draft**.
 
-## Running demos
-
-Once the compilation of this project has ended with success, you
-can start your Godot editor 4 and go into the [demos folder](demos), and try the
-2D and 3D demos. They are ready to use. See this [README](demos/README.md)
-describing the given demos.
-
-![CEFdemos](doc/pics/demos.png)
-
 ## FAQ
 
-### What do I have to do next for using CEF in my personal project?
+### How do I use CEF in my personal project?
 
-- Copy the `build/` folder holding CEF artifacts that have been compiled into
-  your Godot project.
-- Remove the `build/cache` folder if you have used CEF previously.
-- In the case you dislike the folder name holding CEF artifacts `build`, you can change it.
-  Search in [build.py](../build.py) script the line `CEF_ARTIFACTS_FOLDER = "build"`
-  and rename it. Rerun the `build.py`. This will force Godot knowing default path.
+- Copy the `cef_artifacts` folder holding CEF artifacts that have been compiled into your Godot project.
+- Delete the `cef_artifacts/cache` folder if you have previously used gdCEF.
+- If you'd prefer a different name for the folder containing the CEF artifacts, you can change it. In the [build.py](../build.py) script, find the line `CEF_ARTIFACTS_FOLDER_NAME = "cef_artifacts"`, rename it and rerun the `build.py`. This will update the path in Godot.
   Else you can refer it explictely when calling `initialize({"artifacts": "res://cef_artifacts/", ... })`.
-- Copy and adapt the `gdcef.gdns` and `gdcef.gdnlib` inside your Godot
-  project and adapt the path to shared libraries. See more information in the last
-  section of this [document](doc/detailsdesign.md).
-- CEF can run from the Godot editor and you can export your project for Linux
-  and Windows as usual.
-- The gdcef module checks the presence of CEF artifacts and the presence of the
-  secondary CEF process.  If they are not present, your application will close.
-- In your Godot scene create a `Node` or `Spatial` named for example
-  `CEF`. Extend it to be a `GDCEF` by setting the path to `gdcef.gdns` as
-  `Nativescript`.
-- Follow this [document](doc/API.md) describe the functions that can be called from your gdscripts.
-- Create a Godot `TextRect` that will receive your browser texture.
-- When initializing CEF with `initialize` instead of the regular Godot `_init`.
-- Create a gdscript and, for example, inside `func _ready():` from the `$CEF`
-  node, make create a new browser with function `create_browser` taking the desired URL,
-  the `TextRect` and optional options. The created browser will be a Godot
-  child node with default name `browser_<id>` (with id a number starting from 0). You can give
-  a new name with the `get_name()` function. The browser has any Godot node can be found with
-  a function such as `$CEF.get_node("browser_0")`.
+- CEF can run directly from the Godot editor, and you can export your project for Linux and Windows as usual.
+- The gdcef module verifies the presence of both CEF artifacts and the secondary CEF process. If either is missing, your application will close.
+- From the node selector, add in your scenegraph a Godot `TextRect` to hold your browser's texture. Let it name it `TextureRect`.
+- From the node selector, find for the `GDCEF` node, let name it `CEF`. If not found that mean the gdextension file has not be loaded.
+- Create a gdscript. Use `initialize` to start CEF, instead of the usual Godot `_init` method. Refer to this [document](doc/API.md) for details on the functions that can be called from your GDScripts. For example, inside `func _ready():` from the `$CEF` node, make create a new browser with function `create_browser` taking the desired URL, the `TextRect` and optional options (default: `{}` read the API for knowing possible options). The browser you create will be a child node in Godot, with a default name of `browser_<id>` (where `<id>` starts at 0). You can rename it using the `get_name()` function. The browser has any Godot node can be found with a function such as `$CEF.get_node("browser_0")`.
 
 ```
 var browser = $CEF.create_browser("https://github.com/Lecrapouille/gdcef", $TextureRect, {})
 browser.get_name("hello")
 ```
 
-- You should obtain a minimal CEF browser not reacting to your mouse and key
-binding. See the 2D and 3D demos to make your browser tab reacts to your input events.
+- You will get a basic CEF browser that does not respond to mouse or keyboard inputs. Check the 2D and 3D demos to learn how to make your browser respond to input events.
+- Here are some projects that might inspire you:
+  - https://github.com/face-hh/wattesigma
 
-When exporting your project, Godot generates your binary application inside
-the `build` folder.
+### Why is my CPU usage at 70% when running gdCEF?
 
-Here some projects that can give you ideas:
-- https://github.com/face-hh/wattesigma
-
-### My CPU is 70% when running gdCEF !
-
-Try switching Godot graphic mode to "Compatibility" instead of "Forward+". See:
+Try switching Godot's graphics mode to 'Compatibility' instead of 'Forward+'. See below:
 
 ![graphic mode](doc/pics/graphic_mode.png)
 
-### Important note about some architectures
+### Important note about certain architectures
 
-- CEF is working with MacOS but not this current Godot module. If you are a MacOS developper
-  you can help me to make this module functional for Mac.
-- CEF is not working for IOS and Android devices!
-- Chrome extensions limited to version 2 but now everybody uses the version 3.
+- CEF works on macOS, but this Godot module is not yet compatible. If you're a macOS developer, your help in making this module functional on macOS would be appreciated.
+- CEF is currently not supported on iOS or Android devices. For Android, you can see this [project](https://github.com/Sam2much96/GodotChrome). 
+- Chrome extensions are limited to version 2, although most users now rely on version 3.
 
-### Important note about the CEF License
+### Important notes on the CEF License
 
-**IMPORTANT:** I'm not a jurist but since CEF seems using some third-party
-libraries under the LGPL license (see this
-[post](https://www.magpcss.org/ceforum/viewtopic.php?f=6&t=11182)) and compiling
-CEF as a static library will contaminate **your** project under the GPL license
-(which is not the case when compiled as a dynamic library), will force you
-to share the source code of your application.
+**IMPORTANT:** I'm not a legal expert, but be aware that CEF uses some third-party libraries under the LGPL license (see this
+[post](https://www.magpcss.org/ceforum/viewtopic.php?f=6&t=11182)). Compiling CEF as a static library may subject **your** project to the GPL license, requiring you to share your application's source code. This does not apply when compiling CEF as a dynamic library.
 
-In our case, CEF is compiled as a static library for Windows (else we got issues,
-see our [patch](patches/CEF/win/)) and for Linux it is a shared library (`libcef.so`
-1 GB, which is heavy). I did not succeed in compiling it as a static library to make it
-smaller.
+In our case, CEF is compiled as a static library for Windows (due to various issues, see our [patch](patches/CEF/win/)), and as a shared library (`libcef.so` > 1 GB, which is quite large) for Linux. Unfortunately, I was unable to compile it as a static library on Linux to reduce its size.
