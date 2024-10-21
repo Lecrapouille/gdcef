@@ -35,3 +35,9 @@ adapt to launch your game (local or remote) as default page. See this
 repo https://github.com/Lecrapouille/exa-application and adapt these
 [lines](https://github.com/Lecrapouille/exa-application/blob/master/build.py#L47-L48)
 for your application name (title) and the URL.
+
+## Alternative Godot WebView projects
+
+- In Rust: https://github.com/doceazedo/godot_wry
+- In Qt: https://godotwebview.com/
+- Godot3 and Android: https://github.com/Sam2much96/GodotChrome/tree/master
