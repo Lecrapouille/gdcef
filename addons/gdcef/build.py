@@ -47,7 +47,7 @@ from shutil import copymode
 ###
 ###############################################################################
 
-# If set, then download prebuild GDCEF artifacts instead of compiling from
+# If set, then download prebuilt GDCEF artifacts instead of compiling from
 # code source. See https://github.com/Lecrapouille/gdcef/releases to get the
 # desired version (without 'v' and without godot version). You cannot choose
 # neither Godot version not CEF version.
@@ -221,7 +221,6 @@ def rmdir(top):
 def untarbz2(tar_bz2_file_name, dest_dir):
     info("Unpacking " + tar_bz2_file_name + " ...")
     with tarfile.open(tar_bz2_file_name) as f:
-        directories = []
         root_dir = ""
         for tarinfo in f:
             if tarinfo.isdir() and root_dir == "":
@@ -422,7 +421,7 @@ def patch_cef():
         info("Patching Chromium Embedded Framework")
 
         # Apply patches for Windows for compiling as static lib. This is needed
-        # for beeing used with Godot.
+        # for being used with Godot.
         if OSTYPE == "Windows":
             shutil.copyfile(os.path.join(PATCHES_PATH, "CEF", "win", "libcef_dll_wrapper_cmake"),
                             "CMakeLists.txt")
@@ -443,7 +442,7 @@ def compile_cef():
 
         if OSTYPE == "Windows":
             # Windows: force compiling CEF as static library. This is needed
-            # for beeing used with Godot.
+            # for being used with Godot.
             exec("cmake", "-DCEF_RUNTIME_LIBRARY_FLAG=/MD", "-DCMAKE_BUILD_TYPE=" + CEF_TARGET, ".")
             exec("cmake", "--build", ".", "--config", CEF_TARGET)
         elif OSTYPE == "Darwin":
@@ -558,12 +557,12 @@ def compile_godot_cpp():
 ### Common Scons command for compiling our Godot gdnative modules
 ###
 ###############################################################################
-def gdnative_scons_cmd(plateform):
+def gdnative_scons_cmd(platform):
     scons("api_path=" + GODOT_CPP_API_PATH,
           "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER_NAME + "\\\"",
           "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
           "target=" + MODULE_TARGET,
-          "platform=" + plateform,
+          "platform=" + platform,
           "arch=" + ARCHI,
           "cpu_parallelism=" + CEF_USE_CPU_PARALLELISM)
 
@@ -730,6 +729,7 @@ if __name__ == "__main__":
         compile_cef()
         copy_cef_assets()
         compile_gdnative_cef(GDCEF_PATH)
+        # MacOSX: use cefsimple.app instead of gdCefSubProcess
         if OSTYPE != "Darwin":
             compile_gdnative_cef(GDCEF_PROCESSES_PATH)
         create_gdextension_file()
