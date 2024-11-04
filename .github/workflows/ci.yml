@@ -15,11 +15,48 @@ on:
 jobs:
 
   #############################################################################
+  ### MacOS
+  #############################################################################
+  build_macos:
+    name: Build on MacOS
+    runs-on: macos-14
+    steps:
+      - name: Checkout GDCEF
+        uses: actions/checkout@v3
+        with:
+          ref: godot-4.x
+          submodules: true
+      - name: Install system packages
+        run: |
+          brew install ninja
+      - name: Install python packages
+        uses: getsentry/action-setup-venv@v2.1.0
+        id: venv
+        with:
+          python-version: 3.10.7
+          cache-dependency-path: addons/gdcef/requirements.txt
+          install-cmd: pip install -r addons/gdcef/requirements.txt
+      - name: Compile GDCEF
+        run: |
+          cd addons/gdcef
+          python3 build.py
+      - name: Check build
+        run: |
+          ls cef_artifacts/libgdcef.dylib
+          tar -czvf gdcef-artifacts-godot_4-macos_x86_64.tar.gz cef_artifacts
+      - name: Do release
+        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "gdcef-artifacts-godot_4-macos_x86_64.tar.gz"
+
+  #############################################################################
   ### Linux
   #############################################################################
   build_linux:
     name: Build on Linux
     runs-on: ubuntu-20.04
+    needs: build_macos
     steps:
       - name: Checkout GDCEF
         uses: actions/checkout@v3

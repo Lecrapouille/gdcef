@@ -88,6 +88,7 @@ GODOT_CPP_TARGET = "template_" + COMPILATION_MODE         # "template_release" o
 MODULE_TARGET = COMPILATION_MODE                          # "release" or "debug"
 
 # Use OpenMP for using CPU parallelism (i.e. for copying CEF textures to Godot)
+# FIXME no openmp installed by default on MacOS :(
 CEF_USE_CPU_PARALLELISM = "yes"                           # or "no"
 
 # Minimun CMake version needed for compiling CEF
@@ -132,6 +133,14 @@ OSTYPE = system()
 ###############################################################################
 def info(msg):
     print("\033[32m[INFO] " + msg + "\033[00m", flush=True)
+
+###############################################################################
+###
+### Orange color message
+###
+###############################################################################
+def warning(msg):
+    print("\033[33m[WARNING] " + msg + "\033[00m", flush=True)
 
 ###############################################################################
 ###
@@ -558,13 +567,19 @@ def compile_godot_cpp():
 ###
 ###############################################################################
 def gdnative_scons_cmd(platform):
+    use_openmp = CEF_USE_CPU_PARALLELISM
+    # FIXME no openmp installed by default on MacOS :(
+    # https://gist.github.com/ijleesw/4f863543a50294e3ba54acf588a4a421
+    if OSTYPE == "Darwin":
+        warning("Sorry for MacOS I have to disable openmp !!!")
+        use_openmp = "no"
     scons("api_path=" + GODOT_CPP_API_PATH,
           "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER_NAME + "\\\"",
           "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
           "target=" + MODULE_TARGET,
           "platform=" + platform,
           "arch=" + ARCHI,
-          "cpu_parallelism=" + CEF_USE_CPU_PARALLELISM)
+          "cpu_parallelism=" + use_openmp)
 
 ###############################################################################
 ###
