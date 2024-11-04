@@ -45,9 +45,8 @@
 #  define NEEDED_LIBRARIES "libcef.so", "libgdcef.so", "libvulkan.so.1", \
         "libvk_swiftshader.so", "libGLESv2.so", "libEGL.so"
 #elif defined(__APPLE__)
-#  define SUBPROCESS_NAME "gdcefSubProcess"
-#  define NEEDED_LIBRARIES "libcef.dylib", "libgdcef.dylib", "libvulkan.dylib", \
-        "libvk_swiftshader.dylib", "libGLESv2.dylib", "libEGL.dylib"
+#  define SUBPROCESS_NAME "cefsimple.app"
+#  define NEEDED_LIBRARIES "libgdcef.dylib"
 #else
 #  error "Undefined path for the Godot's CEF sub process for this architecture"
 #endif
@@ -68,6 +67,23 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
 // be modified or removed).
 static bool sanity_checks(fs::path const& folder)
 {
+#if defined(__APPLE__)
+    // List of needed files.
+    std::string lib_dir = SUBPROCESS_NAME"/Contents/Frameworks/Chromium Embedded Framework.framework/Libraries/";
+    std::string res_dir = SUBPROCESS_NAME"/Contents/Frameworks/Chromium Embedded Framework.framework/Resources/";
+    const std::vector<std::string> files =
+    {
+        SUBPROCESS_NAME, NEEDED_LIBRARIES,
+        lib_dir + "libvk_swiftshader.dylib", 
+        lib_dir + "libGLESv2.dylib", 
+        lib_dir + "libEGL.dylib",
+        res_dir + "icudtl.dat", 
+        res_dir + "chrome_100_percent.pak", 
+        res_dir + "chrome_200_percent.pak",
+        res_dir + "resources.pak", 
+        //res_dir + "v8_context_snapshot.bin" //need arch with filename
+    };
+#else
     // List of needed files.
     const std::vector<std::string> files =
     {
@@ -75,6 +91,7 @@ static bool sanity_checks(fs::path const& folder)
         "icudtl.dat", "chrome_100_percent.pak", "chrome_200_percent.pak",
         "resources.pak", "v8_context_snapshot.bin"
     };
+#endif
 
     // Check if important CEF artifacts exist and have correct SHA1.
     // FIXME: SHA1 not made
@@ -231,11 +248,22 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // the comments on CefExecuteProcess() for details. If this value is
     // non-empty then it must be an absolute path. Also configurable using the
     // "browser-subprocess-path" command-line switch.
+#if !defined(__APPLE__)
     fs::path sub_process_path =
         getConfig(config, "browser_subprocess_path", folder / SUBPROCESS_NAME);
     GDCEF_DEBUG_VAL("Setting SubProcess path: " << sub_process_path.string());
     CefString(&cef_settings.browser_subprocess_path)
             .FromString(sub_process_path.string());
+#else
+    fs::path main_bundle_path = folder / SUBPROCESS_NAME;
+    fs::path subprocess_path = main_bundle_path / 
+        "Contents/Frameworks/cefsimple Helper.app/Contents/MacOS/cefsimple Helper";
+    CefString(&cef_settings.main_bundle_path)
+        .FromString(main_bundle_path.string());
+    CefString(&cef_settings.browser_subprocess_path)
+        .FromString(subprocess_path.string());
+    GDCEF_DEBUG_VAL("Setting SubProcess path: " << main_bundle_path.string());
+#endif
 
     // The root directory that all CefSettings.cache_path and
     // CefRequestContextSettings.cache_path values must have in common. If this

@@ -62,14 +62,14 @@ opts.Update(env)
 # - CPPFLAGS are for pre-processor flags
 # - CPPDEFINES are for pre-processor defines
 # - LINKFLAGS are for linking flags
-if env['use_llvm'] or env['platform'] == 'osx':
+if env['use_llvm'] or env['platform'] == 'macos':
     env['CC'] = 'clang'
     env['CXX'] = 'clang++'
 
 # Process platform arguments. Here we use the same names as GDNative.
 platform = env['platform']
-if platform == 'macos':
-    platform = 'osx'
+if platform == 'osx':
+    platform = 'macos'
 elif platform in ('x11', 'linuxbsd'):
     platform = 'linux'
 elif platform == 'bsd':
@@ -102,7 +102,7 @@ target_path = env['build_path']
 target_library = 'libgdcef'
 
 # Platform specific compilation
-if platform == 'osx':
+if platform == 'macos':
     env.Append(CXXFLAGS=['--std=c++17'])
     env.Append(LINKFLAGS=['-arch', archi])
     env.Append(CCFLAGS=['-arch', archi])
@@ -141,7 +141,7 @@ elif platform == 'windows':
         env.Append(CCFLAGS=['-O2', '-EHsc', '-MD'])
 
 # Unix compilation flags
-if platform == 'linux' or platform == 'osx':
+if platform == 'linux' or platform == 'macos':
     # gcc/clang compilation flags
 #    env.Append(CXXFLAGS=['-Wall', '-Wextra', '-Wuninitialized', '-Wundef',
 #                         '-Wunused', '-Wunused-result', '-Wunused-parameter',
@@ -208,7 +208,10 @@ env.Append(CPPPATH = [cef_folder,
                       cef_include_folder + '/wrapper'])
 
 # CEF libraries that are linked against our library
-libcef = 'libcef' if platform != 'osx' else 'libcef_sandbox'
+libcef = 'libcef'
+if platform == 'macos':
+    env.Append(LIBS=File(cef_folder + '/' + cef_compile_mode + '/cef_sandbox.a'))
+    libcef = ''
 env.Append(LIBS = [libcef, 'libcef_dll_wrapper'],
            LIBPATH = [cef_folder + '/' + cef_compile_mode,
                       cef_folder + '/build',

@@ -27,9 +27,15 @@
 
 #include "gdcef.hpp"
 #include "gdbrowser.hpp"
+#include "helper_log.hpp"
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
+
+#ifdef __APPLE__
+#include "include/wrapper/cef_library_loader.h"
+bool loaded = false;
+#endif
 
 using namespace godot;
 
@@ -40,12 +46,38 @@ void initialize_gdcef_module(ModuleInitializationLevel p_level)
 
     ClassDB::register_class<GDCef>();
     ClassDB::register_class<GDBrowserView>();
+
+#ifdef __APPLE__
+    String cef_artifacts_folder;
+    if (OS::get_singleton()->has_feature("editor"))
+    	cef_artifacts_folder = ProjectSettings::get_singleton()->globalize_path("res://" + String(CEF_ARTIFACTS_FOLDER));
+    else 
+        cef_artifacts_folder = OS::get_singleton()->get_executable_path().get_base_dir().path_join(String(CEF_ARTIFACTS_FOLDER));
+
+    // Load the CEF framework library.
+    String framework_path = cef_artifacts_folder.path_join("cefsimple.app/Contents/Frameworks/Chromium Embedded Framework.framework/Chromium Embedded Framework");
+    std::string framework_path_std = std::string(framework_path.utf8());
+    if (!cef_load_library(framework_path_std.c_str())) {
+        GDCEF_DEBUG_VAL("Failed to load the CEF framework: " + framework_path_std);
+        return;
+    }
+    GDCEF_DEBUG_VAL("Loaded the CEF framework: " + framework_path_std);
+    loaded = true;
+#endif
 }
 
 void uninitialize_gdcef_module(ModuleInitializationLevel p_level)
 {
     if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE)
         return;
+
+#ifdef __APPLE__
+    if (loaded) {
+        // Unload the CEF framework library.
+        GDCEF_DEBUG_VAL("Unload the CEF framework.");
+        cef_unload_library();
+    }
+#endif
 }
 
 extern "C" {

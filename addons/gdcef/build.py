@@ -33,7 +33,7 @@
 ###
 ###############################################################################
 
-import os, sys, subprocess, hashlib, tarfile, shutil, glob, progressbar, urllib.request
+import os, sys, subprocess, hashlib, tarfile, shutil, glob, progressbar, urllib.request, ssl
 from platform import machine, system
 from pathlib import Path
 from multiprocessing import cpu_count
@@ -120,6 +120,8 @@ CEF_ARTIFACTS_BUILD_PATH = os.path.realpath(os.path.join("../../" + CEF_ARTIFACT
 ###
 ###############################################################################
 ARCHI = machine()
+if ARCHI == "AMD64":
+    ARCHI = "x86_64"
 NPROC = str(cpu_count())
 OSTYPE = system()
 
@@ -392,6 +394,7 @@ def download_cef():
         rmdir("cef_binary")
 
         # Download CEF at https://cef-builds.spotifycdn.com/index.html
+        ssl._create_default_https_context = ssl._create_unverified_context
         URL = "https://cef-builds.spotifycdn.com/" + CEF_TARBALL
         info(URL)
         download(URL, CEF_TARBALL)
@@ -444,8 +447,14 @@ def compile_cef():
             # for beeing used with Godot.
             exec("cmake", "-DCEF_RUNTIME_LIBRARY_FLAG=/MD", "-DCMAKE_BUILD_TYPE=" + CEF_TARGET, ".")
             exec("cmake", "--build", ".", "--config", CEF_TARGET)
+        elif OSTYPE == "Darwin":
+           # MacOS: Compile CEF using Ninja
+           mkdir("build")
+           os.chdir("build")
+           exec("cmake", "-G", "Ninja", "-DPROJECT_ARCH="+ARCHI, "-DCMAKE_BUILD_TYPE=" + CEF_TARGET, "..")
+           exec("ninja", "-v", "-j" + NPROC, "cefsimple")
         else:
-           # Linux, MacOS: Compile CEF if Ninja is available else use default
+           # Linux: Compile CEF if Ninja is available else use default
            # GNU Makefile.
            mkdir("build")
            os.chdir("build")
@@ -495,6 +504,9 @@ def copy_cef_assets():
             copyfile(f, build_path)
         for f in glob.glob(os.path.join(S, "locales/*")):
             copyfile(f, locales)
+    elif OSTYPE == "Darwin":
+        S = os.path.join(THIRDPARTY_CEF_PATH, "build", "tests", "cefsimple", CEF_TARGET, "cefsimple.app")
+        shutil.copytree(S, build_path + "/cefsimple.app")
     else:
         fatal("Unknown architecture " + OSTYPE + ": I dunno how to extract CEF artifacts")
 
@@ -526,8 +538,8 @@ def compile_godot_cpp():
                   "target=" + GODOT_CPP_TARGET,
                   "use_static_cpp=no")
         elif OSTYPE == "Darwin":
-            scons("platform=osx",
-                  "macos_arch=" + ARCHI,
+            scons("platform=macos",
+                  "arch=" + ARCHI,
                   "target=" + GODOT_CPP_TARGET,
                   "use_static_cpp=no")
         elif OSTYPE == "MinGW":
@@ -553,6 +565,7 @@ def gdnative_scons_cmd(plateform):
           "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
           "target=" + MODULE_TARGET,
           "platform=" + plateform,
+          "arch=" + ARCHI,
           "cpu_parallelism=" + CEF_USE_CPU_PARALLELISM)
 
 ###############################################################################
@@ -566,7 +579,7 @@ def compile_gdnative_cef(path):
     if OSTYPE == "Linux":
         gdnative_scons_cmd("x11")
     elif OSTYPE == "Darwin":
-        gdnative_scons_cmd("osx")
+        gdnative_scons_cmd("macos")
     elif OSTYPE == "Windows" or OSTYPE == "MinGW":
         gdnative_scons_cmd("windows")
     else:
@@ -648,6 +661,8 @@ def check_build_chain():
         fatal("You need to install 'cmake' tool")
     if not(shutil.which('ninja') or shutil.which('make')):
         fatal("You need to install either 'ninja' or 'gnu makefile' tool")
+    if (shutil.which('ninja') == None and OSTYPE == "Darwin"):
+        fatal("You need to install 'ninja' tool")
     if not(shutil.which('scons')):
         fatal("You need to install 'scons' tool")
     check_cmake_version()
@@ -716,7 +731,8 @@ if __name__ == "__main__":
         compile_cef()
         copy_cef_assets()
         compile_gdnative_cef(GDCEF_PATH)
-        compile_gdnative_cef(GDCEF_PROCESSES_PATH)
+        if OSTYPE != "Darwin":
+            compile_gdnative_cef(GDCEF_PROCESSES_PATH)
         create_gdextension_file()
     else:
         download_gdcef_release()
