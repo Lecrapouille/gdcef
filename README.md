@@ -1,43 +1,16 @@
-**Announcement: for Linux users for version >= 0.10.0, exporting LD_LIBRARY_PATH or LD_PRELOAD is no longer needed! Do not forget to remove them from your environment (i.e. bashrc)!**
+# Chromium Embedded Framework as Godot 4.3 Native Extension
 
-# Chromium Embedded Framework as Godot 4.3 native extension
+**Note: Are you developing with Godot-3 ? If yes, you are on the wrong branch. Please go to https://github.com/Lecrapouille/gdcef/tree/godot-3.x instead!**
 
-This repository contains the source code of some C++ classes wrapping a subset
-of the [Chromium Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home)
-API into a Godot > 4.2 native extension (GDExtension) which allows you to
-implement a web browser for your 2D and 3D games through your gdscripts for
-Linux and Windows. We have named this CEF GDExtension module `gdcef`.
+This repository contains C++ classes that wrap a subset of the [Chromium Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home) API into a Godot > 4.2 native extension (GDExtension). This allows you to implement a web browser in your 2D and 3D games using GDScript for Linux, Windows and MacOS. The name of this module is `gdcef`.
 
-This module can be downloaded directly from the Godot asset library:
-- https://godotengine.org/asset-library/asset/2508
-
-**Note: You are a Godot-3 dev? You are on the wrong branch. Please go to https://github.com/Lecrapouille/gdcef/tree/godot-3.x instead!**
-
-*Note:* This current repository is a fork of [the following
-repo](https://github.com/stigmee/gdnative-cef) (under GPLv3) with a more
-permissive license (MIT). Since the original repo is no longer maintained
-by their two original authors (Alain and Quentin), we, the undersigned Alain
-and Quentin, gave consent to relicensing the original code under the
-MIT license.
-
-## Documentation
-
-Since this current README is not taken when importing this module from the Godot asset
-library, all details are referred in the following
-[document](addons/gdcef/README.md) which explains you how to build
-this module, how to run demos, describe the architecture, details design and
-more ...
-
-## TL;DR: I do not want to loose time for compiling, I want CEF artifacts right now :)
-
-Check for [releases](https://github.com/Lecrapouille/gdcef/releases). Since tag 0.7.2
-CEF artifacts are given for Linux and Windows for x86_64 architectures. Uncompress
-the tarball and move the folder inside your project. Rename it as `cef_artifacts`.
-The Godot extension is present, you do not have to create one.
+This module can be downloaded directly either:
+- as code source to compile, from the Godot Asset Library: https://godotengine.org/asset-library/asset/2508
+- as precompiled binaries, from the GitHub releases link: https://github.com/Lecrapouille/gdcef/releases
 
 ## TL;DR: Compilation
 
-To compile this project with the Python3 build script for Linux and Windows:
+To compile this project, use the Python3 build script `build.py` for Linux, Windows and MacOS:
 
 ```
 cd addons/gdcef
@@ -45,24 +18,28 @@ python3 -m pip install -r requirements.txt
 python3 build.py
 ```
 
-This will generate CEF and Godot artifacts inside a created folder `cef_artifacts/`
-at the root of this project. Copy this folder inside your Godot project folder.
-The Godot extension is present, you do not have to create one.
+This will download and compile Godot and CEF, and generate the gdCEF artifacts inside the `cef_artifacts` folder at the root of this project. Copy this folder into your Godot project folder. The GDExtension file is included on this folder, so you don't need to create one.
+
+## TL;DR: I don't want to compile? I want to use gdCEF right now!
+
+Check the [releases](https://github.com/Lecrapouille/gdcef/releases). Since tag 0.7.2, CEF artifacts are provided for Linux and Windows x86_64 architectures. Simply uncompress the tarball and move the folder into your project. Be sure to rename it to `cef_artifacts`. The Godot extension is included, so you don't need to create one.
+
+## Full Documentation
+
+Since this README is not included when importing the module from the Godot Asset Library, all details can be found in [this document](addons/gdcef/README.md). It explains how to build this module, how to run demos, how to use the mode, describes the architecture, details the design, and more...
 
 ## Gallery
 
-If you are using this project, please do not hesitate to share your project links and
-pictures by making a GitHub pull request, I'll add them in this gallery. Thanks to
-teams for having shared the current gallery:
+If you're using this project, feel free to share your project links and pictures by submitting a GitHub pull request. I'll add them to this gallery. Thanks to the teams who have contributed to the current gallery:
 
 - [Wattesigma](https://github.com/face-hh/wattesigma) by FaceDev
 
 [![Wattesigma](addons/gdcef/doc/gallery/wattesigma.png)](https://youtu.be/37ISfJ2NSXQ)
 
-*Click on the picture to watch the Youtube video "I made my own Browser" by FaceDev.*
+*Click the picture to watch the YouTube video "I made my own Browser" by FaceDev.*
 
-- https://elitemeta.city (dead metaverse project)
+- https://elitemeta.city (discontinued metaverse project)
 
 [![elitemeta](addons/gdcef/doc/gallery/elitemeta.jpg)](https://ipfs.io/ipfs/QmaL7NY5qs3AtAdcX8vFhqaHwJeTMKfP3PbzcHZBLmo1QQ?filename=elitemeta_0.mp4)
 
-*Click on the picture to watch the Elitemeta video shared on IPFS.*
+*Click the picture to watch the Elitemeta video shared on IPFS (you need an IPFS client to watch it).*
