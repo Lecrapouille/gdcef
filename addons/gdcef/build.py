@@ -120,6 +120,8 @@ CEF_ARTIFACTS_BUILD_PATH = os.path.realpath(os.path.join("../../" + CEF_ARTIFACT
 ###
 ###############################################################################
 ARCHI = machine()
+if ARCHI == "AMD64":
+    ARCHI = "x86_64"
 NPROC = str(cpu_count())
 OSTYPE = system()
 
