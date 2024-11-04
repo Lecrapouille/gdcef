@@ -33,7 +33,7 @@
 ###
 ###############################################################################
 
-import os, sys, subprocess, hashlib, tarfile, shutil, glob, progressbar, urllib.request, ssl
+import os, sys, subprocess, hashlib, tarfile, shutil, glob, progressbar, urllib.request
 from platform import machine, system
 from pathlib import Path
 from multiprocessing import cpu_count
@@ -394,7 +394,6 @@ def download_cef():
         rmdir("cef_binary")
 
         # Download CEF at https://cef-builds.spotifycdn.com/index.html
-        ssl._create_default_https_context = ssl._create_unverified_context
         URL = "https://cef-builds.spotifycdn.com/" + CEF_TARBALL
         info(URL)
         download(URL, CEF_TARBALL)
