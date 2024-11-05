@@ -1,3 +1,8 @@
+Version 0.13.0:
+	* Portage to MacOS.
+	* Fix documentation.
+	* Update CI workflow fix regression when creating a release artifact.
+
 Version 0.12.1:
 	* Add API: get_title.
 	* Update doc concerning CPU over consuming.
