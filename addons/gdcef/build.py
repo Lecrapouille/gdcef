@@ -514,6 +514,8 @@ def copy_cef_assets():
     elif OSTYPE == "Darwin":
         S = os.path.join(THIRDPARTY_CEF_PATH, "build", "tests", "cefsimple", CEF_TARGET, "cefsimple.app")
         shutil.copytree(S, build_path + "/cefsimple.app")
+        for f in glob.glob(os.path.join(S, "locales/*")):
+            copyfile(f, locales)
     else:
         fatal("Unknown architecture " + OSTYPE + ": I dunno how to extract CEF artifacts")
 
