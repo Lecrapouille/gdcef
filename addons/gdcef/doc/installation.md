@@ -25,13 +25,19 @@ Install the following tools: `scons, g++, ninja, cmake, git, python3` (version 3
   - Python3: https://www.python.org/downloads/windows/
   - CMake: https://cmake.org/download/
   - Ninja: https://ninja-build.org/
-  - Scons: https://scons.org/pages/download.html
+  - Scons: https://scons.org/pages/download.html. **Note that Scons is no longer given as standalone executable**, it will be installed inside the `Scripts` folder of the Python installation, through the `pip` command: `python3 -m pip install scons`.
   - Git: https://git-scm.com/download/win
   - *Note:* I have installed them for their official website, I did not tried to install them from the `winget` command.
+
+Please check your PATH variables for Python3, CMake, Ninja, Scons and Git are set correctly. Here is an example for Windows. Scons is installed inside the `Scripts` folder of the Python installation.
+
+![PATH](pics/windows_path.png)
 
 To compile GDCef for Windows:
 - Make sure VS2022 is installed.
 - Open an **x64 Native Tools Command Prompt for VS 2022** with **Administrator** privileges (this should be available in the start menu under Visual Studio 2022). This ensures the environment is properly set up to use the VS tools (for example we use aliases which are disabled in the standard command prompt).
+
+![Administrator](pics/windows_administrator.png)
 
 ### Install Python3 packages
 
