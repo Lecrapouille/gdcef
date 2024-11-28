@@ -34,6 +34,7 @@
 ###############################################################################
 
 import os, sys, subprocess, hashlib, tarfile, shutil, glob, progressbar, urllib.request
+import importlib
 from platform import machine, system
 from pathlib import Path
 from multiprocessing import cpu_count
@@ -94,9 +95,9 @@ CEF_USE_CPU_PARALLELISM = "yes"                           # or "no"
 # Minimun CMake version needed for compiling CEF
 CMAKE_MIN_VERSION = "3.19"
 
-# Scons is the build system used by Godot. For some people "scons" command does not
-# work, they need to call "python -m SCons" command. The array is needed by the func
-# calling scons.
+# Scons is the build system used by Godot. For some people "scons" command is not recognized.
+# I guess they are Windows users and they have not set correctly their PATH variable. (i.e.
+# C:\Users\<username>\AppData\Local\Programs\Python\Python313\Scripts)
 SCONS = "scons"                                           # or ["python3", "-m", "SCons"]
 
 ###############################################################################
@@ -678,7 +679,10 @@ def check_build_chain():
         fatal("You need to install either 'ninja' or 'gnu makefile' tool")
     if (shutil.which('ninja') == None and OSTYPE == "Darwin"):
         fatal("You need to install 'ninja' tool")
-    if not(shutil.which('scons')):
+    if type(SCONS) == str:
+        if not(shutil.which(SCONS)):
+            fatal("You need to install 'scons' tool")
+    elif importlib.import_module("scons") == None:
         fatal("You need to install 'scons' tool")
     check_cmake_version()
     check_compiler()
