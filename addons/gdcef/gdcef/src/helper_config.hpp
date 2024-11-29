@@ -11,8 +11,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -23,26 +23,31 @@
 // SOFTWARE.
 //*****************************************************************************
 
-
-#  include "gdcef.hpp"
 #ifndef GDCEF_HELPER_CONFIG_HPP
-#  define GDCEF_HELPER_CONFIG_HPP
+#define GDCEF_HELPER_CONFIG_HPP
+
+#include "gdcef.hpp"
+#include "helper_files.hpp"
 
 // ****************************************************************************
 //! \brief  CEF can be run either from the binary (standalone application) or
 //! from the Godot editor. We have to distinguish the both case.
 // ****************************************************************************
-#define IS_STARTED_FROM_GODOT_EDITOR()                                        \
-   godot::OS::get_singleton()->has_feature("editor")
+#define IS_STARTED_FROM_GODOT_EDITOR() \
+    godot::OS::get_singleton()->has_feature("editor")
 
-#define GLOBALIZE_PATH(path)                                                  \
-   godot::ProjectSettings::get_singleton()->globalize_path(path.c_str()).utf8().get_data()
+#define GLOBALIZE_PATH(path)                \
+    godot::ProjectSettings::get_singleton() \
+        ->globalize_path(path.c_str())      \
+        .utf8()                             \
+        .get_data()
 
 // ****************************************************************************
 //! \brief Godot dictionary getter with default value.
 // ****************************************************************************
-template<class T>
-static T getConfig(godot::Dictionary const& config, const char* property,
+template <class T>
+static T getConfig(godot::Dictionary const& config,
+                   const char* property,
                    T const& default_value)
 {
     if ((property != nullptr) && config.has(property))
@@ -50,7 +55,7 @@ static T getConfig(godot::Dictionary const& config, const char* property,
     return default_value;
 }
 
-template<>
+template <>
 std::string getConfig<std::string>(godot::Dictionary const& config,
                                    const char* property,
                                    std::string const& default_value)
@@ -63,10 +68,10 @@ std::string getConfig<std::string>(godot::Dictionary const& config,
     return default_value;
 }
 
-template<>
-fs::path getConfig<fs::path >(godot::Dictionary const& config,
-                              const char* property,
-                              fs::path const& default_value)
+template <>
+fs::path getConfig<fs::path>(godot::Dictionary const& config,
+                             const char* property,
+                             fs::path const& default_value)
 {
     if ((property != nullptr) && config.has(property))
     {
@@ -76,7 +81,7 @@ fs::path getConfig<fs::path >(godot::Dictionary const& config,
     return default_value;
 }
 
-template<>
+template <>
 cef_state_t getConfig<cef_state_t>(godot::Dictionary const& config,
                                    const char* property,
                                    cef_state_t const& default_value)

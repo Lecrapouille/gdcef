@@ -11,8 +11,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -28,22 +28,21 @@
 #include "helper_files.hpp"
 
 #include <gdextension_interface.h>
-#include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
 
 #ifdef _OPENMP
-#  include <omp.h>
+#    include <omp.h>
 #endif
 
 //------------------------------------------------------------------------------
 // Visit the html content of the current page.
-class Visitor : public CefStringVisitor
+class Visitor: public CefStringVisitor
 {
 public:
-    Visitor(GDBrowserView& node)
-        : m_node(node)
-    {}
+
+    Visitor(GDBrowserView& node) : m_node(node) {}
 
     virtual void Visit(const CefString& string) override
     {
@@ -60,8 +59,8 @@ private:
 
 //------------------------------------------------------------------------------
 // in a GDNative module, "_bind_methods" is replaced by the "_register_methods"
-// method CefRefPtr<CefBrowser> m_browser; this is used to expose various methods
-// of this class to Godot.
+// method CefRefPtr<CefBrowser> m_browser; this is used to expose various
+// methods of this class to Godot.
 void GDBrowserView::_bind_methods()
 {
     using namespace godot;
@@ -71,15 +70,22 @@ void GDBrowserView::_bind_methods()
     ClassDB::bind_method(D_METHOD("id"), &GDBrowserView::id);
     ClassDB::bind_method(D_METHOD("get_error"), &GDBrowserView::getError);
     ClassDB::bind_method(D_METHOD("is_valid"), &GDBrowserView::isValid);
-    ClassDB::bind_method(D_METHOD("set_texture", "texture"), &GDBrowserView::setTexture);
+    ClassDB::bind_method(D_METHOD("set_texture", "texture"),
+                         &GDBrowserView::setTexture);
     ClassDB::bind_method(D_METHOD("get_texture"), &GDBrowserView::getTexture);
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_NODE_TYPE,
-        "ImageTexture"), "set_texture", "get_texture");
-    ClassDB::bind_method(D_METHOD("set_zoom_level"), &GDBrowserView::setZoomLevel);
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT,
+                              "texture",
+                              PROPERTY_HINT_NODE_TYPE,
+                              "ImageTexture"),
+                 "set_texture",
+                 "get_texture");
+    ClassDB::bind_method(D_METHOD("set_zoom_level"),
+                         &GDBrowserView::setZoomLevel);
     ClassDB::bind_method(D_METHOD("get_title"), &GDBrowserView::getTitle);
     ClassDB::bind_method(D_METHOD("get_url"), &GDBrowserView::getURL);
     ClassDB::bind_method(D_METHOD("load_url"), &GDBrowserView::loadURL);
-    ClassDB::bind_method(D_METHOD("load_data_uri"), &GDBrowserView::loadDataURI);
+    ClassDB::bind_method(D_METHOD("load_data_uri"),
+                         &GDBrowserView::loadDataURI);
     ClassDB::bind_method(D_METHOD("is_loaded"), &GDBrowserView::loaded);
     ClassDB::bind_method(D_METHOD("reload"), &GDBrowserView::reload);
     ClassDB::bind_method(D_METHOD("stop_loading"), &GDBrowserView::stopLoading);
@@ -87,46 +93,75 @@ void GDBrowserView::_bind_methods()
     ClassDB::bind_method(D_METHOD("paste"), &GDBrowserView::paste);
     ClassDB::bind_method(D_METHOD("undo"), &GDBrowserView::undo);
     ClassDB::bind_method(D_METHOD("redo"), &GDBrowserView::redo);
-    ClassDB::bind_method(D_METHOD("request_html_content"), &GDBrowserView::requestHtmlContent);
-    ClassDB::bind_method(D_METHOD("execute_javascript"), &GDBrowserView::executeJavaScript);
-    ClassDB::bind_method(D_METHOD("has_previous_page"), &GDBrowserView::canNavigateBackward);
-    ClassDB::bind_method(D_METHOD("has_next_page"), &GDBrowserView::canNavigateForward);
-    ClassDB::bind_method(D_METHOD("previous_page"), &GDBrowserView::navigateBackward);
-    ClassDB::bind_method(D_METHOD("next_page"), &GDBrowserView::navigateForward);
+    ClassDB::bind_method(D_METHOD("request_html_content"),
+                         &GDBrowserView::requestHtmlContent);
+    ClassDB::bind_method(D_METHOD("execute_javascript"),
+                         &GDBrowserView::executeJavaScript);
+    ClassDB::bind_method(D_METHOD("has_previous_page"),
+                         &GDBrowserView::canNavigateBackward);
+    ClassDB::bind_method(D_METHOD("has_next_page"),
+                         &GDBrowserView::canNavigateForward);
+    ClassDB::bind_method(D_METHOD("previous_page"),
+                         &GDBrowserView::navigateBackward);
+    ClassDB::bind_method(D_METHOD("next_page"),
+                         &GDBrowserView::navigateForward);
     ClassDB::bind_method(D_METHOD("resize"), &GDBrowserView::resize);
     ClassDB::bind_method(D_METHOD("set_viewport"), &GDBrowserView::viewport);
     ClassDB::bind_method(D_METHOD("set_key_pressed"), &GDBrowserView::keyPress);
-    ClassDB::bind_method(D_METHOD("set_mouse_moved"), &GDBrowserView::mouseMove);
-    ClassDB::bind_method(D_METHOD("set_mouse_left_click"), &GDBrowserView::leftClick);
-    ClassDB::bind_method(D_METHOD("set_mouse_right_click"), &GDBrowserView::rightClick);
-    ClassDB::bind_method(D_METHOD("set_mouse_middle_click"), &GDBrowserView::middleClick);
-    ClassDB::bind_method(D_METHOD("set_mouse_left_down"), &GDBrowserView::leftMouseDown);
-    ClassDB::bind_method(D_METHOD("set_mouse_left_up"), &GDBrowserView::leftMouseUp);
-    ClassDB::bind_method(D_METHOD("set_mouse_right_down"), &GDBrowserView::rightMouseDown);
-    ClassDB::bind_method(D_METHOD("set_mouse_right_up"), &GDBrowserView::rightMouseUp);
-    ClassDB::bind_method(D_METHOD("set_mouse_middle_down"), &GDBrowserView::middleMouseDown);
-    ClassDB::bind_method(D_METHOD("set_mouse_middle_up"), &GDBrowserView::middleMouseUp);
-    ClassDB::bind_method(D_METHOD("set_mouse_wheel_vertical"), &GDBrowserView::mouseWheelVertical);
-    ClassDB::bind_method(D_METHOD("set_mouse_wheel_horizontal"), &GDBrowserView::mouseWheelHorizontal);
+    ClassDB::bind_method(D_METHOD("set_mouse_moved"),
+                         &GDBrowserView::mouseMove);
+    ClassDB::bind_method(D_METHOD("set_mouse_left_click"),
+                         &GDBrowserView::leftClick);
+    ClassDB::bind_method(D_METHOD("set_mouse_right_click"),
+                         &GDBrowserView::rightClick);
+    ClassDB::bind_method(D_METHOD("set_mouse_middle_click"),
+                         &GDBrowserView::middleClick);
+    ClassDB::bind_method(D_METHOD("set_mouse_left_down"),
+                         &GDBrowserView::leftMouseDown);
+    ClassDB::bind_method(D_METHOD("set_mouse_left_up"),
+                         &GDBrowserView::leftMouseUp);
+    ClassDB::bind_method(D_METHOD("set_mouse_right_down"),
+                         &GDBrowserView::rightMouseDown);
+    ClassDB::bind_method(D_METHOD("set_mouse_right_up"),
+                         &GDBrowserView::rightMouseUp);
+    ClassDB::bind_method(D_METHOD("set_mouse_middle_down"),
+                         &GDBrowserView::middleMouseDown);
+    ClassDB::bind_method(D_METHOD("set_mouse_middle_up"),
+                         &GDBrowserView::middleMouseUp);
+    ClassDB::bind_method(D_METHOD("set_mouse_wheel_vertical"),
+                         &GDBrowserView::mouseWheelVertical);
+    ClassDB::bind_method(D_METHOD("set_mouse_wheel_horizontal"),
+                         &GDBrowserView::mouseWheelHorizontal);
     ClassDB::bind_method(D_METHOD("set_muted"), &GDBrowserView::mute);
     ClassDB::bind_method(D_METHOD("is_muted"), &GDBrowserView::muted);
-    ClassDB::bind_method(D_METHOD("set_audio_stream", "audio"), &GDBrowserView::setAudioStreamer);
-    ClassDB::bind_method(D_METHOD("get_audio_stream"), &GDBrowserView::getAudioStreamer);
-    ClassDB::bind_method(D_METHOD("get_pixel_color", "x", "y"), &GDBrowserView::getPixelColor);
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "audio_stream", PROPERTY_HINT_NODE_TYPE,
-        "AudioStreamGeneratorPlayback"), "set_audio_stream", "get_audio_stream");
+    ClassDB::bind_method(D_METHOD("set_audio_stream", "audio"),
+                         &GDBrowserView::setAudioStreamer);
+    ClassDB::bind_method(D_METHOD("get_audio_stream"),
+                         &GDBrowserView::getAudioStreamer);
+    ClassDB::bind_method(D_METHOD("get_pixel_color", "x", "y"),
+                         &GDBrowserView::getPixelColor);
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT,
+                              "audio_stream",
+                              PROPERTY_HINT_NODE_TYPE,
+                              "AudioStreamGeneratorPlayback"),
+                 "set_audio_stream",
+                 "get_audio_stream");
 
-    ADD_SIGNAL(MethodInfo("on_page_loaded", PropertyInfo(Variant::OBJECT, "node")));
-    ADD_SIGNAL(MethodInfo("on_page_failed_loading", PropertyInfo(Variant::INT, "err_code"),
-        PropertyInfo(Variant::STRING, "err_msg"), PropertyInfo(Variant::OBJECT, "node")));
-    ADD_SIGNAL(MethodInfo("on_browser_paint", PropertyInfo(Variant::OBJECT, "node")));
-    ADD_SIGNAL(MethodInfo("on_html_content_requested", PropertyInfo(Variant::STRING, "html"),
-        PropertyInfo(Variant::OBJECT, "node")));
+    ADD_SIGNAL(
+        MethodInfo("on_page_loaded", PropertyInfo(Variant::OBJECT, "node")));
+    ADD_SIGNAL(MethodInfo("on_page_failed_loading",
+                          PropertyInfo(Variant::INT, "err_code"),
+                          PropertyInfo(Variant::STRING, "err_msg"),
+                          PropertyInfo(Variant::OBJECT, "node")));
+    ADD_SIGNAL(
+        MethodInfo("on_browser_paint", PropertyInfo(Variant::OBJECT, "node")));
+    ADD_SIGNAL(MethodInfo("on_html_content_requested",
+                          PropertyInfo(Variant::STRING, "html"),
+                          PropertyInfo(Variant::OBJECT, "node")));
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::_init()
-{}
+void GDBrowserView::_init() {}
 
 //------------------------------------------------------------------------------
 godot::String GDBrowserView::getError()
@@ -137,13 +172,14 @@ godot::String GDBrowserView::getError()
 }
 
 //------------------------------------------------------------------------------
-int GDBrowserView::init(godot::String const& url, CefBrowserSettings const& settings,
+int GDBrowserView::init(godot::String const& url,
+                        CefBrowserSettings const& settings,
                         CefWindowInfo const& window_info)
 {
 #ifdef _OPENMP
-    #pragma omp parallel
+#    pragma omp parallel
     {
-        #pragma omp single
+#    pragma omp single
         GDCEF_DEBUG_VAL("OpenMP number of threads = " << omp_get_num_threads());
     }
 #else
@@ -158,8 +194,7 @@ int GDBrowserView::init(godot::String const& url, CefBrowserSettings const& sett
     // passed to CefRenderProcessHandler::OnBrowserCreated() in the render
     // process.
     m_browser = CefBrowserHost::CreateBrowserSync(
-        window_info, m_impl, url.utf8().get_data(), settings,
-        nullptr, nullptr);
+        window_info, m_impl, url.utf8().get_data(), settings, nullptr, nullptr);
 
     if ((m_browser == nullptr) || (m_browser->GetHost() == nullptr))
     {
@@ -181,8 +216,7 @@ int GDBrowserView::init(godot::String const& url, CefBrowserSettings const& sett
 }
 
 //------------------------------------------------------------------------------
-GDBrowserView::GDBrowserView()
-    : m_viewport({ 0.0f, 0.0f, 1.0f, 1.0f})
+GDBrowserView::GDBrowserView() : m_viewport({0.0f, 0.0f, 1.0f, 1.0f})
 {
     BROWSER_DEBUG_VAL("Create Godot texture");
 
@@ -199,7 +233,8 @@ GDBrowserView::~GDBrowserView()
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::getViewRect(CefRefPtr<CefBrowser> /*browser*/, CefRect& rect)
+void GDBrowserView::getViewRect(CefRefPtr<CefBrowser> /*browser*/,
+                                CefRect& rect)
 {
     rect = CefRect(int(m_viewport[0] * m_width),
                    int(m_viewport[1] * m_height),
@@ -211,11 +246,13 @@ void GDBrowserView::getViewRect(CefRefPtr<CefBrowser> /*browser*/, CefRect& rect
 void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
                             CefRenderHandler::PaintElementType /*type*/,
                             const CefRenderHandler::RectList& dirtyRects,
-                            const void* buffer, int width, int height)
+                            const void* buffer,
+                            int width,
+                            int height)
 {
     // Sanity check
     if ((width <= 0) || (height <= 0) || (buffer == nullptr))
-        return ;
+        return;
 
     // BGRA8: blue, green, red components each coded as byte
     int const COLOR_CHANELS = 4;
@@ -230,8 +267,8 @@ void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
     // Copy per line func for OpenMP/PPL
     unsigned char* imageData = m_data.ptrw();
     const unsigned char* cbuffer = (const unsigned char*)buffer;
-    auto doCopyLine = [imageData, cbuffer, width, COLOR_CHANELS](int line, int x, int copyWidth)
-    {
+    auto doCopyLine = [imageData, cbuffer, width, COLOR_CHANELS](
+                          int line, int x, int copyWidth) {
         int i = (line * width + x) * COLOR_CHANELS;
         int end = i + (copyWidth * COLOR_CHANELS);
         for (; i < end; i += COLOR_CHANELS)
@@ -247,28 +284,30 @@ void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
     if (bResized)
     {
         // PPL
-        //concurrency::parallel_for(0, height,
+        // concurrency::parallel_for(0, height,
         //    std::bind(doCopyLine, std::placeholders::_1, 0, width));
 
-        #pragma omp parallel for
+#pragma omp parallel for
         for (int y = 0; y < height; ++y)
         {
             doCopyLine(y, 0, width);
         }
 
         // Copy Godot PoolByteArray to Godot texture.
-        m_image->set_data(width, height, false, godot::Image::FORMAT_RGBA8, m_data);
+        m_image->set_data(
+            width, height, false, godot::Image::FORMAT_RGBA8, m_data);
         m_texture->set_image(m_image);
     }
     else
     {
         for (const CefRect& rect : dirtyRects)
         {
-            //PPL
-            //concurrency::parallel_for(rect.y, rect.y + rect.height,
-            //    std::bind(doCopyLine, std::placeholders::_1, rect.x, rect.width));
+            // PPL
+            // concurrency::parallel_for(rect.y, rect.y + rect.height,
+            //     std::bind(doCopyLine, std::placeholders::_1, rect.x,
+            //     rect.width));
 
-            #pragma omp parallel for
+#pragma omp parallel for
             for (int y = rect.y; y < rect.y + rect.height; ++y)
             {
                 doCopyLine(y, rect.x, rect.width);
@@ -276,7 +315,8 @@ void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
         }
 
         // Copy Godot PoolByteArray to Godot texture.
-        m_image->set_data(width, height, false, godot::Image::FORMAT_RGBA8, m_data);
+        m_image->set_data(
+            width, height, false, godot::Image::FORMAT_RGBA8, m_data);
         m_texture->update(m_image);
     }
 
@@ -388,11 +428,13 @@ godot::String GDBrowserView::getTitle() const
 {
     BROWSER_DEBUG();
 
-    if (!m_browser) return godot::String();
+    if (!m_browser)
+        return godot::String();
 
     if (m_browser->GetMainFrame())
     {
-        CefString title = m_browser->GetHost()->GetVisibleNavigationEntry()->GetTitle();
+        CefString title =
+            m_browser->GetHost()->GetVisibleNavigationEntry()->GetTitle();
         std::string utf8_title = title.ToString();
         return godot::String::utf8(utf8_title.c_str());
     }
@@ -580,8 +622,14 @@ void GDBrowserView::navigateForward()
 //------------------------------------------------------------------------------
 void GDBrowserView::resize_(int width, int height)
 {
-    if (width <= 0) { width = 2; }
-    if (height <= 0) { height = 2; }
+    if (width <= 0)
+    {
+        width = 2;
+    }
+    if (height <= 0)
+    {
+        height = 2;
+    }
     BROWSER_DEBUG_VAL(width << " x " << height);
 
     m_width = float(width);
@@ -641,16 +689,16 @@ void GDBrowserView::close()
     BROWSER_DEBUG();
 
     if (!m_browser)
-        return ;
+        return;
 
     // FIXME
-   // BROWSER_DEBUG_VAL("'" << get_name().utf8().get_data() << "'");
+    // BROWSER_DEBUG_VAL("'" << get_name().utf8().get_data() << "'");
 
     auto host = m_browser->GetHost();
     if (!host)
-        return ;
+        return;
 
-    host->CloseDevTools(); // remote_debugging_port
+    host->CloseDevTools();    // remote_debugging_port
     host->CloseBrowser(true); // TryCloseBrowser();
     m_browser = nullptr;
     m_impl = nullptr;
@@ -687,11 +735,13 @@ void GDBrowserView::onAudioStreamStarted(CefRefPtr<CefBrowser> browser,
 
 //------------------------------------------------------------------------------
 void GDBrowserView::onAudioStreamPacket(CefRefPtr<CefBrowser> browser,
-                                        const float** data, int frames, int64_t pts)
+                                        const float** data,
+                                        int frames,
+                                        int64_t pts)
 {
     if ((m_impl == nullptr) || (m_impl->m_audio.streamer == nullptr))
     {
-        return ;
+        return;
     }
 
     if ((data == nullptr) || (frames <= 0) || (m_impl->m_audio.channels == -1))
@@ -712,8 +762,7 @@ godot::Color GDBrowserView::getPixelColor(int x, int y) const
 {
     // Ensure the browser is valid and coordinates are within bounds
     if (x < 0 || y < 0 || x >= m_width || y >= m_height || m_data.size() == 0)
-        return godot::Color(1, 1, 1, 1);  // Return full white as fallback
-
+        return godot::Color(1, 1, 1, 1); // Return full white as fallback
 
     int index = (y * m_width + x) * 4;
     unsigned char r = m_data[index + 0];

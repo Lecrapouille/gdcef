@@ -11,8 +11,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -62,24 +62,27 @@ void GDBrowserView::leftMouseDown()
 
     using namespace std::chrono;
     system_clock::time_point now = system_clock::now();
-    int64_t click_interval_ms = duration_cast<milliseconds>(now - m_last_left_down).count();
+    int64_t click_interval_ms =
+        duration_cast<milliseconds>(now - m_last_left_down).count();
     m_last_left_down = now;
     if (click_interval_ms > 500)
         m_left_click_count = 1;
 
     m_mouse_event_modifiers |= EVENTFLAG_LEFT_MOUSE_BUTTON;
 
-    CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_LEFT;
+    CefBrowserHost::MouseButtonType btn =
+        CefBrowserHost::MouseButtonType::MBT_LEFT;
     CefMouseEvent evt;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
     evt.modifiers = m_mouse_event_modifiers;
 
-    m_browser->GetHost()->SendMouseClickEvent(evt, btn, false, m_left_click_count);
+    m_browser->GetHost()->SendMouseClickEvent(
+        evt, btn, false, m_left_click_count);
 
     // Copy selected text
     // FIXME https://github.com/chromiumembedded/cef/issues/3117
-    //if ((m_left_click_count > 1) && m_browser->GetMainFrame())
+    // if ((m_left_click_count > 1) && m_browser->GetMainFrame())
     //{
     //    m_browser->GetMainFrame()->Copy();
     //}
@@ -93,7 +96,8 @@ void GDBrowserView::rightMouseDown()
 
     m_mouse_event_modifiers |= EVENTFLAG_RIGHT_MOUSE_BUTTON;
 
-    CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_RIGHT;
+    CefBrowserHost::MouseButtonType btn =
+        CefBrowserHost::MouseButtonType::MBT_RIGHT;
     CefMouseEvent evt;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
@@ -110,7 +114,8 @@ void GDBrowserView::leftMouseUp()
 
     m_mouse_event_modifiers &= ~EVENTFLAG_LEFT_MOUSE_BUTTON;
 
-    CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_LEFT;
+    CefBrowserHost::MouseButtonType btn =
+        CefBrowserHost::MouseButtonType::MBT_LEFT;
     CefMouseEvent evt;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
@@ -127,7 +132,8 @@ void GDBrowserView::rightMouseUp()
 
     m_mouse_event_modifiers &= ~EVENTFLAG_RIGHT_MOUSE_BUTTON;
 
-    CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_RIGHT;
+    CefBrowserHost::MouseButtonType btn =
+        CefBrowserHost::MouseButtonType::MBT_RIGHT;
     CefMouseEvent evt;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
@@ -144,7 +150,8 @@ void GDBrowserView::middleMouseDown()
 
     m_mouse_event_modifiers |= EVENTFLAG_MIDDLE_MOUSE_BUTTON;
 
-    CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_MIDDLE;
+    CefBrowserHost::MouseButtonType btn =
+        CefBrowserHost::MouseButtonType::MBT_MIDDLE;
     CefMouseEvent evt;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
@@ -161,7 +168,8 @@ void GDBrowserView::middleMouseUp()
 
     m_mouse_event_modifiers &= ~EVENTFLAG_MIDDLE_MOUSE_BUTTON;
 
-    CefBrowserHost::MouseButtonType btn = CefBrowserHost::MouseButtonType::MBT_MIDDLE;
+    CefBrowserHost::MouseButtonType btn =
+        CefBrowserHost::MouseButtonType::MBT_MIDDLE;
     CefMouseEvent evt;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
@@ -174,7 +182,7 @@ void GDBrowserView::middleMouseUp()
 void GDBrowserView::mouseMove(int x, int y)
 {
     if (!m_browser)
-        return ;
+        return;
 
     m_mouse_x = x;
     m_mouse_y = y;
@@ -195,7 +203,7 @@ void GDBrowserView::mouseMove(int x, int y)
 void GDBrowserView::mouseWheelVertical(const int wDelta)
 {
     if (m_browser == nullptr)
-        return ;
+        return;
 
     CefMouseEvent evt;
     evt.x = m_mouse_x;
@@ -209,7 +217,7 @@ void GDBrowserView::mouseWheelVertical(const int wDelta)
 void GDBrowserView::mouseWheelHorizontal(const int wDelta)
 {
     if (m_browser == nullptr)
-        return ;
+        return;
 
     CefMouseEvent evt;
     evt.x = m_mouse_x;
@@ -235,7 +243,11 @@ static uint32_t getKeyboardModifiers(bool shift, bool alt, bool ctrl)
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool ctrl)
+void GDBrowserView::keyPress(int key,
+                             bool pressed,
+                             bool shift,
+                             bool alt,
+                             bool ctrl)
 {
     if (!m_browser)
         return;
@@ -256,8 +268,7 @@ void GDBrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool c
             event.type = KEYEVENT_CHAR;
             m_browser->GetHost()->SendKeyEvent(event);
         }
-        else if (key == godot::KEY_SPACE ||
-                 key == godot::KEY_TAB)
+        else if (key == godot::KEY_SPACE || key == godot::KEY_TAB)
         {
             // BROWSER_DEBUG_VAL("KEY_SPACE / KEY_TAB");
             event.windows_key_code = key;
@@ -268,23 +279,25 @@ void GDBrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool c
             event.type = KEYEVENT_CHAR;
             m_browser->GetHost()->SendKeyEvent(event);
         }
-        else if (key == godot::KEY_BACKSPACE ||
-                 key == godot::KEY_ENTER ||
-                 key == godot::KEY_KP_ENTER )
+        else if (key == godot::KEY_BACKSPACE || key == godot::KEY_ENTER ||
+                 key == godot::KEY_KP_ENTER)
         {
-            if (key == godot::KEY_BACKSPACE) {
+            if (key == godot::KEY_BACKSPACE)
+            {
                 // BROWSER_DEBUG_VAL("KEY_BACKSPACE");
                 event.windows_key_code = 8;
                 event.character = 8;
                 event.unmodified_character = 8;
             }
-            else if (key == godot::KEY_ENTER) {
+            else if (key == godot::KEY_ENTER)
+            {
                 // BROWSER_DEBUG_VAL("KEY_ENTER");
                 event.windows_key_code = 13;
                 event.character = 13;
                 event.unmodified_character = 13;
             }
-            else if (key == godot::KEY_KP_ENTER) {
+            else if (key == godot::KEY_KP_ENTER)
+            {
                 // BROWSER_DEBUG_VAL("KEY_KP_ENTER");
                 event.windows_key_code = 13;
                 event.character = 13;
@@ -310,56 +323,61 @@ void GDBrowserView::keyPress(int key, bool pressed, bool shift, bool alt, bool c
             event.type = KEYEVENT_CHAR;
             m_browser->GetHost()->SendKeyEvent(event);
         }
-        else if (key == godot::KEY_RIGHT ||
-                 key == godot::KEY_LEFT ||
-                 key == godot::KEY_UP ||
-                 key == godot::KEY_DOWN ||
-                 key == godot::KEY_PAGEUP ||
-                 key == godot::KEY_PAGEDOWN ||
-                 key == godot::KEY_HOME ||
-                 key == godot::KEY_END ||
-                 key == godot::KEY_INSERT ||
-                 key == godot::KEY_DELETE) // ARROWS
+        else if (key == godot::KEY_RIGHT || key == godot::KEY_LEFT ||
+                 key == godot::KEY_UP || key == godot::KEY_DOWN ||
+                 key == godot::KEY_PAGEUP || key == godot::KEY_PAGEDOWN ||
+                 key == godot::KEY_HOME || key == godot::KEY_END ||
+                 key == godot::KEY_INSERT || key == godot::KEY_DELETE) // ARROWS
         {
             // https://keycode.info/
 
-            if (key == godot::KEY_RIGHT) {
+            if (key == godot::KEY_RIGHT)
+            {
                 // BROWSER_DEBUG_VAL("KEY_RIGHT");
                 event.windows_key_code = 39;
             }
-            else if (key == godot::KEY_LEFT) {
+            else if (key == godot::KEY_LEFT)
+            {
                 // BROWSER_DEBUG_VAL("KEY_LEFT");
                 event.windows_key_code = 37;
             }
-            else if (key == godot::KEY_UP) {
+            else if (key == godot::KEY_UP)
+            {
                 // BROWSER_DEBUG_VAL("KEY_UP");
                 event.windows_key_code = 38;
             }
-            else if (key == godot::KEY_DOWN) {
+            else if (key == godot::KEY_DOWN)
+            {
                 // BROWSER_DEBUG_VAL("KEY_DOWN");
                 event.windows_key_code = 40;
             }
-            else if (key == godot::KEY_PAGEUP) {
+            else if (key == godot::KEY_PAGEUP)
+            {
                 // BROWSER_DEBUG_VAL("KEY_PAGEUP");
                 event.windows_key_code = 33;
             }
-            else if (key == godot::KEY_PAGEDOWN) {
+            else if (key == godot::KEY_PAGEDOWN)
+            {
                 // BROWSER_DEBUG_VAL("KEY_PAGEDOWN");
                 event.windows_key_code = 34;
             }
-            else if (key == godot::KEY_HOME) {
+            else if (key == godot::KEY_HOME)
+            {
                 // BROWSER_DEBUG_VAL("KEY_HOME");
                 event.windows_key_code = 36; // Debut
             }
-            else if (key == godot::KEY_END) {
+            else if (key == godot::KEY_END)
+            {
                 // BROWSER_DEBUG_VAL("KEY_END");
                 event.windows_key_code = 35; // Fin
             }
-            else if (key == godot::KEY_INSERT) {
+            else if (key == godot::KEY_INSERT)
+            {
                 // BROWSER_DEBUG_VAL("KEY_INSERT");
                 event.windows_key_code = 45; // Insert
             }
-            else if (key == godot::KEY_DELETE) {
+            else if (key == godot::KEY_DELETE)
+            {
                 // BROWSER_DEBUG_VAL("KEY_DELETE");
                 event.windows_key_code = 46; // Del (not dot when no char event)
             }

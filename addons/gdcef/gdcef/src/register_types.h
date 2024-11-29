@@ -1,5 +1,5 @@
 #ifndef GDCEF_REGISTER_TYPES_H
-#  define GDCEF_REGISTER_TYPES_H
+#define GDCEF_REGISTER_TYPES_H
 
 #include <godot_cpp/core/class_db.hpp>
 

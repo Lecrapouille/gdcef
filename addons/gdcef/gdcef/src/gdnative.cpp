@@ -11,8 +11,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -23,15 +23,16 @@
 // SOFTWARE.
 //*****************************************************************************
 
-#include "gdcef.hpp"
 #include "gdbrowser.hpp"
+#include "gdcef.hpp"
 
-extern "C" void GDN_EXPORT godot_gdnative_init(godot_gdnative_init_options * o)
+extern "C" void GDN_EXPORT godot_gdnative_init(godot_gdnative_init_options* o)
 {
     godot::Godot::gdnative_init(o);
 }
 
-extern "C" void GDN_EXPORT godot_gdnative_terminate(godot_gdnative_terminate_options * o)
+extern "C" void GDN_EXPORT
+godot_gdnative_terminate(godot_gdnative_terminate_options* o)
 {
     godot::Godot::gdnative_terminate(o);
 }
