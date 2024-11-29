@@ -82,14 +82,14 @@ func create_browser(url):
 	await get_tree().process_frame
 
 	# See API.md for more details. Browser configuration is:
-	#   {"frame_rate", 30}
-	#   {"javascript", true}
-	#   {"javascript_close_windows", false}
-	#   {"javascript_access_clipboard", false}
-	#   {"javascript_dom_paste", false}
-	#   {"image_loading", true}
-	#   {"databases", true}
-	#   {"webgl", true}
+	#   {"frame_rate": 30}
+	#   {"javascript": true}
+	#   {"javascript_close_windows": false}
+	#   {"javascript_access_clipboard": false}
+	#   {"javascript_dom_paste": false}
+	#   {"image_loading": true}
+	#   {"databases": true}
+	#   {"webgl": true}
 	var browser = $CEF.create_browser(url, $Panel/VBox/TextureRect, {"javascript":true})
 	if browser == null:
 		$Panel/VBox/HBox2/Info.set_text($CEF.get_error())
@@ -317,16 +317,16 @@ func _ready():
 	# See API.md for more details. CEF Configuration is:
 	#   resource_path := {"artifacts", CEF_ARTIFACTS_FOLDER}
 	#   resource_path := {"exported_artifacts", application_real_path()}
-	#   {"incognito":false}
-	#   {"cache_path", resource_path / "cache"}
-	#   {"root_cache_path", resource_path / "cache"}
-	#   {"browser_subprocess_path", resource_path / SUBPROCESS_NAME }
-	#   {"log_file", resource_path / "debug.log"}
-	#   {log_severity", "warning"}
-	#   {"remote_debugging_port", 7777}
-	#   {"remote_allow_origin", "*"}
-	#   {"exception_stack_size", 5}
-	#   {"enable_media_stream", false}
+	#   {"incognito": false}
+	#   {"cache_path": resource_path / "cache"}
+	#   {"root_cache_path": resource_path / "cache"}
+	#   {"browser_subprocess_path": resource_path / SUBPROCESS_NAME }
+	#   {"log_file": resource_path / "debug.log"}
+	#   {log_severity": "warning"}
+	#   {"remote_debugging_port": 7777}
+	#   {"remote_allow_origin": "*"}
+	#   {"exception_stack_size": 5}
+	#   {"enable_media_stream": false}
 	#
 	# Configurate CEF. In incognito mode cache directories not used and in-memory
 	# caches are used instead and no data is persisted to disk.
