@@ -11,8 +11,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -24,24 +24,24 @@
 //*****************************************************************************
 
 #ifndef GDCEF_HELPER_FILES_HPP
-#  define GDCEF_HELPER_FILES_HPP
+#define GDCEF_HELPER_FILES_HPP
 
-#  include "helper_log.hpp"
-#  include <vector>
+#include "helper_log.hpp"
+#include <vector>
 
 // ****************************************************************************
 // C++17 filesystem utilities. The include depends on the version of g++ or
 // clang++ this C++17
 // ****************************************************************************
-#  if __has_include(<filesystem>)
+#if __has_include(<filesystem>)
 #    include <filesystem>
 namespace fs = std::filesystem;
-#  elif __has_include(<experimental/filesystem>)
+#elif __has_include(<experimental/filesystem>)
 #    include <experimental/filesystem>
 namespace fs = std::experimental::filesystem;
-#  else
+#else
 #    error "Missing the <filesystem> header."
-#  endif
+#endif
 
 // ****************************************************************************
 //! \brief Get the name of the current application since we cannot directly

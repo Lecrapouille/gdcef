@@ -11,8 +11,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -24,54 +24,54 @@
 //*****************************************************************************
 
 #ifndef GDCEF_BROWSER_HPP
-#  define GDCEF_BROWSER_HPP
+#define GDCEF_BROWSER_HPP
 
-#  if !defined(_WIN32)
+#if !defined(_WIN32)
 #    pragma GCC diagnostic push
-#      pragma GCC diagnostic ignored "-Wold-style-cast"
-#      pragma GCC diagnostic ignored "-Wparentheses"
-#      pragma GCC diagnostic ignored "-Wunused-parameter"
-#      pragma GCC diagnostic ignored "-Wconversion"
-#      pragma GCC diagnostic ignored "-Wsign-conversion"
-#      pragma GCC diagnostic ignored "-Wfloat-conversion"
-#      pragma GCC diagnostic ignored "-Wfloat-equal"
-#      pragma GCC diagnostic ignored "-Wpedantic"
-#      pragma GCC diagnostic ignored "-Wshadow"
-#      pragma GCC diagnostic ignored "-Wundef"
-#      if defined(__clang__)
+#    pragma GCC diagnostic ignored "-Wold-style-cast"
+#    pragma GCC diagnostic ignored "-Wparentheses"
+#    pragma GCC diagnostic ignored "-Wunused-parameter"
+#    pragma GCC diagnostic ignored "-Wconversion"
+#    pragma GCC diagnostic ignored "-Wsign-conversion"
+#    pragma GCC diagnostic ignored "-Wfloat-conversion"
+#    pragma GCC diagnostic ignored "-Wfloat-equal"
+#    pragma GCC diagnostic ignored "-Wpedantic"
+#    pragma GCC diagnostic ignored "-Wshadow"
+#    pragma GCC diagnostic ignored "-Wundef"
+#    if defined(__clang__)
 #        pragma clang diagnostic push
 #        pragma clang diagnostic ignored "-Wcast-align"
 #        pragma clang diagnostic ignored "-Wcast-align"
 #        pragma clang diagnostic ignored "-Wundef"
 #        pragma clang diagnostic ignored "-Wshadow-field"
 #        pragma clang diagnostic ignored "-Wcast-qual"
-#      endif
-#  endif
+#    endif
+#endif
 
 // Godot 4
-#  include "godot.hpp"
-#  include "gd_script.hpp"
-#  include "node.hpp"
-#  include "image_texture.hpp"
-#  include "audio_stream_generator_playback.hpp"
-#  include "global_constants.hpp"
+#include "audio_stream_generator_playback.hpp"
+#include "gd_script.hpp"
+#include "global_constants.hpp"
+#include "godot.hpp"
+#include "image_texture.hpp"
+#include "node.hpp"
 
 // Chromium Embedded Framework
-#  include "cef_render_handler.h"
-#  include "cef_client.h"
-#  include "cef_app.h"
-#  include "cef_parser.h"
-#  include "wrapper/cef_helpers.h"
+#include "cef_app.h"
+#include "cef_client.h"
+#include "cef_parser.h"
+#include "cef_render_handler.h"
+#include "wrapper/cef_helpers.h"
 
-#  include <iostream>
-#  include <array>
-#  include <chrono>
+#include <array>
+#include <chrono>
+#include <iostream>
 
 // ****************************************************************************
 //! \brief Class wrapping the CefBrowser class and export methods for Godot
 //! script. This class is instanciate by GDCef.
 // ****************************************************************************
-class GDBrowserView : public godot::Node
+class GDBrowserView: public godot::Node
 {
     friend class GDCef;
 
@@ -123,9 +123,7 @@ private: // CEF interfaces
         // ---------------------------------------------------------------------
         //! \brief Pass the owner instance.
         // ---------------------------------------------------------------------
-        Impl(GDBrowserView& view)
-            : m_owner(view)
-        {}
+        Impl(GDBrowserView& view) : m_owner(view) {}
 
         ~Impl()
         {
@@ -162,8 +160,12 @@ private: // CEF interfaces
         // ---------------------------------------------------------------------
         virtual CefRefPtr<CefAudioHandler> GetAudioHandler() override
         {
-            // FIXME this is called once, so we cannot swap modes :( How to do that ?
-            std::cout << (m_audio.streamer == nullptr ? "GetAudioHandler CEF Audio" : "GetAudioHandler Godot audio") << "\n";
+            // FIXME this is called once, so we cannot swap modes :( How to do
+            // that ?
+            std::cout << (m_audio.streamer == nullptr
+                              ? "GetAudioHandler CEF Audio"
+                              : "GetAudioHandler Godot audio")
+                      << "\n";
             return m_audio.streamer != nullptr ? this : nullptr;
         }
 
@@ -172,7 +174,8 @@ private: // CEF interfaces
         // ---------------------------------------------------------------------
         //! \brief Get the view port.
         // ---------------------------------------------------------------------
-        virtual void GetViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect) override
+        virtual void GetViewRect(CefRefPtr<CefBrowser> browser,
+                                 CefRect& rect) override
         {
             m_owner.getViewRect(browser, rect);
         }
@@ -192,7 +195,9 @@ private: // CEF interfaces
         virtual void OnPaint(CefRefPtr<CefBrowser> browser,
                              CefRenderHandler::PaintElementType type,
                              const CefRenderHandler::RectList& dirtyRects,
-                             const void* buffer, int width, int height) override
+                             const void* buffer,
+                             int width,
+                             int height) override
         {
             m_owner.onPaint(browser, type, dirtyRects, buffer, width, height);
         }
@@ -217,18 +222,18 @@ private: // CEF interfaces
         }
 
         // ---------------------------------------------------------------------
-        //! \brief Called when a navigation fails or is canceled. This method may
-        //! be called by itself if before commit or in combination with
+        //! \brief Called when a navigation fails or is canceled. This method
+        //! may be called by itself if before commit or in combination with
         //! OnLoadStart/OnLoadEnd if after commit. |errorCode| is the error code
-        //! number, |errorText| is the error text and |failedUrl| is the URL that
-        //! failed to load. See net\base\net_error_list.h for complete descriptions
-        //! of the error codes.
+        //! number, |errorText| is the error text and |failedUrl| is the URL
+        //! that failed to load. See net\base\net_error_list.h for complete
+        //! descriptions of the error codes.
         // ---------------------------------------------------------------------
         virtual void OnLoadError(CefRefPtr<CefBrowser> browser,
-                           CefRefPtr<CefFrame> frame,
-                           ErrorCode errorCode,
-                           const CefString& errorText,
-                           const CefString& failedUrl) override
+                                 CefRefPtr<CefFrame> frame,
+                                 ErrorCode errorCode,
+                                 const CefString& errorText,
+                                 const CefString& failedUrl) override
         {
             m_owner.onLoadError(browser, frame, int(errorCode), errorText);
         }
@@ -236,24 +241,29 @@ private: // CEF interfaces
     private: // CefAudioHandler interfaces
 
         virtual void OnAudioStreamStarted(CefRefPtr<CefBrowser> browser,
-                                         const CefAudioParameters& params,
-                                         int channels) override
+                                          const CefAudioParameters& params,
+                                          int channels) override
         {
             m_owner.onAudioStreamStarted(browser, params, channels);
         }
 
         virtual void OnAudioStreamPacket(CefRefPtr<CefBrowser> browser,
-                                         const float** data, int frames,
+                                         const float** data,
+                                         int frames,
                                          int64_t pts) override
         {
             m_owner.onAudioStreamPacket(browser, data, frames, pts);
         }
 
-        virtual void OnAudioStreamStopped(CefRefPtr<CefBrowser> browser) override
-        {}
+        virtual void
+        OnAudioStreamStopped(CefRefPtr<CefBrowser> browser) override
+        {
+        }
 
-        virtual void OnAudioStreamError(CefRefPtr<CefBrowser> browser, const CefString& message) override
-        {}
+        virtual void OnAudioStreamError(CefRefPtr<CefBrowser> browser,
+                                        const CefString& message) override
+        {
+        }
 
     private:
 
@@ -284,7 +294,10 @@ public:
     //!
     //! \note Return -1 when the browser is not valid.
     // -------------------------------------------------------------------------
-    inline int id() const { return m_id; }
+    inline int id() const
+    {
+        return m_id;
+    }
 
     // -------------------------------------------------------------------------
     //! \brief Return the latest error.
@@ -304,8 +317,8 @@ public:
     void setZoomLevel(double delta);
 
     // -------------------------------------------------------------------------
-    //! \brief Exported method to Godot script. Load the given web page from URL.
-    //! \fixme Godot does not like String const& url why ?
+    //! \brief Exported method to Godot script. Load the given web page from
+    //! URL. \fixme Godot does not like String const& url why ?
     // -------------------------------------------------------------------------
     void loadURL(godot::String url);
 
@@ -396,12 +409,18 @@ public:
     //! (i.e. TextureRect: $TextureRect.texture = browser.get_texture()).
     //! \fixme FIXME Need mutex ?
     // -------------------------------------------------------------------------
-    inline godot::Ref<godot::ImageTexture> getTexture() { return m_texture; }
+    inline godot::Ref<godot::ImageTexture> getTexture()
+    {
+        return m_texture;
+    }
 
     // -------------------------------------------------------------------------
     //! \brief
     // -------------------------------------------------------------------------
-    inline void setTexture(godot::Ref<godot::ImageTexture> t) { m_texture = t; }
+    inline void setTexture(godot::Ref<godot::ImageTexture> t)
+    {
+        m_texture = t;
+    }
 
     // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Return true if the browser can
@@ -430,7 +449,10 @@ public:
     // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Set the new windows dimension.
     // -------------------------------------------------------------------------
-    inline void resize(godot::Vector2 const& dim) { resize_(int(dim.x), int(dim.y)); }
+    inline void resize(godot::Vector2 const& dim)
+    {
+        resize_(int(dim.x), int(dim.y));
+    }
 
     // -------------------------------------------------------------------------
     //! \brief Set the viewport: the rectangle on the surface where to display
@@ -536,7 +558,8 @@ public:
     //--------------------------------------------------------------------------
     bool muted();
 
-    void setAudioStreamer(godot::Ref<godot::AudioStreamGeneratorPlayback> streamer)
+    void
+    setAudioStreamer(godot::Ref<godot::AudioStreamGeneratorPlayback> streamer)
     {
         if (m_impl != nullptr)
         {
@@ -550,9 +573,9 @@ public:
             return nullptr;
         return m_impl->m_audio.streamer;
     }
-    
+
     // -------------------------------------------------------------------------
-    //! \brief Exported method to Godot script. Get the color of the currently 
+    //! \brief Exported method to Godot script. Get the color of the currently
     //! hovered on pixel
     // -------------------------------------------------------------------------
     godot::Color getPixelColor(int x, int y) const;
@@ -566,7 +589,8 @@ private:
     //! have to finalize GDBrowserView::GDBrowserView().
     //! \return the browser unique identifier or -1 in case of failure.
     // -------------------------------------------------------------------------
-    int init(godot::String const& url, CefBrowserSettings const& cef_settings,
+    int init(godot::String const& url,
+             CefBrowserSettings const& cef_settings,
              CefWindowInfo const& window_info);
 
     // -------------------------------------------------------------------------
@@ -580,19 +604,24 @@ private:
     void onPaint(CefRefPtr<CefBrowser> browser,
                  CefRenderHandler::PaintElementType type,
                  const CefRenderHandler::RectList& dirtyRects,
-                 const void* buffer, int width, int height);
+                 const void* buffer,
+                 int width,
+                 int height);
 
     // -------------------------------------------------------------------------
     //! \brief Called by GDBrowserView::Impl::OnLoadEnd
     // -------------------------------------------------------------------------
-    void onLoadEnd(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
+    void onLoadEnd(CefRefPtr<CefBrowser> browser,
+                   CefRefPtr<CefFrame> frame,
                    int httpStatusCode);
 
     // -------------------------------------------------------------------------
     //! \brief Called by GDBrowserView::Impl::OnLoadError
     // -------------------------------------------------------------------------
-    void onLoadError(CefRefPtr<CefBrowser> browser, CefRefPtr<CefFrame> frame,
-                     const int errCode, const CefString& errorText);
+    void onLoadError(CefRefPtr<CefBrowser> browser,
+                     CefRefPtr<CefFrame> frame,
+                     const int errCode,
+                     const CefString& errorText);
 
     // -------------------------------------------------------------------------
     //! \brief Called on a browser audio capture thread when the browser starts
@@ -600,22 +629,25 @@ private:
     //! OnAudioStreamStarted; both methods may be called multiple times
     //! for the same browser. |params| contains the audio parameters like
     //! sample rate and channel layout. |channels| is the number of channels.
-      // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     void onAudioStreamStarted(CefRefPtr<CefBrowser> browser,
-                              const CefAudioParameters& params, int channels);
+                              const CefAudioParameters& params,
+                              int channels);
 
     // -------------------------------------------------------------------------
-    //! \brief Called on the audio stream thread when a PCM packet is received for the
-    //! stream. |data| is an array representing the raw PCM data as a floating
-    //! point type, i.e. 4-byte value(s). |frames| is the number of frames in the
-    //! PCM packet. |pts| is the presentation timestamp (in milliseconds since the
-    //! Unix Epoch) and represents the time at which the decompressed packet
-    //! should be presented to the user. Based on |frames| and the
-    //! |channel_layout| value passed to OnAudioStreamStarted you can calculate
-    //! the size of the |data| array in bytes.
+    //! \brief Called on the audio stream thread when a PCM packet is received
+    //! for the stream. |data| is an array representing the raw PCM data as a
+    //! floating point type, i.e. 4-byte value(s). |frames| is the number of
+    //! frames in the PCM packet. |pts| is the presentation timestamp (in
+    //! milliseconds since the Unix Epoch) and represents the time at which the
+    //! decompressed packet should be presented to the user. Based on |frames|
+    //! and the |channel_layout| value passed to OnAudioStreamStarted you can
+    //! calculate the size of the |data| array in bytes.
     // -------------------------------------------------------------------------
-    void onAudioStreamPacket(CefRefPtr<CefBrowser> browser, const float** data,
-                             int frames, int64_t pts);
+    void onAudioStreamPacket(CefRefPtr<CefBrowser> browser,
+                             const float** data,
+                             int frames,
+                             int64_t pts);
 
 private:
 
@@ -662,11 +694,11 @@ private:
     mutable std::stringstream m_error;
 };
 
-#  if !defined(_WIN32)
-#      if defined(__clang__)
+#if !defined(_WIN32)
+#    if defined(__clang__)
 #        pragma clang diagnostic pop
-#      endif
+#    endif
 #    pragma GCC diagnostic pop
-#  endif
+#endif
 
 #endif // GDCEF_BROWSER_HPP

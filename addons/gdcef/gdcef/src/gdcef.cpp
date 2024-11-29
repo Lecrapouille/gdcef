@@ -11,8 +11,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -26,40 +26,46 @@
 //------------------------------------------------------------------------------
 #include "gdcef.hpp"
 #include "gdbrowser.hpp"
-#include "helper_files.hpp"
 #include "helper_config.hpp"
+#include "helper_files.hpp"
 
 #include <gdextension_interface.h>
-#include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/core/class_db.hpp>
+#include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
 
 //------------------------------------------------------------------------------
 // List of file libraries and artifacts mandatory to make CEF working
 #if defined(_WIN32)
-#  define SUBPROCESS_NAME "gdcefSubProcess.exe"
-#  define NEEDED_LIBRARIES "libcef.dll", "libgdcef.dll", "vulkan-1.dll", \
-        "vk_swiftshader.dll", "libGLESv2.dll", "libEGL.dll"
+#    define SUBPROCESS_NAME "gdcefSubProcess.exe"
+#    define NEEDED_LIBRARIES                                                \
+        "libcef.dll", "libgdcef.dll", "vulkan-1.dll", "vk_swiftshader.dll", \
+            "libGLESv2.dll", "libEGL.dll"
 #elif defined(__linux__)
-#  define SUBPROCESS_NAME "gdcefSubProcess"
-#  define NEEDED_LIBRARIES "libcef.so", "libgdcef.so", "libvulkan.so.1", \
-        "libvk_swiftshader.so", "libGLESv2.so", "libEGL.so"
+#    define SUBPROCESS_NAME "gdcefSubProcess"
+#    define NEEDED_LIBRARIES                                                  \
+        "libcef.so", "libgdcef.so", "libvulkan.so.1", "libvk_swiftshader.so", \
+            "libGLESv2.so", "libEGL.so"
 #elif defined(__APPLE__)
-#  define SUBPROCESS_NAME "cefsimple.app"
-#  define NEEDED_LIBRARIES "libgdcef.dylib"
+#    define SUBPROCESS_NAME "cefsimple.app"
+#    define NEEDED_LIBRARIES "libgdcef.dylib"
 #else
-#  error "Undefined path for the Godot's CEF sub process for this architecture"
+#    error \
+        "Undefined path for the Godot's CEF sub process for this architecture"
 #endif
 
 //------------------------------------------------------------------------------
-// Folder name (not the path) holding the CEF artifacts needed to make CEF working
+// Folder name (not the path) holding the CEF artifacts needed to make CEF
+// working
 #if (!defined(CEF_ARTIFACTS_FOLDER))
-#  error "CEF_ARTIFACTS_FOLDER is not defined"
+#    error "CEF_ARTIFACTS_FOLDER is not defined"
 #endif
 
 //------------------------------------------------------------------------------
-static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
-                         CefWindowInfo& window_info, godot::Dictionary config);
+static void configureCEF(fs::path const& folder,
+                         CefSettings& cef_settings,
+                         CefWindowInfo& window_info,
+                         godot::Dictionary config);
 
 //------------------------------------------------------------------------------
 // Check if needed files to make CEF working are present and well formed. We
@@ -69,28 +75,31 @@ static bool sanity_checks(fs::path const& folder)
 {
 #if defined(__APPLE__)
     // List of needed files.
-    std::string lib_dir = SUBPROCESS_NAME"/Contents/Frameworks/Chromium Embedded Framework.framework/Libraries/";
-    std::string res_dir = SUBPROCESS_NAME"/Contents/Frameworks/Chromium Embedded Framework.framework/Resources/";
-    const std::vector<std::string> files =
-    {
-        SUBPROCESS_NAME, NEEDED_LIBRARIES,
-        lib_dir + "libvk_swiftshader.dylib", 
-        lib_dir + "libGLESv2.dylib", 
+    std::string lib_dir = SUBPROCESS_NAME
+        "/Contents/Frameworks/Chromium Embedded Framework.framework/Libraries/";
+    std::string res_dir = SUBPROCESS_NAME
+        "/Contents/Frameworks/Chromium Embedded Framework.framework/Resources/";
+    const std::vector<std::string> files = {
+        SUBPROCESS_NAME,
+        NEEDED_LIBRARIES,
+        lib_dir + "libvk_swiftshader.dylib",
+        lib_dir + "libGLESv2.dylib",
         lib_dir + "libEGL.dylib",
-        res_dir + "icudtl.dat", 
-        res_dir + "chrome_100_percent.pak", 
+        res_dir + "icudtl.dat",
+        res_dir + "chrome_100_percent.pak",
         res_dir + "chrome_200_percent.pak",
-        res_dir + "resources.pak", 
-        //res_dir + "v8_context_snapshot.bin" //need arch with filename
+        res_dir + "resources.pak",
+        // res_dir + "v8_context_snapshot.bin" //need arch with filename
     };
 #else
     // List of needed files.
-    const std::vector<std::string> files =
-    {
-        SUBPROCESS_NAME, NEEDED_LIBRARIES,
-        "icudtl.dat", "chrome_100_percent.pak", "chrome_200_percent.pak",
-        "resources.pak", "v8_context_snapshot.bin"
-    };
+    const std::vector<std::string> files = {SUBPROCESS_NAME,
+                                            NEEDED_LIBRARIES,
+                                            "icudtl.dat",
+                                            "chrome_100_percent.pak",
+                                            "chrome_200_percent.pak",
+                                            "resources.pak",
+                                            "v8_context_snapshot.bin"};
 #endif
 
     // Check if important CEF artifacts exist and have correct SHA1.
@@ -102,7 +111,7 @@ static bool sanity_checks(fs::path const& folder)
 // In a GDNative module, "_bind_methods" is replaced by the "_register_methods"
 // method CefRefPtr<CefBrowser> m_browser;this is used to expose various methods
 // of this class to Godot
-//void GDCef::_register_methods()
+// void GDCef::_register_methods()
 void GDCef::_bind_methods()
 {
     GDCEF_DEBUG_VAL("");
@@ -152,7 +161,8 @@ bool GDCef::initialize(godot::Dictionary config)
         }
         else
         {
-            cef_folder_path = std::filesystem::current_path() / cef_artifacts_folder;
+            cef_folder_path =
+                std::filesystem::current_path() / cef_artifacts_folder;
         }
         GDCEF_DEBUG_VAL("Launching CEF from Godot editor");
         GDCEF_DEBUG_VAL("Path where your project Godot files shall be located:"
@@ -160,8 +170,10 @@ bool GDCef::initialize(godot::Dictionary config)
     }
     else
     {
-        cef_folder_path = getConfig(config, "exported_artifacts",
-            real_path() / std::string(CEF_ARTIFACTS_FOLDER));
+        cef_folder_path =
+            getConfig(config,
+                      "exported_artifacts",
+                      real_path() / std::string(CEF_ARTIFACTS_FOLDER));
         GDCEF_DEBUG_VAL("Launching CEF from your executable");
         GDCEF_DEBUG_VAL("Path where your application files shall be located:"
                         << cef_folder_path);
@@ -171,7 +183,7 @@ bool GDCef::initialize(godot::Dictionary config)
     if (!sanity_checks(cef_folder_path))
     {
         GDCEF_ERROR("Error: at least one CEF artifacts not found in folder "
-            << cef_folder_path);
+                    << cef_folder_path);
         m_impl = nullptr;
         return false;
     }
@@ -180,7 +192,8 @@ bool GDCef::initialize(godot::Dictionary config)
     // because we cannot access to it, we have to configure CEF directly.
     configureCEF(cef_folder_path, m_cef_settings, m_window_info, config);
     m_enable_media_stream = getConfig(config, "enable_media_stream", false);
-    m_remote_allow_origin = getConfig(config, "remote_allow_origin", std::string{});
+    m_remote_allow_origin =
+        getConfig(config, "remote_allow_origin", std::string{});
 
     // This function should be called on the main application thread to
     // initialize the CEF browser process. A return value of true indicates
@@ -235,10 +248,13 @@ void GDCef::_process(double /*delta*/)
 }
 
 //------------------------------------------------------------------------------
-//! \brief See gdcef/addons/gdcef/thirdparty/cef_binary/include/internal/cef_types.h
-//! for more information about settings.
-static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
-                         CefWindowInfo& window_info, godot::Dictionary config)
+//! \brief See
+//! gdcef/addons/gdcef/thirdparty/cef_binary/include/internal/cef_types.h for
+//! more information about settings.
+static void configureCEF(fs::path const& folder,
+                         CefSettings& cef_settings,
+                         CefWindowInfo& window_info,
+                         godot::Dictionary config)
 {
     // The path to a separate executable that will be launched for
     // sub-processes.  If this value is empty on Windows or Linux then the main
@@ -253,11 +269,12 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
         getConfig(config, "browser_subprocess_path", folder / SUBPROCESS_NAME);
     GDCEF_DEBUG_VAL("Setting SubProcess path: " << sub_process_path.string());
     CefString(&cef_settings.browser_subprocess_path)
-            .FromString(sub_process_path.string());
+        .FromString(sub_process_path.string());
 #else
     fs::path main_bundle_path = folder / SUBPROCESS_NAME;
-    fs::path subprocess_path = main_bundle_path / 
-        "Contents/Frameworks/cefsimple Helper.app/Contents/MacOS/cefsimple Helper";
+    fs::path subprocess_path = main_bundle_path /
+                               "Contents/Frameworks/cefsimple "
+                               "Helper.app/Contents/MacOS/cefsimple Helper";
     CefString(&cef_settings.main_bundle_path)
         .FromString(main_bundle_path.string());
     CefString(&cef_settings.browser_subprocess_path)
@@ -272,7 +289,8 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // then it must be an absolute path. Failure to set this value correctly may
     // result in the sandbox blocking read/write access to the cache_path
     // directory.
-    fs::path root_cache = getConfig(config, "root_cache_path", folder / "cache");
+    fs::path root_cache =
+        getConfig(config, "root_cache_path", folder / "cache");
     GDCEF_DEBUG_VAL("Setting root cache path: " << root_cache.string());
     CefString(&cef_settings.root_cache_path).FromString(root_cache.string());
 
@@ -300,7 +318,7 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
             getConfig(config, "cache_path", root_cache);
         GDCEF_DEBUG_VAL("Setting cache path: " << sub_process_cache.string());
         CefString(&cef_settings.cache_path)
-                .FromString(sub_process_cache.string());
+            .FromString(sub_process_cache.string());
     }
 
     // The locale string that will be passed to WebKit. If empty the default
@@ -318,9 +336,11 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // MacOS a "~/Library/Logs/<app name>_debug.log" file will be written where
     // <app name> is the name of the main app executable. Also configurable
     // using the "log-file" command-line switch.
-    fs::path log_file_path = getConfig(config, "log_file", folder / "debug.log");
+    fs::path log_file_path =
+        getConfig(config, "log_file", folder / "debug.log");
     CefString(&cef_settings.log_file).FromString(log_file_path.string());
-    std::string logString = getConfig(config, "log_severity", std::string("warning"));
+    std::string logString =
+        getConfig(config, "log_severity", std::string("warning"));
     if (logString == "verbose")
         cef_settings.log_severity = LOGSEVERITY_VERBOSE;
     else if (logString == "info")
@@ -384,12 +404,12 @@ static void configureCEF(fs::path const& folder, CefSettings& cef_settings,
     // must be called from your application message loop. This option is only
     // supported on Windows and Linux.
     cef_settings.multi_threaded_message_loop = 0;
-        // getConfig(config, "multi_threaded_message_loop", 0);
+    // getConfig(config, "multi_threaded_message_loop", 0);
 }
 
 //------------------------------------------------------------------------------
-//! \brief See gdcef/addons/gdcef/thirdparty/cef_binary/include/ internal/cef_types.h
-//! for more information about settings.
+//! \brief See gdcef/addons/gdcef/thirdparty/cef_binary/include/
+//! internal/cef_types.h for more information about settings.
 static void configureBrowser(CefBrowserSettings& browser_settings,
                              godot::Dictionary config)
 {
@@ -402,7 +422,7 @@ static void configureBrowser(CefBrowserSettings& browser_settings,
     browser_settings.windowless_frame_rate =
         getConfig(config, "frame_rate", 30);
     GDCEF_DEBUG_VAL("Using windowless_frame_rate: "
-        << int(browser_settings.windowless_frame_rate));
+                    << int(browser_settings.windowless_frame_rate));
 
     // Controls whether JavaScript can be executed. Also configurable using the
     // "disable-javascript" command-line switch.
@@ -418,14 +438,14 @@ static void configureBrowser(CefBrowserSettings& browser_settings,
     browser_settings.javascript_close_windows =
         getConfig(config, "javascript_close_windows", STATE_DISABLED);
     GDCEF_DEBUG_VAL("Using javascript_close_windows: "
-        << int(browser_settings.javascript_close_windows));
+                    << int(browser_settings.javascript_close_windows));
 
     // Controls whether JavaScript can access the clipboard. Also configurable
     // using the "disable-javascript-access-clipboard" command-line switch.
     browser_settings.javascript_access_clipboard =
         getConfig(config, "javascript_access_clipboard", STATE_DISABLED);
     GDCEF_DEBUG_VAL("Using javascript_access_clipboard: "
-        << int(browser_settings.javascript_access_clipboard));
+                    << int(browser_settings.javascript_access_clipboard));
 
     // Controls whether DOM pasting is supported in the editor via
     // execCommand("paste"). The |javascript_access_clipboard| setting must also
@@ -434,19 +454,19 @@ static void configureBrowser(CefBrowserSettings& browser_settings,
     browser_settings.javascript_dom_paste =
         getConfig(config, "javascript_dom_paste", STATE_DISABLED);
     GDCEF_DEBUG_VAL("Using javascript_dom_paste: "
-        << int(browser_settings.javascript_dom_paste));
+                    << int(browser_settings.javascript_dom_paste));
 
     // Controls whether any plugins will be loaded. Also configurable using the
     // "disable-plugins" command-line switch.
     //  browser_settings.plugins = getConfig(config, "plugins", STATE_ENABLED);
-
 
     // Controls whether image URLs will be loaded from the network. A cached
     // image will still be rendered if requested. Also configurable using the
     // "disable-image-loading" command-line switch.
     browser_settings.image_loading =
         getConfig(config, "image_loading", STATE_ENABLED);
-    GDCEF_DEBUG_VAL("Using image loading: " << int(browser_settings.image_loading));
+    GDCEF_DEBUG_VAL(
+        "Using image loading: " << int(browser_settings.image_loading));
 
     // Controls whether databases can be used. Also configurable using the
     // "disable-databases" command-line switch.
@@ -510,12 +530,13 @@ GDBrowserView* GDCef::createBrowser(godot::String const& url,
     browser->resize(texture_rect->get_size());
     texture_rect->set_texture(browser->m_texture);
 
-    // Attach the new Godot node as child node (sadly Godot does not show created
-    // nodes at run time)
+    // Attach the new Godot node as child node (sadly Godot does not show
+    // created nodes at run time)
     add_child(browser);
 
     godot::String name = browser->get_name();
-    GDCEF_DEBUG_VAL("name: " << name.utf8().get_data() << ", url: " << url.utf8().get_data());
+    GDCEF_DEBUG_VAL("name: " << name.utf8().get_data()
+                             << ", url: " << url.utf8().get_data());
     return browser;
 }
 
@@ -526,7 +547,7 @@ void GDCef::Impl::OnAfterCreated(CefRefPtr<CefBrowser> /*browser*/)
     GDCEF_DEBUG();
 
     // Add to the list of existing browsers.
-    //m_browsers[browser->GetIdentifier()] = browser;
+    // m_browsers[browser->GetIdentifier()] = browser;
 }
 
 //------------------------------------------------------------------------------
@@ -536,12 +557,12 @@ bool GDCef::Impl::DoClose(CefRefPtr<CefBrowser> /*browser*/)
     GDCEF_DEBUG();
 
     // Closing the main window requires special handling. See the DoClose()
-    // documentation in the CEF header for a detailed destription of this
+    // documentation in the CEF header for a detailed description of this
     // process.
-    //if (m_browsers.size() == 1u)
+    // if (m_browsers.size() == 1u)
     {
         // Set a flag to indicate that the window close should be allowed.
-        //is_closing_ = true;
+        // is_closing_ = true;
     }
 
     // Allow the close. For windowed browsers this will result in the OS close
@@ -572,14 +593,15 @@ void GDCef::Impl::OnBeforeClose(CefRefPtr<CefBrowser> browser)
 }
 
 //------------------------------------------------------------------------------
-void GDCef::Impl::OnBeforeCommandLineProcessing(const CefString& ProcessType,
-               CefRefPtr<CefCommandLine> command_line)
+void GDCef::Impl::OnBeforeCommandLineProcessing(
+    const CefString& ProcessType,
+    CefRefPtr<CefCommandLine> command_line)
 {
-    //CEF_REQUIRE_UI_THREAD();
+    // CEF_REQUIRE_UI_THREAD();
     GDCEF_DEBUG();
 
     if (command_line == nullptr)
-        return ;
+        return;
 
     // Allow accessing to the camera and microphones.
     // See https://github.com/Lecrapouille/gdcef/issues/49

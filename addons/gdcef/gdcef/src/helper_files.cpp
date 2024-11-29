@@ -11,8 +11,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -25,13 +25,13 @@
 
 #include "helper_files.hpp"
 #include "helper_log.hpp"
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 #if defined(_WIN32)
-#  include <Windows.h>
+#    include <Windows.h>
 #else
-#  include <unistd.h>
+#    include <unistd.h>
 #endif
 
 //------------------------------------------------------------------------------
@@ -40,13 +40,14 @@ bool are_valid_files(fs::path const& folder,
 {
     bool failure = false;
 
-    for (auto const& it: files)
+    for (auto const& it : files)
     {
-        fs::path f = { folder / it };
+        fs::path f = {folder / it};
         // TODO Compute SHA1 on files to check if they are correct
         if (!fs::exists(f))
         {
-            STATIC_GDCEF_ERROR("File " << f << " does not exist and is needed for CEF");
+            STATIC_GDCEF_ERROR("File "
+                               << f << " does not exist and is needed for CEF");
             failure = true;
         }
     }
@@ -62,9 +63,9 @@ bool are_valid_files(fs::path const& folder,
 std::string executable_name()
 {
 #if defined(_WIN32)
-    // Pragma required for linking + windows.h
-    #pragma comment(lib, "kernel32.lib")
-    //const DWORD MAX_PATH = 64u; // KO - MAX_PATH already defined anyway
+// Pragma required for linking + windows.h
+#    pragma comment(lib, "kernel32.lib")
+    // const DWORD MAX_PATH = 64u; // KO - MAX_PATH already defined anyway
     char buf[MAX_PATH];
     GetModuleFileNameA(nullptr, buf, MAX_PATH);
     return buf;
@@ -86,13 +87,14 @@ fs::path real_path()
 
     // Step 1: Get the current path and concat your application executable name.
     //
-    // Step 2: Get the canonical path of your application (ie the real path). This allows
-    // to remove possible symlink.
+    // Step 2: Get the canonical path of your application (ie the real path).
+    // This allows to remove possible symlink.
     //
     // Step 3: Return the path without your application name
-    return fs::canonical({ fs::current_path() / executable_name() }).parent_path();
+    return fs::canonical({fs::current_path() / executable_name()})
+        .parent_path();
 
-#else //if defined(PLATFORM_POSIX) || defined(__linux__)
+#else // if defined(PLATFORM_POSIX) || defined(__linux__)
 
     // Since /proc/self/exe return the canoncial we can return it directly
     fs::path p(executable_name());

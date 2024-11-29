@@ -11,8 +11,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -24,45 +24,45 @@
 //*****************************************************************************
 
 #ifndef GDCEF_HPP
-#  define GDCEF_HPP
+#define GDCEF_HPP
 
 // *****************************************************************************
 //! \file Wrap Chromium Embedded Framework as Godot native module.
 // *****************************************************************************
 
 // Hide compilation warnings induced by Godot and by CEF
-#  if !defined(_WIN32)
+#if !defined(_WIN32)
 #    pragma GCC diagnostic push
-#      pragma GCC diagnostic ignored "-Wold-style-cast"
-#      pragma GCC diagnostic ignored "-Wparentheses"
-#      pragma GCC diagnostic ignored "-Wunused-parameter"
-#      pragma GCC diagnostic ignored "-Wconversion"
-#      pragma GCC diagnostic ignored "-Wsign-conversion"
-#      pragma GCC diagnostic ignored "-Wfloat-conversion"
-#      pragma GCC diagnostic ignored "-Wfloat-equal"
-#      pragma GCC diagnostic ignored "-Wpedantic"
-#      pragma GCC diagnostic ignored "-Wshadow"
-#      pragma GCC diagnostic ignored "-Wcast-qual"
-#      if defined(__clang__)
+#    pragma GCC diagnostic ignored "-Wold-style-cast"
+#    pragma GCC diagnostic ignored "-Wparentheses"
+#    pragma GCC diagnostic ignored "-Wunused-parameter"
+#    pragma GCC diagnostic ignored "-Wconversion"
+#    pragma GCC diagnostic ignored "-Wsign-conversion"
+#    pragma GCC diagnostic ignored "-Wfloat-conversion"
+#    pragma GCC diagnostic ignored "-Wfloat-equal"
+#    pragma GCC diagnostic ignored "-Wpedantic"
+#    pragma GCC diagnostic ignored "-Wshadow"
+#    pragma GCC diagnostic ignored "-Wcast-qual"
+#    if defined(__clang__)
 #        pragma clang diagnostic push
 #        pragma clang diagnostic ignored "-Wcast-align"
 #        pragma clang diagnostic ignored "-Wcast-align"
 #        pragma clang diagnostic ignored "-Wundef"
 #        pragma clang diagnostic ignored "-Wshadow-field"
-#      endif
-#  endif
+#    endif
+#endif
 
 // Godot 4
-#  include "godot.hpp"
-#  include "project_settings.hpp"
-#  include "os.hpp"
-#  include "node.hpp"
-#  include "texture_rect.hpp"
+#include "godot.hpp"
+#include "node.hpp"
+#include "os.hpp"
+#include "project_settings.hpp"
+#include "texture_rect.hpp"
 
 // Chromium Embedded Framework
-#  include "cef_client.h"
-#  include "cef_app.h"
-#  include "cef_version.h"
+#include "cef_app.h"
+#include "cef_client.h"
+#include "cef_version.h"
 
 class GDBrowserView;
 
@@ -71,7 +71,7 @@ class GDBrowserView;
 //! Framework. This class can create isntances of GDBrowserView and manage their
 //! lifetime.
 // *****************************************************************************
-class GDCef : public godot::Node
+class GDCef: public godot::Node
 {
 public: // Godot interfaces.
 
@@ -115,7 +115,7 @@ public: // Godot interfaces.
     //! \brief Method automatically called by Godot engine to register the
     //! desired C++ methods that will be callable from gdscript.
     // -------------------------------------------------------------------------
-    //static void _register_methods();
+    // static void _register_methods();
 
     // -------------------------------------------------------------------------
     //! \brief Process automatically called by Godot engine. Call the CEF pomp
@@ -144,16 +144,15 @@ private: // CEF interfaces.
     // *************************************************************************
     class Impl: public CefLifeSpanHandler,
                 public CefClient,
-                public CefApp, CefBrowserProcessHandler
+                public CefApp,
+                CefBrowserProcessHandler
     {
     public:
 
         // ---------------------------------------------------------------------
         //! \brief Default constructor getting the owner of the class instance.
         // ---------------------------------------------------------------------
-        Impl(GDCef& cef)
-            : m_owner(cef)
-        {}
+        Impl(GDCef& cef) : m_owner(cef) {}
 
         // ---------------------------------------------------------------------
         //! \brief Should be called on the main application thread to shut down
@@ -184,7 +183,8 @@ private: // CEF interfaces.
         // ---------------------------------------------------------------------
         //! \brief Return the handler for browser process callbacks.
         // ---------------------------------------------------------------------
-        virtual CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override
+        virtual CefRefPtr<CefBrowserProcessHandler>
+        GetBrowserProcessHandler() override
         {
             return this;
         }
@@ -201,7 +201,8 @@ private: // CEF interfaces.
         //! \brief Called before a child process is launched. Provides an
         //! opportunity to modify the child process command line.
         // ---------------------------------------------------------------------
-        virtual void OnBeforeCommandLineProcessing(const CefString& ProcessType,
+        virtual void OnBeforeCommandLineProcessing(
+            const CefString& ProcessType,
             CefRefPtr<CefCommandLine> command_line) override;
 
     private:
@@ -262,8 +263,9 @@ public:
     //! \brief Create a browser view and store its instance as child node.
     //! Return the browser identifier or return nullptr in case of failure.
     //! \param[in] url the page link.
-    //! \param[in] texture_rect the texture container in where to paint the CEF output.
-    //! \param[in] config dictionary of Browser config with default values:
+    //! \param[in] texture_rect the texture container in where to paint the CEF
+    //! output. \param[in] config dictionary of Browser config with default
+    //! values:
     //!   - {"frame_rate", 30}
     //!   - {"javascript", STATE_ENABLED}
     //!   - {"javascript_close_windows", STATE_DISABLED}
@@ -273,7 +275,8 @@ public:
     //!   - {"databases", STATE_ENABLED}
     //!   - {"webgl", STATE_ENABLED}
     //!   Wherer STATE_DISABLED / STATE_ENABLED == false / true
-    //! \return the address of the newly created browser (or nullptr in case of error).
+    //! \return the address of the newly created browser (or nullptr in case of
+    //! error).
     // -------------------------------------------------------------------------
     GDBrowserView* createBrowser(godot::String const& url,
                                  godot::TextureRect* texture_rect,
@@ -297,11 +300,11 @@ private:
     std::string m_remote_allow_origin;
 };
 
-#  if !defined(_WIN32)
-#      if defined(__clang__)
+#if !defined(_WIN32)
+#    if defined(__clang__)
 #        pragma clang diagnostic pop
-#      endif
+#    endif
 #    pragma GCC diagnostic pop
-#  endif
+#endif
 
 #endif
