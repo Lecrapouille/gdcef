@@ -1,0 +1,28 @@
+[gd_scene load_steps=2 format=3 uid="uid://ckewd5tjvl4rj"]
+
+[ext_resource type="Script" path="res://Control.gd" id="2"]
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CEF" type="GDCef" parent="."]
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 10.0
+autostart = true
+
+[connection signal="gui_input" from="TextureRect" to="." method="_on_TextureRect_gui_input"]

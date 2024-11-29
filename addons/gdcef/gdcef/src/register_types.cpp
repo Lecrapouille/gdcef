@@ -27,6 +27,7 @@
 
 #include "gdbrowser.hpp"
 #include "gdcef.hpp"
+#include "godot_js_binder.hpp"
 #include "helper_log.hpp"
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>

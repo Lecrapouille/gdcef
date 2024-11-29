@@ -26,6 +26,7 @@
 //------------------------------------------------------------------------------
 #include "gdcef.hpp"
 #include "gdbrowser.hpp"
+#include "godot_js_binder.hpp"
 #include "helper_config.hpp"
 #include "helper_files.hpp"
 
@@ -122,13 +123,15 @@ void GDCef::_bind_methods()
     GDCEF_DEBUG("");
 
     using namespace godot;
-    ClassDB::bind_method(D_METHOD("initialize"), &GDCef::initialize);
+    ClassDB::bind_method(D_METHOD("initialize", "config"), &GDCef::initialize);
     ClassDB::bind_method(D_METHOD("get_full_version"), &GDCef::version);
     ClassDB::bind_method(D_METHOD("get_version_part"), &GDCef::versionPart);
     ClassDB::bind_method(D_METHOD("create_browser"), &GDCef::createBrowser);
     ClassDB::bind_method(D_METHOD("shutdown"), &GDCef::shutdown);
     ClassDB::bind_method(D_METHOD("is_alive"), &GDCef::isAlive);
     ClassDB::bind_method(D_METHOD("get_error"), &GDCef::getError);
+    ClassDB::bind_method(D_METHOD("register_method"),
+                         &GDCef::registerGodotMethod);
 }
 
 //------------------------------------------------------------------------------
@@ -579,6 +582,61 @@ GDBrowserView* GDCef::createBrowser(godot::String const& url,
     GDCEF_DEBUG("name: " << name.utf8().get_data()
                          << ", url: " << url.utf8().get_data());
     return browser;
+}
+
+//------------------------------------------------------------------------------
+//! \brief Method to register Godot methods in the JavaScript context
+//! \param [in] godot_object The Godot object containing the method to register
+//! \param [in] method_name The name of the method to register
+//------------------------------------------------------------------------------
+void GDCef::registerGodotMethod(godot::Object* godot_object,
+                                GDBrowserView* browser,
+                                godot::String const& method_name)
+{
+    if (godot_object == nullptr)
+    {
+        GDCEF_ERROR("Invalid Godot object passed to registerGodotMethod");
+        return;
+    }
+
+    if (browser == nullptr)
+    {
+        GDCEF_ERROR("Invalid browser passed to registerGodotMethod");
+        return;
+    }
+
+    // Check that the method exists in the Godot object.
+    if (!godot_object->has_method(method_name))
+    {
+        GDCEF_ERROR("Method " << method_name.utf8().get_data()
+                              << " does not exist in the Godot object");
+        return;
+    }
+
+    // Handle private GDScript methods (starting with "_").
+    // Remove the "_" initial for the JavaScript method name
+    godot::String js_method_name = method_name;
+    if (method_name.begins_with("_"))
+    {
+        js_method_name = method_name.substr(1);
+    }
+
+    // Inject the JavaScript code to create the function
+    std::string js_code =
+        "window.godot." + std::string(js_method_name.utf8().get_data()) +
+        " = function() { return window.godot.callGodotMethod('" +
+        std::string(js_method_name.utf8().get_data()) + "', ...arguments); };";
+
+    // Get the active browser from the caller
+    godot::Node* caller = godot::Object::cast_to<godot::Node>(godot_object);
+    if (caller == nullptr)
+    {
+        GDCEF_ERROR("Caller object is not a Node");
+        return;
+    }
+
+    // Find the browser in the caller's children
+    browser->executeJavaScript(js_code.c_str());
 }
 
 //------------------------------------------------------------------------------

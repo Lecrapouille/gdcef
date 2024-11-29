@@ -189,6 +189,12 @@ private: // CEF interfaces
             return this;
         }
 
+        virtual bool
+        OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
+                                 CefRefPtr<CefFrame> frame,
+                                 CefProcessId source_process,
+                                 CefRefPtr<CefProcessMessage> message) override;
+
     private: // CefRenderHandler interfaces
 
         // ---------------------------------------------------------------------
@@ -285,7 +291,7 @@ private: // CEF interfaces
         {
         }
 
-    private: // CefBrowserProcessHandler interfaces
+    private: // CefLifeSpanHandler interfaces
 
         virtual bool OnBeforePopup(
             CefRefPtr<CefBrowser> browser,
