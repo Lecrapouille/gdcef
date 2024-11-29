@@ -226,9 +226,7 @@ env.Append(CPPPATH=['src/'])
 env.Append(RPATH=[env['cef_artifacts_folder'][2:-2]])
 
 # Compile the library
-sources = ['src/helper_files.cpp', 'src/browser_io.cpp', 'src/gdcef.cpp', 'src/gdbrowser.cpp', 'src/register_types.cpp']
-# sources = Glob('src/*.cpp')
-# sources = ['src/helper_files.cpp', 'src/browser_io.cpp', 'src/gdcef.cpp', 'src/gdbrowser.cpp', 'src/gdnative.cpp']
+sources = Glob('src/*.cpp')
 library = env.SharedLibrary(target=target_path + '/' + target_library, source=sources)
 Default(library)
 

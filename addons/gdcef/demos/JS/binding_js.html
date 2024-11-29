@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Godot CEF Interface With JS integration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #player-stats {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .button {
+            margin: 10px;
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="player-stats">
+        <h2>Player Stats</h2>
+        <p>Level: <span id="player-level">1</span></p>
+        <p>Experience: <span id="player-xp">0</span></p>
+    </div>
+    <div>
+        <button class="button" onclick="addXP()">Gain XP</button>
+        <button class="button" onclick="levelUp()">Level Up</button>
+    </div>
+
+    <script>
+        // Variables globales
+        let playerLevel = 1;
+        let playerXP = 0;
+
+        function addXP() {
+            playerXP += 10;
+            updateDisplay();
+
+            // Appel à GDScript pour notifier le changement
+            if (window.gdscript_handler) {
+                window.gdscript_handler({
+                    type: 'xp_gained',
+                    value: 10
+                });
+            }
+        }
+
+        function levelUp() {
+            if (playerXP >= 50) {
+                playerLevel++;
+                playerXP -= 50;
+                updateDisplay();
+
+                // Notifier GDScript du level up
+                if (window.gdscript_handler) {
+                    window.gdscript_handler({
+                        type: 'level_up',
+                        level: playerLevel
+                    });
+                }
+            }
+        }
+
+        function updateDisplay() {
+            document.getElementById('player-level').textContent = playerLevel;
+            document.getElementById('player-xp').textContent = playerXP;
+        }
+
+        // Fonction pour recevoir des données de GDScript
+        function updateFromGDScript(data) {
+            if (data.type === 'bonus_xp') {
+                playerXP += data.value;
+                updateDisplay();
+            }
+        }
+    </script>
+</body>
+
+</html>

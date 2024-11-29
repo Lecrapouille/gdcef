@@ -27,6 +27,7 @@
 
 #include "gdbrowser.hpp"
 #include "gdcef.hpp"
+#include "godot_js_binder.hpp"
 #include "helper_log.hpp"
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -46,6 +47,7 @@ void initialize_gdcef_module(ModuleInitializationLevel p_level)
 
     ClassDB::register_class<GDCef>();
     ClassDB::register_class<GDBrowserView>();
+    ClassDB::register_class<GodotJSBinder>();
 
 #ifdef __APPLE__
     String cef_artifacts_folder;
