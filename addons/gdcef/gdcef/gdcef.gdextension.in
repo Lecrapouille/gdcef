@@ -1,6 +1,6 @@
 [configuration]
 entry_symbol = "gdcef_library_init"
-compatibility_minimum = 4.1
+compatibility_minimum = 4.2
 
 [libraries]
 linux.x86_64.debug = "res://CEF_ARTIFACTS_FOLDER_NAME/libgdcef.so"

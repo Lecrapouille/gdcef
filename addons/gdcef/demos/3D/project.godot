@@ -14,7 +14,7 @@ config/name="CEF in 3D"
 config/description="A demo showing a GUI instanced within a 3D scene using viewports,
 as well as forwarding mouse and keyboard input to the GUI."
 run/main_scene="res://gui_in_3d.tscn"
-config/features=PackedStringArray("4.2")
+config/features=PackedStringArray("4.3")
 config/icon="res://icon.png"
 
 [gdnative]
