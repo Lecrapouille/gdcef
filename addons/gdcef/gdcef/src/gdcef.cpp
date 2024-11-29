@@ -26,6 +26,7 @@
 //------------------------------------------------------------------------------
 #include "gdcef.hpp"
 #include "gdbrowser.hpp"
+#include "godot_js_binder.hpp"
 #include "helper_config.hpp"
 #include "helper_files.hpp"
 
@@ -122,13 +123,15 @@ void GDCef::_bind_methods()
     GDCEF_DEBUG("");
 
     using namespace godot;
-    ClassDB::bind_method(D_METHOD("initialize"), &GDCef::initialize);
+    ClassDB::bind_method(D_METHOD("initialize", "config"), &GDCef::initialize);
     ClassDB::bind_method(D_METHOD("get_full_version"), &GDCef::version);
     ClassDB::bind_method(D_METHOD("get_version_part"), &GDCef::versionPart);
     ClassDB::bind_method(D_METHOD("create_browser"), &GDCef::createBrowser);
     ClassDB::bind_method(D_METHOD("shutdown"), &GDCef::shutdown);
     ClassDB::bind_method(D_METHOD("is_alive"), &GDCef::isAlive);
     ClassDB::bind_method(D_METHOD("get_error"), &GDCef::getError);
+    ClassDB::bind_method(D_METHOD("register_method"),
+                         &GDCef::registerGodotMethod);
 }
 
 //------------------------------------------------------------------------------
@@ -563,6 +566,47 @@ GDBrowserView* GDCef::createBrowser(godot::String const& url,
     GDCEF_DEBUG("name: " << name.utf8().get_data()
                          << ", url: " << url.utf8().get_data());
     return browser;
+}
+
+//------------------------------------------------------------------------------
+//! \brief Method to register Godot methods in the JavaScript context
+//------------------------------------------------------------------------------
+void GDCef::registerGodotMethod(godot::Object* godot_object,
+                                godot::String const& method_name)
+{
+    // Get the active V8 context
+    CefRefPtr<CefV8Context> context = CefV8Context::GetCurrentContext();
+    if (!context.get())
+    {
+        GDCEF_ERROR("No active V8 context found");
+        return;
+    }
+
+    CefRefPtr<CefV8Value> global = context->GetGlobal();
+    CefRefPtr<CefV8Value> godot_bridge = global->GetValue("godot");
+
+    if (!godot_bridge->IsObject())
+    {
+        godot_bridge = CefV8Value::CreateObject(nullptr, nullptr);
+        global->SetValue("godot", godot_bridge, V8_PROPERTY_ATTRIBUTE_NONE);
+    }
+
+    // Handle private GDScript methods (starting with "_")
+    godot::String js_method_name = method_name;
+    if (method_name.begins_with("_"))
+    {
+        // Remove the "_" initial for the JavaScript method name
+        js_method_name = method_name.substr(1);
+    }
+
+    godot_bridge->SetValue(
+        js_method_name.utf8().get_data(),
+        CefV8Value::CreateFunction(
+            js_method_name.utf8().get_data(),
+            new GodotMethodInvoker(
+                godot_object,
+                method_name)), // Keep the original name for GDScript call
+        V8_PROPERTY_ATTRIBUTE_NONE);
 }
 
 //------------------------------------------------------------------------------

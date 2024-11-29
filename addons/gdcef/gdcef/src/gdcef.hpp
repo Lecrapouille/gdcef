@@ -109,6 +109,12 @@ public: // Godot interfaces.
     bool isAlive();
 
     // -------------------------------------------------------------------------
+    //! \brief Register a Godot method in the JavaScript context
+    // -------------------------------------------------------------------------
+    void registerGodotMethod(godot::Object* godot_object,
+                             const godot::String& method_name);
+
+    // -------------------------------------------------------------------------
     //! \brief Return the latest error.
     // -------------------------------------------------------------------------
     godot::String getError();
@@ -273,14 +279,14 @@ public:
     //! \param[in] texture_rect the texture container in where to paint the CEF
     //! output. \param[in] config dictionary of Browser config with default
     //! values:
-    //!   - {"frame_rate", 30}
-    //!   - {"javascript", STATE_ENABLED}
-    //!   - {"javascript_close_windows", STATE_DISABLED}
-    //!   - {"javascript_access_clipboard", STATE_DISABLED}
-    //!   - {"javascript_dom_paste", STATE_DISABLED}
-    //!   - {"image_loading", STATE_ENABLED}
-    //!   - {"databases", STATE_ENABLED}
-    //!   - {"webgl", STATE_ENABLED}
+    //!   - {"frame_rate": 30}
+    //!   - {"javascript": STATE_ENABLED}
+    //!   - {"javascript_close_windows": STATE_DISABLED}
+    //!   - {"javascript_access_clipboard": STATE_DISABLED}
+    //!   - {"javascript_dom_paste": STATE_DISABLED}
+    //!   - {"image_loading": STATE_ENABLED}
+    //!   - {"databases": STATE_ENABLED}
+    //!   - {"webgl": STATE_ENABLED}
     //!   Wherer STATE_DISABLED / STATE_ENABLED == false / true
     //! \return the address of the newly created browser (or nullptr in case of
     //! error).

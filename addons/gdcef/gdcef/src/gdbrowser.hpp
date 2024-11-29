@@ -274,7 +274,7 @@ private: // CEF interfaces
         {
         }
 
-    private: // CefBrowserProcessHandler interfaces
+    private: // CefLifeSpanHandler interfaces
 
         virtual bool OnBeforePopup(
             CefRefPtr<CefBrowser> browser,
