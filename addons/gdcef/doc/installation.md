@@ -138,15 +138,3 @@ GITHUB_GDCEF_RELEASE = "0.12.0"
 Limitations:
 - You cannot choose the Godot version
 - You cannot choose the CEF version
-
-## Debug gdcef
-
-In your GDScript, when initializing CEF, pass the following settings:
-
-```
-$CEF.initialize({"remote_debugging_port": 7777, "remote_allow_origin": "*", ... })
-```
-
-Open a Chrome browser and type in the URL: `http://localhost:7777`. You will see something like this:
-
-![Debug](pics/debug.png)
