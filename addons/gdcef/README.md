@@ -59,6 +59,18 @@ browser.set_name("hello")
 - Here are some projects that might inspire you:
   - https://github.com/face-hh/wattesigma
 
+## How to debug gdCEF?
+
+In your GDScript, when initializing CEF, pass the following settings:
+
+```
+$CEF.initialize({"remote_debugging_port": 7777, "remote_allow_origin": "*", ... })
+```
+
+Open a Chrome browser and type in the URL: `http://localhost:7777`. You will see something like this:
+
+![Debug](doc/pics/debug.png)
+
 ### Why is my CPU usage at 70% when running gdCEF?
 
 Try switching Godot's graphics mode to 'Compatibility' instead of 'Forward+'. See below, on the top right corner:
@@ -67,8 +79,15 @@ Try switching Godot's graphics mode to 'Compatibility' instead of 'Forward+'. Se
 
 ### Important note about certain architectures!
 
-- CEF is currently not supported on iOS or Android devices. For Android, you can see this [project](https://github.com/Sam2much96/GodotChrome). 
+- CEF is currently not supported on iOS or Android devices. For Android, you can see this [project](https://github.com/Sam2much96/GodotChrome).
 - Chrome extensions are limited to version 2, although most users now rely on version 3.
+
+### I have limitations!
+
+Yes, we know:
+- Keyboard limitation: https://github.com/Lecrapouille/gdcef/issues/55.
+- Slow and with limitations: https://github.com/Lecrapouille/gdcef/issues/50.
+- Restrcited for some access: https://github.com/Lecrapouille/gdcef/issues/75.
 
 ### I cannot watch videos!
 
@@ -78,9 +97,9 @@ CEF does not include by default H264 or ffmpeg codecs for licensing reasons. You
 
 For the moment we cannot block ads.
 
-### I have limitations
+### Why your classes uses subclass Impl?
 
-Yes, we know: https://github.com/Lecrapouille/gdcef/issues/50
+Godot uses a reference counter that conflicts with CEF's reference counter. To avoid compilation issues, we have to trick by creating an intermediate class.
 
 ### Important notes on the CEF license!
 
