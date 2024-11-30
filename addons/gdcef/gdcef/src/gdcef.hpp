@@ -145,7 +145,7 @@ private: // CEF interfaces.
     class Impl: public CefLifeSpanHandler,
                 public CefClient,
                 public CefApp,
-                CefBrowserProcessHandler
+                public CefBrowserProcessHandler
     {
     public:
 
