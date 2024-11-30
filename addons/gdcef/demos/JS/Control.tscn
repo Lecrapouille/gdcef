@@ -7,7 +7,7 @@ layout_mode = 3
 anchors_preset = 0
 script = ExtResource("2")
 
-[node name="TextRect" type="TextureRect" parent="."]
+[node name="TextureRect" type="TextureRect" parent="."]
 layout_mode = 0
 anchor_right = 0.149
 anchor_bottom = 0.179
@@ -18,5 +18,23 @@ anchor_bottom = 0.179
 wait_time = 10.0
 autostart = true
 
-[connection signal="gui_input" from="TextRect" to="." method="_on_TextRectLeft_gui_input"]
-[connection signal="mouse_entered" from="TextRect" to="." method="_on_text_rect_left_mouse_entered"]
+[node name="AcceptDialog" type="AcceptDialog" parent="."]
+
+[node name="TextEdit" type="TextEdit" parent="."]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 39.0
+offset_right = 78.0
+offset_bottom = 83.0
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 4.0
+offset_right = 71.0
+offset_bottom = 35.0
+tooltip_text = "Send data to JavaScript"
+text = "Add XP"
+
+[connection signal="gui_input" from="TextureRect" to="." method="_on_TextRect_gui_input"]
+[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]

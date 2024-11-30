@@ -92,7 +92,10 @@ func create_browser(url):
 	#   {"webgl": true}
 	var browser = $CEF.create_browser(url, $Panel/VBox/TextureRect, {"javascript":true})
 	if browser == null:
-		$Panel/VBox/HBox2/Info.set_text($CEF.get_error())
+		$AcceptDialog.title = "Alert!"
+		$AcceptDialog.dialog_text = "Failed creating browser: " + $CEF.get_error()
+		$AcceptDialog.popup_centered(Vector2(0,0))
+		$AcceptDialog.show()
 		return null
 
 	# Loading callbacks

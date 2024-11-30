@@ -31,43 +31,48 @@
 </head>
 
 <body>
+    <!-- Display the player stats -->
     <div id="player-stats">
         <h2>Player Stats</h2>
         <p>Level: <span id="player-level">1</span></p>
         <p>Experience: <span id="player-xp">0</span></p>
     </div>
+    <!-- Buttons to interact with the player stats -->
     <div>
         <button class="button" onclick="addXP()">Gain XP</button>
         <button class="button" onclick="levelUp()">Level Up</button>
     </div>
 
+    <!-- Script to interact with the player stats and notify GDScript -->
     <script>
-        // Variables globales
+        // Global variables
         let playerLevel = 1;
         let playerXP = 0;
 
+        // Callback to add XP triggered when the button is clicked
         function addXP() {
             playerXP += 10;
             updateDisplay();
 
-            // Appel à GDScript pour notifier le changement
-            if (window.gdscript_handler) {
-                window.gdscript_handler({
+            // Call to GDScript to notify the change
+            if (window.emitJsEvent) {
+                window.emitJsEvent({
                     type: 'xp_gained',
                     value: 10
                 });
             }
         }
 
+        // Callback to level up triggered when the button is clicked
         function levelUp() {
             if (playerXP >= 50) {
                 playerLevel++;
                 playerXP -= 50;
                 updateDisplay();
 
-                // Notifier GDScript du level up
-                if (window.gdscript_handler) {
-                    window.gdscript_handler({
+                // Notify GDScript of the level up
+                if (window.emitJsEvent) {
+                    window.emitJsEvent({
                         type: 'level_up',
                         level: playerLevel
                     });
@@ -75,12 +80,13 @@
             }
         }
 
+        // Function to update the display of the player stats in the HTML
         function updateDisplay() {
             document.getElementById('player-level').textContent = playerLevel;
             document.getElementById('player-xp').textContent = playerXP;
         }
 
-        // Fonction pour recevoir des données de GDScript
+        // Function to receive data from GDScript
         function updateFromGDScript(data) {
             if (data.type === 'bonus_xp') {
                 playerXP += data.value;

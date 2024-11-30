@@ -73,8 +73,18 @@ public:
     //! \brief Get a JavaScript variable value
     godot::Variant get_js_variable(const godot::String& js_name);
 
+    //! \brief Execute a JavaScript script and return the result
+    //! \param[in] script The JavaScript code to execute
+    //! \return The result of the execution converted to a Godot Variant
+    godot::Variant execute_js(const godot::String& script);
+
     //! \brief Get last error messages
     godot::String getError();
+
+    //! \brief Bind a JavaScript function to a GDScript method
+    bool bind_function(const godot::String& js_name,
+                       godot::Object* target,
+                       const godot::String& method_name);
 
 protected:
 
@@ -86,14 +96,22 @@ protected:
 
 private:
 
-    //! \brief Map to store JavaScript-GDScript variable bindings
-    std::unordered_map<godot::String, godot::Variant> m_bindings;
-
     //! \brief V8 context for JavaScript execution
     CefRefPtr<CefV8Context> m_context;
 
     //! \brief Hold last error messages
     mutable std::stringstream m_error;
+
+    //! \brief Map to store JavaScript-GDScript variable bindings
+    std::unordered_map<godot::String, godot::Variant> m_bindings;
+
+    struct FunctionBinding
+    {
+        godot::Object* target;
+        godot::String method_name;
+    };
+
+    std::unordered_map<godot::String, FunctionBinding> m_function_bindings;
 };
 
 #endif // GDCEF_GODOT_JS_BINDER_HPP

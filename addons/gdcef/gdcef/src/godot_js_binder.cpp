@@ -31,6 +31,11 @@ void GodotJSBinder::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_js_variable", "js_name"),
                          &GodotJSBinder::get_js_variable);
     ClassDB::bind_method(D_METHOD("get_error"), &GodotJSBinder::getError);
+    ClassDB::bind_method(D_METHOD("execute_js", "script"),
+                         &GodotJSBinder::execute_js);
+    ClassDB::bind_method(
+        D_METHOD("bind_function", "js_name", "target", "method_name"),
+        &GodotJSBinder::bind_function);
 }
 
 //------------------------------------------------------------------------------
@@ -204,4 +209,93 @@ godot::Variant GodotJSBinder::get_js_variable(const godot::String& js_name)
 
     m_context->Exit();
     return result;
+}
+
+//------------------------------------------------------------------------------
+godot::Variant GodotJSBinder::execute_js(const godot::String& script)
+{
+    if (!m_context.get())
+    {
+        m_error << "No V8 context available";
+        return godot::Variant();
+    }
+
+    if (!m_context->Enter())
+    {
+        m_error << "Failed to enter V8 context";
+        return godot::Variant();
+    }
+
+    CefRefPtr<CefV8Value> retval;
+    CefRefPtr<CefV8Exception> exception;
+
+    CefString js_code(script.utf8().get_data());
+    bool success = m_context->Eval(js_code, CefString(), 0, retval, exception);
+    if (!success || exception.get())
+    {
+        if (exception.get())
+        {
+            m_error << "JavaScript error: "
+                    << exception->GetMessage().ToString();
+        }
+        m_context->Exit();
+        return godot::Variant();
+    }
+
+    godot::Variant result;
+    if (retval.get())
+    {
+        result = v8_to_godot(retval);
+    }
+
+    m_context->Exit();
+    return result;
+}
+
+//------------------------------------------------------------------------------
+bool GodotJSBinder::bind_function(const godot::String& js_name,
+                                  godot::Object* target,
+                                  const godot::String& method_name)
+{
+    if (!m_context.get() || !target)
+    {
+        GDCEF_ERROR("No V8 context available");
+        return false;
+    }
+
+    if (!m_context->Enter())
+    {
+        GDCEF_ERROR("Failed to enter V8 context");
+        return false;
+    }
+
+    // Stocker la référence à l'objet et à la méthode
+    m_function_bindings[js_name] = {target, method_name};
+
+    // Créer une fonction JavaScript qui appellera la méthode GDScript
+    std::string js_function = js_name.utf8().get_data();
+    js_function += " = function(data) { window.gdscript_callback('";
+    js_function += js_name.utf8().get_data();
+    js_function += "', data); }";
+
+    CefString js_code(js_function);
+
+    CefRefPtr<CefV8Value> retval;
+    CefRefPtr<CefV8Exception> exception;
+
+    bool success = m_context->Eval(js_code, CefString(), 0, retval, exception);
+
+    if (!success || exception.get())
+    {
+        if (exception.get())
+        {
+            m_error << "JavaScript error: "
+                    << exception->GetMessage().ToString();
+        }
+        m_context->Exit();
+        return false;
+    }
+
+    m_context->Exit();
+    return success;
 }
