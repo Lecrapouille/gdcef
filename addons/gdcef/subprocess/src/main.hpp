@@ -134,7 +134,9 @@ private:
 // *****************************************************************************
 //! \brief
 // *****************************************************************************
-class GDCefBrowser: public CefApp, public CefBrowserProcessHandler
+class GDCefBrowser: public CefApp,
+                    public CefBrowserProcessHandler,
+                    public CefRenderProcessHandler
 {
 private: // CefApp methods
 
@@ -145,10 +147,23 @@ private: // CefApp methods
         return this;
     }
 
+    virtual CefRefPtr<CefRenderProcessHandler>
+    GetRenderProcessHandler() override
+    {
+        return this;
+    }
+
 private: // CefBrowserProcessHandler methods
 
     // -------------------------------------------------------------------------
     virtual void OnContextInitialized() override;
+
+private: // CefRenderProcessHandler methods
+
+    // -------------------------------------------------------------------------
+    virtual void OnContextCreated(CefRefPtr<CefBrowser> browser,
+                                  CefRefPtr<CefFrame> frame,
+                                  CefRefPtr<CefV8Context> context) override;
 
 private:
 

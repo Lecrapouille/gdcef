@@ -210,3 +210,10 @@ void GDCefBrowser::OnContextInitialized()
                                   nullptr,
                                   nullptr);
 }
+
+//------------------------------------------------------------------------------
+void GDCefBrowser::OnContextCreated(CefRefPtr<CefBrowser> browser,
+                                    CefRefPtr<CefFrame> frame,
+                                    CefRefPtr<CefV8Context> context)
+{
+}
