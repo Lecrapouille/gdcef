@@ -146,6 +146,7 @@ private: // CEF interfaces.
                 public CefClient,
                 public CefApp,
                 public CefBrowserProcessHandler,
+                public CefLoadHandler,
                 public CefRenderProcessHandler
     {
     public:
@@ -190,6 +191,14 @@ private: // CEF interfaces.
             return this;
         }
 
+        // ---------------------------------------------------------------------
+        //! \brief Return the handler for browser load status events.
+        // ---------------------------------------------------------------------
+        virtual CefRefPtr<CefLoadHandler> GetLoadHandler() override
+        {
+            return this;
+        }
+
     private: // CefLifeSpanHandler interfaces
 
         virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) override;
@@ -206,40 +215,19 @@ private: // CEF interfaces.
             const CefString& ProcessType,
             CefRefPtr<CefCommandLine> command_line) override;
 
-    private: // CefRenderProcessHandler interfaces
-
+        // ---------------------------------------------------------------------
+        //! \brief Return the handler for render process events.
+        // ---------------------------------------------------------------------
         virtual CefRefPtr<CefRenderProcessHandler>
         GetRenderProcessHandler() override
         {
             return this;
         }
 
-        // ---------------------------------------------------------------------
-        //! \brief Called immediately after the V8 context for a frame has been
-        //! created. To retrieve the JavaScript 'window' object use the
-        //! CefV8Context::GetGlobal() method. V8 handles can only be accessed
-        //! from the thread on which they are created. A task runner for posting
-        //! tasks on the associated thread can be
-        //! retrieved via the CefV8Context::GetTaskRunner() method.
-        // ---------------------------------------------------------------------
+        //
         virtual void OnContextCreated(CefRefPtr<CefBrowser> browser,
                                       CefRefPtr<CefFrame> frame,
-                                      CefRefPtr<CefV8Context> context) override
-        {
-            m_owner.onContextCreated(browser, frame, context);
-        }
-
-        // ---------------------------------------------------------------------
-        //! \brief Called immediately before the V8 context for a frame is
-        //! released. No references to the context should be kept after this
-        //! method is called.
-        // ---------------------------------------------------------------------
-        virtual void OnContextReleased(CefRefPtr<CefBrowser> browser,
-                                       CefRefPtr<CefFrame> frame,
-                                       CefRefPtr<CefV8Context> context) override
-        {
-            m_owner.onContextReleased(browser, frame, context);
-        }
+                                      CefRefPtr<CefV8Context> context) override;
 
     private:
 
@@ -317,20 +305,6 @@ public:
     GDBrowserView* createBrowser(godot::String const& url,
                                  godot::TextureRect* texture_rect,
                                  godot::Dictionary config);
-
-    // -------------------------------------------------------------------------
-    //! \brief Called by GDBrowserView::Impl::OnContextCreated
-    // -------------------------------------------------------------------------
-    void onContextCreated(CefRefPtr<CefBrowser> browser,
-                          CefRefPtr<CefFrame> frame,
-                          CefRefPtr<CefV8Context> context);
-
-    // -------------------------------------------------------------------------
-    //! \brief Called by GDBrowserView::Impl::OnContextReleased
-    // -------------------------------------------------------------------------
-    void onContextReleased(CefRefPtr<CefBrowser> browser,
-                           CefRefPtr<CefFrame> frame,
-                           CefRefPtr<CefV8Context> context);
 
 private:
 

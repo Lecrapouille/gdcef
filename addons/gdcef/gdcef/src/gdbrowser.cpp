@@ -67,6 +67,7 @@ void GDBrowserView::_bind_methods()
     using namespace godot;
     GDCEF_DEBUG();
 
+    // Methods
     ClassDB::bind_method(D_METHOD("close"), &GDBrowserView::close);
     ClassDB::bind_method(D_METHOD("id"), &GDBrowserView::id);
     ClassDB::bind_method(D_METHOD("get_error"), &GDBrowserView::getError);
@@ -74,12 +75,6 @@ void GDBrowserView::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_texture", "texture"),
                          &GDBrowserView::setTexture);
     ClassDB::bind_method(D_METHOD("get_texture"), &GDBrowserView::getTexture);
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT,
-                              "texture",
-                              PROPERTY_HINT_NODE_TYPE,
-                              "ImageTexture"),
-                 "set_texture",
-                 "get_texture");
     ClassDB::bind_method(D_METHOD("set_zoom_level"),
                          &GDBrowserView::setZoomLevel);
     ClassDB::bind_method(D_METHOD("get_title"), &GDBrowserView::getTitle);
@@ -141,6 +136,14 @@ void GDBrowserView::_bind_methods()
                          &GDBrowserView::getAudioStreamer);
     ClassDB::bind_method(D_METHOD("get_pixel_color", "x", "y"),
                          &GDBrowserView::getPixelColor);
+
+    // Properties
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT,
+                              "texture",
+                              PROPERTY_HINT_NODE_TYPE,
+                              "ImageTexture"),
+                 "set_texture",
+                 "get_texture");
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT,
                               "audio_stream",
                               PROPERTY_HINT_NODE_TYPE,
@@ -148,15 +151,12 @@ void GDBrowserView::_bind_methods()
                  "set_audio_stream",
                  "get_audio_stream");
 
+    // Signals
     ADD_SIGNAL(MethodInfo("on_page_loaded",
                           PropertyInfo(Variant::OBJECT,
                                        "browser",
                                        PROPERTY_HINT_RESOURCE_TYPE,
-                                       "GDBrowserView"),
-                          PropertyInfo(Variant::OBJECT,
-                                       "js_binder",
-                                       PROPERTY_HINT_RESOURCE_TYPE,
-                                       "GodotJSBinder")));
+                                       "GDBrowserView")));
     ADD_SIGNAL(MethodInfo("on_page_failed_loading",
                           PropertyInfo(Variant::INT, "err_code"),
                           PropertyInfo(Variant::STRING, "err_msg"),
@@ -164,6 +164,16 @@ void GDBrowserView::_bind_methods()
                                        "browser",
                                        PROPERTY_HINT_RESOURCE_TYPE,
                                        "GDBrowserView")));
+    /*ADD_SIGNAL(MethodInfo("on_v8_context_created",
+                          PropertyInfo(Variant::OBJECT,
+                                       "browser",
+                                       PROPERTY_HINT_RESOURCE_TYPE,
+                                       "GDBrowserView")));
+    ADD_SIGNAL(MethodInfo("on_v8_context_released",
+                          PropertyInfo(Variant::OBJECT,
+                                       "browser",
+                                       PROPERTY_HINT_RESOURCE_TYPE,
+                                       "GDBrowserView")));*/
     ADD_SIGNAL(MethodInfo("on_browser_paint",
                           PropertyInfo(Variant::OBJECT,
                                        "browser",
@@ -341,6 +351,28 @@ void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
 }
 
 //------------------------------------------------------------------------------
+void GDBrowserView::onContextCreated(CefRefPtr<CefBrowser> browser,
+                                     CefRefPtr<CefFrame> frame,
+                                     CefRefPtr<CefV8Context> context)
+{
+    CEF_REQUIRE_RENDERER_THREAD();
+
+    GDCEF_DEBUG_VAL("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQq onContextCreated");
+    // emit_signal("on_v8_context_created", this, &(context));
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::onContextReleased(CefRefPtr<CefBrowser> browser,
+                                      CefRefPtr<CefFrame> frame,
+                                      CefRefPtr<CefV8Context> context)
+{
+    CEF_REQUIRE_RENDERER_THREAD();
+
+    GDCEF_DEBUG_VAL("onContextReleased");
+    // emit_signal("on_v8_context_released", this, &(context));
+}
+
+//------------------------------------------------------------------------------
 void GDBrowserView::onLoadEnd(CefRefPtr<CefBrowser> /*browser*/,
                               CefRefPtr<CefFrame> frame,
                               int httpStatusCode)
@@ -349,16 +381,7 @@ void GDBrowserView::onLoadEnd(CefRefPtr<CefBrowser> /*browser*/,
     if ((httpStatusCode == 200) && (frame->IsMain()))
     {
         GDCEF_DEBUG_VAL("has ended loading " << frame->GetURL());
-
-        // Get V8Context from frame
-        CefRefPtr<CefV8Context> context = frame->GetV8Context();
-
-        // Create a GodotJSBinder instance and set its context
-        // CefRefPtr<GodotJSBinder> binder = new GodotJSBinder();
-        // binder->set_context(context);
-
-        // Emit signal for Godot script with the binder
-        // emit_signal("on_page_loaded", this, &(*binder));
+        emit_signal("on_page_loaded", this);
     }
 }
 
@@ -368,8 +391,6 @@ void GDBrowserView::onLoadError(CefRefPtr<CefBrowser> /*browser*/,
                                 const int errCode,
                                 const CefString& errorText)
 {
-    CEF_REQUIRE_UI_THREAD();
-
     if (frame->IsMain())
     {
         std::string str = errorText.ToString();
@@ -431,6 +452,35 @@ bool GDBrowserView::loaded() const
         return false;
 
     return m_browser->HasDocument();
+}
+
+//------------------------------------------------------------------------------
+CefRefPtr<CefV8Context> GDBrowserView::getV8Context() const
+{
+    CEF_REQUIRE_UI_THREAD();
+
+    BROWSER_DEBUG();
+
+    if (m_browser == nullptr)
+    {
+        BROWSER_ERROR("Browser is null");
+        return nullptr;
+    }
+
+    if (m_browser->GetMainFrame() == nullptr)
+    {
+        BROWSER_ERROR("Main frame is null");
+        return nullptr;
+    }
+
+    auto context = m_browser->GetMainFrame()->GetV8Context();
+    if (context == nullptr)
+    {
+        BROWSER_ERROR("V8 context is null");
+        return nullptr;
+    }
+
+    return context;
 }
 
 //------------------------------------------------------------------------------
@@ -732,6 +782,7 @@ void GDBrowserView::close()
 bool GDBrowserView::mute(bool mute)
 {
     CEF_REQUIRE_UI_THREAD();
+
     if (m_browser == nullptr)
         return true;
 
@@ -743,6 +794,7 @@ bool GDBrowserView::mute(bool mute)
 bool GDBrowserView::muted()
 {
     CEF_REQUIRE_UI_THREAD();
+
     if (m_browser == nullptr)
         return true;
 

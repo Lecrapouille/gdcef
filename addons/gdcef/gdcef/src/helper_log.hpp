@@ -95,4 +95,11 @@
         ERR_PRINT(godot::String(ss.str().c_str()));      \
     }
 
+#define JSBINDER_DEBUG()                               \
+    {                                                  \
+        std::stringstream ss;                          \
+        ss << "[GDCEF][JSBinder::" << __func__ << "]"; \
+        WARN_PRINT(godot::String(ss.str().c_str()));   \
+    }
+
 #endif // GDCEF_HELPER_LOG_HPP

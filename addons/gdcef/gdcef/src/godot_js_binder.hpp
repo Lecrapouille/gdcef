@@ -26,12 +26,16 @@
 #ifndef GDCEF_GODOT_JS_BINDER_HPP
 #define GDCEF_GODOT_JS_BINDER_HPP
 
+#include "gdbrowser.hpp"
+
 #include <godot_cpp/classes/object.hpp>
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/memory.hpp>
 #include <godot_cpp/variant/variant.hpp>
+
 #include <include/cef_v8.h>
+
 #include <unordered_map>
 
 // Ajouter avant la classe GodotJSBinder:
@@ -59,12 +63,14 @@ public:
 
 public:
 
-    //! \brief Get last internal error messages
+    //! \brief Get last internal error messages.
     godot::String getError();
 
-    //! \brief Set the V8 context for this binder
-    //! \param[in] context The V8 context to use
-    void set_context(CefRefPtr<CefV8Context> context);
+    //! \brief Set the V8 context for this binder.
+    //! \param[in] browser The V8 context of the main frame to use.
+    //! \return true if the context was successfully set.
+    //! \retval false if no main frame was available.
+    bool set_context_from(GDBrowserView* browser);
 
     //! \brief Bind a JavaScript variable to a GDScript variable
     bool bind_variable(const godot::String& js_name,

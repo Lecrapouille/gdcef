@@ -114,7 +114,8 @@ private: // CEF interfaces
     class Impl: public CefClient,
                 public CefRenderHandler,
                 public CefLoadHandler,
-                public CefAudioHandler
+                public CefAudioHandler,
+                public CefRenderProcessHandler
     {
     public:
 
@@ -265,6 +266,35 @@ private: // CEF interfaces
         {
         }
 
+    private: // CefRenderProcessHandler interfaces
+
+        // ---------------------------------------------------------------------
+        //! \brief Called immediately after the V8 context for a frame has been
+        //! created. To retrieve the JavaScript 'window' object use the
+        //! CefV8Context::GetGlobal() method. V8 handles can only be accessed
+        //! from the thread on which they are created. A task runner for posting
+        //! tasks on the associated thread can be
+        //! retrieved via the CefV8Context::GetTaskRunner() method.
+        // ---------------------------------------------------------------------
+        virtual void OnContextCreated(CefRefPtr<CefBrowser> browser,
+                                      CefRefPtr<CefFrame> frame,
+                                      CefRefPtr<CefV8Context> context) override
+        {
+            m_owner.onContextCreated(browser, frame, context);
+        }
+
+        // ---------------------------------------------------------------------
+        //! \brief Called immediately before the V8 context for a frame is
+        //! released. No references to the context should be kept after this
+        //! method is called.
+        // ---------------------------------------------------------------------
+        virtual void OnContextReleased(CefRefPtr<CefBrowser> browser,
+                                       CefRefPtr<CefFrame> frame,
+                                       CefRefPtr<CefV8Context> context) override
+        {
+            m_owner.onContextReleased(browser, frame, context);
+        }
+
     private:
 
         GDBrowserView& m_owner;
@@ -333,6 +363,12 @@ public:
     //! been loaded in the browser.
     // -------------------------------------------------------------------------
     bool loaded() const;
+
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Return the V8 context of the
+    //! main frame.
+    // -------------------------------------------------------------------------
+    CefRefPtr<CefV8Context> getV8Context() const;
 
     // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Stop loading the page.
@@ -648,6 +684,20 @@ private:
                              const float** data,
                              int frames,
                              int64_t pts);
+
+    // -------------------------------------------------------------------------
+    //! \brief Called by GDBrowserView::Impl::OnContextCreated
+    // -------------------------------------------------------------------------
+    void onContextCreated(CefRefPtr<CefBrowser> browser,
+                          CefRefPtr<CefFrame> frame,
+                          CefRefPtr<CefV8Context> context);
+
+    // -------------------------------------------------------------------------
+    //! \brief Called by GDBrowserView::Impl::OnContextReleased
+    // -------------------------------------------------------------------------
+    void onContextReleased(CefRefPtr<CefBrowser> browser,
+                           CefRefPtr<CefFrame> frame,
+                           CefRefPtr<CefV8Context> context);
 
 private:
 

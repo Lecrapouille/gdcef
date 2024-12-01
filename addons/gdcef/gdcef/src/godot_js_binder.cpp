@@ -16,6 +16,8 @@ void GodotJSBinder::_bind_methods()
     ClassDB::bind_method(
         D_METHOD("bind_function", "js_name", "target", "method_name"),
         &GodotJSBinder::bind_function);
+    ClassDB::bind_method(D_METHOD("set_context_from", "browser"),
+                         &GodotJSBinder::set_context_from);
 }
 
 //------------------------------------------------------------------------------
@@ -27,14 +29,32 @@ godot::String GodotJSBinder::getError()
 }
 
 //------------------------------------------------------------------------------
-void GodotJSBinder::set_context(CefRefPtr<CefV8Context> context)
+bool GodotJSBinder::set_context_from(GDBrowserView* browser)
 {
-    m_context = context;
+    JSBINDER_DEBUG();
+    CEF_REQUIRE_UI_THREAD();
+
+    if (browser == nullptr)
+    {
+        GDCEF_ERROR("Browser pointer is null");
+        return false;
+    }
+
+    m_context = browser->getV8Context();
+    if (m_context == nullptr)
+    {
+        GDCEF_ERROR("Failed to get V8 context");
+        return false;
+    }
+
+    return true;
 }
 
 //------------------------------------------------------------------------------
 CefRefPtr<CefV8Value> GodotJSBinder::godot_to_v8(const godot::Variant& value)
 {
+    JSBINDER_DEBUG();
+
     switch (value.get_type())
     {
         case godot::Variant::Type::NIL:
@@ -91,6 +111,8 @@ CefRefPtr<CefV8Value> GodotJSBinder::godot_to_v8(const godot::Variant& value)
 //------------------------------------------------------------------------------
 godot::Variant GodotJSBinder::v8_to_godot(const CefRefPtr<CefV8Value>& v8_value)
 {
+    JSBINDER_DEBUG();
+
     if (!v8_value.get())
         return godot::Variant();
 
@@ -150,6 +172,8 @@ godot::Variant GodotJSBinder::v8_to_godot(const CefRefPtr<CefV8Value>& v8_value)
 bool GodotJSBinder::bind_variable(const godot::String& js_name,
                                   const godot::Variant& value)
 {
+    JSBINDER_DEBUG();
+
     if (!m_context.get())
     {
         GDCEF_ERROR("No V8 context available");
@@ -179,6 +203,8 @@ bool GodotJSBinder::bind_variable(const godot::String& js_name,
 //------------------------------------------------------------------------------
 godot::Variant GodotJSBinder::get_js_variable(const godot::String& js_name)
 {
+    JSBINDER_DEBUG();
+
     if (!m_context.get())
     {
         GDCEF_ERROR("No V8 context available");
@@ -207,6 +233,8 @@ godot::Variant GodotJSBinder::get_js_variable(const godot::String& js_name)
 //------------------------------------------------------------------------------
 godot::Variant GodotJSBinder::execute_js(const godot::String& script)
 {
+    JSBINDER_DEBUG();
+
     if (!m_context.get())
     {
         m_error << "No V8 context available";
@@ -250,6 +278,8 @@ bool GodotJSBinder::bind_function(const godot::String& js_name,
                                   godot::Object* target,
                                   const godot::String& method_name)
 {
+    JSBINDER_DEBUG();
+
     if (!m_context.get() || !target)
     {
         GDCEF_ERROR("No V8 context available");

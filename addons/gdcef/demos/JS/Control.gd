@@ -57,9 +57,9 @@ func _on_button_pressed():
 # Callback when a page has ended to load with failure.
 # Display a load error message using a data: URI.
 # ==============================================================================
-func _on_page_failed_loading(aborted, msg_err, node):
+func _on_page_failed_loading(_err_code, _err_msg, browser):
 	$AcceptDialog.title = "Alert!"
-	$AcceptDialog.dialog_text = "The browser " + node.name + " did not load " + node.get_url()
+	$AcceptDialog.dialog_text = "The browser " + browser.name + " did not load " + browser.get_url()
 	$AcceptDialog.popup_centered(Vector2(0, 0))
 	$AcceptDialog.show()
 	pass
@@ -77,7 +77,7 @@ func get_browser():
 # ==============================================================================
 # Make the CEF browser reacts to mouse events.
 # ==============================================================================
-func _react_to_mouse_event(event, name):
+func _react_to_mouse_event(event, _name):
 	var browser = get_browser()
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
@@ -144,39 +144,31 @@ func _ready():
 	browser.name = browser_name
 	browser.connect("on_page_loaded", _on_page_loaded)
 	browser.connect("on_page_failed_loading", _on_page_failed_loading)
-	browser.connect("on_v8_context_created", _on_v8_context_created)
-	browser.connect("on_v8_context_destroyed", _on_v8_context_destroyed)
+	#browser.connect("on_v8_context_created", _on_v8_context_created)
+	#browser.connect("on_v8_context_destroyed", _on_v8_context_destroyed)
 	await get_tree().process_frame # Wait one frame for the texture rect to get its size
 	browser.resize($TextureRect.get_size())
-
-	# Configurer la fonction de callback JS avant de charger la page
-	js_binder.bind_function("emitJsEvent", self, "_on_js_event")
-
 	# Charger la page HTML
 	browser.load_data_uri(_load_html_file(), "text/html")
 
 # ==============================================================================
 # Callback when page is loaded - configure JS bindings here
 # ==============================================================================
-func _on_page_loaded(browser, binder):
+func _on_page_loaded(browser):
+	$AcceptDialog.title = "LOADED!"
+	$AcceptDialog.dialog_text = "The browser " + browser.name + " page loaded " + browser.get_url()
+	$AcceptDialog.popup_centered(Vector2(0, 0))
+	$AcceptDialog.show()
 	print("The browser " + browser.name + " has loaded document")
-	js_binder = binder
+	#js_binder.set_context_from(browser)
+	# Configurer la fonction de callback JS
+#	js_binder.bind_function("emitJsEvent", self, "_on_js_event")
 	pass
 
-func _on_v8_context_created(browser, context):
-	print("V8 context created" + browser.name)
-	js_binder.set_context(context)
-	js_binder.execute_js("""
-		emitJsEvent = function(data) {
-			_gdcef_emit_js_event(JSON.stringify(data));
-		};
-	""")
-	pass
-
-func _on_v8_context_destroyed(browser, context):
-	print("V8 context destroyed" + browser.name)
-	js_binder.set_context(null)
-	pass
+#func _on_v8_context_destroyed(browser, context):
+#	print("V8 context destroyed" + browser.name)
+#	js_binder.set_context(null)
+#	pass
 
 # ==============================================================================
 # Load the HTML file containing the JavaScript code
@@ -192,9 +184,11 @@ func _load_html_file():
 # ==============================================================================
 func _process(_delta):
 	# Récupérer les valeurs depuis JavaScript
-	var xp = js_binder.get_js_variable("playerXP")
-	var level = js_binder.get_js_variable("playerLevel")
+#	js_binder.set_context_from($CEF.get_node(browser_name))
+#	js_binder.set_context_from($CEF.get_node(browser_name))
+#	var xp = js_binder.get_js_variable("playerXP")
+#	var level = js_binder.get_js_variable("playerLevel")
 
 	# Mettre à jour le TextEdit avec les valeurs formatées
-	$TextEdit.text = "Player Level: %s\nPlayer XP: %s" % [level, xp]
+#	$TextEdit.text = "Player Level: %s\nPlayer XP: %s" % [level, xp]
 	pass

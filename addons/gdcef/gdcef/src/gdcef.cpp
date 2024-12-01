@@ -124,13 +124,6 @@ void GDCef::_bind_methods()
     ClassDB::bind_method(D_METHOD("shutdown"), &GDCef::shutdown);
     ClassDB::bind_method(D_METHOD("is_alive"), &GDCef::isAlive);
     ClassDB::bind_method(D_METHOD("get_error"), &GDCef::getError);
-
-    ADD_SIGNAL(MethodInfo("on_v8_context_created",
-                          PropertyInfo(Variant::OBJECT, "node"),
-                          PropertyInfo(Variant::OBJECT, "context")));
-    ADD_SIGNAL(MethodInfo("on_v8_context_released",
-                          PropertyInfo(Variant::OBJECT, "node"),
-                          PropertyInfo(Variant::OBJECT, "context")));
 }
 
 //------------------------------------------------------------------------------
@@ -260,6 +253,7 @@ void GDCef::_process(double /*delta*/)
 //! \brief See
 //! gdcef/addons/gdcef/thirdparty/cef_binary/include/internal/cef_types.h for
 //! more information about settings.
+//------------------------------------------------------------------------------
 static void configureCEF(fs::path const& folder,
                          CefSettings& cef_settings,
                          CefWindowInfo& window_info,
@@ -583,6 +577,7 @@ bool GDCef::Impl::DoClose(CefRefPtr<CefBrowser> /*browser*/)
 void GDCef::Impl::OnBeforeClose(CefRefPtr<CefBrowser> browser)
 {
     CEF_REQUIRE_UI_THREAD();
+
     GDCEF_DEBUG();
 
     // Remove from the list of existing browsers from the Godot child.
@@ -606,7 +601,6 @@ void GDCef::Impl::OnBeforeCommandLineProcessing(
     const CefString& ProcessType,
     CefRefPtr<CefCommandLine> command_line)
 {
-    // CEF_REQUIRE_UI_THREAD();
     GDCEF_DEBUG();
 
     if (command_line == nullptr)
@@ -636,24 +630,9 @@ void GDCef::Impl::OnBeforeCommandLineProcessing(
     // https://peter.sh/experiments/chromium-command-line-switches/
 }
 
-//------------------------------------------------------------------------------
-void GDCef::onContextCreated(CefRefPtr<CefBrowser> browser,
-                             CefRefPtr<CefFrame> frame,
-                             CefRefPtr<CefV8Context> context)
+void GDCef::Impl::OnContextCreated(CefRefPtr<CefBrowser> browser,
+                                   CefRefPtr<CefFrame> frame,
+                                   CefRefPtr<CefV8Context> context)
 {
-    GDCEF_DEBUG_VAL("onContextCreated");
-
-    // Emit signal for Godot script
-    emit_signal("on_v8_context_created", this, &(context));
-}
-
-//------------------------------------------------------------------------------
-void GDCef::onContextReleased(CefRefPtr<CefBrowser> browser,
-                              CefRefPtr<CefFrame> frame,
-                              CefRefPtr<CefV8Context> context)
-{
-    GDCEF_DEBUG_VAL("onContextReleased");
-
-    // Emit signal for Godot script
-    emit_signal("on_v8_context_released", this, &(context));
+    GDCEF_DEBUG_VAL("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZz");
 }
