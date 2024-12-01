@@ -16,7 +16,7 @@ This document supposes you want to compile gdCEF module for Godot 4.2+ for Linux
 
 ### Install System Packages
 
-Install the following tools: `scons, g++, ninja, cmake, git, python3` (version 3.21.0 or higher). We are using C++17, but we are not using fancy C++ features - we just need version 17 for using `std::filesystem`. We are also using OpenMP by default to parallelize some CPU tasks. It is by default enabled for Linux and Windows. For MacOS, you need to install [openmp](https://www.youtube.com/playlist?list=PLLX-Q6B8xqZ8n8bwjGdzBJ25X2utwnoEG).You can disable it in the `build.py` script.
+Install the following tools: `scons, g++, ninja, cmake, git, python3` (version 3.21.0 or higher). We are using C++20, but we are not using fancy C++ features - we just need this version for using `std::filesystem`. We are also using OpenMP by default to parallelize some CPU tasks. It is by default enabled for Linux and Windows. For MacOS, you need to install [openmp](https://www.youtube.com/playlist?list=PLLX-Q6B8xqZ8n8bwjGdzBJ25X2utwnoEG).You can disable it in the `build.py` script.
 
 - For Linux, depending on your distribution you can use `sudo apt-get install`.
 - For macOS X you can install [homebrew](https://brew.sh/).
