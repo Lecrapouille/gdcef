@@ -53,11 +53,11 @@
 #endif
 
 // Godot 4
-#include "godot.hpp"
-#include "node.hpp"
-#include "os.hpp"
-#include "project_settings.hpp"
-#include "texture_rect.hpp"
+#include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/classes/os.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/classes/texture_rect.hpp>
+#include <godot_cpp/core/class_db.hpp>
 
 // Chromium Embedded Framework
 #include "cef_app.h"

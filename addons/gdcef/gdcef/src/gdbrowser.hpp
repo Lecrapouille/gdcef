@@ -49,12 +49,12 @@
 #endif
 
 // Godot 4
-#include "audio_stream_generator_playback.hpp"
-#include "gd_script.hpp"
-#include "global_constants.hpp"
-#include "godot.hpp"
-#include "image_texture.hpp"
-#include "node.hpp"
+#include <godot_cpp/classes/audio_stream_generator_playback.hpp>
+#include <godot_cpp/classes/gd_script.hpp>
+#include <godot_cpp/classes/global_constants.hpp>
+#include <godot_cpp/classes/image_texture.hpp>
+#include <godot_cpp/classes/node.hpp>
+#include <godot_cpp/core/class_db.hpp>
 
 // Chromium Embedded Framework
 #include "cef_app.h"
