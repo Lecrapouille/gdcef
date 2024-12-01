@@ -11,8 +11,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -24,49 +24,49 @@
 //*****************************************************************************
 
 #ifndef GDCEF_SUBPROCESS_CLIENT_HPP
-#  define GDCEF_SUBPROCESS_CLIENT_HPP
+#define GDCEF_SUBPROCESS_CLIENT_HPP
 
-#  include <list>
-#  include <iostream>
+#include <iostream>
+#include <list>
 
 // ----------------------------------------------------------------------------
 // Suppress warnings
 // ----------------------------------------------------------------------------
-#  if !defined(_WIN32)
+#if !defined(_WIN32)
 #    pragma GCC diagnostic push
-#      pragma GCC diagnostic ignored "-Wold-style-cast"
-#      pragma GCC diagnostic ignored "-Wparentheses"
-#      pragma GCC diagnostic ignored "-Wunused-parameter"
-#      pragma GCC diagnostic ignored "-Wconversion"
-#      pragma GCC diagnostic ignored "-Wsign-conversion"
-#      pragma GCC diagnostic ignored "-Wfloat-conversion"
-#      pragma GCC diagnostic ignored "-Wfloat-equal"
-#      pragma GCC diagnostic ignored "-Wpedantic"
-#      pragma GCC diagnostic ignored "-Wshadow"
-#      if defined(__clang__)
+#    pragma GCC diagnostic ignored "-Wold-style-cast"
+#    pragma GCC diagnostic ignored "-Wparentheses"
+#    pragma GCC diagnostic ignored "-Wunused-parameter"
+#    pragma GCC diagnostic ignored "-Wconversion"
+#    pragma GCC diagnostic ignored "-Wsign-conversion"
+#    pragma GCC diagnostic ignored "-Wfloat-conversion"
+#    pragma GCC diagnostic ignored "-Wfloat-equal"
+#    pragma GCC diagnostic ignored "-Wpedantic"
+#    pragma GCC diagnostic ignored "-Wshadow"
+#    if defined(__clang__)
 #        pragma clang diagnostic push
 #        pragma clang diagnostic ignored "-Wcast-align"
 #        pragma clang diagnostic ignored "-Wcast-align"
 #        pragma clang diagnostic ignored "-Wundef"
 #        pragma clang diagnostic ignored "-Wshadow-field"
 #        pragma clang diagnostic ignored "-Wcast-qual"
-#      endif
-#  endif
+#    endif
+#endif
 
-#  include "cef_client.h"
-#  include "cef_app.h"
-#  include "cef_browser.h"
-#  include "wrapper/cef_helpers.h"
-#  ifdef __APPLE__
+#include "cef_app.h"
+#include "cef_browser.h"
+#include "cef_client.h"
+#include "wrapper/cef_helpers.h"
+#ifdef __APPLE__
 #    include "include/wrapper/cef_library_loader.h"
-#  endif
+#endif
 
 // *****************************************************************************
 //! \brief
 // *****************************************************************************
-class GDCefClient : public CefClient,
-                    public CefLifeSpanHandler,
-                    public CefDisplayHandler
+class GDCefClient: public CefClient,
+                   public CefLifeSpanHandler,
+                   public CefDisplayHandler
 {
 private: // CefDisplayHandler methods
 
@@ -84,7 +84,7 @@ private: // CefLifeSpanHandler methods
         return this;
     }
 
-        // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) override
     {
         std::cout << "[SubProcess] [GDCefClient::OnAfterCreated]" << std::endl;
@@ -94,7 +94,7 @@ private: // CefLifeSpanHandler methods
         m_browser_list.push_back(browser);
     }
 
-        // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) override
     {
         std::cout << "[SubProcess] [GDCefClient::OnBeforeClose]" << std::endl;
@@ -113,7 +113,8 @@ private: // CefLifeSpanHandler methods
 
         if (m_browser_list.empty())
         {
-            // All browser windows have closed. Quit the application message loop.
+            // All browser windows have closed. Quit the application message
+            // loop.
             CefQuitMessageLoop();
         }
     }
@@ -133,13 +134,13 @@ private:
 // *****************************************************************************
 //! \brief
 // *****************************************************************************
-class GDCefBrowser : public CefApp,
-                     public CefBrowserProcessHandler
+class GDCefBrowser: public CefApp, public CefBrowserProcessHandler
 {
 private: // CefApp methods
 
     // -------------------------------------------------------------------------
-    virtual CefRefPtr<CefBrowserProcessHandler> GetBrowserProcessHandler() override
+    virtual CefRefPtr<CefBrowserProcessHandler>
+    GetBrowserProcessHandler() override
     {
         return this;
     }
@@ -154,11 +155,11 @@ private:
     IMPLEMENT_REFCOUNTING(GDCefBrowser);
 };
 
-#  if !defined(_WIN32)
-#      if defined(__clang__)
+#if !defined(_WIN32)
+#    if defined(__clang__)
 #        pragma clang diagnostic pop
-#      endif
+#    endif
 #    pragma GCC diagnostic pop
-#  endif
+#endif
 
 #endif // GDCEF_SUBPROCESS_CLIENT_HPP
