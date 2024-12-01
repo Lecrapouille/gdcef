@@ -11,8 +11,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -29,10 +29,10 @@
 // Entry point function for all Window process.
 //------------------------------------------------------------------------------
 #ifdef _WIN32
-#  include <windows.h>
-#  include <process.h>
-#  include <tlhelp32.h>
-#  include <stdio.h>
+#    include <process.h>
+#    include <stdio.h>
+#    include <tlhelp32.h>
+#    include <windows.h>
 
 //------------------------------------------------------------------------------
 DWORD getppid()
@@ -42,23 +42,29 @@ DWORD getppid()
     DWORD ppid = 0, pid = GetCurrentProcessId();
 
     hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    __try {
-        if (hSnapshot == INVALID_HANDLE_VALUE) __leave;
+    __try
+    {
+        if (hSnapshot == INVALID_HANDLE_VALUE)
+            __leave;
 
         ZeroMemory(&pe32, sizeof(pe32));
         pe32.dwSize = sizeof(pe32);
-        if (!Process32First(hSnapshot, &pe32)) __leave;
+        if (!Process32First(hSnapshot, &pe32))
+            __leave;
 
-        do {
-            if (pe32.th32ProcessID == pid) {
+        do
+        {
+            if (pe32.th32ProcessID == pid)
+            {
                 ppid = pe32.th32ParentProcessID;
                 break;
             }
         } while (Process32Next(hSnapshot, &pe32));
-
     }
-    __finally {
-        if (hSnapshot != INVALID_HANDLE_VALUE) CloseHandle(hSnapshot);
+    __finally
+    {
+        if (hSnapshot != INVALID_HANDLE_VALUE)
+            CloseHandle(hSnapshot);
     }
     return ppid;
 }
@@ -72,18 +78,20 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    std::cout << ::getpid() << "::" << ::getppid() << ": [SubProcess]  " << std::endl;
+    std::cout << ::getpid() << "::" << ::getppid() << ": [SubProcess]  "
+              << std::endl;
 
     // Provide CEF with command-line arguments.
     CefMainArgs main_args(hInstance);
 
-    // SimpleApp implements application-level callbacks. It will create the first
-    // browser instance in OnContextInitialized() after CEF has initialized.
+    // SimpleApp implements application-level callbacks. It will create the
+    // first browser instance in OnContextInitialized() after CEF has
+    // initialized.
     CefRefPtr<GDCefBrowser> app(new GDCefBrowser);
 
     // CEF applications have multiple sub-processes (render, plugin, GPU, etc)
-    // that share the same executable. This function checks the command-line and,
-    // if this is a sub-process, executes the appropriate logic.
+    // that share the same executable. This function checks the command-line
+    // and, if this is a sub-process, executes the appropriate logic.
     int exit_code = CefExecuteProcess(main_args, app.get(), nullptr);
     if (exit_code >= 0)
     {
@@ -97,7 +105,8 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     // Initialize CEF for the browser process.
     CefInitialize(main_args, settings, app.get(), nullptr);
 
-    // Run the CEF message loop. This will block until CefQuitMessageLoop() is called.
+    // Run the CEF message loop. This will block until CefQuitMessageLoop() is
+    // called.
     CefRunMessageLoop();
 
     // Shut down CEF.
@@ -121,24 +130,25 @@ int main(int argc, char* argv[])
         std::cout << "[SubProcess] arg " << i << ": " << argv[i] << std::endl;
     }
 
-#  ifdef __APPLE__
+#    ifdef __APPLE__
     // Load the CEF framework library at runtime instead of linking directly
     // as required by the macOS sandbox implementation.
     CefScopedLibraryLoader library_loader;
     if (!library_loader.LoadInMain())
         return 1;
-#  endif
+#    endif
 
     // Provide CEF with command-line arguments.
     CefMainArgs main_args(argc, argv);
 
-    // SimpleApp implements application-level callbacks. It will create the first
-    // browser instance in OnContextInitialized() after CEF has initialized.
+    // SimpleApp implements application-level callbacks. It will create the
+    // first browser instance in OnContextInitialized() after CEF has
+    // initialized.
     CefRefPtr<GDCefBrowser> app(new GDCefBrowser);
 
     // CEF applications have multiple sub-processes (render, plugin, GPU, etc)
-    // that share the same executable. This function checks the command-line and,
-    // if this is a sub-process, executes the appropriate logic.
+    // that share the same executable. This function checks the command-line
+    // and, if this is a sub-process, executes the appropriate logic.
     int exit_code = CefExecuteProcess(main_args, app.get(), nullptr);
     if (exit_code >= 0)
     {
@@ -152,7 +162,8 @@ int main(int argc, char* argv[])
     // Initialize CEF for the browser process.
     CefInitialize(main_args, settings, app.get(), nullptr);
 
-    // Run the CEF message loop. This will block until CefQuitMessageLoop() is called.
+    // Run the CEF message loop. This will block until CefQuitMessageLoop() is
+    // called.
     CefRunMessageLoop();
 
     // Shut down CEF.
@@ -166,7 +177,8 @@ int main(int argc, char* argv[])
 //------------------------------------------------------------------------------
 void GDCefBrowser::OnContextInitialized()
 {
-    std::cout << "[SubProcess] [GDCefBrowser::OnContextInitialized] begin" << std::endl;
+    std::cout << "[SubProcess] [GDCefBrowser::OnContextInitialized] begin"
+              << std::endl;
     CEF_REQUIRE_UI_THREAD();
 
     // Information used when creating the native window.
@@ -179,14 +191,22 @@ void GDCefBrowser::OnContextInitialized()
 #endif
 
     // GDCefClient implements browser-level callbacks.
-    std::cout << "[SubProcess] [GDCefBrowser::OnContextInitialized] Create client handler" << std::endl;
+    std::cout << "[SubProcess] [GDCefBrowser::OnContextInitialized] Create "
+                 "client handler"
+              << std::endl;
     CefRefPtr<GDCefClient> handler(new GDCefClient());
 
     // Specify CEF browser settings here.
     CefBrowserSettings browser_settings;
 
     // Create the first browser window.
-    std::cout << "[SubProcess] [GDCefBrowser::OnContextInitialized] Create the browser" << std::endl;
-    CefBrowserHost::CreateBrowser(window_info, handler.get(), "https://github.com/Lecrapouille/gdcef",
-                                    browser_settings, nullptr, nullptr);
+    std::cout << "[SubProcess] [GDCefBrowser::OnContextInitialized] Create the "
+                 "browser"
+              << std::endl;
+    CefBrowserHost::CreateBrowser(window_info,
+                                  handler.get(),
+                                  "https://github.com/Lecrapouille/gdcef",
+                                  browser_settings,
+                                  nullptr,
+                                  nullptr);
 }
