@@ -54,9 +54,10 @@
             playerXP += 10;
             updateDisplay();
 
-            // Call to GDScript to notify the change
-            if (window.emitJsEvent) {
-                window.emitJsEvent({
+            // Call to GDScript to notify the change. This function is created
+            // by the GDScript code.
+            if (emitJsEvent) {
+                emitJsEvent({
                     type: 'xp_gained',
                     value: 10
                 });
@@ -70,9 +71,10 @@
                 playerXP -= 50;
                 updateDisplay();
 
-                // Notify GDScript of the level up
-                if (window.emitJsEvent) {
-                    window.emitJsEvent({
+                // Notify GDScript of the level up. This function is created
+                // by the GDScript code.
+                if (emitJsEvent) {
+                    emitJsEvent({
                         type: 'level_up',
                         level: playerLevel
                     });

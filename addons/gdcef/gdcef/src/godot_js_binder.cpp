@@ -2,26 +2,6 @@
 #include "helper_log.hpp"
 
 //------------------------------------------------------------------------------
-GodotJSBinder::GodotJSBinder()
-{
-    m_context = CefV8Context::GetCurrentContext();
-}
-
-//------------------------------------------------------------------------------
-GodotJSBinder::~GodotJSBinder()
-{
-    m_bindings.clear();
-}
-
-//------------------------------------------------------------------------------
-godot::String GodotJSBinder::getError()
-{
-    std::string err = m_error.str();
-    m_error.clear();
-    return {err.c_str()};
-}
-
-//------------------------------------------------------------------------------
 void GodotJSBinder::_bind_methods()
 {
     using namespace godot;
@@ -36,6 +16,76 @@ void GodotJSBinder::_bind_methods()
     ClassDB::bind_method(
         D_METHOD("bind_function", "js_name", "target", "method_name"),
         &GodotJSBinder::bind_function);
+}
+
+//------------------------------------------------------------------------------
+godot::String GodotJSBinder::getError()
+{
+    std::string err = m_error.str();
+    m_error.clear();
+    return {err.c_str()};
+}
+
+//------------------------------------------------------------------------------
+void GodotJSBinder::set_context(CefRefPtr<CefV8Context> context)
+{
+    m_context = context;
+}
+
+//------------------------------------------------------------------------------
+CefRefPtr<CefV8Value> GodotJSBinder::godot_to_v8(const godot::Variant& value)
+{
+    switch (value.get_type())
+    {
+        case godot::Variant::Type::NIL:
+            return CefV8Value::CreateNull();
+
+        case godot::Variant::Type::BOOL:
+            return CefV8Value::CreateBool(value.operator bool());
+
+        case godot::Variant::Type::INT:
+            return CefV8Value::CreateInt(value.operator int64_t());
+
+        case godot::Variant::Type::FLOAT:
+            return CefV8Value::CreateDouble(value.operator double());
+
+        case godot::Variant::Type::STRING:
+            return CefV8Value::CreateString(
+                value.operator godot::String().utf8().get_data());
+
+        case godot::Variant::Type::ARRAY: {
+            auto godot_array = value.operator godot::Array();
+            auto v8_array = CefV8Value::CreateArray(godot_array.size());
+
+            for (int i = 0; i < godot_array.size(); ++i)
+            {
+                v8_array->SetValue(i, godot_to_v8(godot_array[i]));
+            }
+
+            return v8_array;
+        }
+
+        case godot::Variant::Type::DICTIONARY: {
+            auto godot_dict = value.operator godot::Dictionary();
+            auto v8_object = CefV8Value::CreateObject(nullptr, nullptr);
+
+            godot::Array keys = godot_dict.keys();
+            for (int i = 0; i < keys.size(); ++i)
+            {
+                godot::Variant key = keys[i];
+                godot::String key_str = key.operator godot::String();
+
+                v8_object->SetValue(CefString(key_str.utf8().get_data()),
+                                    godot_to_v8(godot_dict[key]),
+                                    V8_PROPERTY_ATTRIBUTE_NONE);
+            }
+
+            return v8_object;
+        }
+
+        default:
+            return CefV8Value::CreateNull();
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -97,62 +147,6 @@ godot::Variant GodotJSBinder::v8_to_godot(const CefRefPtr<CefV8Value>& v8_value)
 }
 
 //------------------------------------------------------------------------------
-CefRefPtr<CefV8Value> GodotJSBinder::godot_to_v8(const godot::Variant& value)
-{
-    switch (value.get_type())
-    {
-        case godot::Variant::Type::NIL:
-            return CefV8Value::CreateNull();
-
-        case godot::Variant::Type::BOOL:
-            return CefV8Value::CreateBool(value.operator bool());
-
-        case godot::Variant::Type::INT:
-            return CefV8Value::CreateInt(value.operator int64_t());
-
-        case godot::Variant::Type::FLOAT:
-            return CefV8Value::CreateDouble(value.operator double());
-
-        case godot::Variant::Type::STRING:
-            return CefV8Value::CreateString(
-                value.operator godot::String().utf8().get_data());
-
-        case godot::Variant::Type::ARRAY: {
-            auto godot_array = value.operator godot::Array();
-            auto v8_array = CefV8Value::CreateArray(godot_array.size());
-
-            for (int i = 0; i < godot_array.size(); ++i)
-            {
-                v8_array->SetValue(i, godot_to_v8(godot_array[i]));
-            }
-
-            return v8_array;
-        }
-
-        case godot::Variant::Type::DICTIONARY: {
-            auto godot_dict = value.operator godot::Dictionary();
-            auto v8_object = CefV8Value::CreateObject(nullptr, nullptr);
-
-            godot::Array keys = godot_dict.keys();
-            for (int i = 0; i < keys.size(); ++i)
-            {
-                godot::Variant key = keys[i];
-                godot::String key_str = key.operator godot::String();
-
-                v8_object->SetValue(CefString(key_str.utf8().get_data()),
-                                    godot_to_v8(godot_dict[key]),
-                                    V8_PROPERTY_ATTRIBUTE_NONE);
-            }
-
-            return v8_object;
-        }
-
-        default:
-            return CefV8Value::CreateNull();
-    }
-}
-
-//------------------------------------------------------------------------------
 bool GodotJSBinder::bind_variable(const godot::String& js_name,
                                   const godot::Variant& value)
 {
@@ -175,7 +169,6 @@ bool GodotJSBinder::bind_variable(const godot::String& js_name,
     {
         m_context->GetGlobal()->SetValue(
             js_name.utf8().get_data(), v8_value, V8_PROPERTY_ATTRIBUTE_NONE);
-        m_bindings[js_name] = value;
         success = true;
     }
 
@@ -268,9 +261,6 @@ bool GodotJSBinder::bind_function(const godot::String& js_name,
         GDCEF_ERROR("Failed to enter V8 context");
         return false;
     }
-
-    // Stocker la référence à l'objet et à la méthode
-    m_function_bindings[js_name] = {target, method_name};
 
     // Créer une fonction JavaScript qui appellera la méthode GDScript
     std::string js_function = js_name.utf8().get_data();

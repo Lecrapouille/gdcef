@@ -13,9 +13,10 @@ const browser_name = "player_stats"
 
 
 # ==============================================================================
-# Bind the JavaScript function to the GDScript method
+# Bind the JavaScript function to the GDScript method.
+# We only need a single instance of the binder since, in this demo, we manage
+# a single frame.
 # ==============================================================================
-@onready var bound_variable = GodotJSBinder.new().bind_variable("playerXP", 0)
 @onready var js_binder = GodotJSBinder.new()
 
 # ==============================================================================
@@ -44,21 +45,13 @@ func _handle_level_up(new_level):
 	print("Level up reward: ", reward)
 
 # ==============================================================================
-# Optional function to add XP manually from Godot when the Godot button is pressed
+# Add XP manually from Godot when the Godot button is pressed.
 # ==============================================================================
-func add_xp_from_godot(amount):
+func _on_button_pressed():
+	var amount = randi() % 5 + 1
 	var js_code = "playerXP += %d; updateDisplay();" % amount
 	js_binder.execute_js(js_code)
-
-func _on_button_pressed():
-	add_xp_from_godot(10)
 	pass
-
-# ==============================================================================
-# CEF Callback when a page has ended to load with success.
-# ==============================================================================
-func _on_page_loaded(node):
-	print("The browser " + node.name + " has loaded document")
 
 # ==============================================================================
 # Callback when a page has ended to load with failure.
@@ -139,7 +132,8 @@ func _ready():
 	$TextureRect.set_size(Vector2(400, 400))
 
 	# Init CEF
-	if !$CEF.initialize({"incognito": true, "locale": "en-US"}):
+	if !$CEF.initialize({"incognito": true, "locale": "en-US",
+		"remote_debugging_port": 7777, "remote_allow_origin": "*"}):
 		push_error("Failed initializing CEF")
 		get_tree().quit()
 	else:
@@ -150,12 +144,39 @@ func _ready():
 	browser.name = browser_name
 	browser.connect("on_page_loaded", _on_page_loaded)
 	browser.connect("on_page_failed_loading", _on_page_failed_loading)
+	browser.connect("on_v8_context_created", _on_v8_context_created)
+	browser.connect("on_v8_context_destroyed", _on_v8_context_destroyed)
 	await get_tree().process_frame # Wait one frame for the texture rect to get its size
 	browser.resize($TextureRect.get_size())
-	browser.load_data_uri(_load_html_file(), "text/html")
-	
-	#
+
+	# Configurer la fonction de callback JS avant de charger la page
 	js_binder.bind_function("emitJsEvent", self, "_on_js_event")
+
+	# Charger la page HTML
+	browser.load_data_uri(_load_html_file(), "text/html")
+
+# ==============================================================================
+# Callback when page is loaded - configure JS bindings here
+# ==============================================================================
+func _on_page_loaded(browser, binder):
+	print("The browser " + browser.name + " has loaded document")
+	js_binder = binder
+	pass
+
+func _on_v8_context_created(browser, context):
+	print("V8 context created" + browser.name)
+	js_binder.set_context(context)
+	js_binder.execute_js("""
+		emitJsEvent = function(data) {
+			_gdcef_emit_js_event(JSON.stringify(data));
+		};
+	""")
+	pass
+
+func _on_v8_context_destroyed(browser, context):
+	print("V8 context destroyed" + browser.name)
+	js_binder.set_context(null)
+	pass
 
 # ==============================================================================
 # Load the HTML file containing the JavaScript code
@@ -170,5 +191,10 @@ func _load_html_file():
 # CEF is implicitly updated by this function.
 # ==============================================================================
 func _process(_delta):
-#	$TextEdit.text = "Player XP: " + bound_variable.get_js_variable("playerXP")
+	# Récupérer les valeurs depuis JavaScript
+	var xp = js_binder.get_js_variable("playerXP")
+	var level = js_binder.get_js_variable("playerLevel")
+
+	# Mettre à jour le TextEdit avec les valeurs formatées
+	$TextEdit.text = "Player Level: %s\nPlayer XP: %s" % [level, xp]
 	pass

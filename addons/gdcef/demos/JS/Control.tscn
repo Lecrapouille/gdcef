@@ -24,8 +24,8 @@ autostart = true
 layout_mode = 0
 offset_left = 2.0
 offset_top = 39.0
-offset_right = 78.0
-offset_bottom = 83.0
+offset_right = 143.0
+offset_bottom = 159.0
 
 [node name="Button" type="Button" parent="."]
 layout_mode = 0

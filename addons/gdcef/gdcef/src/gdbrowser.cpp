@@ -25,6 +25,7 @@
 
 //------------------------------------------------------------------------------
 #include "gdbrowser.hpp"
+#include "godot_js_binder.hpp"
 #include "helper_files.hpp"
 
 #include <gdextension_interface.h>
@@ -147,17 +148,33 @@ void GDBrowserView::_bind_methods()
                  "set_audio_stream",
                  "get_audio_stream");
 
-    ADD_SIGNAL(
-        MethodInfo("on_page_loaded", PropertyInfo(Variant::OBJECT, "node")));
+    ADD_SIGNAL(MethodInfo("on_page_loaded",
+                          PropertyInfo(Variant::OBJECT,
+                                       "browser",
+                                       PROPERTY_HINT_RESOURCE_TYPE,
+                                       "GDBrowserView"),
+                          PropertyInfo(Variant::OBJECT,
+                                       "js_binder",
+                                       PROPERTY_HINT_RESOURCE_TYPE,
+                                       "GodotJSBinder")));
     ADD_SIGNAL(MethodInfo("on_page_failed_loading",
                           PropertyInfo(Variant::INT, "err_code"),
                           PropertyInfo(Variant::STRING, "err_msg"),
-                          PropertyInfo(Variant::OBJECT, "node")));
-    ADD_SIGNAL(
-        MethodInfo("on_browser_paint", PropertyInfo(Variant::OBJECT, "node")));
+                          PropertyInfo(Variant::OBJECT,
+                                       "browser",
+                                       PROPERTY_HINT_RESOURCE_TYPE,
+                                       "GDBrowserView")));
+    ADD_SIGNAL(MethodInfo("on_browser_paint",
+                          PropertyInfo(Variant::OBJECT,
+                                       "browser",
+                                       PROPERTY_HINT_RESOURCE_TYPE,
+                                       "GDBrowserView")));
     ADD_SIGNAL(MethodInfo("on_html_content_requested",
                           PropertyInfo(Variant::STRING, "html"),
-                          PropertyInfo(Variant::OBJECT, "node")));
+                          PropertyInfo(Variant::OBJECT,
+                                       "browser",
+                                       PROPERTY_HINT_RESOURCE_TYPE,
+                                       "GDBrowserView")));
 }
 
 //------------------------------------------------------------------------------
@@ -333,8 +350,15 @@ void GDBrowserView::onLoadEnd(CefRefPtr<CefBrowser> /*browser*/,
     {
         GDCEF_DEBUG_VAL("has ended loading " << frame->GetURL());
 
-        // Emit signal for Godot script
-        emit_signal("on_page_loaded", this);
+        // Get V8Context from frame
+        CefRefPtr<CefV8Context> context = frame->GetV8Context();
+
+        // Create a GodotJSBinder instance and set its context
+        // CefRefPtr<GodotJSBinder> binder = new GodotJSBinder();
+        // binder->set_context(context);
+
+        // Emit signal for Godot script with the binder
+        // emit_signal("on_page_loaded", this, &(*binder));
     }
 }
 

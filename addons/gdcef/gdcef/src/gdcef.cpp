@@ -124,6 +124,13 @@ void GDCef::_bind_methods()
     ClassDB::bind_method(D_METHOD("shutdown"), &GDCef::shutdown);
     ClassDB::bind_method(D_METHOD("is_alive"), &GDCef::isAlive);
     ClassDB::bind_method(D_METHOD("get_error"), &GDCef::getError);
+
+    ADD_SIGNAL(MethodInfo("on_v8_context_created",
+                          PropertyInfo(Variant::OBJECT, "node"),
+                          PropertyInfo(Variant::OBJECT, "context")));
+    ADD_SIGNAL(MethodInfo("on_v8_context_released",
+                          PropertyInfo(Variant::OBJECT, "node"),
+                          PropertyInfo(Variant::OBJECT, "context")));
 }
 
 //------------------------------------------------------------------------------
@@ -627,4 +634,26 @@ void GDCef::Impl::OnBeforeCommandLineProcessing(
 
     // TBD: Do we have to allow gdscript to give command line ?
     // https://peter.sh/experiments/chromium-command-line-switches/
+}
+
+//------------------------------------------------------------------------------
+void GDCef::onContextCreated(CefRefPtr<CefBrowser> browser,
+                             CefRefPtr<CefFrame> frame,
+                             CefRefPtr<CefV8Context> context)
+{
+    GDCEF_DEBUG_VAL("onContextCreated");
+
+    // Emit signal for Godot script
+    emit_signal("on_v8_context_created", this, &(context));
+}
+
+//------------------------------------------------------------------------------
+void GDCef::onContextReleased(CefRefPtr<CefBrowser> browser,
+                              CefRefPtr<CefFrame> frame,
+                              CefRefPtr<CefV8Context> context)
+{
+    GDCEF_DEBUG_VAL("onContextReleased");
+
+    // Emit signal for Godot script
+    emit_signal("on_v8_context_released", this, &(context));
 }

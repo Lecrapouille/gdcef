@@ -52,19 +52,19 @@ struct hash<godot::String>
 // ****************************************************************************
 class GodotJSBinder: public godot::RefCounted
 {
+public:
+
     GDCLASS(GodotJSBinder, godot::RefCounted);
-
-protected:
-
-    static void _bind_methods();
+    // IMPLEMENT_REFCOUNTING(GodotJSBinder);
 
 public:
 
-    //! \brief Constructor
-    GodotJSBinder();
+    //! \brief Get last internal error messages
+    godot::String getError();
 
-    //! \brief Destructor
-    virtual ~GodotJSBinder();
+    //! \brief Set the V8 context for this binder
+    //! \param[in] context The V8 context to use
+    void set_context(CefRefPtr<CefV8Context> context);
 
     //! \brief Bind a JavaScript variable to a GDScript variable
     bool bind_variable(const godot::String& js_name,
@@ -77,9 +77,6 @@ public:
     //! \param[in] script The JavaScript code to execute
     //! \return The result of the execution converted to a Godot Variant
     godot::Variant execute_js(const godot::String& script);
-
-    //! \brief Get last error messages
-    godot::String getError();
 
     //! \brief Bind a JavaScript function to a GDScript method
     bool bind_function(const godot::String& js_name,
@@ -94,24 +91,16 @@ protected:
     //! \brief Convert Godot variant to V8 value
     CefRefPtr<CefV8Value> godot_to_v8(const godot::Variant& value);
 
-private:
+    //! \brief Bind methods for Godot
+    static void _bind_methods();
 
-    //! \brief V8 context for JavaScript execution
-    CefRefPtr<CefV8Context> m_context;
+private:
 
     //! \brief Hold last error messages
     mutable std::stringstream m_error;
 
-    //! \brief Map to store JavaScript-GDScript variable bindings
-    std::unordered_map<godot::String, godot::Variant> m_bindings;
-
-    struct FunctionBinding
-    {
-        godot::Object* target;
-        godot::String method_name;
-    };
-
-    std::unordered_map<godot::String, FunctionBinding> m_function_bindings;
+    //! \brief V8 context for JavaScript execution
+    CefRefPtr<CefV8Context> m_context;
 };
 
 #endif // GDCEF_GODOT_JS_BINDER_HPP
