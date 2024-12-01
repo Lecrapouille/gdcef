@@ -26,40 +26,72 @@
 #ifndef GDCEF_HELPER_LOG_HPP
 #define GDCEF_HELPER_LOG_HPP
 
-#include <iostream>
+// Godot 4
+#include <godot_cpp/core/error_macros.hpp>
+#include <godot_cpp/variant/string.hpp>
+
 #include <sstream>
 
 // ****************************************************************************
-// Logging
-// TODO disable log in release mode or if log is required (from Godot)
-// TODO Use Godot print instead of cout/cerr
+// Logging macros using Godot's logging system with stringstream
 // ****************************************************************************
-#define GDCEF_DEBUG() \
-    std::cout << "[GDCEF][GDCEF::" << __func__ << "]" << std::endl
+#define GDCEF_DEBUG()                                \
+    {                                                \
+        std::stringstream ss;                        \
+        ss << "[GDCEF][GDCEF::" << __func__ << "]";  \
+        WARN_PRINT(godot::String(ss.str().c_str())); \
+    }
 
-#define GDCEF_DEBUG_VAL(x) \
-    std::cout << "[GDCEF][GDCEF::" << __func__ << "] " << x << std::endl
+#define GDCEF_DEBUG_VAL(x)                                \
+    {                                                     \
+        std::stringstream ss;                             \
+        ss << "[GDCEF][GDCEF::" << __func__ << "] " << x; \
+        WARN_PRINT(godot::String(ss.str().c_str()));      \
+    }
 
-#define GDCEF_ERROR(x) \
-    m_error << "[GDCEF][GDCEF::" << __func__ << "] " << x << std::endl
+#define GDCEF_ERROR(x)                                    \
+    {                                                     \
+        std::stringstream ss;                             \
+        ss << "[GDCEF][GDCEF::" << __func__ << "] " << x; \
+        ERR_PRINT(godot::String(ss.str().c_str()));       \
+    }
 
-#define GDCEF_WARNING(x) \
-    std::cout << "[GDCEF][GDCEF::" << __func__ << "] " << x << std::endl
+#define GDCEF_WARNING(x)                                  \
+    {                                                     \
+        std::stringstream ss;                             \
+        ss << "[GDCEF][GDCEF::" << __func__ << "] " << x; \
+        WARN_PRINT(godot::String(ss.str().c_str()));      \
+    }
 
-#define BROWSER_DEBUG()                                                     \
-    std::cout << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "]" \
-              << std::endl
+#define BROWSER_DEBUG()                                                   \
+    {                                                                     \
+        std::stringstream ss;                                             \
+        ss << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "]"; \
+        WARN_PRINT(godot::String(ss.str().c_str()));                      \
+    }
 
-#define BROWSER_DEBUG_VAL(x)                                                 \
-    std::cout << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "] " \
-              << x << std::endl
+#define BROWSER_DEBUG_VAL(x)                                              \
+    {                                                                     \
+        std::stringstream ss;                                             \
+        ss << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "] " \
+           << x;                                                          \
+        WARN_PRINT(godot::String(ss.str().c_str()));                      \
+    }
 
-#define BROWSER_ERROR(x)                                                   \
-    m_error << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "] " \
-            << x << std::endl;                                             \
-    std::cerr << m_error.str()
+#define BROWSER_ERROR(x)                                                  \
+    {                                                                     \
+        std::stringstream ss;                                             \
+        ss << "[GDCEF][BrowserView::" << __func__ << "][" << m_id << "] " \
+           << x;                                                          \
+        ERR_PRINT(godot::String(ss.str().c_str()));                       \
+        m_error << ss.str();                                              \
+    }
 
-#define STATIC_GDCEF_ERROR(x) \
-    std::cerr << "[ERROR][GDCEF][" << __func__ << "]" << x << std::endl
+#define STATIC_GDCEF_ERROR(x)                            \
+    {                                                    \
+        std::stringstream ss;                            \
+        ss << "[ERROR][GDCEF][" << __func__ << "]" << x; \
+        ERR_PRINT(godot::String(ss.str().c_str()));      \
+    }
 
 #endif // GDCEF_HELPER_LOG_HPP
