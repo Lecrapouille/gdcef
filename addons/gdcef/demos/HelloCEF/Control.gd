@@ -20,7 +20,7 @@ const pages = [
 @onready var iterator = 0
 
 # Memorize if the mouse was pressed
-@onready var mouse_pressed : bool = false
+@onready var mouse_pressed: bool = false
 
 # Memorize the browser having the focus
 @onready var browser_focus = null
@@ -36,15 +36,15 @@ func _on_Timer_timeout():
 # ==============================================================================
 # CEF Callback when a page has ended to load with success.
 # ==============================================================================
-func _on_page_loaded(node):
-	print("The browser " + node.name + " has loaded " + node.get_url())
+func _on_page_loaded(browser):
+	print("The browser " + browser.name + " has loaded " + browser.get_url())
 
 # ==============================================================================
 # Callback when a page has ended to load with failure.
 # Display a load error message using a data: URI.
 # ==============================================================================
-func _on_page_failed_loading(aborted, msg_err, node):
-	print("The browser " + node.name + " did not load " + node.get_url())
+func _on_page_failed_loading(aborted, msg_err, browser):
+	print("The browser " + browser.name + " did not load " + browser.get_url())
 	pass
 
 # ==============================================================================
@@ -79,7 +79,7 @@ func _react_to_mouse_event(event, name):
 			else:
 				browser.set_mouse_middle_up()
 	elif event is InputEventMouseMotion:
-		if mouse_pressed == true :
+		if mouse_pressed == true:
 			browser.set_mouse_left_down()
 		browser.set_mouse_moved(event.position.x, event.position.y)
 
@@ -137,7 +137,7 @@ func _ready():
 	# Set application dimension
 	var h = get_viewport().size.x
 	var w = get_viewport().size.y
-	set_position(Vector2(0,0))
+	set_position(Vector2(0, 0))
 	set_size(Vector2(h, w))
 
 	### CEF ####################################################################
@@ -161,7 +161,7 @@ func _ready():
 	# artifacts: allows path such as "build" or "res://cef_artifacts/". Note that "res://"
 	# will use ProjectSettings.globalize_path but exported projects don't support globalize_path:
 	# https://docs.godotengine.org/en/3.5/classes/class_projectsettings.html#class-projectsettings-method-globalize-path
-	if !$CEF.initialize({"incognito":true, "locale":"en-US"}):
+	if !$CEF.initialize({"incognito": true, "locale": "en-US"}):
 		push_error("Failed initializing CEF")
 		get_tree().quit()
 	else:
@@ -171,10 +171,10 @@ func _ready():
 	### Browsers ###############################################################
 
 	# Split vertically the windows
-	$TextRectLeft.set_position(Vector2(0,0))
-	$TextRectLeft.set_size(Vector2(h/2, w))
-	$TextRectRight.set_position(Vector2(h/2,0))
-	$TextRectRight.set_size(Vector2(h/2, w))
+	$TextRectLeft.set_position(Vector2(0, 0))
+	$TextRectLeft.set_size(Vector2(h / 2, w))
+	$TextRectRight.set_position(Vector2(h / 2, 0))
+	$TextRectRight.set_size(Vector2(h / 2, w))
 
 	# Wait one frame for the texture rect to get its size
 	await get_tree().process_frame

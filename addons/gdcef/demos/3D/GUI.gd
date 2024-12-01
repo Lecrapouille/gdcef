@@ -15,7 +15,7 @@ const RADIO_URL = "http://streaming.radio.co/s9378c22ee/listen"
 const HOME_URL = "https://github.com/Lecrapouille/gdcef"
 
 # Memorize if the mouse was pressed
-@onready var mouse_pressed : bool = false
+@onready var mouse_pressed: bool = false
 
 # ==============================================================================
 # Home button pressed: get the browser node and load a new page.
@@ -53,18 +53,18 @@ func _on_Next_pressed():
 # ==============================================================================
 # Callback when a page has ended to load: we print a message
 # ==============================================================================
-func _on_page_loaded(node):
-	$Panel/Label.set_text(node.name + ": page " + node.get_url() + " loaded")
+func _on_page_loaded(browser):
+	$Panel/Label.set_text(browser.name + ": page " + browser.get_url() + " loaded")
 
 # ==============================================================================
 # Callback when a page has ended to load with failure.
 # Display a load error message using a data: URI.
 # ==============================================================================
-func _on_page_failed_loading(err_code, err_msg, node):
+func _on_page_failed_loading(err_code, err_msg, browser):
 	if err_code == -3:
 		return
-	push_error("The browser " + node.name + " failed loading " + \
-		node.get_url() + ": " + err_msg)
+	push_error("The browser " + browser.name + " failed loading " + \
+		browser.get_url() + ": " + err_msg)
 	pass
 
 # ==============================================================================
@@ -109,7 +109,7 @@ func _on_TextureRect_gui_input(event):
 			else:
 				browser.set_mouse_middle_up()
 	elif event is InputEventMouseMotion:
-		if mouse_pressed == true :
+		if mouse_pressed == true:
 			browser.set_mouse_left_down()
 		browser.set_mouse_moved(event.position.x, event.position.y)
 	pass
@@ -151,7 +151,7 @@ func _ready():
 	# artifacts: allows path such as "build" or "res://cef_artifacts/". Note that "res://"
 	# will use ProjectSettings.globalize_path but exported projects don't support globalize_path:
 	# https://docs.godotengine.org/en/3.5/classes/class_projectsettings.html#class-projectsettings-method-globalize-path
-	if !$CEF.initialize({"incognito":true, "locale":"en-US"}):
+	if !$CEF.initialize({"incognito": true, "locale": "en-US"}):
 		push_error($CEF.get_error())
 		get_tree().quit()
 		return
@@ -169,7 +169,7 @@ func _ready():
 	#   {"image_loading", true}
 	#   {"databases", true}
 	#   {"webgl", true}
-	var browser = $CEF.create_browser(RADIO_URL, $Panel/TextureRect, {"javascript":true})
+	var browser = $CEF.create_browser(RADIO_URL, $Panel/TextureRect, {"javascript": true})
 	browser.name = browser_name
 	browser.connect("on_page_loaded", _on_page_loaded)
 	browser.connect("on_page_failed_loading", _on_page_failed_loading)
