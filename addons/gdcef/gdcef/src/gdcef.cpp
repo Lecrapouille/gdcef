@@ -165,7 +165,7 @@ bool GDCef::initialize(godot::Dictionary config)
                 std::filesystem::current_path() / cef_artifacts_folder;
         }
         GDCEF_DEBUG_VAL("Launching CEF from Godot editor");
-        GDCEF_DEBUG_VAL("Path where your project Godot files shall be located:"
+        GDCEF_DEBUG_VAL("Path where your project Godot files shall be located: "
                         << cef_folder_path);
     }
     else
@@ -175,15 +175,16 @@ bool GDCef::initialize(godot::Dictionary config)
                       "exported_artifacts",
                       real_path() / std::string(CEF_ARTIFACTS_FOLDER));
         GDCEF_DEBUG_VAL("Launching CEF from your executable");
-        GDCEF_DEBUG_VAL("Path where your application files shall be located:"
+        GDCEF_DEBUG_VAL("Path where your application files shall be located: "
                         << cef_folder_path);
     }
 
     // Check if needed files to make CEF working are present.
     if (!sanity_checks(cef_folder_path))
     {
-        GDCEF_ERROR("Error: at least one CEF artifacts not found in folder "
-                    << cef_folder_path);
+        GDCEF_ERROR("Error: at least one CEF artifact was not found in folder "
+                    << cef_folder_path
+                    << ". Your gdCEF node will still be present but disabled.");
         m_impl = nullptr;
         return false;
     }
@@ -204,7 +205,8 @@ bool GDCef::initialize(godot::Dictionary config)
     GDCEF_DEBUG_VAL("CefInitialize");
     if (!CefInitialize(args, m_cef_settings, m_impl, nullptr))
     {
-        GDCEF_ERROR("CefInitialize failed");
+        GDCEF_ERROR("CEF failed its initialization. Your gdCEF node will still "
+                    "be present but disabled.");
         m_impl = nullptr;
         return false;
     }
