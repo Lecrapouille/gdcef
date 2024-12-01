@@ -27,7 +27,7 @@ This repository contains the following important elements:
 - Some demos in [2D](demos/2D/) and [3D](demos/3D/). The 2D demo shows almost all the API.
 - A python-3 [build script](build.py) that will git clone the Godot-cpp binding, download the CEF tarball, extract it, compile CEF, compile the primary and secondary CEF process, and finally create the CEF artifacts in the `build` folder.
 
-*Note:* While we are using C++17, we aren't utilizing advanced features, but we require this version for the `filesystem` library.
+*Note:* While we are using C++20, we aren't utilizing advanced features, but we require this version for the `filesystem` library. And with C++17, the `filesystem` library seems not working correctly with Windows.
 
 ## Documentation
 

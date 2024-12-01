@@ -103,7 +103,7 @@ target_library = 'libgdcef'
 
 # Platform specific compilation
 if platform == 'macos':
-    env.Append(CXXFLAGS=['--std=c++17'])
+    env.Append(CXXFLAGS=['--std=c++20'])
     env.Append(LINKFLAGS=['-arch', archi])
     env.Append(CCFLAGS=['-arch', archi])
     if compile_mode == 'debug':
@@ -116,7 +116,7 @@ if platform == 'macos':
                          '-D__STDC_FORMAT_MACROS'])
 
 elif platform == 'linux':
-    env.Append(CXXFLAGS=['--std=c++17'])
+    env.Append(CXXFLAGS=['--std=c++20'])
     if compile_mode == 'debug':
         env.Append(CCFLAGS=['-g3', '-Og'])
     else:
@@ -131,7 +131,7 @@ elif platform == 'windows':
     env.Append(ENV=os.environ)
     env.Append(CPPDEFINES=['WIN32', '_WIN32', '_WINDOWS', '_CRT_SECURE_NO_WARNINGS', 'TYPED_METHOD_BIND'])
     env.Append(CCFLAGS=['-W3', '-GR'])
-    env.Append(CXXFLAGS='/std:c++17')
+    env.Append(CXXFLAGS='/std:c++20')
     if compile_mode == 'debug':
         env.Append(CPPDEFINES=['_DEBUG', '_ITERATOR_DEBUG_LEVEL=0'])
         env.Append(CCFLAGS=['-EHsc', '-MDd', '-ZI', '-FS'])

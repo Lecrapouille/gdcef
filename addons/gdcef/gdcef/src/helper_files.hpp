@@ -30,8 +30,8 @@
 #include <vector>
 
 // ****************************************************************************
-// C++17 filesystem utilities. The include depends on the version of g++ or
-// clang++ this C++17
+// C++20 filesystem utilities. The include depends on the version of g++ or
+// clang++
 // ****************************************************************************
 #if __has_include(<filesystem>)
 #    include <filesystem>
