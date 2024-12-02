@@ -1,61 +1,30 @@
-# Details design: How CEF is compiled under Godot?
+# Details Design: How is gdCEF compiled?
 
-The goal of this document is to make you understand the general idea behind how
-this module `gdcef` is compiled (with examples for Windows while similar for
-other operating systems). The detailed design of how guts are working is described
-in another [document](addons/gdcef/doc/detailsdesign.md) (currently unfinished). For the
-details of the implementation, you will have to dive directly inside the CEF
-code source, it has a lot of comments (not always easy to apprehend at first
-read). Else, ask questions either in the `Discussions` or `Issues` menu of the
-associated GitHub repository to help improve this document.
+This document explains how the `gdCEF` module is organized and compiled. The detailed design of the internal workings is described in another [document](addons/gdcef/doc/detailsdesign.md) (currently unfinished). For implementation details, you will need to dive directly into the CEF source code, which contains extensive comments that may be challenging to understand at first.
 
-## Environment
+*Note:* This document was initially written for a parent project using gdCEF and Godot 3. Some legacy parts may remain that have not been fully updated.
 
-The tree structure of your project can be different from the one depicted in
-the next diagram. For this document we chose:
+## Tree structure of the gdCEF project
+
+The tree structure of the gdCEF project may differ slightly from what is shown here, depending on its evolution. The general organization follows this pattern:
 
 ```
-📦YourProject
- ┣ 📂godot-cpp                 ⬅️ Godot C++ API and bindings (cloned)
- ┗ 📂godot-native              ⬅️ Base folder holding native modules (cloned)
-   ┗ 📂browser                 ⬅️ Base folder holding native CEF module
-     ┣ 📂gdcef                 ⬅️ Code for the CEF module (cloned)
-     ┣ 📂subprocess            ⬅️ Code of the CEF sub-process executable (cloned)
-     ┗ 📂cef_binary            ⬅️ CEF distribution used to build the dependencies (downloaded)
+📦gdCEF
+ ┣ 📂gdcef                 ⬅️ Code for the CEF main process (git cloned)
+ ┣ 📂render_process        ⬅️ Code for the CEF secondary process (cloned)
+ ┣ 📂thirdparty
+ ┃ ┣ 📂cef_binary          ⬅️ CEF distribution used to build dependencies (downloaded)
+ ┃ ┗ 📂godot-cpp           ⬅️ Godot C++ API and bindings (downloaded)
+ ┗ 📂patches               ⬅️ Patch files to apply to the CEF source code
 ```
 
-## The Godot C++ binding API (godot-cpp)
+## The Godot C++ binding API (📂godot-cpp)
 
-The first component, `godot-cpp` folder, must be present before doing *any*
-compilation attempt on a Godot module. This folder comes from this
-[repo](https://github.com/godotengine/godot-cpp) and contains binding on the
-Godot API allows you to compile your module as if you were compiling it
-directly inside the code source of the Godot editor (see
-[here](https://docs.godotengine.org/en/stable/development/cpp/custom_modules_in_cpp.html)
-for more information).
+The first component, not included in the gdCEF repository, is the `godot-cpp` folder. It must be present before attempting any compilation of a Godot module. This folder comes from this [repository](https://github.com/godotengine/godot-cpp) and provides bindings to the Godot API that allow you to compile your code as a Godot module, similar to compiling directly within the Godot editor's source code (see [here](https://docs.godotengine.org/en/stable/development/cpp/custom_modules_in_cpp.html) for more information).
 
-*IMPORTANT:* You have to know that contrary to compiling your module directly
-inside the `modules` folder of the Godot engine, this method has a drawback,
-each time that one of your exported functions is called, call extra
-intermediate functions imposed by the binding layer. In our case, this is fine
-since CEF few triggers the Godot engine. The other point is that methods may
-have their name a little changed compared to the official API. The last good point
-for us for this project is the presence of C++ namespace which fixes for us a
-name conflict on the error enumerators: Godot and CEF use the same error
-names, but the compiler does not know which one to use. Finally, to make use of CEF
-natively inside Godot engine would mean to directly modify the Godot source
-code, which is more complex than using C++ binding. If you are curious and
-read French you can check this
-[document](https://github.com/stigmee/doc-internal/blob/master/doc/tuto_modif_godot_fr.md#compilation-du-module-godot-v34-stable)
-detailing how we succeeded.
+*Note:* Unlike compiling your module directly inside the Godot engine's `modules` folder, this method has a drawback: each exported function call goes through additional intermediate functions imposed by the binding layer. In our case, this is acceptable since CEF rarely triggers the Godot engine. Additionally, method names may differ slightly from the official API. One advantage for this project is the presence of C++ namespaces, which resolves name conflicts with error enumerators (Godot and CEF use the same error names). Finally, implementing CEF natively inside the Godot engine would require direct modifications to the Godot source code, which is more complex than using C++ bindings. If you're curious and read French, you can check this [document](https://github.com/stigmee/doc-internal/blob/master/doc/tuto_modif_godot_fr.md#compilation-du-module-godot-v34-stable) detailing how we achieved this.
 
-The `godot-cpp` repository should be cloned **recursively** using the
-appropriate branch (i.e. do not clone the master as you would end up with
-headers for the 4.0 version): `git clone --recursive -b 3.4
-https://github.com/godotengine/godot-cpp` (this project also works for Godot 3.5).
-Recursive cloning will include the appropriate godot-headers used to generate the
-C++ bindings and will produce this kind of message (useless information have been
-removed for the clarity of this document):
+The `godot-cpp` repository should be cloned **recursively** using the appropriate branch: `git clone --recursive -b 4.3 https://github.com/godotengine/godot-cpp`. Recursive cloning will include the appropriate godot-headers used to generate the C++ bindings and will produce this kind of message (useless information have been removed for the clarity of this document):
 
 ```
 Cloning into 'godot-cpp'...
@@ -66,41 +35,24 @@ Cloning into '<Project>\godot-native\godot-cpp/godot-headers'...
 Submodule path 'godot-headers': checked out 'd1596b939d6c9f5df86655ea617713ef321ad938'
 ```
 
-The `godot-cpp` folder is automatically compiled by the install script
-`build.py` which calls a command similar to these lines:
+The `godot-cpp` folder is automatically downloaded and compiled by the install script `build.py` which calls a command similar to these lines:
 
 ```
 cd godot-cpp
 scons platform=windows target=release
 ```
 
-Where [scons](https://scons.org/) is a build system like Makefile but using the
-Python interpreter and the build script knowing the operating system, if it has
-to compile in release or debug mode (and more parameters).
+Where [scons](https://scons.org/) is a build system like Makefile but using the Python interpreter and used by Godot team to compile the Godot engine and its modules.
 
-## Prebuilt Chromium Embedded Framework (cef_binary)
+## Prebuilt Chromium Embedded Framework (📂cef_binary)
 
-The second component, `cef_binary` contains the CEF with prebuilt libraries with
-the C++ API and some code to compile. These libraries and artifacts are needed
-to make the Godot application compilable and working. They are created when this
-component is compiled (in fact, compiling the CEF's `cefsimple` example given in
-the source is enough). Note that building CEF source code 'from scratch' is too
-complex: too long (around 4 hours with a good Ethernet connection, at worst 1
-day with poor Ethernet connection), too huge (around 60 and 100 GB on
-your disk) and your system shall install plenty of system packages (apt-get).
+The second component, not present in the repository when cloned, `cef_binary` contains the CEF with prebuilt libraries with the C++ API and some code to compile. These libraries are needed to make the gdCEF module compilable and artifacts needed to make the module runnable once launched. Artifacts are created when this component is compiled.
 
-Since this folder `cef_binary` cannot be directly git cloned, you have to
-download, unpack and rename it from the CEF website
-https://cef-builds.spotifycdn.com/index.html in an automatic way. This is done
-by our the install script `build.py`, which knows your operating system and the
-desired CEF version: an inspection inside the CEF's README (if present) allows
-to know if CEF has been previously downloaded or if the version is matching (if
-not, this means we wanted to install a different CEF version: the old
-`cef_binary` folder is removed and the new one is downloaded, unpacked and
-compiled automatically).
+Note that building CEF source code 'from scratch' is too complex: too long (around 4 hours with a good Ethernet connection, at worst 1 day with poor Ethernet connection), too huge (more than 100 GB of your disk) and your system shall install plenty of system packages (apt-get). That is why we use prebuilt libraries from the CEF website https://cef-builds.spotifycdn.com/index.html.
 
-To compile CEF, our build script `build.py` will call something similar to the
-following lines (but depending on your operating system):
+Since this folder `cef_binary` cannot be directly included in gdCEF repository, it is downloaded, unpacked in an automatic way by the `build.py` script. This script understands your operating system and the desired CEF version: an inspection inside the CEF's README (if present) allows to know if CEF has been previously downloaded or if the version is matching (if not, this means we wanted to install a different CEF version: the old `cef_binary` folder is removed and the new one is downloaded, unpacked and compiled automatically).
+
+To compile CEF, our build script `build.py` will call something similar to the following lines (but depending on your operating system):
 
 ```
 cd ./thirdparty/cef_binary
@@ -108,168 +60,198 @@ cmake -DCMAKE_BUILD_TYPE=Release .
 cmake --build . --config Release
 ```
 
-The following libraries and artifacts are copied into the Godot project root
-`res://`, else Godot will not be able to locate them and will complain about not
-being able to load the module dependencies at project startup. The destination
-folder is inside its `build` folder (to be created). Those files, for Windows,
-are mandatory to correctly startup CEF. Again, the `build.py` will do it for
-you, and for other OSes.
+The following libraries and artifacts must be copied to the Godot project root `res://`, otherwise Godot will not be able to locate them and will fail to load the module dependencies at project startup. These files are placed in the `build` folder (which needs to be created). For Windows, these files are mandatory for CEF to start correctly. The `build.py` script handles this automatically for all operating systems.
 
-```
-📦YourProject
- ┗ 📂build
-    ┣ 📂locales                      ⬅️ locale-specific resources and strings
-    ┃ ┣ 📜en-US.pak                  ⬅️ English
-    ┃ ┗ 📜*.pak                      ⬅️ Other countries
-    ┣ 📜chrome_elf.dll               ⬅️
-    ┣ 📜d3dcompiler_47.dll           ⬅️ Accelerated compositing support libraries
-    ┣ 📜libEGL.dll                   ⬅️ Accelerated compositing support libraries
-    ┣ 📜libGLESv2.dll                ⬅️ Accelerated compositing support libraries
-    ┣ 📜libcef.dll                   ⬅️ main CEF library
-    ┣ 📜snapshot_blob.bin            ⬅️ JavaScript V8 initial snapshot
-    ┣ 📜v8_context_snapshot.bin      ⬅️ JavaScript V8 initial snapshot
-    ┣ 📜icudtl.dat                   ⬅️ Unicode support data
-    ┣ 📜chrome_100_percent.pak       ⬅️ Non-localized resources and strings
-    ┣ 📜chrome_200_percent.pak       ⬅️ Non-localized resources and strings
-    ┗ 📜resources.pak                ⬅️ Non-localized resources and strings
-```
-
-For Windows, actual builds are using dynamic libraries, and default VS solutions
-is configured for static compilation. Therefore need to use VS to compile in
-Release mode, and you (the build script) will change the compiler mode of the
-Release mode from `/MT` to `/MD`, and add the 2 following preprocessor flags:
+For Windows, current builds use dynamic libraries, while the default VS solution is configured for static compilation. Therefore, you (or the build script) need to use VS to compile in Release mode and change the compiler settings from `/MT` to `/MD`, as well as add these two preprocessor flags:
 
 * `_ITERATOR_DEBUG_LEVEL = 0;`                 under `C/C++ >> Preprocessor >> PreprocessorDefinitions`.
 * `_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH`       under `C/C++ >> Preprocessor >> PreprocessorDefinitions`.
 
-Our build script `build.py` will apply a patch before compiling. For Linux it
-seems not possible to compile in static, as a consequence the `libcef.so` is quite
-fat: more than 1 gigabyte which is a factor more than the one for Windows
-(probably because this last knows better than Linux which symbol to export).
+Our build script `build.py` applies a patch before compilation. On Linux, static compilation appears to be impossible, resulting in a much larger `libcef.so` - over 1 gigabyte, which is significantly larger than the Windows version (likely because Windows better understands which symbols to export).
 
-*IMPORTANT:* since CEF is using some third-party libraries under the LGPL license.
-Compiling them as static libraries will contaminate the project under the GPL
-license (which is not the case when compiled as dynamic libraries). See this
-[post](https://www.magpcss.org/ceforum/viewtopic.php?f=6&t=11182). In our case,
-this is fine since our project is already under GPL license.
+*IMPORTANT:* Since CEF uses some third-party libraries under the LGPL license, compiling them as static libraries would force the project under the GPL license (this is not the case when compiled as dynamic libraries). See this [post](https://www.magpcss.org/ceforum/viewtopic.php?f=6&t=11182). In our case, this is not an issue since our project is already under the GPL license.
 
-## CEF secondary process (subprocess)
+## CEF artifacts compiled from CEF source code (📂cef_artifacts)
 
-This executable is needed in order for the CEF to spawn the various CEF
-sub-processes (GPU process, render handler...). In CEF, a secondary process is
-needed when the CEF initialization function cannot reach or modify the command
-line of the application (the `int main(int argc, char* argv[])`) which is our
-case since we do not want to depend on a modified Godot (forked) holding
-internally a CEF. We gave it a try: modifying Godot source code works but this
-becomes too complex to follow the evolution of Godot and CEF (since we are not
-developing the Godot engine source code). For more information, you can read this
-[section](https://github.com/stigmee/doc-internal/blob/master/doc/tuto_modif_godot_fr.md#modification-du-main-de-godot-v34-stable).
-
-The detailed design on how both processes talk together is described in this
-[document](addons/gdcef/doc/detailsdesign.md).
-
-The canonical path of the secondary process shall be known by the primary
-process (the primary process is explained in the next section). This is our case
-since this secondary process will live next to your application binary.
-
-The code source of this secondary process is simply a simple version of the
-CEF's `cefsimple` example given in the source is enough. This executable can be
-directly used as it and you will have a minimal browser application.
+The `cef_artifacts` folder contains the following files (which may vary depending on your operating system and CEF version). The folder name is defined in the `build.py` script.
 
 ```
-📦subprocess
- ┣ 📂src
- ┃ ┣ 📜main.cpp
- ┃ ┗ 📜main.cpp
- ┗ 📜SConstruct
+📦gdCEF
+ ┣ 📂...                             ⬅️ Other folders seen in previous sections
+ ┗ 📂cef_artifacts                   ⬅️ Name defined in build.py script
+    ┣ 📂locales                      ⬅️ Locale-specific resources and strings
+    ┃ ┣ 📜en-US.pak                 ⬅️ English
+    ┃ ┗ 📜*.pak                     ⬅️ Other languages
+    ┣ 📜chrome_elf.dll              ⬅️ Crash reporting library
+    ┣ 📜d3dcompiler_47.dll          ⬅️ Or Vulkan for other OS
+    ┣ 📜libEGL.dll                  ⬅️ Accelerated compositing support libraries
+    ┣ 📜libGLESv2.dll               ⬅️ Accelerated compositing support libraries
+    ┣ 📜libcef.dll                  ⬅️ CEF core library
+    ┣ 📜snapshot_blob.bin           ⬅️ JavaScript V8 initial snapshot
+    ┣ 📜v8_context_snapshot.bin     ⬅️ JavaScript V8 initial snapshot
+    ┣ 📜icudtl.dat                  ⬅️ Unicode support data
+    ┣ 📜chrome_100_percent.pak      ⬅️ Non-localized resources and strings
+    ┣ 📜chrome_200_percent.pak      ⬅️ Non-localized resources and strings
+    ┗ 📜resources.pak               ⬅️ Non-localized resources and strings
 ```
 
-To compile this source :
+The following components are required - CEF will not function without them:
+
+* CEF core library
+  * libcef.dll
+
+* Crash reporting library
+  * chrome_elf.dll
+
+* Unicode support data
+  * icudtl.dat
+
+* V8 snapshot data
+  * snapshot_blob.bin
+  * v8_context_snapshot.bin
+
+The following components are optional. If missing, CEF will continue to run, but related functionality may be broken or disabled:
+
+* Localized resources: Locale file loading can be disabled completely using CefSettings.pack_loading_disabled. The locales directory path can be customized using CefSettings.locales_dir_path.
+
+  * locales/ Directory containing localized resources used by CEF, Chromium and Blink. A .pak file is loaded from this directory based on the CefSettings.locale value. Only configured locales need to be distributed. If no locale is configured the default locale of "en-US" will be used. Without these files arbitrary Web components may display incorrectly.
+
+* Other resources. Pack file loading can be disabled completely using CefSettings.pack_loading_disabled. The resources directory path can be customized using CefSettings.resources_dir_path.
+
+  * cef.pak
+  * cef_100_percent.pak
+  * cef_200_percent.pak
+    These files contain non-localized resources used by CEF, Chromium and Blink.
+    Without these files arbitrary Web components may display incorrectly.
+
+  * cef_extensions.pak
+    This file contains non-localized resources required for extension loading.
+    Pass the `--disable-extensions` command-line flag to disable use of this
+    file. Without this file components that depend on the extension system,
+    such as the PDF viewer, will not function.
+
+  * devtools_resources.pak
+    This file contains non-localized resources required for Chrome Developer
+    Tools. Without this file Chrome Developer Tools will not function.
+
+* Angle and Direct3D support.
+  * d3dcompiler_47.dll (required for Windows Vista and newer)
+  * libEGL.dll
+  * libGLESv2.dll
+  Without these files HTML5 accelerated content like 2D canvas, 3D CSS and WebGL
+  will not function.
+
+* SwiftShader support.
+  * swiftshader/libEGL.dll
+  * swiftshader/libGLESv2.dll
+  Without these files WebGL will not function in software-only mode when the GPU
+  is not available or disabled.
+
+## CEF secondary process (📂render_process)
+
+Before speaking about the primary process (your Godot game), let's talk first about the secondary process.
+
+This secondary process, named renderer process, is needed by the primary CEF process for doing the rendering in offscreen mode and optionally for managing the Javascript bindings. By default, CEF is used as an native browser window with its decorator, but in our case (Godot game) we want CEF renders the HTML page as texture to be displayed by Godot. This is what we name **offscreen mode**. Else, CEF would have create an independent window in addition to your Godot game window, and this is not what we want.
+
+*Note:* Off-screen rendering does not currently support accelerated compositing, which may result in lower performance compared to a windowed browser.
+
+For CEF to spawn its various sub-processes (GPU process, render handler, etc.), this secondary process is necessary when the CEF initialization function cannot access or modify the application's command line (`int main(int argc, char* argv[])`). This is our case since we want to avoid depending on a modified (forked) version of Godot with internal CEF support. We have tested this approach - modifying Godot's source code works but becomes too complex to maintain while following both Godot and CEF evolution. For more information, see this [section](https://github.com/stigmee/doc-internal/blob/master/doc/tuto_modif_godot_fr.md#modification-du-main-de-godot-v34-stable).
+
+The secondary process is a modified version of CEF's `cefsimple` example provided with the CEF source code.
 
 ```
-cd subprocess
-scons target=release platform=windows workspace=$WORKSPACE godot_version=3.4.3-stable -j8
+📦gdCEF
+ ┣ 📂...                        ⬅️ Other folders seen in the previous section
+ ┗ 📂cef_artifacts
+    ┣ 📜...                     ⬅️ Other artifacts compiled from CEF source code
+    ┗ 📜gdCefRenderProcess.exe  ⬅️ The secondary/renderer executable process
 ```
 
-The executable will be created as `gdcefSubProcess.exe`. It should be placed
-into the appropriate Godot project inside its `build` folder (to be created).
-Again the `build.py` will do it for you.
+The primary process must know the canonical path of the secondary process. This is handled automatically since the secondary process resides next to your application binary.
+
+The source code for this secondary process is a modified version of the CEF's `cefsimple` example. While this executable could function as a standalone browser window with decorations for web browsing, it's used here when the main process launches its fork sub-processes.
+
+```
+ ┣ 📂...                        ⬅️ Other folders seen in the previous section
+ ┗ 📂render_process
+   ┣ 📂src
+   ┃ ┣ 📜main.cpp
+   ┃ ┗ 📜main.hpp
+   ┗ 📜SConstruct               ⬅️ Godot build system
+```
+
+To compile this source:
+
+```
+cd 📂render_process
+scons target=release platform=windows workspace=$WORKSPACE godot_version=4.3-stable -j8
+```
+
+The executable `gdCefRenderProcess.exe` will be created and should be placed in the appropriate Godot project's `build` folder (which must be created). The `build.py` script handles this automatically.
 
 ```
 📦YourProject
  ┗ 📂build
-    ┣ 📜 ...                         ⬅️ CEF libs and artifacts (see previously)
-    ┣ 📦YourProject                  ⬅️ YourProject executable
-    ┗ 📦gdcefSubProcess              ⬅️ CEF secondary process
+    ┣ 📦YourProject                  ⬅️ Your Project executable
+    ┗ 📂cef_artifacts
+      ┣ 📜...                        ⬅️ CEF libs and artifacts (see above)
+      ┗ 📦gdCefRenderProcess         ⬅️ CEF secondary process
 ```
 
-## CEF native module (gdcef)
+## CEF browser process (📂gdcef)
 
-This directory contains the source of the gdcef library, allowing to generate
-the `libgdcef.dll` module. This dll file can then be loaded by the GDNative
-module (see Module configuration). The detail design is described in this
-[document](addons/gdcef/doc/detailsdesign.md).
+This directory contains the source code for the Godot CEF node and browser view nodes. Rather than being your final application, it's a library (`libgdcef.dll`) that interacts with `libcef.dll` and enables you to create Godot games with CEF browser views. This DLL must be loaded by the Godot Extension system to allow creation of CEF nodes in your scene graph.
 
 ```
 📦gdcef
  ┣ 📂src
- ┃ ┣ 📜gdcef.cpp
- ┃ ┣ 📜gdcef.hpp
- ┃ ┣ 📜gdbrowser.cpp
- ┃ ┣ 📜gdbrowser.hpp
- ┃ ┣ 📜gdlibrary.cpp
- ┃ ┗ 📜...
- ┗ 📜SConstruct
+ ┃ ┣ 📜gdcef.[ch]pp                  ⬅️ Godot CEF node instance for creating browser views
+ ┃ ┣ 📜gdbrowser.[ch]pp              ⬅️ Browser view node created by the Godot CEF node
+ ┃ ┣ 📜browser_io.[ch]pp             ⬅️ Keyboard and mouse input handling
+ ┃ ┣ 📜register_types.[ch]pp         ⬅️ Registration of gdCEF classes with Godot
+ ┃ ┗ 📜helper_*.[ch]pp               ⬅️ Helper functions
+ ┗ 📜SConstruct                      ⬅️ Godot build system
 ```
 
-To compile this source :
+To compile this source:
 
-```
+```bash
 cd gdcef
-scons target=release platform=windows -j8 workspace=$WORKSPACE godot_version=3.4.3-stable -j8
+scons target=release platform=windows workspace=$WORKSPACE godot_version=4.3-stable -j8
 ```
 
-The library `libgdcef.dll` will be generated into the build directory. It should be placed
-into the appropriate Godot project inside its `build` folder (to be created).
-Again the `build.py` will do it for you.
+The library `libgdcef.dll` will be generated in the build directory. It should be placed in your Godot project's `build` folder (which must be created). The `build.py` script handles this automatically.
 
 ```
-📦YourProject
- ┗ 📂build
-    ┣ 📜 ...                         ⬅️ CEF libs and artifacts (see previously)
-    ┣ 📦YourProject                  ⬅️ YourProject executable
-    ┣ 📦gdcefSubProcess              ⬅️ CEF secondary process
-    ┗ 📜libgdcef.dll                 ⬅️ Our CEF native module library for Godot
+📦gdcef
+ ┗ 📂cef_artifacts
+    ┣ 📜...                         ⬅️ CEF libs and artifacts (see above)
+    ┣ 📦gdCefRenderProcess          ⬅️ CEF secondary process
+    ┣ 📜libgdcef.dll               ⬅️ Our CEF native module library for Godot
+    ┗ 📜libcef.dll                 ⬅️ Note: This is different from the CEF core library
 ```
 
-## Godot module configuration
+## Godot extension file (📜gdcef.gdextension)
 
-In order for native modules to be used by Godot, you have to create the
-following 2 files under the Godot project root `res://` (for example in our
-case in the folder `libs`) else Godot will not be able to locate them and will
-complain about not being able to load the module dependencies at a project
-startup.
+For Godot to discover and load the gdCEF module, a gdextension file must be present in the Godot project root (`res://`). Without this file, Godot will fail to locate the module and disable the node. The `build.py` script creates this file as `gdcef.gdextension` and places it in the build folder.
 
 ```
 📦YourProject                        ⬅️ Godot res://
- ┣ 📜project.godot                   ⬅️ Your Godot project (here YourProject)
- ┣ 📂libs
- ┃ ┗ 📜gdcef.gdextension             ⬅️ Godot know what dynamic libraries should be loaded for each platform
- ┗ 📂build
-    ┣ 📜 ...                         ⬅️ CEF libs and artifacts (see previously)
-    ┣ 📦YourProject                  ⬅️ YourProject executable
-    ┣ 📦gdcefSubProcess              ⬅️ CEF secondary process
-    ┗ 📜libgdcef.dll                 ⬅️ Our CEF native module library for Godot
+ ┣ 📜project.godot                   ⬅️ Your Godot project file
+ ┣ 📜...                             ⬅️ Other project files
+ ┗ 📂cef_artifacts
+    ┣ 📜...                          ⬅️ CEF libs and artifacts (see above)
+    ┣ 📦gdCefRenderProcess           ⬅️ CEF secondary process
+    ┣ 📜libgdcef.dll                ⬅️ Our CEF native module library for Godot
+    ┗ 📜gdcef.gdextension           ⬅️ Godot extension file
 ```
 
-This file holds information on the C++ exported class name `GDCef`, its name on
-Godot and refers to the second file `gdcef.gdextension`.
+This file specifies information about the shared library containing your C++ exported classes (`GDCef`, `GDBrowser`):
 
-- gdcef.gdextension:
-```
+```ini
 [configuration]
 entry_symbol = "gdcef_library_init"
-compatibility_minimum = 4.1
+compatibility_minimum = 4.2
 
 [libraries]
 linux.x86_64.debug = "res://cef_artifacts/libgdcef.so"
@@ -281,20 +263,13 @@ windows.x86_64.debug = "res://cef_artifacts/libgdcef.dll"
 windows.x86_64.release = "res://cef_artifacts/libgdcef.dll"
 windows.x86_32.debug = "res://cef_artifacts/libgdcef.dll"
 windows.x86_32.release = "res://cef_artifacts/libgdcef.dll"
+
+macos.debug = "res://cef_artifacts/libgdcef.dylib"
+macos.release = "res://cef_artifacts/libgdcef.dylib"
 ```
 
-This file lets Godot know what dynamic libraries should be loaded for each platform
-and the entry function for the module.
+This file tells Godot which dynamic libraries to load for each platform and specifies the entry function for the module.
 
-To use the native module inside Godot, ensure libraries are correctly loaded
-into your project. Then create a `GDCEF` node in the scene graph.
+To use the native module in Godot, ensure all libraries are correctly loaded into your project. You can then create a `GDCEF` node in your scene graph.
 
-![CEFnode](pics/cef.png)
-
-**Beware:** In Linux, you will have to write something like:
-```
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/your/path/gdcef/examples/build
-```
-
-to make your system finds shared libraries such as `libcef.so`.
-
+![CEF node](pics/cef.png)
