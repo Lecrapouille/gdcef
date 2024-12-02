@@ -58,13 +58,20 @@ private:
 };
 
 //------------------------------------------------------------------------------
+GDBrowserView::Impl::~Impl()
+{
+    WARN_PRINT("[gdCEF][GDBrowserView::Impl::~Impl] destroying browser");
+}
+
+//------------------------------------------------------------------------------
 // in a GDNative module, "_bind_methods" is replaced by the "_register_methods"
 // method CefRefPtr<CefBrowser> m_browser; this is used to expose various
 // methods of this class to Godot.
 void GDBrowserView::_bind_methods()
 {
+    WARN_PRINT("[gdCEF][GDBrowserView::_bind_methods]");
+
     using namespace godot;
-    GDCEF_DEBUG();
 
     ClassDB::bind_method(D_METHOD("close"), &GDBrowserView::close);
     ClassDB::bind_method(D_METHOD("id"), &GDBrowserView::id);
@@ -161,7 +168,10 @@ void GDBrowserView::_bind_methods()
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::_init() {}
+void GDBrowserView::_init()
+{
+    BROWSER_DEBUG("");
+}
 
 //------------------------------------------------------------------------------
 godot::String GDBrowserView::getError()
@@ -180,10 +190,10 @@ int GDBrowserView::init(godot::String const& url,
 #    pragma omp parallel
     {
 #    pragma omp single
-        GDCEF_DEBUG_VAL("OpenMP number of threads = " << omp_get_num_threads());
+        BROWSER_DEBUG("OpenMP number of threads = " << omp_get_num_threads());
     }
 #else
-    GDCEF_DEBUG_VAL("OpenMP is not enabled");
+    BROWSER_DEBUG("OpenMP is not enabled");
 #endif
 
     // Create a new browser using the window parameters specified by
@@ -218,7 +228,7 @@ int GDBrowserView::init(godot::String const& url,
 //------------------------------------------------------------------------------
 GDBrowserView::GDBrowserView() : m_viewport({0.0f, 0.0f, 1.0f, 1.0f})
 {
-    BROWSER_DEBUG_VAL("Create Godot texture");
+    BROWSER_DEBUG("Creating new GDBrowserView");
 
     m_impl = new GDBrowserView::Impl(*this);
     assert((m_impl != nullptr) && "Failed allocating GDBrowserView");
@@ -331,7 +341,7 @@ void GDBrowserView::onLoadEnd(CefRefPtr<CefBrowser> /*browser*/,
     // Emit signal only when top-level frame has succeeded.
     if ((httpStatusCode == 200) && (frame->IsMain()))
     {
-        GDCEF_DEBUG_VAL("has ended loading " << frame->GetURL());
+        BROWSER_DEBUG("has ended loading " << frame->GetURL());
 
         // Emit signal for Godot script
         emit_signal("on_page_loaded", this);
@@ -359,7 +369,7 @@ void GDBrowserView::onLoadError(CefRefPtr<CefBrowser> /*browser*/,
 //------------------------------------------------------------------------------
 void GDBrowserView::setZoomLevel(double delta)
 {
-    BROWSER_DEBUG_VAL(delta);
+    BROWSER_DEBUG(delta);
 
     if (!m_browser)
         return;
@@ -370,7 +380,7 @@ void GDBrowserView::setZoomLevel(double delta)
 //------------------------------------------------------------------------------
 void GDBrowserView::loadURL(godot::String url)
 {
-    BROWSER_DEBUG_VAL(url.utf8().get_data());
+    BROWSER_DEBUG(url.utf8().get_data());
 
     m_browser->GetMainFrame()->LoadURL(url.utf8().get_data());
 }
@@ -389,7 +399,7 @@ void GDBrowserView::loadDataURI(godot::String html, godot::String mime_type)
 //------------------------------------------------------------------------------
 bool GDBrowserView::reload() const
 {
-    BROWSER_DEBUG();
+    BROWSER_DEBUG("");
 
     if (!m_browser)
         return false;
@@ -401,7 +411,7 @@ bool GDBrowserView::reload() const
 //------------------------------------------------------------------------------
 bool GDBrowserView::loaded() const
 {
-    BROWSER_DEBUG();
+    BROWSER_DEBUG("");
 
     if (!m_browser)
         return false;
@@ -415,7 +425,7 @@ godot::String GDBrowserView::getURL() const
     if (m_browser && m_browser->GetMainFrame())
     {
         std::string str = m_browser->GetMainFrame()->GetURL().ToString();
-        BROWSER_DEBUG_VAL(str);
+        BROWSER_DEBUG(str);
         return {str.c_str()};
     }
 
@@ -426,7 +436,7 @@ godot::String GDBrowserView::getURL() const
 //------------------------------------------------------------------------------
 godot::String GDBrowserView::getTitle() const
 {
-    BROWSER_DEBUG();
+    BROWSER_DEBUG("");
 
     if (!m_browser)
         return godot::String();
@@ -445,7 +455,7 @@ godot::String GDBrowserView::getTitle() const
 //------------------------------------------------------------------------------
 void GDBrowserView::stopLoading()
 {
-    BROWSER_DEBUG();
+    BROWSER_DEBUG("");
 
     if (!m_browser)
         return;
@@ -457,7 +467,7 @@ void GDBrowserView::stopLoading()
 // FIXME https://github.com/chromiumembedded/cef/issues/3117
 void GDBrowserView::copy() const
 {
-    BROWSER_DEBUG();
+    BROWSER_DEBUG("");
 
     if (m_browser && m_browser->GetMainFrame())
     {
@@ -473,7 +483,7 @@ void GDBrowserView::copy() const
 // FIXME https://github.com/chromiumembedded/cef/issues/3117
 void GDBrowserView::paste() const
 {
-    BROWSER_DEBUG();
+    BROWSER_DEBUG("");
 
     if (m_browser && m_browser->GetMainFrame())
     {
@@ -488,7 +498,7 @@ void GDBrowserView::paste() const
 //------------------------------------------------------------------------------
 void GDBrowserView::cut() const
 {
-    BROWSER_DEBUG();
+    BROWSER_DEBUG("");
 
     if (m_browser && m_browser->GetMainFrame())
     {
@@ -503,7 +513,7 @@ void GDBrowserView::cut() const
 //------------------------------------------------------------------------------
 void GDBrowserView::delete_() const
 {
-    BROWSER_DEBUG();
+    BROWSER_DEBUG("");
 
     if (m_browser && m_browser->GetMainFrame())
     {
@@ -518,7 +528,7 @@ void GDBrowserView::delete_() const
 //------------------------------------------------------------------------------
 void GDBrowserView::undo() const
 {
-    BROWSER_DEBUG();
+    BROWSER_DEBUG("");
 
     if (m_browser && m_browser->GetMainFrame())
     {
@@ -533,7 +543,7 @@ void GDBrowserView::undo() const
 //------------------------------------------------------------------------------
 void GDBrowserView::redo() const
 {
-    BROWSER_DEBUG();
+    BROWSER_DEBUG("");
 
     if (m_browser && m_browser->GetMainFrame())
     {
@@ -560,7 +570,7 @@ void GDBrowserView::requestHtmlContent()
 //------------------------------------------------------------------------------
 void GDBrowserView::executeJavaScript(godot::String javascript)
 {
-    BROWSER_DEBUG();
+    BROWSER_DEBUG("");
 
     if (m_browser && m_browser->GetMainFrame())
     {
@@ -578,7 +588,7 @@ void GDBrowserView::executeJavaScript(godot::String javascript)
 //------------------------------------------------------------------------------
 bool GDBrowserView::canNavigateBackward() const
 {
-    BROWSER_DEBUG();
+    BROWSER_DEBUG("");
 
     if (!m_browser)
         return false;
@@ -589,7 +599,7 @@ bool GDBrowserView::canNavigateBackward() const
 //------------------------------------------------------------------------------
 void GDBrowserView::navigateBackward()
 {
-    BROWSER_DEBUG();
+    BROWSER_DEBUG("");
 
     if ((m_browser != nullptr) && (m_browser->CanGoBack()))
     {
@@ -600,7 +610,7 @@ void GDBrowserView::navigateBackward()
 //------------------------------------------------------------------------------
 bool GDBrowserView::canNavigateForward() const
 {
-    BROWSER_DEBUG();
+    BROWSER_DEBUG("");
 
     if (!m_browser)
         return false;
@@ -611,7 +621,7 @@ bool GDBrowserView::canNavigateForward() const
 //------------------------------------------------------------------------------
 void GDBrowserView::navigateForward()
 {
-    BROWSER_DEBUG();
+    BROWSER_DEBUG("");
 
     if ((m_browser != nullptr) && (m_browser->CanGoForward()))
     {
@@ -630,7 +640,7 @@ void GDBrowserView::resize_(int width, int height)
     {
         height = 2;
     }
-    BROWSER_DEBUG_VAL(width << " x " << height);
+    BROWSER_DEBUG(width << " x " << height);
 
     m_width = float(width);
     m_height = float(height);
@@ -644,7 +654,7 @@ void GDBrowserView::resize_(int width, int height)
 //------------------------------------------------------------------------------
 bool GDBrowserView::viewport(float x, float y, float w, float h)
 {
-    // BROWSER_DEBUG_VAL(x << ", " << y << ", " << w << ", " << h);
+    // BROWSER_DEBUG(x << ", " << y << ", " << w << ", " << h);
 
     if (!(x >= 0.0f) && (x < 1.0f))
         return false;
@@ -675,7 +685,7 @@ bool GDBrowserView::viewport(float x, float y, float w, float h)
 //------------------------------------------------------------------------------
 bool GDBrowserView::isValid() const
 {
-    BROWSER_DEBUG();
+    BROWSER_DEBUG("");
 
     if (!m_browser)
         return false;
@@ -686,13 +696,12 @@ bool GDBrowserView::isValid() const
 //------------------------------------------------------------------------------
 void GDBrowserView::close()
 {
-    BROWSER_DEBUG();
-
     if (!m_browser)
         return;
 
-    // FIXME
-    // BROWSER_DEBUG_VAL("'" << get_name().utf8().get_data() << "'");
+    godot::String name = get_name();
+    BROWSER_DEBUG("Closing browser " << m_id << " '" << name.utf8().get_data()
+                                     << "'");
 
     auto host = m_browser->GetHost();
     if (!host)

@@ -64,11 +64,10 @@ void initialize_gdcef_module(ModuleInitializationLevel p_level)
     std::string framework_path_std = std::string(framework_path.utf8());
     if (!cef_load_library(framework_path_std.c_str()))
     {
-        GDCEF_DEBUG_VAL("Failed to load the CEF framework: " +
-                        framework_path_std);
+        GDCEF_DEBUG("Failed to load the CEF framework: " + framework_path_std);
         return;
     }
-    GDCEF_DEBUG_VAL("Loaded the CEF framework: " + framework_path_std);
+    GDCEF_DEBUG("Loaded the CEF framework: " + framework_path_std);
     loaded = true;
 #endif
 }
@@ -82,7 +81,7 @@ void uninitialize_gdcef_module(ModuleInitializationLevel p_level)
     if (loaded)
     {
         // Unload the CEF framework library.
-        GDCEF_DEBUG_VAL("Unload the CEF framework.");
+        GDCEF_DEBUG("Unload the CEF framework.");
         cef_unload_library();
     }
 #endif

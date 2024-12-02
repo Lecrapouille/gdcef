@@ -46,8 +46,8 @@ bool are_valid_files(fs::path const& folder,
         // TODO Compute SHA1 on files to check if they are correct
         if (!fs::exists(f))
         {
-            STATIC_GDCEF_ERROR("CEF artifact "
-                               << f << " is missing and is needed for CEF");
+            PRINT_ERROR( //
+                "CEF artifact " << f << " is missing and is needed for CEF");
             failure = true;
         }
     }
