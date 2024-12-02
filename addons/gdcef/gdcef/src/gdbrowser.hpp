@@ -126,10 +126,10 @@ private: // CEF interfaces
         // ---------------------------------------------------------------------
         Impl(GDBrowserView& view) : m_owner(view) {}
 
-        ~Impl()
-        {
-            std::cout << "GDBrowserView::Impl::~Impl" << std::endl;
-        }
+        // ---------------------------------------------------------------------
+        //! \brief Destructor
+        // ---------------------------------------------------------------------
+        ~Impl();
 
     private: // CefClient::CefBaseRefCounted interfaces
 
