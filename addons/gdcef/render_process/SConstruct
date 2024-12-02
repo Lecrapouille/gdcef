@@ -24,7 +24,7 @@
 ## SOFTWARE.
 ###############################################################################
 
-import os
+import os, sys
 
 # We let SCons build its default ENV as it includes OS-specific things which we don't
 # want to have to pull in manually.
@@ -99,9 +99,13 @@ cef_compile_mode = compile_mode.capitalize()
 # The godot library we want to create
 target_path = env['build_path']
 target_binary = 'gdCefRenderProcess'
+sources = ['src/render_process.cpp']
 
 # Platform specific compilation
 if platform == 'osx':
+    # FIXME sources += ['src/main_macos.mm']
+    sys.exit('MacOS is not implemented, currently we are taking the cefsimple example')
+
     env.Append(CXXFLAGS=['--std=c++17'])
     env.Append(LINKFLAGS=['-arch', archi])
     env.Append(CCFLAGS=['-arch', archi])
@@ -115,6 +119,7 @@ if platform == 'osx':
                          '-D__STDC_FORMAT_MACROS'])
 
 elif platform == 'linux':
+    sources += ['src/main_unix.cpp']
     # C++20 may not available on all Linux distros
     env.Append(CXXFLAGS=['--std=c++17'])
     env.Append(CXXFLAGS=['--std=c++17'])
@@ -133,6 +138,7 @@ elif platform == 'linux':
     env.Append(CCFLAGS=['-Wno-unused-parameter', '-Wno-parentheses'])
 
 elif platform == 'windows':
+    sources += ['src/main_windows.cpp']
     # This makes sure to keep the session environment variables on windows,
     # that way you can run scons in a vs 2017 prompt and it will find all the required tools
     env.Append(ENV=os.environ)
@@ -213,7 +219,6 @@ env.Append(CPPPATH=['src/'])
 env.Append(RPATH=[env['cef_artifacts_folder'][2:-2]])
 
 # Compile the application
-sources = Glob('src/*.cpp')
 application = env.Program(target=target_path + '/' + target_binary, source=sources)
 Default(application)
 
