@@ -772,3 +772,13 @@ godot::Color GDBrowserView::getPixelColor(int x, int y) const
 
     return godot::Color(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
 }
+
+//------------------------------------------------------------------------------
+bool GDBrowserView::onBeforePopup(CefRefPtr<CefBrowser> browser,
+                                  const CefString& target_url)
+{
+    // Prevent opening page on new windows.
+    // See: https://github.com/Lecrapouille/gdcef/issues/19
+    browser->GetMainFrame()->LoadURL(target_url);
+    return true;
+}
