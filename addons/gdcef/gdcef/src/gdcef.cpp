@@ -37,12 +37,12 @@
 //------------------------------------------------------------------------------
 // List of file libraries and artifacts mandatory to make CEF working
 #if defined(_WIN32)
-#    define SUBPROCESS_NAME "gdcefSubProcess.exe"
+#    define SUBPROCESS_NAME "gdCefRenderProcess.exe"
 #    define NEEDED_LIBRARIES                                                \
         "libcef.dll", "libgdcef.dll", "vulkan-1.dll", "vk_swiftshader.dll", \
             "libGLESv2.dll", "libEGL.dll"
 #elif defined(__linux__)
-#    define SUBPROCESS_NAME "gdcefSubProcess"
+#    define SUBPROCESS_NAME "gdCefRenderProcess"
 #    define NEEDED_LIBRARIES                                                  \
         "libcef.so", "libgdcef.so", "libvulkan.so.1", "libvk_swiftshader.so", \
             "libGLESv2.so", "libEGL.so"

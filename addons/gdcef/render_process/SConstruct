@@ -98,7 +98,7 @@ cef_compile_mode = compile_mode.capitalize()
 
 # The godot library we want to create
 target_path = env['build_path']
-target_binary = 'gdcefSubProcess'
+target_binary = 'gdCefRenderProcess'
 
 # Platform specific compilation
 if platform == 'osx':

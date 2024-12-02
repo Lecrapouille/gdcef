@@ -107,7 +107,7 @@ SCONS = "scons"                                           # or ["python3", "-m",
 ###############################################################################
 PWD = os.getcwd()
 GDCEF_PATH = os.path.join(PWD, "gdcef")
-GDCEF_PROCESSES_PATH = os.path.join(PWD, "subprocess")
+GDCEF_PROCESSES_PATH = os.path.join(PWD, "render_process")
 GDCEF_THIRDPARTY_PATH = os.path.join(PWD, "thirdparty")
 THIRDPARTY_CEF_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "cef_binary")
 THIRDPARTY_GODOT_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "godot-" + GODOT_VERSION)
