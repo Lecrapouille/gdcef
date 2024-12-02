@@ -87,7 +87,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     // SimpleApp implements application-level callbacks. It will create the
     // first browser instance in OnContextInitialized() after CEF has
     // initialized.
-    CefRefPtr<GDCefBrowser> app(new GDCefBrowser);
+    CefRefPtr<RenderProcess> app(new RenderProcess);
 
     // CEF applications have multiple sub-processes (render, plugin, GPU, etc)
     // that share the same executable. This function checks the command-line
@@ -144,7 +144,7 @@ int main(int argc, char* argv[])
     // SimpleApp implements application-level callbacks. It will create the
     // first browser instance in OnContextInitialized() after CEF has
     // initialized.
-    CefRefPtr<GDCefBrowser> app(new GDCefBrowser);
+    CefRefPtr<RenderProcess> app(new RenderProcess);
 
     // CEF applications have multiple sub-processes (render, plugin, GPU, etc)
     // that share the same executable. This function checks the command-line
@@ -175,9 +175,9 @@ int main(int argc, char* argv[])
 #endif // _WIN32
 
 //------------------------------------------------------------------------------
-void GDCefBrowser::OnContextInitialized()
+void RenderProcess::OnContextInitialized()
 {
-    std::cout << "[SubProcess] [GDCefBrowser::OnContextInitialized] begin"
+    std::cout << "[SubProcess] [RenderProcess::OnContextInitialized] begin"
               << std::endl;
     CEF_REQUIRE_UI_THREAD();
 
@@ -190,30 +190,62 @@ void GDCefBrowser::OnContextInitialized()
     window_info.SetAsPopup(NULL, "CEF");
 #endif
 
-    // GDCefClient implements browser-level callbacks.
-    std::cout << "[SubProcess] [GDCefBrowser::OnContextInitialized] Create "
+    // GDCefBrowser implements browser-level callbacks.
+    std::cout << "[SubProcess] [RenderProcess::OnContextInitialized] Create "
                  "client handler"
               << std::endl;
-    CefRefPtr<GDCefClient> handler(new GDCefClient());
+    CefRefPtr<GDCefBrowser> handler(new GDCefBrowser());
 
     // Specify CEF browser settings here.
     CefBrowserSettings browser_settings;
 
     // Create the first browser window.
-    std::cout << "[SubProcess] [GDCefBrowser::OnContextInitialized] Create the "
-                 "browser"
-              << std::endl;
-    CefBrowserHost::CreateBrowser(window_info,
-                                  handler.get(),
-                                  "https://github.com/Lecrapouille/gdcef",
-                                  browser_settings,
-                                  nullptr,
-                                  nullptr);
+    std::cout
+        << "[SubProcess] [RenderProcess::OnContextInitialized] Create the "
+           "browser"
+        << std::endl;
+    CefBrowserHost::CreateBrowser(
+        window_info, handler.get(), "", browser_settings, nullptr, nullptr);
 }
 
 //------------------------------------------------------------------------------
-void GDCefBrowser::OnContextCreated(CefRefPtr<CefBrowser> browser,
-                                    CefRefPtr<CefFrame> frame,
-                                    CefRefPtr<CefV8Context> context)
+void RenderProcess::OnContextCreated(CefRefPtr<CefBrowser> browser,
+                                     CefRefPtr<CefFrame> frame,
+                                     CefRefPtr<CefV8Context> context)
 {
+}
+
+//------------------------------------------------------------------------------
+void GDCefBrowser::OnAfterCreated(CefRefPtr<CefBrowser> browser)
+{
+    CEF_REQUIRE_UI_THREAD();
+    std::cout << "[SubProcess] [GDCefBrowser::OnAfterCreated]" << std::endl;
+
+    // Add to the list of existing browsers.
+    m_browser_list.push_back(browser);
+}
+
+//------------------------------------------------------------------------------
+void GDCefBrowser::OnBeforeClose(CefRefPtr<CefBrowser> browser)
+{
+    CEF_REQUIRE_UI_THREAD();
+    std::cout << "[SubProcess] [GDCefBrowser::OnBeforeClose]" << std::endl;
+
+    // Remove from the list of existing browsers.
+    BrowserList::iterator bit = m_browser_list.begin();
+    for (; bit != m_browser_list.end(); ++bit)
+    {
+        if ((*bit)->IsSame(browser))
+        {
+            m_browser_list.erase(bit);
+            break;
+        }
+    }
+
+    if (m_browser_list.empty())
+    {
+        // All browser windows have closed. Quit the application message
+        // loop.
+        CefQuitMessageLoop();
+    }
 }

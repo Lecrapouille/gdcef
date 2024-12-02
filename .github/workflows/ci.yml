@@ -25,14 +25,14 @@ jobs:
           # Linux build configuration
           - os: ubuntu-20.04
             name: Linux
-            check_files: cef_artifacts/gdcefSubProcess cef_artifacts/libgdcef.so cef_artifacts/libcef.so
+            check_files: cef_artifacts/gdCefRenderProcess cef_artifacts/libgdcef.so cef_artifacts/libcef.so
             install_system_packages: sudo apt-get update
             shell: bash
 
           # Windows build configuration
           - os: windows-2022
             name: Windows
-            check_files: \a\gdcef\gdcef\cef_artifacts\gdcefSubProcess.exe \a\gdcef\gdcef\cef_artifacts\libgdcef.dll \a\gdcef\gdcef\cef_artifacts\libcef.dll
+            check_files: \a\gdcef\gdcef\cef_artifacts\gdCefRenderProcess.exe \a\gdcef\gdcef\cef_artifacts\libgdcef.dll \a\gdcef\gdcef\cef_artifacts\libcef.dll
             shell: powershell
 
     name: Build on ${{ matrix.name }}

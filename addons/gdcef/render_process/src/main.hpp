@@ -23,8 +23,8 @@
 // SOFTWARE.
 //*****************************************************************************
 
-#ifndef GDCEF_SUBPROCESS_CLIENT_HPP
-#define GDCEF_SUBPROCESS_CLIENT_HPP
+#ifndef GDCEF_RENDER_PROCESS_HPP
+#define GDCEF_RENDER_PROCESS_HPP
 
 #include <iostream>
 #include <list>
@@ -62,81 +62,11 @@
 #endif
 
 // *****************************************************************************
-//! \brief
+//! \brief Entry point for the render process
 // *****************************************************************************
-class GDCefClient: public CefClient,
-                   public CefLifeSpanHandler,
-                   public CefDisplayHandler
-{
-private: // CefDisplayHandler methods
-
-    // -------------------------------------------------------------------------
-    virtual CefRefPtr<CefDisplayHandler> GetDisplayHandler() override
-    {
-        return this;
-    }
-
-private: // CefLifeSpanHandler methods
-
-    // -------------------------------------------------------------------------
-    virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override
-    {
-        return this;
-    }
-
-    // -------------------------------------------------------------------------
-    virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) override
-    {
-        std::cout << "[SubProcess] [GDCefClient::OnAfterCreated]" << std::endl;
-        CEF_REQUIRE_UI_THREAD();
-
-        // Add to the list of existing browsers.
-        m_browser_list.push_back(browser);
-    }
-
-    // -------------------------------------------------------------------------
-    virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) override
-    {
-        std::cout << "[SubProcess] [GDCefClient::OnBeforeClose]" << std::endl;
-        CEF_REQUIRE_UI_THREAD();
-
-        // Remove from the list of existing browsers.
-        BrowserList::iterator bit = m_browser_list.begin();
-        for (; bit != m_browser_list.end(); ++bit)
-        {
-            if ((*bit)->IsSame(browser))
-            {
-                m_browser_list.erase(bit);
-                break;
-            }
-        }
-
-        if (m_browser_list.empty())
-        {
-            // All browser windows have closed. Quit the application message
-            // loop.
-            CefQuitMessageLoop();
-        }
-    }
-
-private:
-
-    // -------------------------------------------------------------------------
-    // Include the default reference counting implementation.
-    IMPLEMENT_REFCOUNTING(GDCefClient);
-
-private:
-
-    using BrowserList = std::list<CefRefPtr<CefBrowser>>;
-    BrowserList m_browser_list;
-};
-
-// *****************************************************************************
-//! \brief
-// *****************************************************************************
-class GDCefBrowser: public CefApp,
-                    public CefBrowserProcessHandler,
-                    public CefRenderProcessHandler
+class RenderProcess: public CefApp,
+                     public CefBrowserProcessHandler,
+                     public CefRenderProcessHandler
 {
 private: // CefApp methods
 
@@ -167,7 +97,48 @@ private: // CefRenderProcessHandler methods
 
 private:
 
+    IMPLEMENT_REFCOUNTING(RenderProcess);
+};
+
+// *****************************************************************************
+//! \brief Browser process handler
+// *****************************************************************************
+class GDCefBrowser: public CefClient,
+                    public CefLifeSpanHandler,
+                    public CefDisplayHandler
+{
+private: // CefDisplayHandler methods
+
+    // -------------------------------------------------------------------------
+    virtual CefRefPtr<CefDisplayHandler> GetDisplayHandler() override
+    {
+        return this;
+    }
+
+private: // CefLifeSpanHandler methods
+
+    // -------------------------------------------------------------------------
+    virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override
+    {
+        return this;
+    }
+
+    // -------------------------------------------------------------------------
+    virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) override;
+
+    // -------------------------------------------------------------------------
+    virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) override;
+
+private:
+
+    // -------------------------------------------------------------------------
+    // Include the default reference counting implementation.
     IMPLEMENT_REFCOUNTING(GDCefBrowser);
+
+private:
+
+    using BrowserList = std::list<CefRefPtr<CefBrowser>>;
+    BrowserList m_browser_list;
 };
 
 #if !defined(_WIN32)
@@ -177,4 +148,4 @@ private:
 #    pragma GCC diagnostic pop
 #endif
 
-#endif // GDCEF_SUBPROCESS_CLIENT_HPP
+#endif // GDCEF_RENDER_PROCESS_HPP
