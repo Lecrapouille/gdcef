@@ -69,7 +69,7 @@
 
 // ****************************************************************************
 //! \brief Class wrapping the CefBrowser class and export methods for Godot
-//! script. This class is instanciate by GDCef.
+//! script. This class is instantiate by GDCef.
 // ****************************************************************************
 class GDBrowserView: public godot::Node
 {
@@ -114,7 +114,8 @@ private: // CEF interfaces
     class Impl: public CefClient,
                 public CefRenderHandler,
                 public CefLoadHandler,
-                public CefAudioHandler
+                public CefAudioHandler,
+                public CefLifeSpanHandler
     {
     public:
 
@@ -167,6 +168,14 @@ private: // CEF interfaces
                               : "GetAudioHandler Godot audio")
                       << "\n";
             return m_audio.streamer != nullptr ? this : nullptr;
+        }
+
+        // ---------------------------------------------------------------------
+        //! \brief Return the handler for browser life span events.
+        // ---------------------------------------------------------------------
+        virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override
+        {
+            return this;
         }
 
     private: // CefRenderHandler interfaces
@@ -263,6 +272,25 @@ private: // CEF interfaces
         virtual void OnAudioStreamError(CefRefPtr<CefBrowser> browser,
                                         const CefString& message) override
         {
+        }
+
+    private: // CefBrowserProcessHandler interfaces
+
+        virtual bool OnBeforePopup(
+            CefRefPtr<CefBrowser> browser,
+            CefRefPtr<CefFrame> frame,
+            const CefString& target_url,
+            const CefString& target_frame_name,
+            CefLifeSpanHandler::WindowOpenDisposition target_disposition,
+            bool user_gesture,
+            const CefPopupFeatures& popupFeatures,
+            CefWindowInfo& windowInfo,
+            CefRefPtr<CefClient>& client,
+            CefBrowserSettings& settings,
+            CefRefPtr<CefDictionaryValue>& extra_info,
+            bool* no_javascript_access) override
+        {
+            return m_owner.onBeforePopup(browser, target_url);
         }
 
     private:
@@ -648,6 +676,15 @@ private:
                              const float** data,
                              int frames,
                              int64_t pts);
+
+    // -------------------------------------------------------------------------
+    //! \brief Called to prevent opening page on new windows.
+    //! \return true to cancel the creation of the popup.
+    //! Example:
+    //! <button onclick="window.open('/start', '_blank');">Start</button>
+    // -------------------------------------------------------------------------
+    bool onBeforePopup(CefRefPtr<CefBrowser> browser,
+                       const CefString& target_url);
 
 private:
 
