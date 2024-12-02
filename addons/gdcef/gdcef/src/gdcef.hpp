@@ -80,6 +80,8 @@ public: // Godot interfaces.
     // -------------------------------------------------------------------------
     void _init();
 
+    void _exit_tree() override;
+
     // -------------------------------------------------------------------------
     //! \brief Called to initialize CEF with runtime settings.
     //! \note Since _init() does not accept parameters, you have to call this
@@ -162,6 +164,11 @@ private: // CEF interfaces.
         {
             CefShutdown();
         }
+
+        // -------------------------------------------------------------------------
+        //! \brief Close all browsers.
+        // -------------------------------------------------------------------------
+        void closeAllBrowsers(bool force_close);
 
     private: // CefClient::CefBaseRefCounted interfaces.
 

@@ -29,10 +29,15 @@
 #include "helper_config.hpp"
 #include "helper_files.hpp"
 
+// Godot 4
 #include <gdextension_interface.h>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
+
+// Chromium Embedded Framework
+#include "base/cef_callback.h"
+#include "wrapper/cef_closure_task.h"
 
 //------------------------------------------------------------------------------
 // List of file libraries and artifacts mandatory to make CEF working
@@ -127,9 +132,34 @@ void GDCef::_bind_methods()
 }
 
 //------------------------------------------------------------------------------
+// Replaced by GDCef::initialize(xxx)
 void GDCef::_init()
 {
-    // Replaced by GDCef::initialize(xxx)
+    GDCEF_DEBUG("");
+}
+
+//------------------------------------------------------------------------------
+void GDCef::_exit_tree()
+{
+    GDCEF_DEBUG("");
+    shutdown();
+}
+
+//------------------------------------------------------------------------------
+void GDCef::shutdown()
+{
+    GDCEF_DEBUG("");
+
+    if (m_impl != nullptr)
+    {
+        GDCEF_DEBUG("Closing all browsers");
+        m_impl->closeAllBrowsers(true);
+
+        m_impl = nullptr;
+
+        GDCEF_DEBUG("CefQuitMessageLoop");
+        CefQuitMessageLoop();
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -141,6 +171,7 @@ bool GDCef::initialize(godot::Dictionary config)
         return false;
     }
     m_impl = new GDCef::Impl(*this);
+    assert((m_impl != nullptr) && "Failed allocating GDCef");
 
     // Folder path in which your application and CEF artifacts are present.
     fs::path cef_folder_path;
@@ -485,18 +516,10 @@ static void configureBrowser(CefBrowserSettings& browser_settings,
 //------------------------------------------------------------------------------
 GDCef::~GDCef()
 {
-    shutdown();
-}
-
-//------------------------------------------------------------------------------
-void GDCef::shutdown()
-{
-    GDCEF_DEBUG("");
     if (m_impl != nullptr)
     {
-        CefQuitMessageLoop();
+        shutdown();
     }
-    m_impl = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -584,14 +607,46 @@ void GDCef::Impl::OnBeforeClose(CefRefPtr<CefBrowser> browser)
     while (i--)
     {
         godot::Node* node = m_owner.get_child(i);
-        GDBrowserView* b = reinterpret_cast<GDBrowserView*>(node);
-        if ((b != nullptr) && (b->id() == browser->GetIdentifier()))
+        GDBrowserView* bv = reinterpret_cast<GDBrowserView*>(node);
+        if ((bv != nullptr) && (bv->id() == browser->GetIdentifier()))
         {
-            GDCEF_DEBUG("Removed browser ID " << b->id());
-            m_owner.remove_child(node);
-            node->queue_free();
+            GDCEF_DEBUG("Removing browser ID " << bv->id());
+            bv->close(/*force_close*/);
         }
+        m_owner.remove_child(node);
+        node->queue_free();
     }
+}
+
+//------------------------------------------------------------------------------
+void GDCef::Impl::closeAllBrowsers(bool force_close)
+{
+    if (!CefCurrentlyOn(TID_UI))
+    {
+        // Execute on the UI thread.
+        CefPostTask(
+            TID_UI,
+            base::BindOnce(&GDCef::Impl::closeAllBrowsers, this, force_close));
+        return;
+    }
+
+    // Close all browsers (stored as Godot child nodes).
+    int64_t i = m_owner.get_child_count();
+    GDCEF_DEBUG("Removing " << i << " browsers as Godot child nodes");
+    while (i--)
+    {
+        godot::Node* node = m_owner.get_child(i);
+        GDBrowserView* browser = reinterpret_cast<GDBrowserView*>(node);
+        if (browser != nullptr)
+        {
+            GDCEF_DEBUG("Removing browser ID " << browser->id());
+            browser->close(/*force_close*/);
+        }
+        m_owner.remove_child(node);
+        node->queue_free();
+    }
+
+    GDCEF_DEBUG("Remaining " << m_owner.get_child_count() << " browser nodes");
 }
 
 //------------------------------------------------------------------------------

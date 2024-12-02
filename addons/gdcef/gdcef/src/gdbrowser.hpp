@@ -129,7 +129,7 @@ private: // CEF interfaces
         // ---------------------------------------------------------------------
         //! \brief Destructor
         // ---------------------------------------------------------------------
-        ~Impl();
+        virtual ~Impl();
 
     private: // CefClient::CefBaseRefCounted interfaces
 
