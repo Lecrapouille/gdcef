@@ -25,52 +25,78 @@
 
 #include "render_process.hpp"
 
+#define DEBUG_RENDER_PROCESS(txt)                                       \
+    {                                                                   \
+        std::stringstream ss;                                           \
+        ss << "\033[32m[Secondary Process][RenderProcess::" << __func__ \
+           << "] " << txt << "\033[0m";                                 \
+        std::cout << ss.str() << std::endl;                             \
+    }
+
+#define DEBUG_BROWSER_PROCESS(txt)                                             \
+    {                                                                          \
+        std::stringstream ss;                                                  \
+        ss << "\033[32m[Secondary Process][GDCefBrowser::" << __func__ << "] " \
+           << txt << "\033[0m";                                                \
+        std::cout << ss.str() << std::endl;                                    \
+    }
+
+//------------------------------------------------------------------------------
+RenderProcess::~RenderProcess()
+{
+    DEBUG_RENDER_PROCESS("");
+}
+
+#if 0
 //------------------------------------------------------------------------------
 void RenderProcess::OnContextInitialized()
 {
-    std::cout << "[SubProcess] [RenderProcess::OnContextInitialized] begin"
-              << std::endl;
     CEF_REQUIRE_UI_THREAD();
+    DEBUG_RENDER_PROCESS("");
 
     // Information used when creating the native window.
     CefWindowInfo window_info;
 
-#if defined(OS_WIN)
+#    if defined(OS_WIN)
     // On Windows we need to specify certain flags that will be passed to
     // CreateWindowEx().
     window_info.SetAsPopup(NULL, "CEF");
-#endif
+#    endif
 
     // GDCefBrowser implements browser-level callbacks.
-    std::cout << "[SubProcess] [RenderProcess::OnContextInitialized] Create "
-                 "client handler"
-              << std::endl;
+    DEBUG_RENDER_PROCESS("Create client handler");
     CefRefPtr<GDCefBrowser> handler(new GDCefBrowser());
 
     // Specify CEF browser settings here.
     CefBrowserSettings browser_settings;
 
     // Create the first browser window.
-    std::cout
-        << "[SubProcess] [RenderProcess::OnContextInitialized] Create the "
-           "browser"
-        << std::endl;
+    DEBUG_RENDER_PROCESS("Create the browser");
     CefBrowserHost::CreateBrowser(
         window_info, handler.get(), "", browser_settings, nullptr, nullptr);
 }
+#endif
 
 //------------------------------------------------------------------------------
 void RenderProcess::OnContextCreated(CefRefPtr<CefBrowser> browser,
                                      CefRefPtr<CefFrame> frame,
                                      CefRefPtr<CefV8Context> context)
 {
+    DEBUG_RENDER_PROCESS("");
+}
+
+#if 0
+//------------------------------------------------------------------------------
+GDCefBrowser::~GDCefBrowser()
+{
+    DEBUG_BROWSER_PROCESS("");
 }
 
 //------------------------------------------------------------------------------
 void GDCefBrowser::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 {
     CEF_REQUIRE_UI_THREAD();
-    std::cout << "[SubProcess] [GDCefBrowser::OnAfterCreated]" << std::endl;
+    DEBUG_BROWSER_PROCESS("");
 
     // Add to the list of existing browsers.
     m_browser_list.push_back(browser);
@@ -80,7 +106,7 @@ void GDCefBrowser::OnAfterCreated(CefRefPtr<CefBrowser> browser)
 void GDCefBrowser::OnBeforeClose(CefRefPtr<CefBrowser> browser)
 {
     CEF_REQUIRE_UI_THREAD();
-    std::cout << "[SubProcess] [GDCefBrowser::OnBeforeClose]" << std::endl;
+    DEBUG_BROWSER_PROCESS("");
 
     // Remove from the list of existing browsers.
     BrowserList::iterator bit = m_browser_list.begin();
@@ -95,8 +121,10 @@ void GDCefBrowser::OnBeforeClose(CefRefPtr<CefBrowser> browser)
 
     if (m_browser_list.empty())
     {
-        // All browser windows have closed. Quit the application message
-        // loop.
+        DEBUG_BROWSER_PROCESS("CefQuitMessageLoop");
+        // All browser windows have closed.
+        // Quit the application message loop.
         CefQuitMessageLoop();
     }
 }
+#endif

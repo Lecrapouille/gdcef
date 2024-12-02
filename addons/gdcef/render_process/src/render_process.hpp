@@ -66,17 +66,21 @@
 //! \brief Entry point for the render process
 // *****************************************************************************
 class RenderProcess: public CefApp,
-                     public CefBrowserProcessHandler,
+                     // public CefBrowserProcessHandler,
                      public CefRenderProcessHandler
 {
+public:
+
+    ~RenderProcess();
+
 private: // CefApp methods
 
     // -------------------------------------------------------------------------
-    virtual CefRefPtr<CefBrowserProcessHandler>
-    GetBrowserProcessHandler() override
-    {
-        return this;
-    }
+    // virtual CefRefPtr<CefBrowserProcessHandler>
+    // GetBrowserProcessHandler() override
+    // {
+    //    return this;
+    //}
 
     virtual CefRefPtr<CefRenderProcessHandler>
     GetRenderProcessHandler() override
@@ -87,7 +91,7 @@ private: // CefApp methods
 private: // CefBrowserProcessHandler methods
 
     // -------------------------------------------------------------------------
-    virtual void OnContextInitialized() override;
+    // virtual void OnContextInitialized() override;
 
 private: // CefRenderProcessHandler methods
 
@@ -101,6 +105,7 @@ private:
     IMPLEMENT_REFCOUNTING(RenderProcess);
 };
 
+#if 0
 // *****************************************************************************
 //! \brief Browser process handler
 // *****************************************************************************
@@ -108,6 +113,10 @@ class GDCefBrowser: public CefClient,
                     public CefLifeSpanHandler,
                     public CefDisplayHandler
 {
+public:
+
+    ~GDCefBrowser();
+
 private: // CefDisplayHandler methods
 
     // -------------------------------------------------------------------------
@@ -141,6 +150,7 @@ private:
     using BrowserList = std::list<CefRefPtr<CefBrowser>>;
     BrowserList m_browser_list;
 };
+#endif
 
 #if !defined(_WIN32)
 #    if defined(__clang__)
