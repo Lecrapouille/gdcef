@@ -104,9 +104,14 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
     // Specify CEF global settings here.
     CefSettings settings;
+    settings.no_sandbox = true;
 
     // Initialize CEF for the browser process.
-    CefInitialize(main_args, settings, app.get(), nullptr);
+    if (!CefInitialize(main_args, settings, app.get(), nullptr))
+    {
+        std::cout << "[SubProcess] Failed to initialize CEF" << std::endl;
+        return CefGetExitCode();
+    }
 
     // Run the CEF message loop. This will block until CefQuitMessageLoop() is
     // called.
@@ -115,5 +120,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     // Shut down CEF.
     CefShutdown();
 
+    std::cout << "[SubProcess] is shutdown" << std::endl;
     return 0;
 }

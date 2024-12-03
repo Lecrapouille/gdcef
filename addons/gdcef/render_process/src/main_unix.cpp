@@ -73,7 +73,11 @@ int main(int argc, char* argv[])
     CefSettings settings;
 
     // Initialize CEF for the browser process.
-    CefInitialize(main_args, settings, app.get(), nullptr);
+    if (!CefInitialize(main_args, settings, app.get(), nullptr))
+    {
+        std::cout << "[SubProcess] Failed to initialize CEF" << std::endl;
+        return CefGetExitCode();
+    }
 
     // Run the CEF message loop. This will block until CefQuitMessageLoop() is
     // called.
@@ -82,5 +86,6 @@ int main(int argc, char* argv[])
     // Shut down CEF.
     CefShutdown();
 
+    std::cout << "[SubProcess] is shutdown" << std::endl;
     return 0;
 }
