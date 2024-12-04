@@ -112,6 +112,7 @@ public: // Godot interfaces.
     //! \brief Register a Godot method in the JavaScript context
     // -------------------------------------------------------------------------
     void registerGodotMethod(godot::Object* godot_object,
+                             GDBrowserView* browser,
                              const godot::String& method_name);
 
     // -------------------------------------------------------------------------

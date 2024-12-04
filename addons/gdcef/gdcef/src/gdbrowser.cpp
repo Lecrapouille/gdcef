@@ -791,3 +791,59 @@ bool GDBrowserView::onBeforePopup(CefRefPtr<CefBrowser> browser,
     browser->GetMainFrame()->LoadURL(target_url);
     return true;
 }
+
+#ifndef CALL_GODOT_METHOD
+#    define CALL_GODOT_METHOD "callGodotMethod"
+#endif
+
+//------------------------------------------------------------------------------
+bool GDBrowserView::Impl::OnProcessMessageReceived(
+    CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefFrame> frame,
+    CefProcessId source_process,
+    CefRefPtr<CefProcessMessage> message)
+{
+    if (message->GetName() != CALL_GODOT_METHOD)
+    {
+        return false;
+    }
+
+    CefRefPtr<CefListValue> args = message->GetArgumentList();
+    if (args->GetSize() < 1)
+    {
+        return false;
+    }
+
+    // Get method name from first argument
+    CefString method_name = args->GetString(0);
+
+    // Convert CEF arguments to Godot arguments
+    godot::Array godot_args;
+    for (size_t i = 1; i < args->GetSize(); ++i)
+    {
+        switch (args->GetType(i))
+        {
+            case VTYPE_BOOL:
+                godot_args.push_back(args->GetBool(i));
+                break;
+            case VTYPE_INT:
+                godot_args.push_back(args->GetInt(i));
+                break;
+            case VTYPE_DOUBLE:
+                godot_args.push_back(args->GetDouble(i));
+                break;
+            case VTYPE_STRING:
+                godot_args.push_back(
+                    godot::String(args->GetString(i).ToString().c_str()));
+                break;
+            default:
+                // For unsupported types, pass as string
+                godot_args.push_back(
+                    godot::String(args->GetString(i).ToString().c_str()));
+        }
+    }
+
+    // Call the Godot method
+    m_owner.call_deferred(method_name.ToString().c_str(), godot_args);
+    return true;
+}

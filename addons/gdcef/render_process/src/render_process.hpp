@@ -69,6 +69,8 @@ class GodotMethodHandler: public CefV8Handler
 {
 public:
 
+    GodotMethodHandler(CefRefPtr<CefBrowser> browser) : m_browser(browser) {}
+
     bool Execute(const CefString& name,
                  CefRefPtr<CefV8Value> object,
                  const CefV8ValueList& arguments,
@@ -76,6 +78,10 @@ public:
                  CefString& exception) override;
 
     IMPLEMENT_REFCOUNTING(GodotMethodHandler);
+
+private:
+
+    CefRefPtr<CefBrowser> m_browser;
 };
 
 // *****************************************************************************
@@ -85,7 +91,7 @@ class RenderProcess: public CefApp, public CefRenderProcessHandler
 {
 public:
 
-    ~RenderProcess();
+    IMPLEMENT_REFCOUNTING(RenderProcess);
 
 private: // CefApp methods
 
@@ -105,7 +111,7 @@ private: // CefRenderProcessHandler methods
 
 private:
 
-    IMPLEMENT_REFCOUNTING(RenderProcess);
+    CefRefPtr<GodotMethodHandler> m_handler;
 };
 
 #if !defined(_WIN32)

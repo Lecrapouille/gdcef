@@ -34,7 +34,7 @@ func _ready():
 # ==============================================================================
 # Change character's weapon
 # ==============================================================================
-func _change_weapon(new_weapon: String):
+func change_weapon(new_weapon: String):
 	print("Weapon changed to: ", new_weapon)
 	weapon = new_weapon
 	_update_character_stats()
@@ -43,7 +43,7 @@ func _change_weapon(new_weapon: String):
 # ==============================================================================
 # Set character's name
 # ==============================================================================
-func _set_character_name(new_name: String):
+func set_character_name(new_name: String):
 	print("New name: ", new_name)
 	player_name = new_name
 	_update_character_stats()
@@ -52,7 +52,7 @@ func _set_character_name(new_name: String):
 # ==============================================================================
 # Modify XP (can be positive or negative)
 # ==============================================================================
-func _modify_xp(xp_change: int):
+func modify_xp(xp_change: int):
 	xp += xp_change
 	_level_up_check()
 	_update_character_stats()
@@ -98,9 +98,9 @@ func get_character_state() -> Dictionary:
 # ==============================================================================
 func _on_page_loaded(browser):
 	print("The browser " + browser.name + " has loaded " + browser.get_url())
-	$CEF.register_method(self, "change_weapon")
-	$CEF.register_method(self, "set_character_name")
-	$CEF.register_method(self, "modify_xp")
+	$CEF.register_method(self, browser, "change_weapon")
+	$CEF.register_method(self, browser, "set_character_name")
+	$CEF.register_method(self, browser, "modify_xp")
 	pass
 
 # ==============================================================================
@@ -112,59 +112,6 @@ func _on_page_failed_loading(_err_code, _err_msg, browser):
 	$AcceptDialog.dialog_text = "The browser " + browser.name + " did not load " + browser.get_url()
 	$AcceptDialog.popup_centered(Vector2(0, 0))
 	$AcceptDialog.show()
-	pass
-
-# ==============================================================================
-# Make the CEF browser reacts to mouse events.
-# ==============================================================================
-func _react_to_mouse_event(event, name):
-	var browser = $CEF.get_node(name)
-	if browser == null:
-		push_error("Failed getting Godot node '" + name + "'")
-		return
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			browser.set_mouse_wheel_vertical(2)
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			browser.set_mouse_wheel_vertical(-2)
-		elif event.button_index == MOUSE_BUTTON_LEFT:
-			mouse_pressed = event.pressed
-			if mouse_pressed:
-				browser.set_mouse_left_down()
-			else:
-				browser.set_mouse_left_up()
-		elif event.button_index == MOUSE_BUTTON_RIGHT:
-			mouse_pressed = event.pressed
-			if mouse_pressed:
-				browser.set_mouse_right_down()
-			else:
-				browser.set_mouse_right_up()
-		else:
-			mouse_pressed = event.pressed
-			if mouse_pressed:
-				browser.set_mouse_middle_down()
-			else:
-				browser.set_mouse_middle_up()
-	elif event is InputEventMouseMotion:
-		if mouse_pressed == true:
-			browser.set_mouse_left_down()
-		browser.set_mouse_moved(event.position.x, event.position.y)
-
-# ==============================================================================
-# Get mouse events and broadcast them to CEF
-# ==============================================================================
-func _on_TextRect_gui_input(event):
-	_react_to_mouse_event(event, "browser")
-	pass
-
-# ==============================================================================
-# Make the CEF browser reacts from keyboard events.
-# ==============================================================================
-func _input(event):
-	if event is InputEventKey:
-		get_browser().set_key_pressed(
-			event.unicode if event.unicode != 0 else event.keycode,
-			event.pressed, event.shift_pressed, event.alt_pressed, event.is_command_or_control_pressed())
 	pass
 
 # ==============================================================================
@@ -211,6 +158,58 @@ func get_browser():
 		push_error("Failed getting Godot node '" + name + "'")
 		get_tree().quit()
 	return browser
+
+# ==============================================================================
+# Get mouse events and broadcast them to CEF
+# ==============================================================================
+func _on_TextureRect_gui_input(event: InputEvent):
+	var current_browser = get_browser()
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			current_browser.set_mouse_wheel_vertical(2)
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			current_browser.set_mouse_wheel_vertical(-2)
+		elif event.button_index == MOUSE_BUTTON_LEFT:
+			mouse_pressed = event.pressed
+			if mouse_pressed:
+				current_browser.set_mouse_left_down()
+			else:
+				current_browser.set_mouse_left_up()
+		elif event.button_index == MOUSE_BUTTON_RIGHT:
+			mouse_pressed = event.pressed
+			if mouse_pressed:
+				current_browser.set_mouse_right_down()
+			else:
+				current_browser.set_mouse_right_up()
+		else:
+			mouse_pressed = event.pressed
+			if mouse_pressed:
+				current_browser.set_mouse_middle_down()
+			else:
+				current_browser.set_mouse_middle_up()
+	elif event is InputEventMouseMotion:
+		if mouse_pressed:
+			current_browser.set_mouse_left_down()
+		current_browser.set_mouse_moved(event.position.x, event.position.y)
+	pass
+
+# ==============================================================================
+# Make the CEF browser reacts from keyboard events.
+# ==============================================================================
+func _input(event):
+	if event is InputEventKey:
+		get_browser().set_key_pressed(
+			event.unicode if event.unicode != 0 else event.keycode,
+			event.pressed, event.shift_pressed, event.alt_pressed,
+			event.is_command_or_control_pressed())
+	pass
+
+# ==============================================================================
+# Windows has resized
+# ==============================================================================
+func _on_texture_rect_resized():
+	get_browser().resize($Panel/VBox/TextureRect.get_size())
+	pass
 
 # ==============================================================================
 # CEF is implicitly updated by this function.

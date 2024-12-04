@@ -570,43 +570,57 @@ GDBrowserView* GDCef::createBrowser(godot::String const& url,
 
 //------------------------------------------------------------------------------
 //! \brief Method to register Godot methods in the JavaScript context
+//! \param [in] godot_object The Godot object containing the method to register
+//! \param [in] method_name The name of the method to register
 //------------------------------------------------------------------------------
 void GDCef::registerGodotMethod(godot::Object* godot_object,
+                                GDBrowserView* browser,
                                 godot::String const& method_name)
 {
-    // Get the active V8 context
-    CefRefPtr<CefV8Context> context = CefV8Context::GetCurrentContext();
-    if (!context.get())
+    if (godot_object == nullptr)
     {
-        GDCEF_ERROR("No active V8 context found");
+        GDCEF_ERROR("Invalid Godot object passed to registerGodotMethod");
         return;
     }
 
-    CefRefPtr<CefV8Value> global = context->GetGlobal();
-    CefRefPtr<CefV8Value> godot_bridge = global->GetValue("godot");
-
-    if (!godot_bridge->IsObject())
+    if (browser == nullptr)
     {
-        godot_bridge = CefV8Value::CreateObject(nullptr, nullptr);
-        global->SetValue("godot", godot_bridge, V8_PROPERTY_ATTRIBUTE_NONE);
+        GDCEF_ERROR("Invalid browser passed to registerGodotMethod");
+        return;
     }
 
-    // Handle private GDScript methods (starting with "_")
+    // Check that the method exists in the Godot object.
+    if (!godot_object->has_method(method_name))
+    {
+        GDCEF_ERROR("Method " << method_name.utf8().get_data()
+                              << " does not exist in the Godot object");
+        return;
+    }
+
+    // Handle private GDScript methods (starting with "_").
+    // Remove the "_" initial for the JavaScript method name
     godot::String js_method_name = method_name;
     if (method_name.begins_with("_"))
     {
-        // Remove the "_" initial for the JavaScript method name
         js_method_name = method_name.substr(1);
     }
 
-    godot_bridge->SetValue(
-        js_method_name.utf8().get_data(),
-        CefV8Value::CreateFunction(
-            js_method_name.utf8().get_data(),
-            new GodotMethodInvoker(
-                godot_object,
-                method_name)), // Keep the original name for GDScript call
-        V8_PROPERTY_ATTRIBUTE_NONE);
+    // Inject the JavaScript code to create the function
+    std::string js_code =
+        "window.godot." + std::string(js_method_name.utf8().get_data()) +
+        " = function() { return window.godot.callGodotMethod('" +
+        std::string(js_method_name.utf8().get_data()) + "', ...arguments); };";
+
+    // Get the active browser from the caller
+    godot::Node* caller = godot::Object::cast_to<godot::Node>(godot_object);
+    if (caller == nullptr)
+    {
+        GDCEF_ERROR("Caller object is not a Node");
+        return;
+    }
+
+    // Find the browser in the caller's children
+    browser->executeJavaScript(js_code.c_str());
 }
 
 //------------------------------------------------------------------------------
