@@ -40,6 +40,7 @@ from pathlib import Path
 from multiprocessing import cpu_count
 from packaging import version
 from shutil import copymode
+import re
 
 ###############################################################################
 ###
@@ -736,6 +737,49 @@ def final_instructions():
 
 ###############################################################################
 ###
+### Clone GitHub repositories listed in a text file
+###
+###############################################################################
+def clone_github_projects():
+    repos_file = os.path.join(GDCEF_EXAMPLES_PATH, "repos.txt")
+    info("Cloning GitHub real projects from " + repos_file)
+
+    if not os.path.exists(repos_file):
+        warning("The file " + repos_file + " does not exist. No real projects will be cloned.")
+        return
+
+    with open(repos_file, 'r') as f:
+        for line in f:
+            # Ignore empty lines and comments
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+
+            # Extract the repo name from the URL
+            match = re.search(r'github.com/[^/]+/([^/]+)', line)
+            if not match:
+                warning("Invalid GitHub URL: " + line)
+                continue
+
+            repo_name = match.group(1)
+            # Remove extension if present (like .git)
+            repo_name = repo_name.split('.')[0]
+            repo_path = os.path.join(GDCEF_EXAMPLES_PATH, repo_name)
+
+            # Check if the repo already exists
+            if os.path.exists(repo_path):
+                info("Repository " + repo_name + " already exists in " + repo_path)
+                continue
+
+            # Clone the repo
+            try:
+                info("Cloning " + line + " into " + repo_path)
+                exec("git", "clone", "--recursive", line, repo_path)
+            except Exception as e:
+                warning("Error while cloning " + line + ": " + str(e))
+
+###############################################################################
+###
 ### Entry point
 ###
 ###############################################################################
@@ -756,5 +800,6 @@ if __name__ == "__main__":
         create_gdextension_file()
     else:
         download_gdcef_release()
+    clone_github_projects()
     prepare_godot_examples()
     final_instructions()
