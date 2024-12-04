@@ -63,9 +63,6 @@ func _on_page_loaded(brower):
 # gdcef/addons/gdcef/thirdparty/cef_binary/include/base/internal/cef_net_error_list.h
 # ==============================================================================
 func _on_page_failed_loading(err_code, err_msg, node):
-	#  Don't display an error for downloaded files.
-	if err_code == -3:
-		return
 	var html = "<html><body bgcolor=\"white\">" \
 		+ "<h2>Failed to load URL " + node.get_url() + "!</h2>" \
 		+ "<p>Error code: " + str(err_code) + "</p>" \

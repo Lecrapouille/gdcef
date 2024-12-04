@@ -356,6 +356,10 @@ void GDBrowserView::onLoadError(CefRefPtr<CefBrowser> /*browser*/,
 {
     CEF_REQUIRE_UI_THREAD();
 
+    // Ignore download errors
+    if (errCode == ERR_ABORTED)
+        return;
+
     if (frame->IsMain())
     {
         std::string str = errorText.ToString();
