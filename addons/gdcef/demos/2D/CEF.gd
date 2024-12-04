@@ -16,7 +16,7 @@ const RADIO_PAGE = "http://streaming.radio.co/s9378c22ee/listen"
 # The current browser as Godot node
 @onready var current_browser = null
 # Memorize if the mouse was pressed
-@onready var mouse_pressed : bool = false
+@onready var mouse_pressed: bool = false
 
 # ==============================================================================
 # Create the home page.
@@ -30,30 +30,39 @@ func create_default_page():
 # ==============================================================================
 # Save page as html.
 # ==============================================================================
-func _on_saving_page(html, brower):
+func _on_saving_page(html, browser):
 	var path = ProjectSettings.globalize_path(SAVED_PAGE)
 	var file = FileAccess.open(SAVED_PAGE, FileAccess.WRITE)
 	if (file != null):
 		file.store_string(html)
 		file.close()
-		$AcceptDialog.title = brower.get_url()
+		$AcceptDialog.title = browser.get_url()
 		$AcceptDialog.dialog_text = "Page saved at:\n" + path
 	else:
 		$AcceptDialog.title = "Alert!"
 		$AcceptDialog.dialog_text = "Failed creating the file " + path
-	$AcceptDialog.popup_centered(Vector2(0,0))
+	$AcceptDialog.popup_centered(Vector2(0, 0))
 	$AcceptDialog.show()
 	pass
 
 # ==============================================================================
+# Callback when a download file is updated
+# ==============================================================================
+func _on_download_updated(file, percentage, browser):
+	$AcceptDialog.title = "Downloading!"
+	$AcceptDialog.dialog_text = file + " " + str(percentage) + " %"
+	$AcceptDialog.popup_centered(Vector2(0, 0))
+	$AcceptDialog.show()
+
+# ==============================================================================
 # Callback when a page has ended to load with success (200): we print a message
 # ==============================================================================
-func _on_page_loaded(brower):
+func _on_page_loaded(browser):
 	var L = $Panel/VBox/HBox/BrowserList
-	var url = brower.get_url()
+	var url = browser.get_url()
 	L.set_item_text(L.get_selected_id(), url)
-	$Panel/VBox/HBox2/Info.set_text(url + " loaded as ID " + brower.name)
-	print("Browser named '" + brower.name + "' inserted on list at index " + str(L.get_selected_id()) + ": " + url)
+	$Panel/VBox/HBox2/Info.set_text(url + " loaded as ID " + browser.name)
+	print("Browser named '" + browser.name + "' inserted on list at index " + str(L.get_selected_id()) + ": " + url)
 	pass
 
 # ==============================================================================
@@ -62,13 +71,13 @@ func _on_page_loaded(brower):
 # List of error are defined in the following file:
 # gdcef/addons/gdcef/thirdparty/cef_binary/include/base/internal/cef_net_error_list.h
 # ==============================================================================
-func _on_page_failed_loading(err_code, err_msg, node):
+func _on_page_failed_loading(err_code, err_msg, browser):
 	var html = "<html><body bgcolor=\"white\">" \
-		+ "<h2>Failed to load URL " + node.get_url() + "!</h2>" \
+		+ "<h2>Failed to load URL " + browser.get_url() + "!</h2>" \
 		+ "<p>Error code: " + str(err_code) + "</p>" \
 		+ "<p>Error message: " + err_msg + "!</p>" \
 		+ "</body></html>"
-	node.load_data_uri(html, "text/html")
+	browser.load_data_uri(html, "text/html")
 	pass
 
 # ==============================================================================
@@ -78,7 +87,7 @@ func create_browser(url):
 	# Wait one frame for the texture rect to get its size
 	await get_tree().process_frame
 
-	# See API.md for more details. Browser configuration is:
+	# See API.md for more details. Possible browser configuration is:
 	#   {"frame_rate": 30}
 	#   {"javascript": true}
 	#   {"javascript_close_windows": false}
@@ -87,7 +96,9 @@ func create_browser(url):
 	#   {"image_loading": true}
 	#   {"databases": true}
 	#   {"webgl": true}
-	var browser = $CEF.create_browser(url, $Panel/VBox/TextureRect, {"javascript":true})
+	#   {"allow_downloads": false}
+	#   {"download_folder": "res://"}
+	var browser = $CEF.create_browser(url, $Panel/VBox/TextureRect, {"javascript": true})
 	if browser == null:
 		$Panel/VBox/HBox2/Info.set_text($CEF.get_error())
 		return null
@@ -96,6 +107,7 @@ func create_browser(url):
 	browser.connect("on_html_content_requested", _on_saving_page)
 	browser.connect("on_page_loaded", _on_page_loaded)
 	browser.connect("on_page_failed_loading", _on_page_failed_loading)
+	browser.connect("on_download_updated", _on_download_updated)
 
 	# Add the URL to the list
 	$Panel/VBox/HBox/BrowserList.add_item(url)
@@ -191,7 +203,7 @@ func _on_BGColor_pressed():
 	if $ColorPopup.visible:
 		$ColorPopup.popup_hide()
 	else:
-		$ColorPopup.popup_centered(Vector2(0,0))
+		$ColorPopup.popup_centered(Vector2(0, 0))
 	pass
 
 # ==============================================================================
@@ -306,7 +318,7 @@ func _on_texture_rect_resized():
 ####
 
 # ==============================================================================
-# Create a single briwser named "current_browser" that is attached as child node to $CEF.
+# Create a single browser named "current_browser" that is attached as child node to $CEF.
 # ==============================================================================
 func _ready():
 	create_default_page()
@@ -332,8 +344,8 @@ func _ready():
 	# will use ProjectSettings.globalize_path but exported projects don't support globalize_path:
 	# https://docs.godotengine.org/en/3.5/classes/class_projectsettings.html#class-projectsettings-method-globalize-path
 	if !$CEF.initialize({
-			"incognito":true,
-			"locale":"en-US",
+			"incognito": true,
+			"locale": "en-US",
 			"enable_media_stream": true,
 			"remote_debugging_port": 7777,
 			"remote_allow_origin": "*"

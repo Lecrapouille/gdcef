@@ -48,6 +48,8 @@
 #    endif
 #endif
 
+#include "helper_files.hpp"
+
 // Godot 4
 #include <godot_cpp/classes/audio_stream_generator_playback.hpp>
 #include <godot_cpp/classes/gd_script.hpp>
@@ -115,7 +117,8 @@ private: // CEF interfaces
                 public CefRenderHandler,
                 public CefLoadHandler,
                 public CefAudioHandler,
-                public CefLifeSpanHandler
+                public CefLifeSpanHandler,
+                public CefDownloadHandler
     {
     public:
 
@@ -174,6 +177,14 @@ private: // CEF interfaces
         //! \brief Return the handler for browser life span events.
         // ---------------------------------------------------------------------
         virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override
+        {
+            return this;
+        }
+
+        // ---------------------------------------------------------------------
+        //! \brief Return the handler for download events.
+        // ---------------------------------------------------------------------
+        virtual CefRefPtr<CefDownloadHandler> GetDownloadHandler() override
         {
             return this;
         }
@@ -293,6 +304,33 @@ private: // CEF interfaces
             return m_owner.onBeforePopup(browser, target_url);
         }
 
+    private: // CefDownloadHandler interfaces
+
+        virtual bool CanDownload(CefRefPtr<CefBrowser> browser,
+                                 const CefString& url,
+                                 const CefString& request_method) override
+        {
+            return m_owner.canDownload(browser, url, request_method);
+        }
+
+        virtual bool
+        OnBeforeDownload(CefRefPtr<CefBrowser> browser,
+                         CefRefPtr<CefDownloadItem> download_item,
+                         const CefString& suggested_name,
+                         CefRefPtr<CefBeforeDownloadCallback> callback) override
+        {
+            return m_owner.onBeforeDownload(
+                browser, download_item, suggested_name, callback);
+        }
+
+        virtual void
+        OnDownloadUpdated(CefRefPtr<CefBrowser> browser,
+                          CefRefPtr<CefDownloadItem> download_item,
+                          CefRefPtr<CefDownloadItemCallback> callback) override
+        {
+            m_owner.onDownloadUpdated(browser, download_item, callback);
+        }
+
     private:
 
         GDBrowserView& m_owner;
@@ -343,6 +381,22 @@ public:
     //! \brief Exported method to Godot script. Set the render zoom level.
     // -------------------------------------------------------------------------
     void setZoomLevel(double delta);
+
+    // -------------------------------------------------------------------------
+    //! \brief Set if the browser can download files.
+    // -------------------------------------------------------------------------
+    void allowDownloads(bool allow);
+
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Download the given file from
+    //! URL.
+    // -------------------------------------------------------------------------
+    void downloadFile(godot::String url);
+
+    // -------------------------------------------------------------------------
+    //! \brief Set the path to the folder where to store downloaded files.
+    // -------------------------------------------------------------------------
+    void setDownloadFolder(godot::String folder);
 
     // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Load the given web page from
@@ -586,6 +640,9 @@ public:
     //--------------------------------------------------------------------------
     bool muted();
 
+    // -------------------------------------------------------------------------
+    //! \brief Set the audio streamer.
+    // -------------------------------------------------------------------------
     void
     setAudioStreamer(godot::Ref<godot::AudioStreamGeneratorPlayback> streamer)
     {
@@ -595,6 +652,9 @@ public:
         }
     }
 
+    // -------------------------------------------------------------------------
+    //! \brief Get the audio streamer.
+    // -------------------------------------------------------------------------
     godot::Ref<godot::AudioStreamGeneratorPlayback> getAudioStreamer()
     {
         if (m_impl == nullptr)
@@ -686,6 +746,29 @@ private:
     bool onBeforePopup(CefRefPtr<CefBrowser> browser,
                        const CefString& target_url);
 
+    // -------------------------------------------------------------------------
+    //! \brief Called before a download begins.
+    //! \return true to allow the download.
+    // -------------------------------------------------------------------------
+    bool canDownload(CefRefPtr<CefBrowser> browser,
+                     const CefString& url,
+                     const CefString& request_method);
+
+    // -------------------------------------------------------------------------
+    //! \brief Called before a download begins.
+    // -------------------------------------------------------------------------
+    bool onBeforeDownload(CefRefPtr<CefBrowser> browser,
+                          CefRefPtr<CefDownloadItem> download_item,
+                          const CefString& suggested_name,
+                          CefRefPtr<CefBeforeDownloadCallback> callback);
+
+    // -------------------------------------------------------------------------
+    //! \brief Called when a download is updated.
+    // -------------------------------------------------------------------------
+    void onDownloadUpdated(CefRefPtr<CefBrowser> browser,
+                           CefRefPtr<CefDownloadItem> download_item,
+                           CefRefPtr<CefDownloadItemCallback> callback);
+
 private:
 
     //! \brief CEF interface implementation
@@ -724,11 +807,17 @@ private:
     //! surface.
     std::array<float, 4> m_viewport;
 
-    //! \brief Cache unique indentifier
+    //! \brief Cache unique identifier
     int m_id = -1;
 
     //! \brief Hold last error messages
     mutable std::stringstream m_error;
+
+    //! \brief Allow downloads (configured from Browser config)
+    bool m_allow_downloads = true;
+
+    //! \brief Download folder (configured from Browser config)
+    fs::path m_download_folder;
 };
 
 #if !defined(_WIN32)

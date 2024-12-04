@@ -25,6 +25,7 @@
 
 //------------------------------------------------------------------------------
 #include "gdbrowser.hpp"
+#include "helper_config.hpp"
 #include "helper_files.hpp"
 
 #include <gdextension_interface.h>
@@ -73,6 +74,7 @@ void GDBrowserView::_bind_methods()
 
     using namespace godot;
 
+    // Methods
     ClassDB::bind_method(D_METHOD("close"), &GDBrowserView::close);
     ClassDB::bind_method(D_METHOD("id"), &GDBrowserView::id);
     ClassDB::bind_method(D_METHOD("get_error"), &GDBrowserView::getError);
@@ -80,12 +82,6 @@ void GDBrowserView::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_texture", "texture"),
                          &GDBrowserView::setTexture);
     ClassDB::bind_method(D_METHOD("get_texture"), &GDBrowserView::getTexture);
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT,
-                              "texture",
-                              PROPERTY_HINT_NODE_TYPE,
-                              "ImageTexture"),
-                 "set_texture",
-                 "get_texture");
     ClassDB::bind_method(D_METHOD("set_zoom_level"),
                          &GDBrowserView::setZoomLevel);
     ClassDB::bind_method(D_METHOD("get_title"), &GDBrowserView::getTitle);
@@ -93,6 +89,12 @@ void GDBrowserView::_bind_methods()
     ClassDB::bind_method(D_METHOD("load_url"), &GDBrowserView::loadURL);
     ClassDB::bind_method(D_METHOD("load_data_uri"),
                          &GDBrowserView::loadDataURI);
+    ClassDB::bind_method(D_METHOD("download_file"),
+                         &GDBrowserView::downloadFile);
+    ClassDB::bind_method(D_METHOD("allow_downloads"),
+                         &GDBrowserView::allowDownloads);
+    ClassDB::bind_method(D_METHOD("set_download_folder"),
+                         &GDBrowserView::setDownloadFolder);
     ClassDB::bind_method(D_METHOD("is_loaded"), &GDBrowserView::loaded);
     ClassDB::bind_method(D_METHOD("reload"), &GDBrowserView::reload);
     ClassDB::bind_method(D_METHOD("stop_loading"), &GDBrowserView::stopLoading);
@@ -147,24 +149,37 @@ void GDBrowserView::_bind_methods()
                          &GDBrowserView::getAudioStreamer);
     ClassDB::bind_method(D_METHOD("get_pixel_color", "x", "y"),
                          &GDBrowserView::getPixelColor);
+
+    // Signals
+    ADD_SIGNAL(MethodInfo("on_download_updated",
+                          PropertyInfo(Variant::STRING, "file"),
+                          PropertyInfo(Variant::INT, "percentage"),
+                          PropertyInfo(Variant::OBJECT, "browser")));
+    ADD_SIGNAL(
+        MethodInfo("on_page_loaded", PropertyInfo(Variant::OBJECT, "browser")));
+    ADD_SIGNAL(MethodInfo("on_page_failed_loading",
+                          PropertyInfo(Variant::INT, "err_code"),
+                          PropertyInfo(Variant::STRING, "err_msg"),
+                          PropertyInfo(Variant::OBJECT, "browser")));
+    ADD_SIGNAL(MethodInfo("on_browser_paint",
+                          PropertyInfo(Variant::OBJECT, "browser")));
+    ADD_SIGNAL(MethodInfo("on_html_content_requested",
+                          PropertyInfo(Variant::STRING, "html"),
+                          PropertyInfo(Variant::OBJECT, "browser")));
+
+    // Properties
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT,
                               "audio_stream",
                               PROPERTY_HINT_NODE_TYPE,
                               "AudioStreamGeneratorPlayback"),
                  "set_audio_stream",
                  "get_audio_stream");
-
-    ADD_SIGNAL(
-        MethodInfo("on_page_loaded", PropertyInfo(Variant::OBJECT, "node")));
-    ADD_SIGNAL(MethodInfo("on_page_failed_loading",
-                          PropertyInfo(Variant::INT, "err_code"),
-                          PropertyInfo(Variant::STRING, "err_msg"),
-                          PropertyInfo(Variant::OBJECT, "node")));
-    ADD_SIGNAL(
-        MethodInfo("on_browser_paint", PropertyInfo(Variant::OBJECT, "node")));
-    ADD_SIGNAL(MethodInfo("on_html_content_requested",
-                          PropertyInfo(Variant::STRING, "html"),
-                          PropertyInfo(Variant::OBJECT, "node")));
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT,
+                              "texture",
+                              PROPERTY_HINT_NODE_TYPE,
+                              "ImageTexture"),
+                 "set_texture",
+                 "get_texture");
 }
 
 //------------------------------------------------------------------------------
@@ -794,4 +809,81 @@ bool GDBrowserView::onBeforePopup(CefRefPtr<CefBrowser> browser,
     // See: https://github.com/Lecrapouille/gdcef/issues/19
     browser->GetMainFrame()->LoadURL(target_url);
     return true;
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::allowDownloads(bool allow)
+{
+    m_allow_downloads = allow;
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::setDownloadFolder(godot::String path)
+{
+    if (path.begins_with("user://") || path.begins_with("res://"))
+    {
+        m_download_folder = GLOBALIZE_PATH(path);
+    }
+    else
+    {
+        m_download_folder = path.utf8().get_data();
+    }
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::downloadFile(godot::String url)
+{
+    m_browser->GetHost()->StartDownload(url.utf8().get_data());
+}
+
+//------------------------------------------------------------------------------
+bool GDBrowserView::canDownload(CefRefPtr<CefBrowser> browser,
+                                const CefString& url,
+                                const CefString& request_method)
+{
+    // TODO add a whitelist ["*"]
+    return m_allow_downloads;
+}
+
+//------------------------------------------------------------------------------
+bool GDBrowserView::onBeforeDownload(
+    CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefDownloadItem> download_item,
+    const CefString& suggested_name,
+    CefRefPtr<CefBeforeDownloadCallback> callback)
+{
+    fs::path download_path =
+        fs::path(m_download_folder) / fs::path(suggested_name.c_str());
+    BROWSER_DEBUG("Downloading file for path " << download_path.string());
+
+    // Don't show the download dialog, just go for it
+    callback->Continue(download_path.string().c_str(), false);
+
+    return false;
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::onDownloadUpdated(
+    CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefDownloadItem> download_item,
+    CefRefPtr<CefDownloadItemCallback> callback)
+{
+    int percentage = download_item->GetPercentComplete();
+    std::string file = download_item->GetFullPath();
+
+    BROWSER_DEBUG("Download " << file << " Updated: " << percentage);
+
+    // m_renderHandler->parentUI->DownloadUpdated.Broadcast(url, percentage);
+    if ((percentage == 100) && (download_item->IsComplete()))
+    {
+        BROWSER_DEBUG("Download " << file << " Complete");
+        // m_renderHandler->parentUI->DownloadComplete.Broadcast(url);
+    }
+
+    // Example download cancel/pause etc, we just have to hijack this
+    // callback->Cancel();
+
+    // Emit signal for Godot script
+    emit_signal(
+        "on_download_updated", godot::String(file.c_str()), percentage, this);
 }

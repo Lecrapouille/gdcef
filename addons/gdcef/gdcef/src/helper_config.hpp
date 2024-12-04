@@ -38,7 +38,7 @@
 
 #define GLOBALIZE_PATH(path)                \
     godot::ProjectSettings::get_singleton() \
-        ->globalize_path(path.c_str())      \
+        ->globalize_path(path)              \
         .utf8()                             \
         .get_data()
 
