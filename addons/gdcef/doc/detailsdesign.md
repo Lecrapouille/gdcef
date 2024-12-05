@@ -77,9 +77,9 @@ The `cef_artifacts` folder contains the following files (which may vary dependin
 
 ```
 📦gdCEF
- ┣ 📂...                             ⬅️ Other folders seen in previous sections
- ┗ 📂cef_artifacts                   ⬅️ Name defined in build.py script
-    ┣ 📂locales                      ⬅️ Locale-specific resources and strings
+ ┣ 📂...                            ⬅️ Other folders seen in previous sections
+ ┗ 📂cef_artifacts                  ⬅️ Name defined in build.py script
+    ┣ 📂locales                     ⬅️ Locale-specific resources and strings
     ┃ ┣ 📜en-US.pak                 ⬅️ English
     ┃ ┗ 📜*.pak                     ⬅️ Other languages
     ┣ 📜chrome_elf.dll              ⬅️ Crash reporting library
@@ -225,8 +225,8 @@ The library `libgdcef.dll` will be generated in the build directory. It should b
 ```
 📦gdcef
  ┗ 📂cef_artifacts
-    ┣ 📜...                         ⬅️ CEF libs and artifacts (see above)
-    ┣ 📦gdCefRenderProcess          ⬅️ CEF secondary process
+    ┣ 📜...                        ⬅️ CEF libs and artifacts (see above)
+    ┣ 📦gdCefRenderProcess         ⬅️ CEF secondary process
     ┣ 📜libgdcef.dll               ⬅️ Our CEF native module library for Godot
     ┗ 📜libcef.dll                 ⬅️ Note: This is different from the CEF core library
 ```
@@ -236,12 +236,12 @@ The library `libgdcef.dll` will be generated in the build directory. It should b
 For Godot to discover and load the gdCEF module, a gdextension file must be present in the Godot project root (`res://`). Without this file, Godot will fail to locate the module and disable the node. The `build.py` script creates this file as `gdcef.gdextension` and places it in the build folder.
 
 ```
-📦YourProject                        ⬅️ Godot res://
- ┣ 📜project.godot                   ⬅️ Your Godot project file
- ┣ 📜...                             ⬅️ Other project files
+📦YourProject                       ⬅️ Godot res://
+ ┣ 📜project.godot                  ⬅️ Your Godot project file
+ ┣ 📜...                            ⬅️ Other project files
  ┗ 📂cef_artifacts
-    ┣ 📜...                          ⬅️ CEF libs and artifacts (see above)
-    ┣ 📦gdCefRenderProcess           ⬅️ CEF secondary process
+    ┣ 📜...                         ⬅️ CEF libs and artifacts (see above)
+    ┣ 📦gdCefRenderProcess          ⬅️ CEF secondary process
     ┣ 📜libgdcef.dll                ⬅️ Our CEF native module library for Godot
     ┗ 📜gdcef.gdextension           ⬅️ Godot extension file
 ```
