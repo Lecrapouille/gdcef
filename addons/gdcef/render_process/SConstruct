@@ -111,11 +111,12 @@ if platform == 'osx':
     env.Append(CCFLAGS=['-arch', archi])
     if compile_mode == 'debug':
         env.Append(CCFLAGS=['-g', '-O2'])
+        env.Append(CPPDEFINES=['DEBUG'])
     else:
         env.Append(CCFLAGS=['-g', '-O3'])
+        env.Append(CPPDEFINES=['NDEBUG'])
     env.Append(CCFLAGS=['-fPIC'])
-    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DNDEBUG',
-                         '-DWRAPPING_CEF_SHARED', '-D__STDC_CONSTANT_MACROS',
+    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DWRAPPING_CEF_SHARED', '-D__STDC_CONSTANT_MACROS',
                          '-D__STDC_FORMAT_MACROS'])
 
 elif platform == 'linux':
@@ -125,10 +126,12 @@ elif platform == 'linux':
     env.Append(CXXFLAGS=['--std=c++17'])
     if compile_mode == 'debug':
         env.Append(CCFLAGS=['-g3', '-Og'])
+        env.Append(CPPDEFINES=['DEBUG'])
     else:
         env.Append(CCFLAGS=['-g', '-O3'])
+        env.Append(CPPDEFINES=['NDEBUG'])
     env.Append(CCFLAGS=['-fPIC'])
-    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DNDEBUG', '-D_FILE_OFFSET_BITS=64',
+    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-D_FILE_OFFSET_BITS=64',
                          '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
     # Add compilation flags
     env.Append(CCFLAGS=['-Wall', '-Wextra'])
@@ -144,16 +147,16 @@ elif platform == 'windows':
     env.Append(ENV=os.environ)
 
     env.Append(CPPDEFINES=['WIN32', '_WIN32', '_WINDOWS', '_CRT_SECURE_NO_WARNINGS'])
-    env.Append(CCFLAGS=['-W3', '-GR'])
+    env.Append(CCFLAGS=['/W3', '/GR'])
     # C++17 seems buggy on Windows and std::filessytem
     env.Append(CXXFLAGS='/std:c++20')
     if compile_mode == 'debug':
         env.Append(CPPDEFINES=['_DEBUG', '_ITERATOR_DEBUG_LEVEL=0'])
-        env.Append(CCFLAGS=['-EHsc', '-MDd', '-ZI'])
-        env.Append(LINKFLAGS=['-DEBUG'])
+        env.Append(CCFLAGS=['/EHsc', '/MDd', '/ZI'])
+        env.Append(LINKFLAGS=['/DEBUG'])
     else:
         env.Append(CPPDEFINES=['NDEBUG'])
-        env.Append(CCFLAGS=['-O2', '-EHsc', '-MD'])
+        env.Append(CCFLAGS=['/O2', '/EHsc', '/MD'])
 
 # Unix compilation flags
 if platform == 'linux' or platform == 'osx':

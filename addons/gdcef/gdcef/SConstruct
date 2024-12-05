@@ -108,39 +108,43 @@ if platform == 'macos':
     env.Append(CCFLAGS=['-arch', archi])
     if compile_mode == 'debug':
         env.Append(CCFLAGS=['-g', '-O2'])
+        env.Append(CPPDEFINES=['DEBUG'])
     else:
         env.Append(CCFLAGS=['-g', '-O3'])
+        env.Append(CPPDEFINES=['NDEBUG'])
     env.Append(CCFLAGS=['-fPIC'])
-    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DNDEBUG',
-                         '-DWRAPPING_CEF_SHARED', '-D__STDC_CONSTANT_MACROS',
-                         '-D__STDC_FORMAT_MACROS'])
+    env.Append(CPPDEFINES=['CEF_USE_SANDBOX', 'WRAPPING_CEF_SHARED',
+                          '__STDC_CONSTANT_MACROS', '__STDC_FORMAT_MACROS'])
 
 elif platform == 'linux':
     # C++20 may not available on all Linux distros
     env.Append(CXXFLAGS=['--std=c++17'])
     if compile_mode == 'debug':
         env.Append(CCFLAGS=['-g3', '-Og'])
+        env.Append(CPPDEFINES=['DEBUG'])
     else:
         env.Append(CCFLAGS=['-g', '-O3'])
+        env.Append(CPPDEFINES=['NDEBUG'])
     env.Append(CCFLAGS=['-fPIC'])
-    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DNDEBUG', '-D_FILE_OFFSET_BITS=64',
-                         '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
+    env.Append(CPPDEFINES=['CEF_USE_SANDBOX', '_FILE_OFFSET_BITS=64',
+                          '__STDC_CONSTANT_MACROS', '__STDC_FORMAT_MACROS'])
 
 elif platform == 'windows':
+    # C++17 seems buggy on Windows and std::filessytem
+    env.Append(CXXFLAGS='/std:c++20')
     # This makes sure to keep the session environment variables on windows,
     # that way you can run scons in a vs 2017 prompt and it will find all the required tools
     env.Append(ENV=os.environ)
     env.Append(CPPDEFINES=['WIN32', '_WIN32', '_WINDOWS', '_CRT_SECURE_NO_WARNINGS', 'TYPED_METHOD_BIND'])
-    env.Append(CCFLAGS=['-W3', '-GR'])
-    # C++17 seems buggy on Windows and std::filessytem
-    env.Append(CXXFLAGS='/std:c++20')
+    env.Append(CCFLAGS=['/W3', '/GR'])
+
     if compile_mode == 'debug':
         env.Append(CPPDEFINES=['_DEBUG', '_ITERATOR_DEBUG_LEVEL=0'])
-        env.Append(CCFLAGS=['-EHsc', '-MDd', '-ZI', '-FS'])
-        env.Append(LINKFLAGS=['-DEBUG'])
+        env.Append(CCFLAGS=['/EHsc', '/MDd', '/ZI', '/FS'])
+        env.Append(LINKFLAGS=['/DEBUG'])
     else:
         env.Append(CPPDEFINES=['NDEBUG'])
-        env.Append(CCFLAGS=['-O2', '-EHsc', '-MD'])
+        env.Append(CCFLAGS=['/O2', '/EHsc', '/MD'])
 
 # Unix compilation flags
 if platform == 'linux' or platform == 'macos':
@@ -230,7 +234,6 @@ env.Append(RPATH=[env['cef_artifacts_folder'][2:-2]])
 # Compile the library
 sources = ['src/helper_files.cpp', 'src/browser_io.cpp', 'src/gdcef.cpp', 'src/gdbrowser.cpp', 'src/register_types.cpp']
 # sources = Glob('src/*.cpp')
-# sources = ['src/helper_files.cpp', 'src/browser_io.cpp', 'src/gdcef.cpp', 'src/gdbrowser.cpp', 'src/gdnative.cpp']
 library = env.SharedLibrary(target=target_path + '/' + target_library, source=sources)
 Default(library)
 
