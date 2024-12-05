@@ -483,36 +483,34 @@ def copy_cef_assets():
     build_path = CEF_ARTIFACTS_BUILD_PATH
     mkdir(build_path)
 
-    ### Get all CEF compiled artifacts needed for your application
+    ### Get all CEF compiled artifacts needed for your application.
+    ### Note: We do not copy the chrome-sandbox since it is not needed for GDCEF.
     info("Installing Chromium Embedded Framework to " + build_path + " ...")
     locales = os.path.join(build_path, "locales")
     mkdir(locales)
-    if OSTYPE == "Linux":
-        # cp THIRDPARTY_CEF_PATH/build/tests/cefsimple/*.pak *.dat *.so locales/* build_path
-        S = os.path.join(THIRDPARTY_CEF_PATH, "build", "tests", "cefsimple", CEF_TARGET)
-        copyfile(os.path.join(S, "v8_context_snapshot.bin"), build_path)
-        copyfile(os.path.join(S, "icudtl.dat"), build_path)
-        for f in glob.glob(os.path.join(S, "*.pak")):
-            copyfile(f, build_path)
-        for f in glob.glob(os.path.join(S, "locales/*")):
-            copyfile(f, locales)
-        for f in glob.glob(os.path.join(S, "*.so")):
-            copyfile(f, build_path)
-        for f in glob.glob(os.path.join(S, "*.so.*")):
-            copyfile(f, build_path)
-    elif OSTYPE == "Windows":
-        # cp THIRDPARTY_CEF_PATH/Release/*.bin THIRDPARTY_CEF_PATH/Release/*.dll build_path
-        S = os.path.join(THIRDPARTY_CEF_PATH, CEF_TARGET)
-        copyfile(os.path.join(S, "v8_context_snapshot.bin"), build_path)
-        for f in glob.glob(os.path.join(S, "*.dll")):
-            copyfile(f, build_path)
-        # cp THIRDPARTY_CEF_PATH/Resources/*.pak *.dat locales/* build_path
+    if OSTYPE == "Linux" or OSTYPE == "Windows":
+        # gdcef/addons/gdcef/thirdparty/cef_binary/Resources
         S = os.path.join(THIRDPARTY_CEF_PATH, "Resources")
         copyfile(os.path.join(S, "icudtl.dat"), build_path)
         for f in glob.glob(os.path.join(S, "*.pak")):
             copyfile(f, build_path)
         for f in glob.glob(os.path.join(S, "locales/*")):
             copyfile(f, locales)
+
+        # Either: gdcef/addons/gdcef/thirdparty/cef_binary/Release
+        # or:     gdcef/addons/gdcef/thirdparty/cef_binary/Debug
+        S = os.path.join(THIRDPARTY_CEF_PATH, CEF_TARGET)
+        copyfile(os.path.join(S, "vk_swiftshader_icd.json"), build_path)
+        for f in glob.glob(os.path.join(S, "*snapshot*.bin")):
+            copyfile(f, build_path)
+        if OSTYPE == "Linux":
+            for f in glob.glob(os.path.join(S, "*.so")):
+                copyfile(f, build_path)
+            for f in glob.glob(os.path.join(S, "*.so.*")):
+                copyfile(f, build_path)
+        else:
+            for f in glob.glob(os.path.join(S, "*.dll")):
+                copyfile(f, build_path)
     elif OSTYPE == "Darwin":
         S = os.path.join(THIRDPARTY_CEF_PATH, "build", "tests", "cefsimple", CEF_TARGET, "cefsimple.app")
         shutil.copytree(S, build_path + "/cefsimple.app")
