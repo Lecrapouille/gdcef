@@ -54,7 +54,7 @@ import re
 # desired version (without 'v' and without godot version). You cannot choose
 # neither Godot version not CEF version.
 # If unset, then compile GCEF sources.
-GITHUB_GDCEF_RELEASE = None                              # or "0.12.0"
+GITHUB_GDCEF_RELEASE = None                              # or "0.14.0"
 
 # The hard-coded name of the folder that will hold all CEF built artifacts.
 # /!\ BEWARE /!\

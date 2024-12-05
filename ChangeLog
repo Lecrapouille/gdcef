@@ -1,3 +1,19 @@
+Version 0.14.0:
+	* Forbid creation of native windows when opening on a new browser.
+	* Force using C++20 for Windows fixing issue with std::filesystem accessing to cef_artifacts.
+	* Fix destroying browsers as scene graph nodes.
+	* Fix missing files in the CEF artifact.
+	* API: Add functions/signals/settings for downloading files.
+	* Use Godot warnings/errors instead of std::cout/cerr.
+	* Use more explicit include path to Godot header files.
+	* build system: Remove possibility of calling python scons (just missing path).
+	* build system: git clone projects using gdcef as demos.
+	* Update demos to Godot 4.3.
+	* Rename subprocess to render_process.
+	* Simplify the code of the render process: remove browser class.
+	* Cleanning documentation with the help of the IA: API, details design.
+	* Add clang-format and change code indentation.
+
 Version 0.13.0:
 	* Portage to MacOS.
 	* Fix documentation.
