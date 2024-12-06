@@ -1,125 +1,128 @@
 name: CI for GDCEF Godot 4.x
 on:
-  workflow_dispatch:
-    branches:
-      - godot-4.x
+  workflow_dispatch:  # Allow manual trigger
   push:
     branches:
       - godot-4.x
     tags:
-      - '*'
+      - '*'  # Trigger on any tag
   pull_request:
     branches:
       - godot-4.x
 
 jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          # MacOS build configuration
+          - os: macos-14
+            name: MacOS
+            check_files: cef_artifacts/libgdcef.dylib
+            install_system_packages: brew install ninja
+            shell: bash
 
-  #############################################################################
-  ### MacOS
-  #############################################################################
-  build_macos:
-    name: Build on MacOS
-    runs-on: macos-14
-    steps:
-      - name: Checkout GDCEF
-        uses: actions/checkout@v3
-        with:
-          ref: godot-4.x
-          submodules: true
-      - name: Install system packages
-        run: |
-          brew install ninja
-      - name: Install python packages
-        uses: getsentry/action-setup-venv@v2.1.0
-        id: venv
-        with:
-          python-version: 3.10.7
-          cache-dependency-path: addons/gdcef/requirements.txt
-          install-cmd: pip install -r addons/gdcef/requirements.txt
-      - name: Compile GDCEF
-        run: |
-          cd addons/gdcef
-          python3 build.py
-      - name: Check build
-        run: |
-          ls cef_artifacts/libgdcef.dylib
-          tar -czvf gdcef-artifacts-godot_4-macos_x86_64.tar.gz cef_artifacts
-      - name: Do release
-        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "gdcef-artifacts-godot_4-macos_x86_64.tar.gz"
+          # Linux build configuration
+          - os: ubuntu-20.04
+            name: Linux
+            check_files: cef_artifacts/gdcefSubProcess cef_artifacts/libgdcef.so cef_artifacts/libcef.so
+            install_system_packages: sudo apt-get update
+            shell: bash
 
-  #############################################################################
-  ### Linux
-  #############################################################################
-  build_linux:
-    name: Build on Linux
-    runs-on: ubuntu-20.04
-    needs: build_macos
-    steps:
-      - name: Checkout GDCEF
-        uses: actions/checkout@v3
-        with:
-          ref: godot-4.x
-          submodules: true
-      - name: Install system packages
-        run: |
-          sudo apt-get update
-          cd addons/gdcef
-          python3 -m pip install -r requirements.txt
-      - name: Compile GDCEF
-        run: |
-          cd addons/gdcef
-          python3 build.py
-      - name: Check build
-        run: |
-          ls cef_artifacts/gdcefSubProcess cef_artifacts/libgdcef.so cef_artifacts/libcef.so
-          tar -czvf gdcef-artifacts-godot_4-linux_x86_64.tar.gz cef_artifacts
-      - name: Do release
-        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "gdcef-artifacts-godot_4-linux_x86_64.tar.gz"
+          # Windows build configuration
+          - os: windows-2022
+            name: Windows
+            check_files: \a\gdcef\gdcef\cef_artifacts\gdcefSubProcess.exe \a\gdcef\gdcef\cef_artifacts\libgdcef.dll \a\gdcef\gdcef\cef_artifacts\libcef.dll
+            shell: powershell
 
-  #############################################################################
-  ### Windows
-  #############################################################################
-  build_windows:
-    name: Build on Windows
-    runs-on: windows-2022
-    needs: build_linux
+    name: Build on ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
     steps:
-      # Add path for finding cl.exe
-      # FIXME: I dunno why Godot editor and godot-cpp can find cl.exe while our
+      # Needed because Godot editor and godot-cpp can find cl.exe while our
       # godot native modules cannot find it without this extra path
-      - uses: ilammy/msvc-dev-cmd@v1.10.0
+      - name: Setup MSVC (Windows only)
+        if: matrix.os == 'windows-2022'
+        uses: ilammy/msvc-dev-cmd@v1.10.0
 
+      # Git checkout the gdCEF repository
       - name: Checkout GDCEF
         uses: actions/checkout@v4
         with:
+          ref: godot-4.x
           submodules: true
-      - name: Install system packages
-        shell: powershell
+
+      # Read the gdCEF version from the VERSION file, and set the name of the
+      # archive to upload on GitHub
+      - name: Get CI environment variables
+        id: archive
+        shell: bash
         run: |
-          cd addons/gdcef
-          python3 -m pip install -r requirements.txt
+          echo "tarball_name=gdCEF-$(cat VERSION)_Godot-$(grep "^[ ]*GODOT_VERSION[ ]*=[ ]*" addons/gdcef/build.py | cut -d'"' -f2)_${{ runner.os }}_${{ runner.arch }}.tar.gz" >> $GITHUB_OUTPUT
+
+      # Install system packages if any are specified and install python packages
+      - name: Install system packages
+        if: matrix.install_system_packages != ''
+        run: ${{ matrix.install_system_packages }}
+
+      # Setup Python Virtual Environment
+      - name: Setup Python Virtual Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10.7'
+          cache: 'pip'
+          cache-dependency-path: addons/gdcef/requirements.txt
+
+      # Install Python dependencies
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r addons/gdcef/requirements.txt
+
+      # Compile GDCEF: download CEF and godot-cpp, them, compile GDCEF
       - name: Compile GDCEF
-        shell: powershell
         run: |
           cd addons/gdcef
           python3 build.py
-      - name: Check build
+
+      # Check the build: list the files and create an archive
+      - name: Check build (Linux/MacOS)
+        if: runner.os != 'Windows'
+        run: |
+          ls ${{ matrix.check_files }}
+          cd cef_artifacts
+
+      # Check the build: check if important gdcef artifacts exist and create an archive
+      - name: Check build (Windows)
+        if: runner.os == 'Windows'
         run: |
           cd cef_artifacts
-          Test-Path -Path \a\gdcef\gdcef\cef_artifacts\gdcefSubProcess.exe
-          Test-Path -Path \a\gdcef\gdcef\cef_artifacts\libgdcef.dll
-          Test-Path -Path \a\gdcef\gdcef\cef_artifacts\libcef.dll
-          cd -
-          tar -czvf gdcef-artifacts-godot_4-windows_x86_64.tar.gz cef_artifacts
-      - name: Do release
+          foreach ($file in "${{ matrix.check_files }}".Split(" ")) {
+            if (!(Test-Path -Path $file)) { exit 1 }
+          }
+
+      # Create cef_artifacts archive
+      - name: Create cef_artifacts archive
+        shell: bash
+        run: |
+          tar -czvf ${{ steps.archive.outputs.tarball_name }} cef_artifacts
+
+      # Allows to save the generated tarballs from different the isolated OS onto
+      # the GitHub Actions server (temporary folder).
+      - name: Upload artifact
         if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v4
+        with:
+          retention-days: 1
+          compression-level: 0
+          name: ${{ steps.archive.outputs.tarball_name }}
+          path: ${{ steps.archive.outputs.tarball_name }}
+
+      # Publish releases into the GitHub Releases page
+      - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "gdcef-artifacts-godot_4-windows_x86_64.tar.gz"
+          artifacts: ${{ steps.archive.outputs.tarball_name }}
           allowUpdates: true
+          makeLatest: true
