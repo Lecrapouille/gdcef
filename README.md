@@ -17,7 +17,7 @@ Since this README is not included when importing gdCEF from the [Godot Asset Lib
 - [Releases](https://github.com/Lecrapouille/gdcef/releases)
 - [API](addons/gdcef/doc/API.md)
 - [Details Design](addons/gdcef/doc/detailsdesign.md)
-- [Demos](demos/README.md)
+- [Demos](addons/gdcef/demos/README.md)
 - [FAQ](addons/gdcef/README.md#faq)
 
 ## TL;DR: Compilation
