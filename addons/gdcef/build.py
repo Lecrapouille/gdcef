@@ -490,6 +490,45 @@ def compile_cef():
 
 ###############################################################################
 ###
+### Create version information file
+###
+###############################################################################
+def create_version_file():
+    info("Creating GDCEF_VERSION.txt file")
+    try:
+        # Try to read version from VERSION file
+        with open(os.path.join("..", PWD, "VERSION"), "r") as f:
+            gdcef_version = f.read().strip()
+    except:
+        # Else try to read version from plugin.cfg
+        try:
+            with open(os.path.join(PWD, "plugin.cfg"), "r") as f:
+                for line in f:
+                    if line.startswith("version="):
+                        gdcef_version = line.split("=")[1].strip().strip('"')
+                        break
+        except:
+            warning("Could not read VERSION file nor plugin.cfg")
+            gdcef_version = "unknown"
+
+    # Get git information
+    try:
+        git_branch = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode("utf-8").strip()
+        git_sha1 = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("utf-8").strip()
+    except:
+        warning("Could not get git information")
+        git_branch = "unknown"
+        git_sha1 = "unknown"
+
+    with open(os.path.join(CEF_ARTIFACTS_BUILD_PATH, "GDCEF_VERSION.txt"), "w") as f:
+        f.write("gdCEF Version: " + gdcef_version + "\n")
+        f.write("gdCEF Git Branch: " + git_branch + "\n")
+        f.write("gdCEF Git SHA1: " + git_sha1 + "\n")
+        f.write("CEF Version: " + CEF_VERSION + "\n")
+        f.write("Godot Version: " + GODOT_VERSION + "\n")
+
+###############################################################################
+###
 ### Copy Chromium Embedded Framework assets to your application build folder
 ###
 ###############################################################################
@@ -805,6 +844,7 @@ if __name__ == "__main__":
         download_cef()
         compile_cef()
         copy_cef_assets()
+        create_version_file()
         compile_gdnative_cef(GDCEF_PATH)
         # MacOSX: use cefsimple.app instead of gdCefSubProcess
         if OSTYPE != "Darwin":
