@@ -348,16 +348,30 @@ def download_gdcef_release():
         fatal("OS " + OSTYPE + " architecture " + ARCHI + " is not available as GitHub release")
 
     GITHUB_URL = "https://github.com/Lecrapouille/gdcef/releases/download/"
-    TARBALL = "v" + GITHUB_GDCEF_RELEASE + "-godot" + GODOT_VERSION[0]
-    TARBALL = TARBALL + "/gdcef-artifacts-godot_" + GODOT_VERSION[0] + "-"
-    TARBALL = TARBALL + OSTYPE.lower() + "_" + ARCHI + ".tar.gz"
-    URL = GITHUB_URL + TARBALL
+    RELEASE_TAG = "v" + GITHUB_GDCEF_RELEASE + "-godot" + GODOT_VERSION[0] + "/"
 
-    GDCEF_TARBALL = CEF_ARTIFACTS_FOLDER_NAME + ".tar.gz"
+    # Tarball name format depends on the release version
+    version_num = version.parse(GITHUB_GDCEF_RELEASE)
+    version_0_13 = version.parse("0.13.0")
+    if version_num < version_0_13:
+        TARBALL_NAME = "gdcef-artifacts-godot_" + GODOT_VERSION[0] + "-" + OSTYPE.lower() + "_" + ARCHI + ".tar.gz"
+    else: # New format for versions >= 0.13.0
+        arch_str = "ARM64" if OSTYPE == "Darwin" else "X64"
+        os_str = ""
+        if OSTYPE == "Linux":
+            os_str = "Linux"
+        elif OSTYPE == "Windows":
+            os_str = "Windows"
+        elif OSTYPE == "Darwin":
+            os_str = "macOS"
+        TARBALL_NAME = "gdCEF-" + GITHUB_GDCEF_RELEASE + "_Godot-" + GODOT_VERSION + "_" + os_str + "_" + arch_str + ".tar.gz"
+
+    URL = GITHUB_URL + RELEASE_TAG + TARBALL_NAME
+
     try:
-        download(URL, GDCEF_TARBALL)
-        untarbz2(GDCEF_TARBALL, CEF_ARTIFACTS_BUILD_PATH)
-        os.remove(GDCEF_TARBALL)
+        download(URL, TARBALL_NAME)
+        untarbz2(TARBALL_NAME, CEF_ARTIFACTS_BUILD_PATH)
+        os.remove(TARBALL_NAME)
     except Exception as err:
         fatal(URL + " does not exist. Are you sure of the desired version ? Else try to compile GDCEF")
 
