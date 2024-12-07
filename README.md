@@ -43,3 +43,7 @@ If you're using this project, feel free to share your project links and pictures
 [![elitemeta](addons/gdcef/doc/gallery/elitemeta.jpg)](https://ipfs.io/ipfs/QmaL7NY5qs3AtAdcX8vFhqaHwJeTMKfP3PbzcHZBLmo1QQ?filename=elitemeta_0.mp4)
 
 *Click the picture to watch the Elitemeta video shared on IPFS (you need an IPFS client to watch it).*
+
+- [TNITRFR](https://gamejolt.com/games/TNITRFR/948968) with 90's computer browser look.
+
+![TNITRFR](addons/gdcef/doc/gallery/tnitrfr.png)
