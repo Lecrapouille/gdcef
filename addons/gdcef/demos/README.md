@@ -13,18 +13,18 @@ cd ..
 No command line is needed. This script will:
 - Download and compile CEF
 - Download and compile Godot-cpp
-- Create the CEF artifcats needed for running demos (inside `build` at the root of the project).
+- Create the CEF artifcats needed for running demos (inside `cef_artifcats` at the root of the project).
 
 **Workaround For Windows:** You need **x64 Native Tools Command Prompt for VS 2022**, with
   **Administrator** privilege!
 
 **Note concerning the build folder**:
 
-CEF artifcats are searched inside the `build` folder at the root of your Godot project.
+CEF artifcats are searched inside the `cef_artifcats` folder at the root of your Godot project.
 Because we have several demos and CEF artifacts are heavy (libcef.so is > 1 GB), to avoid
 consuming GB of disk space of duplicated files, we have stored artifacts at `examples/build`
 and make demos have an alias on this folder. For your personal project, it's better not
-using alias and have all CEF artifacts in a real folder `build` at the root of your Godot
+using alias and have all CEF artifacts in a real folder `cef_artifcats` at the root of your Godot
 project.
 
 ## Run demos

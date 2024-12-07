@@ -25,7 +25,7 @@ This repository contains the following important elements:
 - C++ code source for the [primary CEF process](gdcef/): your Godot application.
 - C++ code source for the [secondary CEF process](subprocess/), called by the first CEF process.
 - Some demos in [2D](demos/2D/) and [3D](demos/3D/). The 2D demo shows almost all the API.
-- A python-3 [build script](build.py) that will git clone the Godot-cpp binding, download the CEF tarball, extract it, compile CEF, compile the primary and secondary CEF process, and finally create the CEF artifacts in the `build` folder.
+- A python-3 [build script](build.py) that will git clone the Godot-cpp binding, download the CEF tarball, extract it, compile CEF, compile the primary and secondary CEF process, and finally create the CEF artifacts in the `cef_artifcats` folder.
 
 *Note:* While we are using C++20, we aren't utilizing advanced features, but we require this version for the `filesystem` library. And with C++17, the `filesystem` library seems not working correctly with Windows.
 

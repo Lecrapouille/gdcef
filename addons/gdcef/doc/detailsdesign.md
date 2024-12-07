@@ -60,7 +60,7 @@ cmake -DCMAKE_BUILD_TYPE=Release .
 cmake --build . --config Release
 ```
 
-The following libraries and artifacts must be copied to the Godot project root `res://`, otherwise Godot will not be able to locate them and will fail to load the module dependencies at project startup. These files are placed in the `build` folder (which needs to be created). For Windows, these files are mandatory for CEF to start correctly. The `build.py` script handles this automatically for all operating systems.
+The following libraries and artifacts must be copied to the Godot project root `res://`, otherwise Godot will not be able to locate them and will fail to load the module dependencies at project startup. These files are placed in the `cef_artifcats` folder (which needs to be created). For Windows, these files are mandatory for CEF to start correctly. The `build.py` script handles this automatically for all operating systems.
 
 For Windows, current builds use dynamic libraries, while the default VS solution is configured for static compilation. Therefore, you (or the build script) need to use VS to compile in Release mode and change the compiler settings from `/MT` to `/MD`, as well as add these two preprocessor flags:
 
@@ -187,7 +187,7 @@ cd 📂render_process
 scons target=release platform=windows workspace=$WORKSPACE godot_version=4.3-stable -j8
 ```
 
-The executable `gdCefRenderProcess.exe` will be created and should be placed in the appropriate Godot project's `build` folder (which must be created). The `build.py` script handles this automatically.
+The executable `gdCefRenderProcess.exe` will be created and should be placed in the appropriate Godot project's `cef_artifcats` folder (which must be created). The `build.py` script handles this automatically.
 
 ```
 📦YourProject
@@ -220,7 +220,7 @@ cd gdcef
 scons target=release platform=windows workspace=$WORKSPACE godot_version=4.3-stable -j8
 ```
 
-The library `libgdcef.dll` will be generated in the build directory. It should be placed in your Godot project's `build` folder (which must be created). The `build.py` script handles this automatically.
+The library `libgdcef.dll` will be generated in the build directory. It should be placed in your Godot project's `cef_artifcats` folder (which must be created). The `build.py` script handles this automatically.
 
 ```
 📦gdcef
