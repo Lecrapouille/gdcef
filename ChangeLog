@@ -1,3 +1,8 @@
+Version 0.14.1:
+	* Update build: managing new gdCEF release names for downlad.
+	* Update build: add GDCEF_VERSION.txt inside cef_artifacts folder.
+	* Update documentation and remove a cpp file no longer used.
+
 Version 0.14.0:
 	* Forbid creation of native windows when opening on a new browser.
 	* Force using C++20 for Windows fixing issue with std::filesystem accessing to cef_artifacts.
