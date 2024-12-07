@@ -5,8 +5,20 @@
 This repository contains C++ classes that wrap a subset of the [Chromium Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home) API into a Godot > 4.2 native extension (GDExtension). This allows you to implement a web browser in your 2D and 3D games using GDScript for Linux, Windows and MacOS. The name of this module is `gdcef`.
 
 This module can be downloaded directly either:
-- as code source to compile, from the Godot Asset Library: https://godotengine.org/asset-library/asset/2508
-- as precompiled binaries, from the GitHub releases link: https://github.com/Lecrapouille/gdcef/releases
+- as code source to compile, by git cloning this repository, from this [GitHub repository](https://github.com/Lecrapouille/gdcef).
+- as code source to compile, from the [Godot Asset Library](https://godotengine.org/asset-library/asset/2508).
+- as precompiled binaries, from the [GitHub releases](https://github.com/Lecrapouille/gdcef/releases).
+
+## Full Documentation
+
+Since this README is not included when importing gdCEF from the [Godot Asset Library](https://godotengine.org/asset-library/asset/2508), all details can be found in the following documents:
+
+- [Installation](addons/gdcef/doc/installation.md)
+- [Releases](https://github.com/Lecrapouille/gdcef/releases)
+- [API](addons/gdcef/doc/API.md)
+- [Details Design](addons/gdcef/doc/detailsdesign.md)
+- [Demos](demos/README.md)
+- [FAQ](addons/gdcef/README.md#faq)
 
 ## TL;DR: Compilation
 
@@ -22,13 +34,9 @@ This will download and compile Godot and CEF, and generate the gdCEF artifacts i
 
 ## TL;DR: I don't want to compile? I want to use gdCEF right now!
 
-Check the [releases](https://github.com/Lecrapouille/gdcef/releases). Since tag 0.7.2, CEF artifacts are provided for Linux and Windows x86_64 architectures. Simply uncompress the tarball and move the folder into your project. Be sure to rename it to `cef_artifacts`. The Godot extension is included, so you don't need to create one.
+Check the [releases](https://github.com/Lecrapouille/gdcef/releases). Since tag 0.7.2, CEF artifacts are provided for Linux and Windows x86_64 architectures. Since tag 0.13.0, MacOS is also supported. Simply uncompress the tarball and move the folder `cef_artifacts` into your project. Do not rename it or remove files inside. The Godot extension file is also included, so you don't need to create one.
 
-## Full Documentation
-
-Since this README is not included when importing the module from the Godot Asset Library, all details can be found in [this document](addons/gdcef/README.md). It explains how to build this module, how to run demos, how to use the mode, describes the architecture, details the design, and more...
-
-## Gallery
+## Gallery of projects using gdCEF
 
 If you're using this project, feel free to share your project links and pictures by submitting a GitHub pull request. I'll add them to this gallery. Thanks to the teams who have contributed to the current gallery:
 

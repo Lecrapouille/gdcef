@@ -38,6 +38,10 @@ We've included documentation to help you understand the core aspects of this pro
 
 ## FAQ
 
+### Why I need to compile prebuilt CEF whereas .dll and other stuffs are already given ?
+
+Because we need to link against `libcef_dll_wrapper` that is only obtained by compiling CEF sources.
+
 ### How do I use CEF in my personal project?
 
 - Copy the `cef_artifacts` folder containing the compiled CEF artifacts into your Godot project.
