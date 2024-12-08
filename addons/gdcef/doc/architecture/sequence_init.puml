@@ -1,0 +1,53 @@
+@startuml
+
+participant "GDScript" as GD
+participant "GDCef\n(Main Process)" as MP
+participant "CEF" as CEF
+participant "Render Process" as RP
+
+== Initialization ==
+
+GD -> MP : initialize(config)
+activate MP
+
+MP -> CEF : CefInitialize()
+activate CEF
+
+CEF -> CEF : Fork processes
+note right: Creates render, GPU,\nand other processes
+
+CEF -> RP : Start render process
+activate RP
+
+RP -> RP : CefExecuteProcess()
+RP -> RP : CefInitialize()
+RP -> RP : CefRunMessageLoop()
+
+CEF --> MP : Initialization complete
+deactivate CEF
+
+MP --> GD : true
+deactivate MP
+
+== Browser Creation ==
+
+GD -> MP : create_browser(url, texture_rect, settings)
+activate MP
+
+MP -> CEF : CreateBrowserSync()
+activate CEF
+
+CEF -> RP : OnContextCreated()
+activate RP
+RP -> RP : Create V8 context
+RP -> RP : Bind JavaScript methods
+RP --> CEF : Context ready
+deactivate RP
+
+CEF --> MP : Browser instance
+deactivate CEF
+
+MP --> GD : GDBrowserView instance
+deactivate MP
+
+@enduml

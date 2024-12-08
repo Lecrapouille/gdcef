@@ -1,0 +1,78 @@
+@startuml
+
+participant "GDScript,\nTextureRect" as GD
+participant "gdCEF" as MP
+participant "CEF\nMain Process" as CEF
+participant "CEF\nRender Process" as RP
+
+== Browser Navigation Success ==
+
+GD -> MP : load_url(url)
+activate MP
+MP -> CEF : LoadURL()
+activate CEF
+
+CEF -> RP : Load and render page
+activate RP
+RP -> RP : Process page
+note right: HTML parsing,\nJS execution,\nCSS rendering
+
+RP -> CEF : OnLoadEnd()
+CEF -> MP : Page loaded
+MP -> GD : emit_signal("on_page_loaded")
+deactivate RP
+deactivate CEF
+deactivate MP
+
+== Browser Navigation Failure ==
+
+GD -> MP : load_url(url)
+activate MP
+MP -> CEF : LoadURL()
+activate CEF
+
+CEF -> RP : Load and render page
+activate RP
+RP -> RP : Process page fails
+note right: Network error,\n404 not found,\nInvalid URL...
+
+RP -> CEF : OnLoadError()
+CEF -> MP : Load failed
+MP -> GD : emit_signal("on_page_failed_loading", error_code, error_text, failed_url)
+deactivate RP
+deactivate CEF
+deactivate MP
+activate GD
+GD -> GD : Encode HTML as data URI
+note right: Format: data:text/html;base64,...
+
+GD -> MP : load_data_uri(data_uri, "text/html")
+MP -> CEF: LoadURL()
+note right: Same sequence depicted above
+deactivate GD
+
+== Rendering Cycle ==
+
+RP -> RP : Render webpage
+activate RP
+note right: Off-screen rendering\nin windowless mode
+
+RP -> CEF : OnPaint()
+activate CEF
+
+CEF -> MP : Paint handler
+activate MP
+
+MP -> MP : Update texture buffer
+note right: Copy rendered content\nto texture memory
+
+MP -> GD : Updated texture
+activate GD
+GD -> GD : Display new frame
+deactivate GD
+
+deactivate MP
+deactivate CEF
+deactivate RP
+
+@enduml

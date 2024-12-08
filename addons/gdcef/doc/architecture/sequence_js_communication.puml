@@ -1,0 +1,60 @@
+@startuml
+
+participant "JavaScript" as JS
+participant "Render Process" as RP
+participant "CEF" as CEF
+participant "GDCef\n(Main Process)" as MP
+participant "GDScript" as GD
+
+== JavaScript to GDScript ==
+
+JS -> RP : godot.callGodotMethod()
+activate RP
+
+RP -> RP : GodotMethodHandler::Execute()
+RP -> CEF : SendProcessMessage(PID_BROWSER)
+activate CEF
+
+CEF -> MP : OnProcessMessageReceived()
+activate MP
+
+MP -> GD : Call GDScript method
+activate GD
+GD --> MP : Return value
+deactivate GD
+
+MP --> CEF : Process message result
+deactivate MP
+
+CEF --> RP : Message processed
+deactivate CEF
+
+RP --> JS : JavaScript return value
+deactivate RP
+
+== GDScript to JavaScript ==
+
+GD -> MP : execute_javascript()
+activate MP
+
+MP -> CEF : ExecuteJavaScript()
+activate CEF
+
+CEF -> RP : Execute in V8 context
+activate RP
+
+RP -> JS : Execute JavaScript code
+activate JS
+JS --> RP : JavaScript result
+deactivate JS
+
+RP --> CEF : Execution complete
+deactivate RP
+
+CEF --> MP : JavaScript executed
+deactivate CEF
+
+MP --> GD : Execution complete
+deactivate MP
+
+@enduml
