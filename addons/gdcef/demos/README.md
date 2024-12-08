@@ -4,9 +4,9 @@
 
 You can run demos directly if you have already compiled gdCEF (`cd .. && /build.py`). Otherwise, you can add the folder `cef_artifacts` and its content from `https://github.com/Lecrapouille/gdcef/releases` in each demo folder. No extra command line is needed.
 
-**Note concerning the build folder**:
+![cef_artifacts](../doc/pics/cef_artifacts.png)
 
-CEF artifacts are searched inside the `cef_artifacts` folder at the same level of your application made in Godot. Because we have several demos and CEF artifacts are heavy (libcef.so is > 1 GB), to avoid consuming GB of disk space with duplicated files, we have stored artifacts at `examples/build` and made demos have an alias on this folder. For your personal project, it's better not to use an alias and have all CEF artifacts in a real folder `cef_artifacts` at the root of your Godot project.
+**Note**: CEF artifacts are searched inside the `cef_artifacts` folder at the same level of your application made in Godot. Because we have several demos and CEF artifacts are heavy (libcef.so is > 1 GB), to avoid consuming GB of disk space with duplicated files, we have stored artifacts at `examples/cef_artifacts` and made demos have an alias on this folder. For your personal project, it's better not to use an alias and have all CEF artifacts in a real folder `cef_artifacts` at the root of your Godot project.
 
 ## Run demos
 
