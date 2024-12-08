@@ -1,0 +1,42 @@
+@startuml
+
+participant "GDScript\nTextureRect" as GD
+participant "GDCef\n(Main Process)" as MP
+participant "CEF" as CEF
+participant "Render Process" as RP
+
+== Initial Setup ==
+
+GD -> MP : resize(size)
+activate MP
+MP -> CEF : GetHost()->WasResized()
+deactivate MP
+
+== File Download ==
+
+GD -> MP : load_url(download_url)
+activate MP
+MP -> CEF : LoadURL()
+activate CEF
+
+CEF -> RP : Start download
+activate RP
+
+loop During Download
+    RP -> CEF : OnDownloadUpdated()
+    CEF -> MP : Download progress
+    MP -> GD : emit_signal("on_download_updated", file_path, download_progress, browser_ptr)
+    note right: file_path: path of the file\ndownload_progress: percentage\nbrowser_ptr: pointer to the browser
+end
+
+alt Download Complete
+    RP -> CEF : OnDownloadComplete()
+    CEF -> MP : Download finished
+    MP -> GD : emit_signal("on_download_updated", file_path, 100, browser_ptr)
+end
+
+deactivate RP
+deactivate CEF
+deactivate MP
+
+@enduml

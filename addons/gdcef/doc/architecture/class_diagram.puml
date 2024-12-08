@@ -1,0 +1,198 @@
+@startuml
+
+skinparam class {
+    BackgroundColor White
+    ArrowColor Black
+    BorderColor Black
+}
+
+package "CEF Framework" #LightBlue {
+    namespace cef {
+        interface CefApp {
+            {abstract}
+            +GetRenderProcessHandler()
+        }
+
+        interface CefClient {
+            {abstract}
+            +GetRenderHandler()
+            +GetLifeSpanHandler()
+            +GetLoadHandler()
+        }
+
+        interface CefRenderProcessHandler {
+            {abstract}
+            +OnContextCreated()
+        }
+
+        interface CefV8Handler {
+            {abstract}
+            +Execute()
+        }
+
+        interface CefRenderHandler {
+            {abstract}
+            +GetViewRect()
+            +OnPaint()
+        }
+    }
+}
+
+package "Godot Framework" #LightGreen {
+    namespace godot {
+        class Object {
+            {abstract}
+        }
+        class Node {
+            {abstract}
+        }
+        class TextureRect {
+        }
+
+        Node --|> Object
+        TextureRect --|> Node
+    }
+}
+
+package "GDCEF Core" #LightYellow {
+    class GDCef {
+        -m_impl: GDCef::Impl*
+        -m_cef_settings: CefSettings
+        +initialize(config: Dictionary): bool
+        +shutdown(): void
+        +create_browser(): GDBrowserView*
+        +isAlive(): bool
+        +get_error(): String
+        +get_full_version(): String
+        +get_version_part(entry: int): int
+        +register_method(godot_object: Object, browser: GDBrowserView, method_name: String): void
+    }
+
+    class "GDCef::Impl" as GDCefImpl {
+        -m_gdcef: GDCef&
+        +OnBeforeCommandLineProcessing()
+        +OnAfterCreated()
+        +DoClose()
+        +OnBeforeClose()
+        +closeAllBrowsers()
+    }
+
+    GDCef --|> godot::Node
+    GDCef *-- GDCefImpl
+    GDCefImpl ..|> cef::CefApp
+}
+
+package "GDCEF Browser" #LightPink {
+    class GDBrowserView {
+        -m_impl: GDBrowserView::Impl*
+        -m_texture: Ref<ImageTexture>
+        +init(url: String): int
+        +load_url(url: String): void
+        +resize(size: Vector2): void
+        +execute_javascript(code: String): void
+        +close(): void
+        +id(): int
+        +get_error(): String
+        +is_valid(): bool
+        +set_texture(texture: ImageTexture): void
+        +get_texture(): ImageTexture
+        +set_zoom_level(level: float): void
+        +get_title(): String
+        +get_url(): String
+        +load_data_uri(html: String, mime_type: String): void
+        +download_file(url: String): void
+        +allow_downloads(allow: bool): void
+        +set_download_folder(path: String): void
+        +is_loaded(): bool
+        +reload(): bool
+        +stop_loading(): void
+        +copy(): void
+        +paste(): void
+        +undo(): void
+        +redo(): void
+        +request_html_content(): void
+        +has_previous_page(): bool
+        +has_next_page(): bool
+        +previous_page(): void
+        +next_page(): void
+        +set_viewport(x: float, y: float, w: float, h: float): bool
+        +set_key_pressed(key: int): void
+        +set_mouse_moved(x: int, y: int): void
+        +set_mouse_left_click(x: int, y: int): void
+        +set_mouse_right_click(x: int, y: int): void
+        +set_mouse_middle_click(x: int, y: int): void
+        +set_mouse_left_down(x: int, y: int): void
+        +set_mouse_left_up(x: int, y: int): void
+        +set_mouse_right_down(x: int, y: int): void
+        +set_mouse_right_up(x: int, y: int): void
+        +set_mouse_middle_down(x: int, y: int): void
+        +set_mouse_middle_up(x: int, y: int): void
+        +set_mouse_wheel_vertical(delta: int): void
+        +set_mouse_wheel_horizontal(delta: int): void
+        +set_muted(mute: bool): bool
+        +is_muted(): bool
+        +set_audio_stream(audio: AudioStreamGeneratorPlayback): void
+        +get_audio_stream(): AudioStreamGeneratorPlayback
+        +get_pixel_color(x: int, y: int): Color
+    }
+
+    class "GDBrowserView::Impl" as GDBrowserViewImpl {
+        -m_browser: CefRefPtr<CefBrowser>
+        -m_texture_rect: TextureRect*
+        +GetViewRect()
+        +OnPaint()
+        +OnLoadEnd()
+        +OnLoadError()
+        +OnBeforePopup()
+        +OnBeforeDownload()
+        +OnDownloadUpdated()
+        +OnProcessMessageReceived()
+        +OnAudioStreamStarted()
+        +OnAudioStreamPacket()
+    }
+
+    GDBrowserView --|> godot::Node
+    GDBrowserView *-- GDBrowserViewImpl
+    GDBrowserView o-- godot::TextureRect
+    GDBrowserViewImpl ..|> cef::CefClient
+    GDBrowserViewImpl ..|> cef::CefRenderHandler
+}
+
+package "Render Process" #LightGray {
+    class RenderProcess {
+        -m_handler: CefRefPtr<GodotMethodHandler>
+        +GetRenderProcessHandler()
+        +OnContextCreated()
+    }
+
+    class GodotMethodHandler {
+        -m_browser: CefRefPtr<CefBrowser>
+        +Execute()
+    }
+
+    RenderProcess ..|> cef::CefApp
+    RenderProcess ..|> cef::CefRenderProcessHandler
+    RenderProcess *-- GodotMethodHandler
+    GodotMethodHandler ..|> cef::CefV8Handler
+
+    ' Interactions avec GDCEF Core
+    RenderProcess ..> GDCef : "Communique avec"
+    GodotMethodHandler ..> GDCef : "Envoie des messages à"
+}
+
+note top of GDCef
+  Main entry point that initializes CEF
+  and manages browser instances
+end note
+
+note top of GDBrowserView
+  Represents a browser instance
+  with its own texture
+end note
+
+note top of RenderProcess
+  Manages the render process
+  and JavaScript bindings
+end note
+
+@enduml

@@ -1,71 +1,106 @@
-# Software Architecture.
+# Software Architecture
 
-**WIP: Consider this document as a draft!!!**
+This document details the software architecture of [gdcef](https://github.com/Lecrapouille/gdcef), a native module for the [Godot engine](https://godotengine.org/) that implements the [Chromium Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home) (CEF).
 
-This details design document is about [gdcef]
-(https://github.com/Lecrapouille/gdcef) implementing a [Chromium Embedded
-Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home) (CEF) native
-module for the [Godot editor](https://godotengine.org/) (gdCef).
+## Overview
 
-Inside the `gdcef` folder, two main classes deriving from `godot::Node` have
-been created to wrap the CEF C++ API to be usable from Godot scripts. Derived
-from Godot Nodes, it allows instances of these classes to be attached inside to
-the scene-graph as depicted by the following picture.
+The gdcef module consists of two main components:
 
-![CEFnode](pics/cef.png)
+1. A main process that handles CEF initialization and browser management
+2. A render process that handles web page rendering and JavaScript execution
 
-See this
-[document](https://docs.godotengine.org/en/stable/classes/class_node.html)
-concerning what a Godot Node is.
+## Core Components
 
-## Classes Diagram
+### Main Process Classes
 
-The following picture depicts the class diagram:
+Two main classes are exposed to Godot as Nodes:
 
-![classdiag](architecture/classes.png)
+#### GDCef Class
 
-- `GDCef` implemented in [gdcef/src/gdcef.cpp](gdcef.[ch]pp). Its goal is to
-  wrap up the initialization phase of CEF, its settings, and the loopback of
-  messages of CEF subprocesses. This class allows creating `GDBrowserView`
-  that are attached as child nodes inside the scene-graph.
+Implemented in `gdcef/src/gdcef.hpp`, this class serves as the entry point:
 
-- `GDBrowserView` implemented in [gdcef/src/gdbrowser.cpp](gdbrowser.[ch]pp).
-  Its goal is to wrap a browser view allowing to display the web document, to
-  interact with the user (mouse, keyboard), to load pages, ...
+- **GDCef**: The entry point class that:
+  - Initializes CEF and manages its lifecycle
+  - Handles CEF settings and configuration
+  - Creates and manages browser instances
+  - Routes messages between CEF subprocesses
 
-The [gdcef/src/gdlibrary.cpp](gdcef/src/gdlibrary.cpp) allows Godot to
-register the two classes. See this document for more information:
-https://docs.godotengine.org/en/stable/development/cpp/custom_modules_in_cpp.html
+- **GDBrowserView**: Represents a browser instance that:
+  - Manages web page display and rendering
+  - Handles user interactions (mouse, keyboard)
+  - Controls page navigation and JavaScript execution
+  - Manages audio streaming
+  - Handles file downloads
 
-## CEF Secondary process
+These classes are derived from `godot::Node`, allowing them to be integrated into Godot's scene tree:
 
-A [secondary CEF
-process](https://bitbucket.org/chromiumembedded/cef/wiki/GeneralUsage.md#markdown-header-separate-sub-process-executable)
-is needed when CEF (here, our class `GDCef`) cannot directly access the
-`main(int argc, char* argv[])` function of the application. This is mandatory for
-its initialization.
-<!---
-This is, unfortunately, the case since CEF is created as a node
-scene-graph but CEF does not come natively inside the Godot engine and
-accessing the Godot engine `main` function.
--->
-This is, unfortunately, the case since CEF is created as a Node scene-graph
-but CEF and its access to Godot Engine's `main` function do not exist
-in Godot's source code.
+![CEF node integration](pics/cef.png)
 
-When starting, CEF will fork the application several times into processes
-and the forked processes become specialized processes
+### Render Process
 
-You have to know that CEF modifies the content of your `argv` and this may mess
-up your application if it also parses the command line (you can back it up,
-meaning using a `std::vector` to back up `argv` and after CEF init to restore
-values in `argv` back). What is "two separated processes" exactly? Just an extra
-fork: the main process forks itself and calls the secondary process, which can
-fully access it is own main(int argc, char* argv[]). The main constraint is the
-path of the secondary process shall be canonic (and this is a pain to get the
-real path).
+The render process is implemented in a separate executable and handles:
 
-<!---
-## Diagram sequence
--->
+- Web page rendering
+- JavaScript execution
+- V8 context management
+- Communication with the main process
+
+## Communication Flow
+
+### Initialization Sequence
+
+![Init Sequence](architecture/sequence_init.png)
+
+1. GDScript initializes GDCef with configuration
+2. CEF initializes and forks required processes
+3. The render process starts and initializes its components
+4. Browser instances can then be created
+
+### Rendering Sequence
+
+![Paint Sequence](architecture/sequence_paint.png)
+
+1. The render process renders web content
+2. Content is painted to an off-screen buffer
+3. The buffer is converted to a Godot texture
+4. The texture is displayed in the Godot scene
+
+### Download Sequence
+
+![Download Sequence](architecture/sequence_download.png)
+
+1. Download is initiated from browser
+2. CEF handles the download process
+3. Progress updates are sent to Godot
+4. Download completion is signaled
+
+## Class Relationships
+
+The following diagram shows the relationships between the main components:
+
+![Class Diagram](architecture/class_diagram.png)
+
+### Key Relationships
+
+- GDCef creates and manages GDBrowserView instances
+- GDBrowserView communicates with CEF browser instances
+- The render process communicates with both GDCef and browser instances
+- All CEF-related classes implement appropriate CEF interfaces
+
+## Implementation Details
+
+- The module uses CEF's windowless rendering mode for seamless integration with Godot
+- Audio is routed through Godot's audio system
+- JavaScript integration allows bidirectional communication between Godot and web content
+- File downloads are managed through CEF's download handler interface
+- Mouse and keyboard events are translated from Godot to CEF format
+
+## Technical Constraints
+
+- CEF requires a separate render process executable
+- The render process path must be canonical
+- CEF modifies command line arguments during initialization
+- Memory management must account for both Godot's reference counting and CEF's reference counting
+
+For API documentation and usage examples, please refer to [API.md](API.md).
 
