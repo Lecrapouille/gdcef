@@ -355,6 +355,17 @@ static void configureCEF(fs::path const& folder,
             .FromString(sub_process_cache.string());
     }
 
+    /// The fully qualified path for the locales directory. If this value is
+    /// empty the locales directory must be located in the module directory. If
+    /// this value is non-empty then it must be an absolute path. This value is
+    /// ignored on MacOS where pack files are always loaded from the app bundle
+    /// Resources directory. Also configurable using the "locales-dir-path"
+    /// command-line switch.
+    fs::path locales_path =
+        getConfig(config, "locales_path", folder / "locales");
+    GDCEF_DEBUG("Setting locales path: " << locales_path.string());
+    CefString(&cef_settings.locales_dir_path).FromString(locales_path.string());
+
     // The locale string that will be passed to WebKit. If empty the default
     // locale of "en-US" will be used. This value is ignored on Linux where
     // locale is determined using environment variable parsing with the
