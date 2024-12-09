@@ -44,6 +44,11 @@ CefRefPtr<CefV8Value> GodotToV8(const godot::Variant& godot_value);
 // -----------------------------------------------------------------------------
 godot::Variant V8ToGodot(CefRefPtr<CefV8Value> v8_value);
 
+// -----------------------------------------------------------------------------
+//! \brief Convert a Godot variant to a CefValue
+// -----------------------------------------------------------------------------
+CefRefPtr<CefValue> GodotToCefVal(const godot::Variant& var);
+
 // ****************************************************************************
 //! \class GodotMethodInvoker
 //! \brief Class to handle binding between JavaScript and GDScript methods

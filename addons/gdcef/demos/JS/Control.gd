@@ -73,6 +73,8 @@ func _update_character_stats():
 		"level": level
 	}
 	print("Character update: ", character_info)
+	# Refresh the GUI
+	$CEF.get_node(BROWSER_NAME).send_to_js("character_update", get_character_state())
 	pass
 
 # ==============================================================================
@@ -88,13 +90,17 @@ func get_character_state() -> Dictionary:
 
 # ==============================================================================
 # CEF Callback when a page has ended to load with success.
-# TODO on page_unload ?
 # ==============================================================================
 func _on_page_loaded(browser):
 	print("The browser " + browser.name + " has loaded " + browser.get_url())
+
+	# Register methods for JS->Godot communication
 	browser.register_method(Callable(self, "change_weapon"))
 	browser.register_method(Callable(self, "set_character_name"))
 	browser.register_method(Callable(self, "modify_xp"))
+
+	# Send initial character state to JS
+	browser.send_to_js("character_update", get_character_state())
 	pass
 
 # ==============================================================================
@@ -116,8 +122,11 @@ func initialize_cef():
 
 	### CEF
 
-	if !$CEF.initialize({"incognito": true, "locale": "en-US",
-			"remote_debugging_port": 7777, "remote_allow_origin": "*"}):
+	if !$CEF.initialize({
+			"incognito": true,
+			"remote_debugging_port": 7777,
+			"remote_allow_origin": "*"
+		}):
 		push_error("Failed initializing CEF")
 		get_tree().quit()
 	else:
@@ -126,7 +135,8 @@ func initialize_cef():
 
 	### Browser
 
-	var browser = $CEF.create_browser("res://character-management-ui.html", $TextureRect, {"javascript": true})
+	var browser = $CEF.create_browser("res://character-management-ui.html",
+		$TextureRect, {"javascript": true})
 	browser.name = BROWSER_NAME
 	browser.connect("on_page_loaded", _on_page_loaded)
 	browser.connect("on_page_failed_loading", _on_page_failed_loading)

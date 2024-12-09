@@ -169,3 +169,66 @@ godot::Variant V8ToGodot(CefRefPtr<CefV8Value> v8_value)
 
     return godot::Variant();
 }
+
+//------------------------------------------------------------------------------
+CefRefPtr<CefValue> GodotToCefVal(const godot::Variant& var)
+{
+    CefRefPtr<CefValue> value = CefValue::Create();
+
+    switch (var.get_type())
+    {
+        case godot::Variant::NIL:
+            value->SetNull();
+            break;
+
+        case godot::Variant::BOOL:
+            value->SetBool(static_cast<bool>(var));
+            break;
+
+        case godot::Variant::INT:
+            value->SetInt(static_cast<int32_t>(var));
+            break;
+
+        case godot::Variant::FLOAT:
+            value->SetDouble(static_cast<double>(var));
+            break;
+
+        case godot::Variant::STRING:
+            value->SetString(static_cast<godot::String>(var).utf8().get_data());
+            break;
+
+        case godot::Variant::ARRAY: {
+            godot::Array arr = var;
+            CefRefPtr<CefListValue> list = CefListValue::Create();
+            for (int i = 0; i < arr.size(); ++i)
+            {
+                CefRefPtr<CefValue> element = GodotToCefVal(arr[i]);
+                list->SetValue(i, element);
+            }
+            value->SetList(list);
+            break;
+        }
+
+        case godot::Variant::DICTIONARY: {
+            godot::Dictionary dict = var;
+            CefRefPtr<CefDictionaryValue> cef_dict =
+                CefDictionaryValue::Create();
+            godot::Array keys = dict.keys();
+            for (int i = 0; i < keys.size(); ++i)
+            {
+                godot::String key = keys[i];
+                CefRefPtr<CefValue> val = GodotToCefVal(dict[key]);
+                cef_dict->SetValue(key.utf8().get_data(), val);
+            }
+            value->SetDictionary(cef_dict);
+            break;
+        }
+
+        default:
+            // Pour les types non gérés, on convertit en string
+            value->SetString(var.stringify().utf8().get_data());
+            break;
+    }
+
+    return value;
+}

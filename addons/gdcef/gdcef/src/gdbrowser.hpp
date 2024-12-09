@@ -682,9 +682,50 @@ public:
     godot::Color getPixelColor(int x, int y) const;
 
     // -------------------------------------------------------------------------
-    //! \brief Register a Godot method in the JavaScript context
+    //! \brief Register a GDScript method in the JavaScript context.
+    //! The registered GDScript method can be called from JavaScript using:
+    //!     window.godot.methodName(args)
+    //!
+    //! \param[in] callable the GDScript method to register. The callable must
+    //! be  a valid GDScript method that can receive string parameters.
+    //!
+    //! \return true if the method has been successfully registered, false
+    //! otherwise.
+    //!
+    //! \note The registered method will be available in JavaScript under the
+    //! 'window.godot' namespace. All parameters passed from JavaScript will
+    //! be converted to a Godot::Variant before been executed.
+    //!
+    //! Example in GDScript:
+    //!     func my_method(data: String) -> void:
+    //!         print("Received from JS: ", data)
+    //!
+    //!     browser.register_method(Callable(self, "my_method"))
+    //!
+    //! Example in JavaScript:
+    //!     window.godot.my_method("Hello from JS!");
+    //!
     // -------------------------------------------------------------------------
-    void registerGodotMethod(const godot::Callable& callable);
+    bool registerGodotMethod(const godot::Callable& callable);
+
+    // -------------------------------------------------------------------------
+    //! \brief Send a message to the JavaScript side.
+    //! The message will be received in JavaScript as a JSON object.
+    //!
+    //! \param[in] eventName Name of the event to trigger in JavaScript.
+    //! \param[in] data Godot::Variant to send.
+    //! \return true if the message has been sent, false otherwise.
+    //!
+    //! Example in GDScript:
+    //!     browser.sendToJS("myEvent", {"key": "value"})
+    //!
+    //! Example in JavaScript:
+    //!     window.addEventListener("myEvent", function(event) {
+    //!         const data = JSON.parse(event.data);
+    //!         console.log(data.key); // outputs: "value"
+    //!     });
+    // -------------------------------------------------------------------------
+    bool sendToJS(godot::String eventName, const godot::Variant& data);
 
 private:
 

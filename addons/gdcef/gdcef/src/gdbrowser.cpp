@@ -37,10 +37,6 @@
 #    include <omp.h>
 #endif
 
-#ifndef CALL_GODOT_METHOD
-#    define CALL_GODOT_METHOD "callGodotMethod"
-#endif
-
 //------------------------------------------------------------------------------
 // Visit the html content of the current page.
 class Visitor: public CefStringVisitor
@@ -155,6 +151,8 @@ void GDBrowserView::_bind_methods()
                          &GDBrowserView::getPixelColor);
     ClassDB::bind_method(D_METHOD("register_method"),
                          &GDBrowserView::registerGodotMethod);
+    ClassDB::bind_method(D_METHOD("send_to_js", "event_name", "data"),
+                         &GDBrowserView::sendToJS);
 
     // Signals
     ADD_SIGNAL(MethodInfo("on_download_updated",
@@ -902,20 +900,22 @@ void GDBrowserView::onDownloadUpdated(
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::registerGodotMethod(const godot::Callable& callable)
+bool GDBrowserView::registerGodotMethod(const godot::Callable& callable)
 {
     godot::String method_name = callable.get_method();
-
     BROWSER_DEBUG("Registering gdscript method "
                   << method_name.utf8().get_data());
+
     if (!callable.is_valid())
     {
-        BROWSER_ERROR("Invalid callable provided");
-        return;
+        BROWSER_ERROR("Invalid callable gdscript method "
+                      << method_name.utf8().get_data());
+        return false;
     }
 
     std::string key = method_name.utf8().get_data();
     m_js_bindings[key] = callable;
+    return true;
 }
 
 //------------------------------------------------------------------------------
@@ -926,22 +926,23 @@ bool GDBrowserView::onProcessMessageReceived(
     CefRefPtr<CefProcessMessage> message)
 {
     BROWSER_DEBUG("Received message " << message->GetName().ToString());
-    if (message->GetName() != CALL_GODOT_METHOD)
+    if (message->GetName() != "callGodotMethod")
     {
-        BROWSER_DEBUG("Not method " << CALL_GODOT_METHOD);
+        BROWSER_DEBUG("Expecting IPC command 'callGodotMethod'");
         return false;
     }
 
     if (message->GetArgumentList()->GetSize() < 1)
     {
-        BROWSER_ERROR("Expected method name as first argument");
+        BROWSER_ERROR("Expected method name as first argument for "
+                      "'callGodotMethod' IPC command");
         return false;
     }
 
-    // Create the callable key
+    // Create the Godot Callable key
     std::string key = message->GetArgumentList()->GetString(0).ToString();
 
-    // Does not exist ?
+    // Does the Godot Callable exist ?
     auto callable = m_js_bindings[key];
     if (!callable.is_valid())
     {
@@ -949,7 +950,7 @@ bool GDBrowserView::onProcessMessageReceived(
         return false;
     }
 
-    // Convert the message arguments to a Godot Array
+    // Convert the IPC message arguments to a Godot Array
     godot::Array args;
     auto message_args = message->GetArgumentList();
     for (size_t i = 1; i < message_args->GetSize(); ++i)
@@ -973,6 +974,7 @@ bool GDBrowserView::onProcessMessageReceived(
                 // For unsupported types, pass as string
                 args.push_back(godot::String(
                     message_args->GetString(i).ToString().c_str()));
+                break;
         }
     }
 
@@ -1014,6 +1016,7 @@ bool GDBrowserView::sendToJS(godot::String eventName,
     args->SetValue(1, cef_data);
 
     // Send to render process
+    BROWSER_DEBUG("Sending message to render process");
     m_browser->GetMainFrame()->SendProcessMessage(PID_RENDERER, message);
     return true;
 }

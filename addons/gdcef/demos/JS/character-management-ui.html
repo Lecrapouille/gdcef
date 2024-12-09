@@ -13,6 +13,7 @@
 
         body {
             font-family: 'Arial', sans-serif;
+            font-size: 14px;
             background-color: var(--background-color);
             display: flex;
             justify-content: center;
@@ -27,25 +28,31 @@
             background-color: white;
             border-radius: 12px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 30px;
+            padding: 20px;
             width: 100%;
             max-width: 500px;
         }
 
         .character-header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+        }
+
+        .character-header h1 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
         }
 
         .character-section {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border-bottom: 1px solid #e0e0e0;
-            padding-bottom: 20px;
+            padding-bottom: 15px;
         }
 
         .section-title {
+            font-size: 1.3em;
+            margin-bottom: 12px;
             color: var(--primary-color);
-            margin-bottom: 15px;
         }
 
         .weapon-grid {
@@ -58,10 +65,11 @@
             background-color: var(--secondary-color);
             color: white;
             border: none;
-            padding: 10px;
+            padding: 8px;
             border-radius: 6px;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            font-size: 0.9em;
         }
 
         .weapon-button:hover {
@@ -80,9 +88,10 @@
 
         .xp-input {
             flex-grow: 1;
-            padding: 8px;
+            padding: 6px;
             border: 1px solid #bdc3c7;
             border-radius: 4px;
+            font-size: 0.9em;
         }
 
         .character-name-form {
@@ -90,10 +99,16 @@
             gap: 10px;
         }
 
+        .stat-row {
+            margin-bottom: 6px;
+            font-size: 0.95em;
+        }
+
         #characterStatus {
-            margin-top: 20px;
+            margin-top: 15px;
             text-align: center;
             color: #2ecc71;
+            font-size: 0.9em;
         }
     </style>
 </head>
@@ -133,6 +148,28 @@
             </div>
         </div>
 
+        <div class="character-section">
+            <h2 class="section-title">Character Stats</h2>
+            <div class="stats-container">
+                <div class="stat-row">
+                    <span class="stat-label">Name:</span>
+                    <span id="statName" class="stat-value">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Weapon:</span>
+                    <span id="statWeapon" class="stat-value">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">XP:</span>
+                    <span id="statXP" class="stat-value">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Level:</span>
+                    <span id="statLevel" class="stat-value">-</span>
+                </div>
+            </div>
+        </div>
+
         <div id="characterStatus"></div>
     </div>
 
@@ -141,7 +178,7 @@
         let characterName = '';
         let characterXP = 0;
 
-        function selectWeapon(weapon) {
+        function selectWeapon(weapon, fromGodot = false) {
             // Disable all buttons
             document.querySelectorAll('.weapon-button').forEach(btn => {
                 btn.classList.remove('active');
@@ -152,8 +189,8 @@
             weaponBtn.classList.add('active');
             currentWeapon = weapon;
 
-            // Call the Godot method to change the weapon
-            if (window.godot && window.godot.change_weapon) {
+            // Call the Godot method only if not triggered by Godot
+            if (!fromGodot && window.godot && window.godot.change_weapon) {
                 window.godot.change_weapon(weapon);
                 updateStatus(`Weapon changed to : ${weapon}`);
             }
@@ -214,6 +251,34 @@
                 statusElement.textContent = '';
             }, 3000);
         }
+
+        // Listen for updates coming from Godot
+        window.godotEventSystem.on('character_update', function (data) {
+            try {
+                // Update character name
+                if (data.name) {
+                    characterName = data.name;
+                    document.getElementById('statName').textContent = data.name;
+                }
+
+                // Update weapon selection
+                if (data.weapon) {
+                    selectWeapon(data.weapon, true);
+                    document.getElementById('statWeapon').textContent = data.weapon;
+                }
+
+                // Update XP and Level
+                if (data.xp !== undefined) {
+                    characterXP = data.xp;
+                    document.getElementById('statXP').textContent = data.xp;
+                    const level = Math.floor(data.xp / 100) + 1;
+                    document.getElementById('statLevel').textContent = level;
+                    updateStatus(`XP updated: ${characterXP}`);
+                }
+            } catch (e) {
+                console.error('[GodotEventSystem] Error processing update:', e);
+            }
+        });
     </script>
 </body>
 

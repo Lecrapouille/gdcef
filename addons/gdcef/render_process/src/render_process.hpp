@@ -93,6 +93,12 @@ public:
 
     IMPLEMENT_REFCOUNTING(RenderProcess);
 
+    virtual bool
+    OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
+                             CefRefPtr<CefFrame> frame,
+                             CefProcessId source_process,
+                             CefRefPtr<CefProcessMessage> message) override;
+
 private: // CefApp methods
 
     // -------------------------------------------------------------------------
@@ -112,6 +118,10 @@ private: // CefRenderProcessHandler methods
 private:
 
     CefRefPtr<GodotMethodHandler> m_handler;
+    CefRefPtr<CefV8Context> m_context;
+    CefRefPtr<CefFrame> m_frame;
+
+    std::string ConvertCefValueToJS(CefRefPtr<CefValue> value);
 };
 
 #if !defined(_WIN32)
