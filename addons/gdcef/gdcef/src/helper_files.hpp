@@ -27,6 +27,7 @@
 #define GDCEF_HELPER_FILES_HPP
 
 #include "helper_log.hpp"
+#include <godot_cpp/classes/project_settings.hpp>
 #include <vector>
 
 // ****************************************************************************
@@ -42,6 +43,17 @@ namespace fs = std::experimental::filesystem;
 #else
 #    error "Missing the <filesystem> header."
 #endif
+
+// ****************************************************************************
+//! \brief Globalize a Godot path (res:// or user://) to a std::string path
+//! \param[in] path The Godot path to globalize
+//! \return The globalized path as std::string
+// ****************************************************************************
+#define GLOBALIZE_PATH(path)                \
+    godot::ProjectSettings::get_singleton() \
+        ->globalize_path(path)              \
+        .utf8()                             \
+        .get_data()
 
 // ****************************************************************************
 //! \brief Get the name of the current application since we cannot directly
@@ -65,5 +77,14 @@ bool are_valid_files(std::filesystem::path const& folder,
 //! \brief Return the canonical path of the executable
 // ****************************************************************************
 fs::path real_path();
+
+// ****************************************************************************
+//! \brief Convert a Godot URL (res:// or user://) to a file:// URL
+//! \param[in] url The Godot URL to convert
+//! \return The converted URL as file:// if it's a valid Godot path, empty
+//! string if file not found,
+//!         or the original URL if it's not a Godot path
+// ****************************************************************************
+godot::String convert_godot_url(godot::String const& url);
 
 #endif // GDCEF_HELPER_FILES_HPP

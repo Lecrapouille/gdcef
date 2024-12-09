@@ -36,12 +36,6 @@
 #define IS_STARTED_FROM_GODOT_EDITOR() \
     godot::OS::get_singleton()->has_feature("editor")
 
-#define GLOBALIZE_PATH(path)                \
-    godot::ProjectSettings::get_singleton() \
-        ->globalize_path(path)              \
-        .utf8()                             \
-        .get_data()
-
 // ****************************************************************************
 //! \brief Godot dictionary getter with default value.
 // ****************************************************************************

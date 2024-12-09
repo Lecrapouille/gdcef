@@ -569,7 +569,7 @@ GDBrowserView* GDCef::createBrowser(godot::String const& url,
     // Complete BrowserView constructor (complete _new())
     CefBrowserSettings settings;
     configureBrowser(settings, config);
-    int id = browser->init(url, settings, windowInfo());
+    int id = browser->init(convert_godot_url(url), settings, windowInfo());
     if (id < 0)
     {
         GDCEF_ERROR("browser->init() failed");

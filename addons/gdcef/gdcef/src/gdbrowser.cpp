@@ -389,9 +389,26 @@ void GDBrowserView::setZoomLevel(double delta)
 //------------------------------------------------------------------------------
 void GDBrowserView::loadURL(godot::String url)
 {
-    BROWSER_DEBUG(url.utf8().get_data());
+    godot::String converted_url = convert_godot_url(url);
+    if (!converted_url.is_empty())
+    {
+        // Load the URL (either converted local file or original URL)
+        BROWSER_DEBUG(converted_url.utf8().get_data());
+        m_browser->GetMainFrame()->LoadURL(converted_url.utf8().get_data());
+        return;
+    }
 
-    m_browser->GetMainFrame()->LoadURL(url.utf8().get_data());
+    godot::String globalized_url = GLOBALIZE_PATH(url);
+    BROWSER_ERROR("File not found: " << globalized_url.utf8().get_data());
+
+    // Create error HTML page
+    std::string error_html("<html><body bgcolor=\"white\">");
+    error_html += "<h2>File not found: ";
+    error_html += url.utf8().get_data();
+    error_html += "</h2></body></html>";
+
+    // Load the error page using data URI
+    loadDataURI(godot::String(error_html.c_str()), "text/html");
 }
 
 //------------------------------------------------------------------------------
@@ -876,4 +893,121 @@ void GDBrowserView::onDownloadUpdated(
     // Emit signal for Godot script
     emit_signal(
         "on_download_updated", godot::String(file.c_str()), percentage, this);
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::registerGodotMethod(const godot::Callable& callable)
+{
+    godot::String method_name = callable.get_method();
+
+    BROWSER_DEBUG("Registering gdscript method "
+                  << method_name.utf8().get_data());
+    if (!callable.is_valid())
+    {
+        BROWSER_ERROR("Invalid callable provided");
+        return;
+    }
+
+    std::string key = method_name.utf8().get_data();
+    m_js_bindings[key] = callable;
+}
+
+//------------------------------------------------------------------------------
+bool GDBrowserView::onProcessMessageReceived(
+    CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefFrame> frame,
+    CefProcessId source_process,
+    CefRefPtr<CefProcessMessage> message)
+{
+    BROWSER_DEBUG("Received message " << message->GetName().ToString());
+    if (message->GetName() != CALL_GODOT_METHOD)
+    {
+        BROWSER_DEBUG("Not method " << CALL_GODOT_METHOD);
+        return false;
+    }
+
+    if (message->GetArgumentList()->GetSize() < 1)
+    {
+        BROWSER_ERROR("Expected method name as first argument");
+        return false;
+    }
+
+    // Create the callable key
+    std::string key = message->GetArgumentList()->GetString(0).ToString();
+
+    // Does not exist ?
+    auto callable = m_js_bindings[key];
+    if (!callable.is_valid())
+    {
+        BROWSER_ERROR("Callable not found for method " << key);
+        return false;
+    }
+
+    // Convert the message arguments to a Godot Array
+    godot::Array args;
+    auto message_args = message->GetArgumentList();
+    for (size_t i = 1; i < message_args->GetSize(); ++i)
+    {
+        switch (message_args->GetType(i))
+        {
+            case VTYPE_BOOL:
+                args.push_back(message_args->GetBool(i));
+                break;
+            case VTYPE_INT:
+                args.push_back(message_args->GetInt(i));
+                break;
+            case VTYPE_DOUBLE:
+                args.push_back(message_args->GetDouble(i));
+                break;
+            case VTYPE_STRING:
+                args.push_back(godot::String(
+                    message_args->GetString(i).ToString().c_str()));
+                break;
+            default:
+                // For unsupported types, pass as string
+                args.push_back(godot::String(
+                    message_args->GetString(i).ToString().c_str()));
+        }
+    }
+
+    // Call the function
+    callable.callv(args);
+    return true;
+}
+
+//------------------------------------------------------------------------------
+bool GDBrowserView::sendToJS(godot::String eventName,
+                             const godot::Variant& data)
+{
+    BROWSER_DEBUG("Sending event '" << eventName.utf8().get_data() << "'");
+
+    if (!m_browser || !m_browser->GetMainFrame())
+    {
+        BROWSER_ERROR("Browser not ready");
+        return false;
+    }
+
+    // Create message
+    CefRefPtr<CefProcessMessage> message =
+        CefProcessMessage::Create("GodotToJS");
+    CefRefPtr<CefListValue> args = message->GetArgumentList();
+
+    // Add event name using the helper function
+    args->SetString(0, eventName.utf8().get_data());
+
+    // Convert Godot Variant to CefValue and add it
+    // directly to args
+    CefRefPtr<CefValue> cef_data = GodotToCefVal(data);
+    if (!cef_data)
+    {
+        BROWSER_ERROR("Failed to convert Godot data to CefValue");
+        return false;
+    }
+
+    // Add the CefValue directly to arguments
+    args->SetValue(1, cef_data);
+
+    // Send to render process
+    m_browser->GetMainFrame()->SendProcessMessage(PID_RENDERER, message);
+    return true;
 }

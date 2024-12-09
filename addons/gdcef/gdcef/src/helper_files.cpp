@@ -102,3 +102,21 @@ fs::path real_path()
 
 #endif
 }
+
+//------------------------------------------------------------------------------
+godot::String convert_godot_url(godot::String const& url)
+{
+    // Not a Godot path
+    if (!url.begins_with("res://") && !url.begins_with("user://"))
+        return url.utf8().get_data();
+
+    // Convert Godot path to system path
+    godot::String local_path = GLOBALIZE_PATH(url);
+
+    // Check if the file exists
+    if (!fs::exists(local_path.utf8().get_data()))
+        return {};
+
+    // Build the file:// URL
+    return "file://" + local_path;
+}
