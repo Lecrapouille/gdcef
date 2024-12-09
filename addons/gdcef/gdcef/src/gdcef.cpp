@@ -39,6 +39,10 @@
 #include "base/cef_callback.h"
 #include "wrapper/cef_closure_task.h"
 
+#ifdef _OPENMP
+#    include <omp.h>
+#endif
+
 //------------------------------------------------------------------------------
 // List of file libraries and artifacts mandatory to make CEF working
 #if defined(_WIN32)
@@ -165,6 +169,16 @@ void GDCef::shutdown()
 //------------------------------------------------------------------------------
 bool GDCef::initialize(godot::Dictionary config)
 {
+#ifdef _OPENMP
+#    pragma omp parallel
+    {
+#    pragma omp single
+        GDCEF_DEBUG("OpenMP number of threads = " << omp_get_num_threads());
+    }
+#else
+    GDCEF_ERROR("OpenMP is not enabled");
+#endif
+
     if (m_impl != nullptr)
     {
         GDCEF_ERROR("Already initialized");

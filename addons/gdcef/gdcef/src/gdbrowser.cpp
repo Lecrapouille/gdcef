@@ -201,16 +201,6 @@ int GDBrowserView::init(godot::String const& url,
                         CefBrowserSettings const& settings,
                         CefWindowInfo const& window_info)
 {
-#ifdef _OPENMP
-#    pragma omp parallel
-    {
-#    pragma omp single
-        BROWSER_DEBUG("OpenMP number of threads = " << omp_get_num_threads());
-    }
-#else
-    BROWSER_DEBUG("OpenMP is not enabled");
-#endif
-
     // Create a new browser using the window parameters specified by
     // |windowInfo|.  If |request_context| is empty the global request context
     // will be used. This method can only be called on the browser process UI
