@@ -181,16 +181,16 @@ func _ready():
 
 	# Left browser is displaying the first webpage with a 3D scene, we are
 	# enabling webgl. Other default configuration are:
-	#   {"frame_rate", 30}
-	#   {"javascript", true}
-	#   {"javascript_close_windows", false}
-	#   {"javascript_access_clipboard", false}
-	#   {"javascript_dom_paste", false}
-	#   {"image_loading", true}
-	#   {"databases", true}
-	#   {"webgl", true}
-	var left = $CEF.create_browser(pages[4], $TextRectLeft, {})
-	var right = $CEF.create_browser(pages[0], $TextRectRight, {})
+	#   {"frame_rate": 30}
+	#   {"javascript": true}
+	#   {"javascript_close_windows": false}
+	#   {"javascript_access_clipboard": false}
+	#   {"javascript_dom_paste": false}
+	#   {"image_loading": true}
+	#   {"databases": true}
+	#   {"webgl": true}
+	var left = $CEF.create_browser(pages[4], $TextRectLeft, {"javascript": true, "webgl": true})
+	var right = $CEF.create_browser(pages[0], $TextRectRight, {"javascript": true, "webgl": true})
 
 	left.name = "left"
 	right.name = "right"

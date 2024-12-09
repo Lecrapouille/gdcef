@@ -189,6 +189,19 @@ private: // CEF interfaces
             return this;
         }
 
+        // ---------------------------------------------------------------------
+        //! \brief Called when a message is received from a different process.
+        // ---------------------------------------------------------------------
+        virtual bool
+        OnProcessMessageReceived(CefRefPtr<CefBrowser> browser,
+                                 CefRefPtr<CefFrame> frame,
+                                 CefProcessId source_process,
+                                 CefRefPtr<CefProcessMessage> message) override
+        {
+            return m_owner.onProcessMessageReceived(
+                browser, frame, source_process, message);
+        }
+
     private: // CefRenderHandler interfaces
 
         // ---------------------------------------------------------------------
@@ -285,7 +298,7 @@ private: // CEF interfaces
         {
         }
 
-    private: // CefBrowserProcessHandler interfaces
+    private: // CefLifeSpanHandler interfaces
 
         virtual bool OnBeforePopup(CefRefPtr<CefBrowser> browser,
                                    CefRefPtr<CefFrame> frame,
@@ -668,6 +681,11 @@ public:
     // -------------------------------------------------------------------------
     godot::Color getPixelColor(int x, int y) const;
 
+    // -------------------------------------------------------------------------
+    //! \brief Register a Godot method in the JavaScript context
+    // -------------------------------------------------------------------------
+    void registerGodotMethod(const godot::Callable& callable);
+
 private:
 
     void resize_(int width, int height);
@@ -769,6 +787,14 @@ private:
                            CefRefPtr<CefDownloadItem> download_item,
                            CefRefPtr<CefDownloadItemCallback> callback);
 
+    // -------------------------------------------------------------------------
+    //! \brief Called when a message is received from a different process.
+    // -------------------------------------------------------------------------
+    bool onProcessMessageReceived(CefRefPtr<CefBrowser> browser,
+                                  CefRefPtr<CefFrame> frame,
+                                  CefProcessId source_process,
+                                  CefRefPtr<CefProcessMessage> message);
+
 private:
 
     //! \brief CEF interface implementation
@@ -818,6 +844,9 @@ private:
 
     //! \brief Download folder (configured from Browser config)
     fs::path m_download_folder;
+
+    //! \brief
+    std::unordered_map<std::string, godot::Callable> m_js_bindings;
 };
 
 #if !defined(_WIN32)

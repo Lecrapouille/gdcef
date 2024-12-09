@@ -23,8 +23,8 @@
 // SOFTWARE.
 //*****************************************************************************
 
-//------------------------------------------------------------------------------
 #include "gdbrowser.hpp"
+#include "godot_js_binder.hpp"
 #include "helper_config.hpp"
 #include "helper_files.hpp"
 
@@ -35,6 +35,10 @@
 
 #ifdef _OPENMP
 #    include <omp.h>
+#endif
+
+#ifndef CALL_GODOT_METHOD
+#    define CALL_GODOT_METHOD "callGodotMethod"
 #endif
 
 //------------------------------------------------------------------------------
@@ -149,6 +153,8 @@ void GDBrowserView::_bind_methods()
                          &GDBrowserView::getAudioStreamer);
     ClassDB::bind_method(D_METHOD("get_pixel_color", "x", "y"),
                          &GDBrowserView::getPixelColor);
+    ClassDB::bind_method(D_METHOD("register_method"),
+                         &GDBrowserView::registerGodotMethod);
 
     // Signals
     ADD_SIGNAL(MethodInfo("on_download_updated",

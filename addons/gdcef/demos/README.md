@@ -33,3 +33,9 @@ A demo showing a 3D GUI with a single CEF browser tab showing a radio website. T
 This demo is based on the asset library: https://godotengine.org/asset-library/asset/127
 
 ![Screenshot](3D/icon.png)
+
+### Demo 03: CEF browser in 2D with JS bindings
+
+A demo showing a 2D GUI made in HTML/CSS/JavaScript and loaded in a CEF browser. The demo shows how to bind Godot methods to JavaScript functions using JS Binder.
+
+![Screenshot](JS/icon.png)

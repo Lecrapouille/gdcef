@@ -63,35 +63,44 @@
 #endif
 
 // *****************************************************************************
-//! \brief Entry point for the render process
+//! \brief JavaScript Method Handler
 // *****************************************************************************
-class RenderProcess: public CefApp,
-                     // public CefBrowserProcessHandler,
-                     public CefRenderProcessHandler
+class GodotMethodHandler: public CefV8Handler
 {
 public:
 
-    ~RenderProcess();
+    GodotMethodHandler(CefRefPtr<CefBrowser> browser) : m_browser(browser) {}
+
+    bool Execute(const CefString& name,
+                 CefRefPtr<CefV8Value> object,
+                 const CefV8ValueList& arguments,
+                 CefRefPtr<CefV8Value>& retval,
+                 CefString& exception) override;
+
+    IMPLEMENT_REFCOUNTING(GodotMethodHandler);
+
+private:
+
+    CefRefPtr<CefBrowser> m_browser;
+};
+
+// *****************************************************************************
+//! \brief Entry point for the render process
+// *****************************************************************************
+class RenderProcess: public CefApp, public CefRenderProcessHandler
+{
+public:
+
+    IMPLEMENT_REFCOUNTING(RenderProcess);
 
 private: // CefApp methods
 
     // -------------------------------------------------------------------------
-    // virtual CefRefPtr<CefBrowserProcessHandler>
-    // GetBrowserProcessHandler() override
-    // {
-    //    return this;
-    //}
-
     virtual CefRefPtr<CefRenderProcessHandler>
     GetRenderProcessHandler() override
     {
         return this;
     }
-
-private: // CefBrowserProcessHandler methods
-
-    // -------------------------------------------------------------------------
-    // virtual void OnContextInitialized() override;
 
 private: // CefRenderProcessHandler methods
 
@@ -102,55 +111,8 @@ private: // CefRenderProcessHandler methods
 
 private:
 
-    IMPLEMENT_REFCOUNTING(RenderProcess);
+    CefRefPtr<GodotMethodHandler> m_handler;
 };
-
-#if 0
-// *****************************************************************************
-//! \brief Browser process handler
-// *****************************************************************************
-class GDCefBrowser: public CefClient,
-                    public CefLifeSpanHandler,
-                    public CefDisplayHandler
-{
-public:
-
-    ~GDCefBrowser();
-
-private: // CefDisplayHandler methods
-
-    // -------------------------------------------------------------------------
-    virtual CefRefPtr<CefDisplayHandler> GetDisplayHandler() override
-    {
-        return this;
-    }
-
-private: // CefLifeSpanHandler methods
-
-    // -------------------------------------------------------------------------
-    virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override
-    {
-        return this;
-    }
-
-    // -------------------------------------------------------------------------
-    virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) override;
-
-    // -------------------------------------------------------------------------
-    virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) override;
-
-private:
-
-    // -------------------------------------------------------------------------
-    // Include the default reference counting implementation.
-    IMPLEMENT_REFCOUNTING(GDCefBrowser);
-
-private:
-
-    using BrowserList = std::list<CefRefPtr<CefBrowser>>;
-    BrowserList m_browser_list;
-};
-#endif
 
 #if !defined(_WIN32)
 #    if defined(__clang__)

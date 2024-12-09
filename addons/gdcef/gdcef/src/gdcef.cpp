@@ -26,6 +26,7 @@
 //------------------------------------------------------------------------------
 #include "gdcef.hpp"
 #include "gdbrowser.hpp"
+#include "godot_js_binder.hpp"
 #include "helper_config.hpp"
 #include "helper_files.hpp"
 
@@ -126,7 +127,7 @@ void GDCef::_bind_methods()
     GDCEF_DEBUG("");
 
     using namespace godot;
-    ClassDB::bind_method(D_METHOD("initialize"), &GDCef::initialize);
+    ClassDB::bind_method(D_METHOD("initialize", "config"), &GDCef::initialize);
     ClassDB::bind_method(D_METHOD("get_full_version"), &GDCef::version);
     ClassDB::bind_method(D_METHOD("get_version_part"), &GDCef::versionPart);
     ClassDB::bind_method(D_METHOD("create_browser"), &GDCef::createBrowser);

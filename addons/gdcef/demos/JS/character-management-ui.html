@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Character Management UI</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --background-color: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .character-container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .character-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .character-section {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 20px;
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .weapon-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .weapon-button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .weapon-button:hover {
+            background-color: #2980b9;
+        }
+
+        .weapon-button.active {
+            background-color: #27ae60;
+        }
+
+        .xp-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .xp-input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+        }
+
+        .character-name-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        #characterStatus {
+            margin-top: 20px;
+            text-align: center;
+            color: #2ecc71;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="character-container">
+        <div class="character-header">
+            <h1>Character Management UI</h1>
+        </div>
+
+        <div class="character-section">
+            <h2 class="section-title">Name of the character</h2>
+            <div class="character-name-form">
+                <input type="text" id="characterNameInput" placeholder="Enter the character name" class="xp-input">
+                <button onclick="setCharacterName()" class="weapon-button">Set Name</button>
+            </div>
+        </div>
+
+        <div class="character-section">
+            <h2 class="section-title">Weapon Selection</h2>
+            <div class="weapon-grid">
+                <button onclick="selectWeapon('sword')" class="weapon-button" id="weapon-sword">Sword</button>
+                <button onclick="selectWeapon('bow')" class="weapon-button" id="weapon-bow">Bow</button>
+                <button onclick="selectWeapon('axe')" class="weapon-button" id="weapon-axe">Axe</button>
+                <button onclick="selectWeapon('spear')" class="weapon-button" id="weapon-spear">Spear</button>
+                <button onclick="selectWeapon('staff')" class="weapon-button" id="weapon-staff">Staff</button>
+                <button onclick="selectWeapon('dagger')" class="weapon-button" id="weapon-dagger">Dagger</button>
+            </div>
+        </div>
+
+        <div class="character-section">
+            <h2 class="section-title">XP Management</h2>
+            <div class="xp-controls">
+                <input type="number" id="xpInput" placeholder="Number of XP" class="xp-input">
+                <button onclick="addXP()" class="weapon-button">Add XP</button>
+                <button onclick="removeXP()" class="weapon-button">Remove XP</button>
+            </div>
+        </div>
+
+        <div id="characterStatus"></div>
+    </div>
+
+    <script>
+        let currentWeapon = null;
+        let characterName = '';
+        let characterXP = 0;
+
+        function selectWeapon(weapon) {
+            // Disable all buttons
+            document.querySelectorAll('.weapon-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Activate the selected button
+            const weaponBtn = document.getElementById(`weapon-${weapon}`);
+            weaponBtn.classList.add('active');
+            currentWeapon = weapon;
+
+            // Call the Godot method to change the weapon
+            if (window.godot && window.godot.change_weapon) {
+                window.godot.change_weapon(weapon);
+                updateStatus(`Weapon changed to : ${weapon}`);
+            }
+        }
+
+        function setCharacterName() {
+            const nameInput = document.getElementById('characterNameInput');
+            characterName = nameInput.value;
+
+            if (characterName) {
+                // Call the Godot method to set the name
+                if (window.godot && window.godot.set_character_name) {
+                    window.godot.set_character_name(characterName);
+                    updateStatus(`Character name set to : ${characterName}`);
+                }
+                nameInput.value = ''; // Reset the input
+            }
+        }
+
+        function addXP() {
+            const xpInput = document.getElementById('xpInput');
+            const xpToAdd = parseInt(xpInput.value) || 0;
+
+            if (xpToAdd > 0) {
+                characterXP += xpToAdd;
+
+                // Call the Godot method to add XP
+                if (window.godot && window.godot.modify_xp) {
+                    window.godot.modify_xp(xpToAdd);
+                    updateStatus(`${xpToAdd} XP added. Total : ${characterXP}`);
+                }
+                xpInput.value = ''; // Reset the input
+            }
+        }
+
+        function removeXP() {
+            const xpInput = document.getElementById('xpInput');
+            const xpToRemove = parseInt(xpInput.value) || 0;
+
+            if (xpToRemove > 0 && characterXP >= xpToRemove) {
+                characterXP -= xpToRemove;
+
+                // Call the Godot method to remove XP
+                if (window.godot && window.godot.modify_xp) {
+                    window.godot.modify_xp(-xpToRemove);
+                    updateStatus(`${xpToRemove} XP removed. Total : ${characterXP}`);
+                }
+                xpInput.value = ''; // Reset the input
+            }
+        }
+
+        function updateStatus(message) {
+            const statusElement = document.getElementById('characterStatus');
+            statusElement.textContent = message;
+
+            // Clear the message after 3 seconds
+            setTimeout(() => {
+                statusElement.textContent = '';
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>
