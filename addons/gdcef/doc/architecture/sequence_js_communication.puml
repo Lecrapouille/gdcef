@@ -1,60 +1,54 @@
 @startuml
 
-participant "JavaScript" as JS
-participant "Render Process" as RP
-participant "CEF" as CEF
-participant "GDCef\n(Main Process)" as MP
 participant "GDScript" as GD
+participant "Main Process\n(Godot)" as MP
+participant "Render Process\n(CEF)" as RP
+participant "JavaScript\n(Renderer Process)" as JS
 
-== JavaScript to GDScript ==
+== Godot to JavaScript ==
 
-JS -> RP : godot.callGodotMethod()
+GD -> MP : send_to_js("character_update", data)
+activate MP
+
+MP -> RP : SendProcessMessage("GodotToJS", ["character_update", data])
+activate RP
+
+RP -> RP : OnProcessMessageReceived()
+RP -> JS : ExecuteJavaScript("godotEventSystem.emit()")
+activate JS
+
+JS -> JS : Execute registered callback
+note right: Registered with godotEventSystem.on()
+JS --> JS : Update UI
+deactivate JS
+
+RP --> MP : Message processed
+deactivate RP
+
+MP --> GD : Complete
+deactivate MP
+
+== JavaScript to Godot ==
+
+JS -> RP : window.godot.modify_xp(42)
 activate RP
 
 RP -> RP : GodotMethodHandler::Execute()
-RP -> CEF : SendProcessMessage(PID_BROWSER)
-activate CEF
+note right: Convert JS args to CEF types
 
-CEF -> MP : OnProcessMessageReceived()
+RP -> MP : SendProcessMessage("callGodotMethod", ["modify_xp", 42])
 activate MP
 
-MP -> GD : Call GDScript method
+MP -> MP : OnProcessMessageReceived()
+MP -> GD : Execute Callable("modify_xp")
 activate GD
-GD --> MP : Return value
+
+GD -> GD : Update game state
 deactivate GD
 
-MP --> CEF : Process message result
+MP --> RP : Complete
 deactivate MP
 
-CEF --> RP : Message processed
-deactivate CEF
-
-RP --> JS : JavaScript return value
 deactivate RP
-
-== GDScript to JavaScript ==
-
-GD -> MP : execute_javascript()
-activate MP
-
-MP -> CEF : ExecuteJavaScript()
-activate CEF
-
-CEF -> RP : Execute in V8 context
-activate RP
-
-RP -> JS : Execute JavaScript code
-activate JS
-JS --> RP : JavaScript result
-deactivate JS
-
-RP --> CEF : Execution complete
-deactivate RP
-
-CEF --> MP : JavaScript executed
-deactivate CEF
-
-MP --> GD : Execution complete
-deactivate MP
 
 @enduml

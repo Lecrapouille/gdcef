@@ -12,6 +12,9 @@ You can run demos directly if you have already compiled gdCEF (`cd .. && /build.
 
 Just open your Godot editor 4.2+ and search for the `project.godot` file of the desired demo. Open the demo and run it directly inside the Godot editor.
 
+## Understanding the architecture
+
+Please refer to the [architecture](../doc/architecture.md) documentation for more details.
 ### Demo 00: Hello CEF
 
 A "Hello-world" demo showing a 2D GUI split vertically into two browsers. Only the left browser accepts mouse and keyboard events. The right browser does not allow interaction since a timer is used for loading different URLs one by one. No keyboard events and mouse events are sent to the browser.
