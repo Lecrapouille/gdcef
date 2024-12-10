@@ -443,10 +443,15 @@ static void configureCEF(fs::path const& folder,
     cef_settings.command_line_args_disabled = true;
 
     // Set to a value between 1024 and 65535 to enable remote debugging on the
-    // specified port. For example, if 7777 is specified the remote debugging
-    // URL will be http://localhost:7777. CEF can be remotely debugged from any
-    // CEF or Chrome browser window. Also configurable using the
-    // "remote-debugging-port" command-line switch.
+    // specified port. Also configurable using the "remote-debugging-port"
+    // command-line switch. Specifying 0 via the command-line switch will result
+    // in the selection of an ephemeral port and the port number will be printed
+    // as part of the WebSocket endpoint URL to stderr. If a cache directory
+    // path is provided the port will also be written to the
+    // <cache-dir>/DevToolsActivePort file. Remote debugging can be accessed by
+    // loading the chrome://inspect page in Google Chrome. Port numbers 9222 and
+    // 9229 are discoverable by default. Other port numbers may need to be
+    // configured via "Discover network targets" on the Devices tab.
     cef_settings.remote_debugging_port =
         getConfig(config, "remote_debugging_port", 7777);
 
@@ -457,6 +462,17 @@ static void configureCEF(fs::path const& folder,
     // "uncaught-exception-stack-size" command-line switch.
     cef_settings.uncaught_exception_stack_size =
         getConfig(config, "exception_stack_size", 5);
+
+    // To persist session cookies (cookies without an expiry date or validity
+    // interval) by default when using the global cookie manager set this value
+    // to true (1). Session cookies are generally intended to be transient and
+    // most Web browsers do not persist them. A |cache_path| value must also be
+    // specified to enable this feature. Also configurable using the
+    // "persist-session-cookies" command-line switch. Can be overridden for
+    // individual CefRequestContext instances via the
+    // CefRequestContextSettings.persist_session_cookies value.
+    cef_settings.persist_session_cookies =
+        getConfig(config, "persist_session_cookies", true);
 
     // Set to true (1) to have the browser process message loop run in a
     // separate thread. If false (0) than the CefDoMessageLoopWork() function
@@ -702,6 +718,7 @@ void GDCef::Impl::OnBeforeCommandLineProcessing(
     // Set to "*".
     if (!m_owner.m_remote_allow_origin.empty())
     {
+        command_line->AppendSwitch("allow-cef-debugger");
         command_line->AppendSwitchWithValue(
             "remote-allow-origins", m_owner.m_remote_allow_origin.c_str());
     }

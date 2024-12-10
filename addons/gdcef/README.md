@@ -71,7 +71,7 @@ In your GDScript, when initializing CEF, pass the following settings:
 $CEF.initialize({"remote_debugging_port": 7777, "remote_allow_origin": "*", ... })
 ```
 
-Open a Chrome browser and type in the URL: `http://localhost:7777`. You will see something like this:
+Open a Chrome browser and type in the URL: `chrome://inspect`. A documents appears. Click on the `Configure` button of `Discover network targets`. Set `localhost:7777` as the port. You will see something like this:
 
 ![Debug](doc/pics/debug.png)
 
