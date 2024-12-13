@@ -1,3 +1,8 @@
+Version 0.15.0:
+	* Add JS/GDScript bindings.
+	* Update to CEF 131.
+	* Update documentations.
+
 Version 0.14.1:
 	* Update build: managing new gdCEF release names for downlad.
 	* Update build: add GDCEF_VERSION.txt inside cef_artifacts folder.
