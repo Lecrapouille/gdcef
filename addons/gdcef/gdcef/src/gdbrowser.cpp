@@ -1079,5 +1079,5 @@ bool GDBrowserView::isAdBlockEnabled() const
         BROWSER_ERROR("Ad blocker not initialized");
         return false;
     }
-    return m_impl->m_ad_blocker->is_enabled();
+    return m_impl->m_ad_blocker->isEnabled();
 }
