@@ -788,6 +788,30 @@ public:
     // -------------------------------------------------------------------------
     bool isAdBlockEnabled() const;
 
+    // -------------------------------------------------------------------------
+    //! \brief Write an info message to CEF logs from GDScript.
+    //! \param[in] message the info message to log
+    // -------------------------------------------------------------------------
+    void log_info(godot::String message);
+
+    // -------------------------------------------------------------------------
+    //! \brief Write a warning message to CEF logs from GDScript.
+    //! \param[in] message the warning message to log
+    // -------------------------------------------------------------------------
+    void log_warning(godot::String message);
+
+    // -------------------------------------------------------------------------
+    //! \brief Write an error message to CEF logs from GDScript.
+    //! \param[in] message the error message to log
+    // -------------------------------------------------------------------------
+    void log_error(godot::String message);
+
+    // -------------------------------------------------------------------------
+    //! \brief Write a fatal message to CEF logs from GDScript.
+    //! \param[in] message the fatal message to log
+    // -------------------------------------------------------------------------
+    void log_fatal(godot::String message);
+
 private:
 
     void resize_(int width, int height);

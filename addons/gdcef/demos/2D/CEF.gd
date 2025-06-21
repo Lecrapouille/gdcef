@@ -63,6 +63,8 @@ func _on_page_loaded(browser):
 	L.set_item_text(L.get_selected_id(), url)
 	$Panel/VBox/HBox2/Info.set_text(url + " loaded as ID " + browser.name)
 	print("Browser named '" + browser.name + "' inserted on list at index " + str(L.get_selected_id()) + ": " + url)
+	# Logging from browser instance
+	browser.log_warning("This is an example warning")
 	pass
 
 # ==============================================================================
@@ -376,6 +378,10 @@ func _ready():
 		return
 	print("CEF version: " + $CEF.get_full_version())
 	print("You are listening CEF native audio")
+
+	# Logging from the main CEF instance
+	$CEF.log_info("This is an example info")
+	$CEF.log_warning("This is an example warning")
 
 	# Wait one frame for the texture rect to get its size
 	current_browser = await create_browser(HOME_PAGE)

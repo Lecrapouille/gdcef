@@ -133,6 +133,10 @@ void GDCef::_bind_methods()
     ClassDB::bind_method(D_METHOD("shutdown"), &GDCef::shutdown);
     ClassDB::bind_method(D_METHOD("is_alive"), &GDCef::isAlive);
     ClassDB::bind_method(D_METHOD("get_error"), &GDCef::getError);
+    ClassDB::bind_method(D_METHOD("log_info", "message"), &GDCef::log_info);
+    ClassDB::bind_method(D_METHOD("log_warning", "message"), &GDCef::log_warning);
+    ClassDB::bind_method(D_METHOD("log_error", "message"), &GDCef::log_error);
+    ClassDB::bind_method(D_METHOD("log_fatal", "message"), &GDCef::log_fatal);
 }
 
 //------------------------------------------------------------------------------
@@ -292,6 +296,30 @@ godot::String GDCef::getError()
     std::string err = m_error.str();
     m_error.clear();
     return {err.c_str()};
+}
+
+//------------------------------------------------------------------------------
+void GDCef::log_info(godot::String message)
+{
+    LOG(INFO) << message.utf8().get_data();
+}
+
+//------------------------------------------------------------------------------
+void GDCef::log_warning(godot::String message)
+{
+    LOG(WARNING) << message.utf8().get_data();
+}
+
+//------------------------------------------------------------------------------
+void GDCef::log_error(godot::String message)
+{
+    LOG(ERROR) << message.utf8().get_data();
+}
+
+//------------------------------------------------------------------------------
+void GDCef::log_fatal(godot::String message)
+{
+    LOG(FATAL) << message.utf8().get_data();
 }
 
 //------------------------------------------------------------------------------

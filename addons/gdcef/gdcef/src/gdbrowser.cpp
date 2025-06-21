@@ -33,6 +33,8 @@
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
 
+#include <base/cef_logging.h>
+
 #ifdef _OPENMP
 #    include <omp.h>
 #    define OPENMP_PARALLEL_FOR #pragma omp parallel for
@@ -163,6 +165,10 @@ void GDBrowserView::_bind_methods()
                          &GDBrowserView::enableAdBlock);
     ClassDB::bind_method(D_METHOD("is_ad_block_enabled"),
                          &GDBrowserView::isAdBlockEnabled);
+    ClassDB::bind_method(D_METHOD("log_info", "message"), &GDBrowserView::log_info);
+    ClassDB::bind_method(D_METHOD("log_warning", "message"), &GDBrowserView::log_warning);
+    ClassDB::bind_method(D_METHOD("log_error", "message"), &GDBrowserView::log_error);
+    ClassDB::bind_method(D_METHOD("log_fatal", "message"), &GDBrowserView::log_fatal);
 
     // Signals
     ADD_SIGNAL(MethodInfo("on_download_updated",
@@ -1255,4 +1261,40 @@ bool GDBrowserView::isAdBlockEnabled() const
         return false;
     }
     return m_impl->m_ad_blocker->is_enabled();
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::log_info(godot::String message)
+{
+    std::stringstream ss;
+    godot::String name = get_name();
+    ss << "[browser id: " << m_id << ", name: " << name.utf8().get_data() << "] " << message.utf8().get_data();
+    LOG(INFO) << ss.str();
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::log_warning(godot::String message)
+{
+    std::stringstream ss;
+    godot::String name = get_name();
+    ss << "[browser id: " << m_id << ", name: " << name.utf8().get_data() << "] " << message.utf8().get_data();
+    LOG(WARNING) << ss.str();
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::log_error(godot::String message)
+{
+    std::stringstream ss;
+    godot::String name = get_name();
+    ss << "[browser id: " << m_id << ", name: " << name.utf8().get_data() << "] " << message.utf8().get_data();
+    LOG(ERROR) << ss.str();
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::log_fatal(godot::String message)
+{
+    std::stringstream ss;
+    godot::String name = get_name();
+    ss << "[browser id: " << m_id << ", name: " << name.utf8().get_data() << "] " << message.utf8().get_data();
+    LOG(FATAL) << ss.str();
 }
