@@ -23,7 +23,7 @@ jobs:
             shell: bash
 
           # Linux build configuration
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             name: Linux
             check_files: cef_artifacts/gdCefRenderProcess cef_artifacts/libgdcef.so cef_artifacts/libcef.so
             install_system_packages: sudo apt-get update
