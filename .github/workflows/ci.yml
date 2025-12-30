@@ -16,21 +16,21 @@ jobs:
       matrix:
         include:
           # MacOS build configuration
-          - os: macos-14
+          - os: macos-latest
             name: MacOS
             check_files: cef_artifacts/libgdcef.dylib
             install_system_packages: brew install ninja
             shell: bash
 
           # Linux build configuration
-          - os: ubuntu-22.04
+          - os: ubuntu-latest
             name: Linux
             check_files: cef_artifacts/gdCefRenderProcess cef_artifacts/libgdcef.so cef_artifacts/libcef.so
             install_system_packages: sudo apt-get update
             shell: bash
 
           # Windows build configuration
-          - os: windows-2022
+          - os: windows-latest
             name: Windows
             check_files: \a\gdcef\gdcef\cef_artifacts\gdCefRenderProcess.exe \a\gdcef\gdcef\cef_artifacts\libgdcef.dll \a\gdcef\gdcef\cef_artifacts\libcef.dll
             shell: powershell
@@ -43,7 +43,7 @@ jobs:
       # Needed because Godot editor and godot-cpp can find cl.exe while our
       # godot native modules cannot find it without this extra path
       - name: Setup MSVC (Windows only)
-        if: matrix.os == 'windows-2022'
+        if: matrix.os == 'windows-latest'
         uses: ilammy/msvc-dev-cmd@v1.10.0
 
       # Git checkout the gdCEF repository
