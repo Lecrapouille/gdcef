@@ -9,9 +9,8 @@ extends Control
 # Name of the browser
 const browser_name = "browser"
 
-# Page with sound
-# "https://www.programmes-radio.com/fr/stream-e8BxeoRhsz9jY9mXXRiFTE/ecouter-KPJK"
-const RADIO_URL = "http://streaming.radio.co/s9378c22ee/listen"
+# Page with sound: https://www.radio.fr/s/rockon
+const RADIO_URL = "https://streaming.radiostreamlive.com/radiorockon_devices"
 const HOME_URL = "https://github.com/Lecrapouille/gdcef"
 
 # Memorize if the mouse was pressed
