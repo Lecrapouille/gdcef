@@ -62,7 +62,7 @@ CEF_ARTIFACTS_FOLDER_NAME = "cef_artifacts"
 
 # CEF version to download from https://cef-builds.spotifycdn.com/index.html
 # Copy the version listed there WITHOUT the OS or architecture; this script chooses the correct binary.
-CEF_VERSION = "131.3.1+gcb062df+chromium-131.0.6778.109"
+CEF_VERSION = "143.0.13+g30cb3bd+chromium-143.0.7499.170"
 
 # Your Godot editor version. Must match either:
 #  - a "godot-<version>-stable" tag at https://github.com/godotengine/godot-cpp/tags
@@ -70,7 +70,7 @@ CEF_VERSION = "131.3.1+gcb062df+chromium-131.0.6778.109"
 # (!) WARNING (!)
 #  - Do not use version 4.1: gdextension is not compatible.
 #  - Do not use version 3.x: use the godot-3.x branch of gdCEF instead.
-GODOT_VERSION = "4.3"                                     # Example: "4.2" or a tag
+GODOT_VERSION = "4.5"                                     # Example: "4.2" or a tag
 
 # Use "godot-<version>-stable" for a tag, or "<version>" to track the HEAD of a branch.
 GODOT_CPP_GIT_TAG_OR_BRANCH = GODOT_VERSION

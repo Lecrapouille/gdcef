@@ -38,6 +38,7 @@
 // Chromium Embedded Framework
 #include "base/cef_callback.h"
 #include "wrapper/cef_closure_task.h"
+#include "cef_version_info.h"
 
 #ifdef _OPENMP
 #    include <omp.h>
@@ -578,11 +579,6 @@ static void configureBrowser(CefBrowserSettings& browser_settings,
     browser_settings.image_loading =
         getConfig(config, "image_loading", STATE_ENABLED);
     GDCEF_DEBUG("Using image loading: " << int(browser_settings.image_loading));
-
-    // Controls whether databases can be used. Also configurable using the
-    // "disable-databases" command-line switch.
-    browser_settings.databases = getConfig(config, "databases", STATE_ENABLED);
-    GDCEF_DEBUG("Using databases: " << int(browser_settings.databases));
 
     // Controls whether WebGL can be used. Note that WebGL requires hardware
     // support and may not work on all systems even when enabled. Also
