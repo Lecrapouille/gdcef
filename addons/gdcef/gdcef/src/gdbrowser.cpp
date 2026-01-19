@@ -224,10 +224,14 @@ void GDBrowserView::_bind_methods()
                          &GDBrowserView::middleMouseDown);
     ClassDB::bind_method(D_METHOD("set_mouse_middle_up"),
                          &GDBrowserView::middleMouseUp);
-    ClassDB::bind_method(D_METHOD("set_mouse_wheel_vertical"),
-                         &GDBrowserView::mouseWheelVertical);
-    ClassDB::bind_method(D_METHOD("set_mouse_wheel_horizontal"),
-                         &GDBrowserView::mouseWheelHorizontal);
+    ClassDB::bind_method(D_METHOD("set_mouse_wheel_vertical", "delta", "shift",
+                                   "ctrl", "alt"),
+                         &GDBrowserView::mouseWheelVertical,
+                         DEFVAL(false), DEFVAL(false), DEFVAL(false));
+    ClassDB::bind_method(D_METHOD("set_mouse_wheel_horizontal", "delta", "shift",
+                                   "ctrl", "alt"),
+                         &GDBrowserView::mouseWheelHorizontal,
+                         DEFVAL(false), DEFVAL(false), DEFVAL(false));
     ClassDB::bind_method(D_METHOD("set_muted"), &GDBrowserView::mute);
     ClassDB::bind_method(D_METHOD("is_muted"), &GDBrowserView::muted);
     ClassDB::bind_method(D_METHOD("set_audio_stream", "audio"),
@@ -1329,7 +1333,7 @@ bool GDBrowserView::addAdBlockPattern(godot::String pattern)
         return false;
     }
 
-    if (m_impl->m_ad_blocker->addPattern(pattern.utf8().get_data()))
+    if (m_impl->m_ad_blocker->addRule(pattern.utf8().get_data()))
     {
         return true;
     }

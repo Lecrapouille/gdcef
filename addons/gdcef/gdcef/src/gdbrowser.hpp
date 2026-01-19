@@ -741,13 +741,23 @@ public:
 
     // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Mouse Wheel Vertical.
+    //! \param[in] wDelta The scroll delta (positive = up, negative = down).
+    //! \param[in] shift True if Shift key is pressed.
+    //! \param[in] ctrl True if Ctrl key is pressed.
+    //! \param[in] alt True if Alt key is pressed.
     // -------------------------------------------------------------------------
-    void mouseWheelVertical(const int wDelta);
+    void mouseWheelVertical(int wDelta, bool shift = false, bool ctrl = false,
+                            bool alt = false);
 
     // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Mouse Wheel Horizontal.
+    //! \param[in] wDelta The scroll delta (positive = right, negative = left).
+    //! \param[in] shift True if Shift key is pressed.
+    //! \param[in] ctrl True if Ctrl key is pressed.
+    //! \param[in] alt True if Alt key is pressed.
     // -------------------------------------------------------------------------
-    void mouseWheelHorizontal(const int wDelta);
+    void mouseWheelHorizontal(int wDelta, bool shift = false, bool ctrl = false,
+                              bool alt = false);
 
     // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Set the new keyboard state (char

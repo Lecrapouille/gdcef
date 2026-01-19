@@ -213,7 +213,8 @@ void GDBrowserView::mouseMove(int x, int y)
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::mouseWheelVertical(const int wDelta)
+void GDBrowserView::mouseWheelVertical(int wDelta, bool shift, bool ctrl,
+                                        bool alt)
 {
     if (m_browser == nullptr)
         return;
@@ -221,13 +222,23 @@ void GDBrowserView::mouseWheelVertical(const int wDelta)
     CefMouseEvent evt;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
-    evt.modifiers = m_mouse_event_modifiers;
+
+    // Build modifiers from current mouse state + keyboard modifiers
+    uint32_t modifiers = m_mouse_event_modifiers;
+    if (shift)
+        modifiers |= EVENTFLAG_SHIFT_DOWN;
+    if (ctrl)
+        modifiers |= EVENTFLAG_CONTROL_DOWN;
+    if (alt)
+        modifiers |= EVENTFLAG_ALT_DOWN;
+    evt.modifiers = modifiers;
 
     m_browser->GetHost()->SendMouseWheelEvent(evt, 0, wDelta * 10);
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::mouseWheelHorizontal(const int wDelta)
+void GDBrowserView::mouseWheelHorizontal(int wDelta, bool shift, bool ctrl,
+                                          bool alt)
 {
     if (m_browser == nullptr)
         return;
@@ -235,26 +246,116 @@ void GDBrowserView::mouseWheelHorizontal(const int wDelta)
     CefMouseEvent evt;
     evt.x = m_mouse_x;
     evt.y = m_mouse_y;
-    evt.modifiers = m_mouse_event_modifiers;
+
+    // Build modifiers from current mouse state + keyboard modifiers
+    uint32_t modifiers = m_mouse_event_modifiers;
+    if (shift)
+        modifiers |= EVENTFLAG_SHIFT_DOWN;
+    if (ctrl)
+        modifiers |= EVENTFLAG_CONTROL_DOWN;
+    if (alt)
+        modifiers |= EVENTFLAG_ALT_DOWN;
+    evt.modifiers = modifiers;
 
     m_browser->GetHost()->SendMouseWheelEvent(evt, wDelta * 10, 0);
 }
 
+// =============================================================================
+// Keyboard handling
+// =============================================================================
+
+//------------------------------------------------------------------------------
+// Build keyboard modifiers flags from individual booleans.
 //------------------------------------------------------------------------------
 static uint32_t getKeyboardModifiers(bool shift, bool alt, bool ctrl)
 {
     uint32_t modifiers = 0;
-
-    if (shift == true)
+    if (shift)
         modifiers |= EVENTFLAG_SHIFT_DOWN;
-    if (ctrl == true)
+    if (ctrl)
         modifiers |= EVENTFLAG_CONTROL_DOWN;
-    if (alt == true)
+    if (alt)
         modifiers |= EVENTFLAG_ALT_DOWN;
-
     return modifiers;
 }
 
+//------------------------------------------------------------------------------
+// Key mapping structure: Godot key code -> Windows virtual key code.
+// Reference: https://keycode.info/
+//------------------------------------------------------------------------------
+struct KeyMapping
+{
+    int godot_key;    // Godot key constant (e.g., godot::KEY_ENTER)
+    int windows_key;  // Windows virtual key code (e.g., VK_RETURN = 13)
+    bool send_char;   // Whether to send KEYEVENT_CHAR after KEYDOWN
+};
+
+// Static key mapping table for special keys
+static const KeyMapping KEY_MAPPINGS[] = {
+    // Control keys
+    {godot::KEY_BACKSPACE, 8, true},    // VK_BACK
+    {godot::KEY_TAB, 9, true},          // VK_TAB
+    {godot::KEY_ENTER, 13, true},       // VK_RETURN
+    {godot::KEY_KP_ENTER, 13, true},    // VK_RETURN (numpad)
+    {godot::KEY_ESCAPE, 27, false},     // VK_ESCAPE
+
+    // Navigation keys
+    {godot::KEY_LEFT, 37, false},       // VK_LEFT
+    {godot::KEY_UP, 38, false},         // VK_UP
+    {godot::KEY_RIGHT, 39, false},      // VK_RIGHT
+    {godot::KEY_DOWN, 40, false},       // VK_DOWN
+    {godot::KEY_PAGEUP, 33, false},     // VK_PRIOR
+    {godot::KEY_PAGEDOWN, 34, false},   // VK_NEXT
+    {godot::KEY_HOME, 36, false},       // VK_HOME
+    {godot::KEY_END, 35, false},        // VK_END
+    {godot::KEY_INSERT, 45, false},     // VK_INSERT
+    {godot::KEY_DELETE, 46, false},     // VK_DELETE
+
+    // Function keys (F1-F12)
+    {godot::KEY_F1, 112, false},        // VK_F1
+    {godot::KEY_F2, 113, false},        // VK_F2
+    {godot::KEY_F3, 114, false},        // VK_F3
+    {godot::KEY_F4, 115, false},        // VK_F4
+    {godot::KEY_F5, 116, false},        // VK_F5
+    {godot::KEY_F6, 117, false},        // VK_F6
+    {godot::KEY_F7, 118, false},        // VK_F7
+    {godot::KEY_F8, 119, false},        // VK_F8
+    {godot::KEY_F9, 120, false},        // VK_F9
+    {godot::KEY_F10, 121, false},       // VK_F10
+    {godot::KEY_F11, 122, false},       // VK_F11
+    {godot::KEY_F12, 123, false},       // VK_F12
+};
+
+static constexpr size_t KEY_MAPPINGS_COUNT =
+    sizeof(KEY_MAPPINGS) / sizeof(KEY_MAPPINGS[0]);
+
+//------------------------------------------------------------------------------
+// Look up a Godot key in the mapping table.
+// Returns nullptr if not found.
+//------------------------------------------------------------------------------
+static const KeyMapping* findKeyMapping(int godot_key)
+{
+    for (size_t i = 0; i < KEY_MAPPINGS_COUNT; ++i)
+    {
+        if (KEY_MAPPINGS[i].godot_key == godot_key)
+        {
+            return &KEY_MAPPINGS[i];
+        }
+    }
+    return nullptr;
+}
+
+//------------------------------------------------------------------------------
+// Send a key event to the browser.
+//
+// Key handling in CEF:
+// - Printable ASCII characters (32-126): Send KEYEVENT_CHAR directly
+// - Special keys (arrows, F-keys, etc.): Send KEYEVENT_KEYDOWN, optionally CHAR
+// - Unicode characters (> 127): Send as KEYEVENT_CHAR with proper encoding
+//
+// Note: Full IME support for CJK (Chinese/Japanese/Korean) input requires
+// additional CEF IME integration which is not implemented here.
+// Current implementation handles pre-composed Unicode characters.
 //------------------------------------------------------------------------------
 void GDBrowserView::keyPress(int key,
                              bool pressed,
@@ -266,148 +367,81 @@ void GDBrowserView::keyPress(int key,
         return;
 
     CefKeyEvent event;
-    char16_t key16b = char16_t(key);
-    if (pressed == true)
+    event.modifiers = getKeyboardModifiers(shift, alt, ctrl);
+
+    // Handle key release
+    if (!pressed)
     {
-        // set the event modifier if they are activated
-        event.modifiers = getKeyboardModifiers(shift, alt, ctrl);
-
-        if ((key >= 32) && (key <= 126)) // ASCII
-        {
-            // BROWSER_DEBUG("ASCII CODE");
-            event.windows_key_code = key;
-            event.character = key16b;
-            event.unmodified_character = key16b;
-            event.type = KEYEVENT_CHAR;
-            m_browser->GetHost()->SendKeyEvent(event);
-        }
-        else if (key == godot::KEY_BACKSPACE || key == godot::KEY_ENTER ||
-                 key == godot::KEY_KP_ENTER)
-        {
-            if (key == godot::KEY_BACKSPACE)
-            {
-                // BROWSER_DEBUG("KEY_BACKSPACE");
-                event.windows_key_code = 8;
-                event.character = 8;
-                event.unmodified_character = 8;
-            }
-            else if (key == godot::KEY_ENTER)
-            {
-                // BROWSER_DEBUG("KEY_ENTER");
-                event.windows_key_code = 13;
-                event.character = 13;
-                event.unmodified_character = 13;
-            }
-            else if (key == godot::KEY_KP_ENTER)
-            {
-                // BROWSER_DEBUG("KEY_KP_ENTER");
-                event.windows_key_code = 13;
-                event.character = 13;
-                event.unmodified_character = 13;
-            }
-
-            event.character = char16_t(event.windows_key_code);
-            event.native_key_code = event.windows_key_code;
-            event.type = KEYEVENT_KEYDOWN;
-            m_browser->GetHost()->SendKeyEvent(event);
-            event.type = KEYEVENT_CHAR;
-            m_browser->GetHost()->SendKeyEvent(event);
-        }
-        else if (key >= 320 && key <= 329) // NUMBERS & NUMPAD
-        {
-            // BROWSER_DEBUG("NUMBERS and NUMPAD");
-            event.windows_key_code = key;
-            event.character = key16b;
-            event.native_key_code = key;
-
-            event.type = KEYEVENT_KEYDOWN;
-            m_browser->GetHost()->SendKeyEvent(event);
-            event.type = KEYEVENT_CHAR;
-            m_browser->GetHost()->SendKeyEvent(event);
-        }
-        else if (key == godot::KEY_RIGHT || key == godot::KEY_LEFT ||
-                 key == godot::KEY_UP || key == godot::KEY_DOWN ||
-                 key == godot::KEY_PAGEUP || key == godot::KEY_PAGEDOWN ||
-                 key == godot::KEY_HOME || key == godot::KEY_END ||
-                 key == godot::KEY_INSERT || key == godot::KEY_DELETE) // ARROWS
-        {
-            // https://keycode.info/
-
-            if (key == godot::KEY_RIGHT)
-            {
-                // BROWSER_DEBUG("KEY_RIGHT");
-                event.windows_key_code = 39;
-            }
-            else if (key == godot::KEY_LEFT)
-            {
-                // BROWSER_DEBUG("KEY_LEFT");
-                event.windows_key_code = 37;
-            }
-            else if (key == godot::KEY_UP)
-            {
-                // BROWSER_DEBUG("KEY_UP");
-                event.windows_key_code = 38;
-            }
-            else if (key == godot::KEY_DOWN)
-            {
-                // BROWSER_DEBUG("KEY_DOWN");
-                event.windows_key_code = 40;
-            }
-            else if (key == godot::KEY_PAGEUP)
-            {
-                // BROWSER_DEBUG("KEY_PAGEUP");
-                event.windows_key_code = 33;
-            }
-            else if (key == godot::KEY_PAGEDOWN)
-            {
-                // BROWSER_DEBUG("KEY_PAGEDOWN");
-                event.windows_key_code = 34;
-            }
-            else if (key == godot::KEY_HOME)
-            {
-                // BROWSER_DEBUG("KEY_HOME");
-                event.windows_key_code = 36; // Debut
-            }
-            else if (key == godot::KEY_END)
-            {
-                // BROWSER_DEBUG("KEY_END");
-                event.windows_key_code = 35; // Fin
-            }
-            else if (key == godot::KEY_INSERT)
-            {
-                // BROWSER_DEBUG("KEY_INSERT");
-                event.windows_key_code = 45; // Insert
-            }
-            else if (key == godot::KEY_DELETE)
-            {
-                // BROWSER_DEBUG("KEY_DELETE");
-                event.windows_key_code = 46; // Del (not dot when no char event)
-            }
-
-            event.type = KEYEVENT_KEYDOWN;
-            event.character = char16_t(event.windows_key_code);
-            event.native_key_code = event.windows_key_code;
-            m_browser->GetHost()->SendKeyEvent(event);
-        }
-        else
-        {
-            // BROWSER_DEBUG("Any Char");
-            event.windows_key_code = key;
-            event.character = key16b;
-            event.native_key_code = key;
-            event.unmodified_character = key16b;
-
-            event.type = KEYEVENT_KEYDOWN;
-            m_browser->GetHost()->SendKeyEvent(event);
-            event.type = pressed ? KEYEVENT_CHAR : KEYEVENT_KEYUP;
-            m_browser->GetHost()->SendKeyEvent(event);
-        }
-    }
-    else
-    {
-        // BROWSER_DEBUG("PRESSED FALSE");
         event.native_key_code |= int(0xC0000000);
         event.type = KEYEVENT_KEYUP;
         m_browser->GetHost()->SendKeyEvent(event);
+        return;
     }
+
+    // Handle key press
+    char16_t key16 = static_cast<char16_t>(key);
+
+    // Check if it's a mapped special key
+    const KeyMapping* mapping = findKeyMapping(key);
+    if (mapping != nullptr)
+    {
+        event.windows_key_code = mapping->windows_key;
+        event.native_key_code = mapping->windows_key;
+        event.character = static_cast<char16_t>(mapping->windows_key);
+        event.unmodified_character = event.character;
+
+        // Send KEYDOWN
+        event.type = KEYEVENT_KEYDOWN;
+        m_browser->GetHost()->SendKeyEvent(event);
+
+        // Send CHAR if needed (for keys like Enter, Backspace)
+        if (mapping->send_char)
+        {
+            event.type = KEYEVENT_CHAR;
+            m_browser->GetHost()->SendKeyEvent(event);
+        }
+        return;
+    }
+
+    // Printable ASCII characters (space to tilde)
+    if (key >= 32 && key <= 126)
+    {
+        event.windows_key_code = key;
+        event.character = key16;
+        event.unmodified_character = key16;
+        event.type = KEYEVENT_CHAR;
+        m_browser->GetHost()->SendKeyEvent(event);
+        return;
+    }
+
+    // Numpad numbers (Godot KEY_KP_0 to KEY_KP_9 = 320-329)
+    if (key >= 320 && key <= 329)
+    {
+        // Convert to ASCII digit (0-9 = 48-57)
+        int digit = key - 320;
+        event.windows_key_code = 96 + digit;  // VK_NUMPAD0 = 96
+        event.character = static_cast<char16_t>('0' + digit);
+        event.native_key_code = event.windows_key_code;
+        event.unmodified_character = event.character;
+
+        event.type = KEYEVENT_KEYDOWN;
+        m_browser->GetHost()->SendKeyEvent(event);
+        event.type = KEYEVENT_CHAR;
+        m_browser->GetHost()->SendKeyEvent(event);
+        return;
+    }
+
+    // Unicode characters (> 127) and other keys
+    // This handles pre-composed characters from Godot's input system
+    // Note: Complex IME input (Chinese, Japanese, Korean composition)
+    // requires additional CEF IME APIs not implemented here
+    event.windows_key_code = key;
+    event.character = key16;
+    event.native_key_code = key;
+    event.unmodified_character = key16;
+
+    event.type = KEYEVENT_KEYDOWN;
+    m_browser->GetHost()->SendKeyEvent(event);
+    event.type = KEYEVENT_CHAR;
+    m_browser->GetHost()->SendKeyEvent(event);
 }
