@@ -218,10 +218,12 @@ func _on_download_updated(file, percentage, browser):
 # Callback when a page has ended to load with success (200): we print a message
 # ==============================================================================
 func _on_page_loaded(browser):
-	var L = $Panel/VBox/HBox/BrowserList
+	var L = $Panel/VBox/TopBar/BrowserList
 	var url = browser.get_url()
 	L.set_item_text(L.get_selected_id(), url)
-	$Panel/VBox/HBox2/Info.set_text(url + " loaded as ID " + browser.name)
+	$Panel/VBox/BottomBar/Info.set_text(url)
+	# Update URL bar
+	$Panel/VBox/TopBar/URLContainer/TextEdit.text = url
 	print("Browser named '" + browser.name + "' inserted on list at index " + str(L.get_selected_id()) + ": " + url)
 	# Logging from browser instance
 	browser.log_warning("This is an example warning")
@@ -270,7 +272,7 @@ func create_browser(url):
 			"user_gesture_required": true
 		})
 	if browser == null:
-		$Panel/VBox/HBox2/Info.set_text($CEF.get_error())
+		$Panel/VBox/BottomBar/Info.set_text($CEF.get_error())
 		return null
 
 	# Loading callbacks
@@ -280,8 +282,9 @@ func create_browser(url):
 	browser.connect("on_download_updated", _on_download_updated)
 
 	# Add the URL to the list
-	$Panel/VBox/HBox/BrowserList.add_item(url)
-	$Panel/VBox/HBox/BrowserList.select($Panel/VBox/HBox/BrowserList.get_item_count() - 1)
+	var browser_list = $Panel/VBox/TopBar/BrowserList
+	browser_list.add_item(url)
+	browser_list.select(browser_list.get_item_count() - 1)
 	print("Browser named '" + browser.name + "' created with URL " + url)
 	return browser
 
@@ -294,7 +297,7 @@ func get_browser(name):
 		return null
 	var browser = $CEF.get_node(name)
 	if browser == null:
-		$Panel/VBox/HBox2/Info.set_text("Unknown browser with name '" + name + "'")
+		$Panel/VBox/BottomBar/Info.set_text("Unknown browser with name '" + name + "'")
 		return null
 	return browser
 
@@ -325,7 +328,15 @@ func _on_Home_pressed():
 # ==============================================================================
 func _on_go_pressed():
 	if current_browser != null:
-		current_browser.load_url($Panel/VBox/HBox/TextEdit.text)
+		current_browser.load_url($Panel/VBox/TopBar/URLContainer/TextEdit.text)
+	pass
+
+# ==============================================================================
+# URL submitted via Enter key in the text edit.
+# ==============================================================================
+func _on_url_submitted(new_text):
+	if current_browser != null:
+		current_browser.load_url(new_text)
 	pass
 
 # ==============================================================================
@@ -360,6 +371,8 @@ func _on_BrowserList_item_selected(index):
 	current_browser = get_browser(str(index))
 	if current_browser != null:
 		$Panel/VBox/TextureRect.texture = current_browser.get_texture()
+		# Update URL bar with current page
+		$Panel/VBox/TopBar/URLContainer/TextEdit.text = current_browser.get_url()
 	pass
 
 ####
@@ -404,20 +417,20 @@ func _on_dragdrop_pressed():
 # ==============================================================================
 # Mute/unmute the sound
 # ==============================================================================
-func _on_mute_pressed():
+func _on_mute_pressed(toggled_on):
 	if current_browser == null:
 		return
-	current_browser.set_muted($Panel/VBox/HBox2/Mute.button_pressed)
-	$AudioStreamPlayer2D.stream_paused = $Panel/VBox/HBox2/Mute.button_pressed
+	current_browser.set_muted(toggled_on)
+	$AudioStreamPlayer2D.stream_paused = toggled_on
 	pass
 
 # ==============================================================================
-# Block/Unblock adds
+# Block/Unblock ads
 # ==============================================================================
-func _on_add_blocker_pressed() -> void:
+func _on_add_blocker_pressed(toggled_on) -> void:
 	if current_browser == null:
 		return
-	current_browser.enable_ad_block($Panel/VBox/HBox2/AddBlocker.button_pressed)
+	current_browser.enable_ad_block(toggled_on)
 	pass
 
 ####
@@ -432,9 +445,11 @@ func _on_TextureRect_gui_input(event):
 		return
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			current_browser.set_mouse_wheel_vertical(2)
+			current_browser.set_mouse_wheel_vertical(2, event.shift_pressed,
+				event.ctrl_pressed, event.alt_pressed)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			current_browser.set_mouse_wheel_vertical(-2)
+			current_browser.set_mouse_wheel_vertical(-2, event.shift_pressed,
+				event.ctrl_pressed, event.alt_pressed)
 		elif event.button_index == MOUSE_BUTTON_LEFT:
 			mouse_pressed = event.pressed
 			if mouse_pressed:
@@ -542,7 +557,7 @@ func _ready():
 			"remote_debugging_port": 7777,
 			"remote_allow_origin": "*"
 		}):
-		$Panel/VBox/HBox2/Info.set_text($CEF.get_error())
+		$Panel/VBox/BottomBar/Info.set_text($CEF.get_error())
 		push_error($CEF.get_error())
 		return
 	print("CEF version: " + $CEF.get_full_version())
@@ -565,10 +580,10 @@ func _process(_delta):
 # ==============================================================================
 # CEF audio will be routed to this Godot stream object.
 # ==============================================================================
-func _on_routing_audio_pressed():
+func _on_routing_audio_pressed(toggled_on):
 	if current_browser == null:
 		return
-	if $Panel/VBox/HBox2/RoutingAudio.button_pressed:
+	if toggled_on:
 		print("You are listening CEF audio routed to Godot and filtered with reverberation effect")
 		$AudioStreamPlayer2D.stream = AudioStreamGenerator.new()
 		$AudioStreamPlayer2D.stream.set_buffer_length(1)
@@ -578,7 +593,7 @@ func _on_routing_audio_pressed():
 		print("You are listening CEF native audio")
 		current_browser.audio_stream = null
 		current_browser.set_muted(false)
-	$Panel/VBox/HBox2/Mute.button_pressed = false
+	$Panel/VBox/BottomBar/Options/Mute.button_pressed = false
 	# Not necessary, but, I do not know what, to apply the new mode, the user
 	# shall click on the html halt button and click on the html button. To avoid
 	# this, we reload the page.
