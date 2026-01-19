@@ -60,6 +60,12 @@
 #include <godot_cpp/core/class_db.hpp>
 
 // Chromium Embedded Framework
+// Define Windows macros before including CEF headers to avoid conflicts
+#ifdef _WIN32
+#    define WIN32_LEAN_AND_MEAN
+#    define NOMINMAX
+#endif
+
 #include "cef_app.h"
 #include "cef_client.h"
 #include "cef_version.h"
