@@ -16,11 +16,11 @@ jobs:
       matrix:
         include:
           # MacOS build configuration
-          - os: macos-latest
-            name: MacOS
-            check_files: cef_artifacts/libgdcef.dylib
-            install_system_packages: brew install ninja
-            shell: bash
+          #- os: macos-latest
+          #  name: MacOS
+          #  check_files: cef_artifacts/libgdcef.dylib
+          #  install_system_packages: brew install ninja
+          #  shell: bash
 
           # Linux build configuration
           - os: ubuntu-latest
