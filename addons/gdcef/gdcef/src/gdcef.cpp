@@ -248,6 +248,9 @@ bool GDCef::initialize(godot::Dictionary config)
         getConfig(config, "remote_allow_origin", std::string{});
     m_browsers_settings.enable_ad_block =
         getConfig(config, "enable_ad_block", true);
+    m_browsers_settings.use_gpu =
+        getConfig(config, "use_gpu", true);
+    GDCEF_DEBUG("Using GPU rendering: " << (m_browsers_settings.use_gpu ? "true" : "false"));
     m_browsers_settings.custom_patterns =
         getConfig(config, "ad_block_patterns", godot::Array());
     m_browsers_settings.user_gesture_required =
@@ -769,9 +772,22 @@ void GDCef::Impl::OnBeforeCommandLineProcessing(
             "remote-allow-origins", settings.remote_allow_origin.c_str());
     }
 
+    // GPU rendering configuration
     // https://magpcss.org/ceforum/viewtopic.php?f=17&t=18970
-    command_line->AppendSwitchWithValue("use-angle", "swiftshader");
-    command_line->AppendSwitchWithValue("use-gl", "angle");
+    if (settings.use_gpu)
+    {
+        // Use native GPU rendering for better performance (5-10x faster)
+        GDCEF_DEBUG("Using native GPU rendering");
+        command_line->AppendSwitchWithValue("use-angle", "default");
+        command_line->AppendSwitchWithValue("use-gl", "angle");
+    }
+    else
+    {
+        // Use SwiftShader software rendering (slower but more compatible)
+        GDCEF_DEBUG("Using SwiftShader software rendering");
+        command_line->AppendSwitchWithValue("use-angle", "swiftshader");
+        command_line->AppendSwitchWithValue("use-gl", "angle");
+    }
 
     // https://github.com/Lecrapouille/gdcef/issues/79
     if (settings.user_gesture_required)

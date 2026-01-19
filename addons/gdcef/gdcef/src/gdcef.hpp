@@ -334,6 +334,9 @@ private:
         bool user_gesture_required = true;
         //! \brief User agent
         std::string user_agent;
+        //! \brief Use GPU for rendering (true) or software SwiftShader (false).
+        //! GPU rendering is much faster but may not work on all systems.
+        bool use_gpu = true;
     };
 
     //! \brief CEF interface implementation

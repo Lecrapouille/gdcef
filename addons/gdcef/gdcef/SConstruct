@@ -193,6 +193,16 @@ if env['cpu_parallelism']:
         # https://gist.github.com/ijleesw/4f863543a50294e3ba54acf588a4a421
         print("Sorry for MacOS there is no openmp !!!")
 
+# SIMD optimization for BGRA->RGBA conversion (SSSE3 required)
+# SSSE3 is available on all x86_64 CPUs since ~2006 (Intel) / ~2011 (AMD)
+if platform == 'linux' or platform == 'macos':
+    if archi == 'x86_64':
+        env.Append(CCFLAGS=['-mssse3'])
+        env.Append(CXXFLAGS=['-mssse3'])
+elif platform == 'windows':
+    # MSVC enables SSSE3 intrinsics by default on x64
+    pass
+
 # Paths of Godot header files
 env.Append(CPPPATH=[godot_api_path + '/gdextension',
                     godot_api_path + '/gen/include',
