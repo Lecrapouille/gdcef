@@ -511,11 +511,29 @@ func _on_TextureRect_gui_input(event):
 
 # ==============================================================================
 # Make the CEF browser reacts from keyboard events.
+# Only send keyboard events to CEF when the browser texture has focus,
+# not when typing in Godot UI elements (URL bar, etc.)
 # ==============================================================================
 func _input(event):
 	if current_browser == null:
 		return
 	if event is InputEventKey:
+		# Check if a Godot UI element has focus (like the URL LineEdit)
+		# If so, don't send keyboard events to CEF to avoid conflicts
+		var focused = get_viewport().gui_get_focus_owner()
+		if focused != null and focused != $Panel/VBox/TextureRect:
+			# Let Godot handle keyboard for its own UI elements
+			# Only handle global shortcuts like Ctrl+S for save
+			if event.is_command_or_control_pressed() && event.pressed && not event.echo:
+				if event.keycode == KEY_S:
+					if event.shift_pressed:
+						# Ctrl+Shift+S: Save as HTML only
+						current_browser.save_page(SAVED_PAGE)
+					else:
+						# Ctrl+S: Save as PDF with all images and resources
+						current_browser.save_page_as_pdf(SAVED_PDF)
+			return
+		# Browser has focus or no UI element has focus - send keys to CEF
 		if event.is_command_or_control_pressed() && event.pressed && not event.echo:
 			if event.keycode == KEY_S:
 				if event.shift_pressed:
@@ -524,20 +542,6 @@ func _input(event):
 				else:
 					# Ctrl+S: Save as PDF with all images and resources
 					current_browser.save_page_as_pdf(SAVED_PDF)
-			# FIXME copy()/paste() inside a Godot text entry will freeze the application
-			# https://github.com/chromiumembedded/cef/issues/3117
-			#if event.keycode == KEY_C:
-			#	current_browser.copy()
-			#elif event.keycode == KEY_V:
-			#	current_browser.paste()
-			#elif event.keycode == KEY_X:
-			#	current_browser.cut()
-			#elif event.keycode == KEY_DELETE:
-			#	current_browser.delete()
-			#elif event.keycode == KEY_Z:
-			#	current_browser.undo()
-			#elif event.shift_pressed && event.keycode == KEY_Z:
-			#	current_browser.redo()
 		else:
 			current_browser.set_key_pressed(
 				event.unicode if event.unicode != 0 else event.keycode,
