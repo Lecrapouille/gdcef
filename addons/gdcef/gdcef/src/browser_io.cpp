@@ -112,6 +112,12 @@ void GDBrowserView::leftMouseUp()
     if (!m_browser)
         return;
 
+    // If an internal HTML5 drag is in progress, end it
+    if (m_is_dragging)
+    {
+        endDragging(m_mouse_x, m_mouse_y);
+    }
+
     m_mouse_event_modifiers &= ~EVENTFLAG_LEFT_MOUSE_BUTTON;
 
     CefBrowserHost::MouseButtonType btn =
@@ -192,9 +198,16 @@ void GDBrowserView::mouseMove(int x, int y)
     evt.y = y;
     evt.modifiers = m_mouse_event_modifiers;
 
+    auto host = m_browser->GetHost();
+
+    // If an internal HTML5 drag is in progress, update the drag target
+    if (m_is_dragging)
+    {
+        host->DragTargetDragOver(evt, m_drag_allowed_ops);
+    }
+
     bool mouse_leave = false; // TODO
     // AD - Adding focus just like what's done in BLUI
-    auto host = m_browser->GetHost();
     host->SetFocus(true);
     host->SendMouseMoveEvent(evt, mouse_leave);
 }

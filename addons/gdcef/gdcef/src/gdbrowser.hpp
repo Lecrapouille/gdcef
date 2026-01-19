@@ -61,6 +61,7 @@
 // Chromium Embedded Framework
 #include "cef_app.h"
 #include "cef_client.h"
+#include "cef_drag_handler.h"
 #include "cef_parser.h"
 #include "cef_render_handler.h"
 #include "wrapper/cef_helpers.h"
@@ -122,7 +123,8 @@ private: // CEF interfaces
                 public CefLifeSpanHandler,
                 public CefDownloadHandler,
                 public CefRequestHandler,
-                public CefResourceRequestHandler
+                public CefResourceRequestHandler,
+                public CefDragHandler
     {
     public:
 
@@ -206,6 +208,14 @@ private: // CEF interfaces
         }
 
         // ---------------------------------------------------------------------
+        //! \brief Return the handler for drag events.
+        // ---------------------------------------------------------------------
+        virtual CefRefPtr<CefDragHandler> GetDragHandler() override
+        {
+            return this;
+        }
+
+        // ---------------------------------------------------------------------
         //! \brief Called when a message is received from a different process.
         // ---------------------------------------------------------------------
         virtual bool
@@ -249,6 +259,38 @@ private: // CEF interfaces
                              int height) override
         {
             m_owner.onPaint(browser, type, dirtyRects, buffer, width, height);
+        }
+
+        // ---------------------------------------------------------------------
+        //! \brief Called when the user starts dragging content in the web view.
+        //! Contextual information about the dragged content is supplied by
+        //! |drag_data|. (|x|, |y|) is the drag start location in screen
+        //! coordinates. OS APIs that run a system message loop may be used
+        //! within the StartDragging call. Return false to abort the drag
+        //! operation. Don't call any of CefBrowserHost::DragSource*Ended*
+        //! methods after returning false. Return true to handle the drag
+        //! operation. Call CefBrowserHost::DragSourceEndedAt and
+        //! DragSourceSystemDragEnded either synchronously or asynchronously to
+        //! inform CEF that the drag operation has ended.
+        // ---------------------------------------------------------------------
+        virtual bool StartDragging(CefRefPtr<CefBrowser> browser,
+                                   CefRefPtr<CefDragData> drag_data,
+                                   CefRenderHandler::DragOperationsMask allowed_ops,
+                                   int x,
+                                   int y) override
+        {
+            return m_owner.onStartDragging(browser, drag_data, allowed_ops, x, y);
+        }
+
+        // ---------------------------------------------------------------------
+        //! \brief Called when the web view wants to update the mouse cursor
+        //! during a drag & drop operation. |operation| describes the allowed
+        //! operation (none, move, copy, link).
+        // ---------------------------------------------------------------------
+        virtual void UpdateDragCursor(CefRefPtr<CefBrowser> browser,
+                                      CefRenderHandler::DragOperation operation) override
+        {
+            m_owner.onUpdateDragCursor(browser, operation);
         }
 
     private: // CefLoadHandler interfaces
@@ -359,6 +401,37 @@ private: // CEF interfaces
                           CefRefPtr<CefDownloadItemCallback> callback) override
         {
             m_owner.onDownloadUpdated(browser, download_item, callback);
+        }
+
+    private: // CefDragHandler interfaces
+
+        // ---------------------------------------------------------------------
+        //! \brief Called when an external drag event enters the browser window.
+        //! |dragData| contains the drag event data and |mask| represents the
+        //! type of drag operation. Return false for default drag handling
+        //! behavior or true to cancel the drag event.
+        // ---------------------------------------------------------------------
+        virtual bool OnDragEnter(CefRefPtr<CefBrowser> browser,
+                                 CefRefPtr<CefDragData> dragData,
+                                 CefDragHandler::DragOperationsMask mask) override
+        {
+            return m_owner.onDragEnter(browser, dragData, mask);
+        }
+
+        // ---------------------------------------------------------------------
+        //! \brief Called whenever draggable regions for the browser window
+        //! change. These can be specified using the '-webkit-app-region: drag/
+        //! no-drag' CSS-property. If draggable regions are never defined in a
+        //! document this method will also never be called. If the last
+        //! draggable region is removed from a document this method will be
+        //! called with an empty vector.
+        // ---------------------------------------------------------------------
+        virtual void
+        OnDraggableRegionsChanged(CefRefPtr<CefBrowser> browser,
+                                  CefRefPtr<CefFrame> frame,
+                                  const std::vector<CefDraggableRegion>& regions) override
+        {
+            m_owner.onDraggableRegionsChanged(browser, frame, regions);
         }
 
     private: // CefRequestContextHandler interfaces
@@ -812,6 +885,65 @@ public:
     // -------------------------------------------------------------------------
     void log_fatal(godot::String message);
 
+    // -------------------------------------------------------------------------
+    //! \brief Enable or disable drag and drop handling.
+    //! \param[in] enable True to enable drag and drop, false to disable.
+    //! When disabled, all drag enter events are cancelled.
+    // -------------------------------------------------------------------------
+    void enableDragAndDrop(bool enable);
+
+    // -------------------------------------------------------------------------
+    //! \brief Check if drag and drop is enabled.
+    //! \return True if drag and drop is enabled.
+    // -------------------------------------------------------------------------
+    bool isDragAndDropEnabled() const;
+
+    // -------------------------------------------------------------------------
+    //! \brief Notify the browser that a drag operation has entered.
+    //! Call this when a Godot drag event starts over the browser.
+    //! \param[in] x The x position of the drag event.
+    //! \param[in] y The y position of the drag event.
+    //! \param[in] text Optional text data being dragged.
+    //! \param[in] html Optional HTML data being dragged.
+    //! \param[in] url Optional URL being dragged.
+    // -------------------------------------------------------------------------
+    void dragEnter(int x, int y, godot::String text, godot::String html,
+                   godot::String url);
+
+    // -------------------------------------------------------------------------
+    //! \brief Notify the browser that a drag operation is moving over.
+    //! Call this when a Godot drag event moves over the browser.
+    //! \param[in] x The x position of the drag event.
+    //! \param[in] y The y position of the drag event.
+    // -------------------------------------------------------------------------
+    void dragOver(int x, int y);
+
+    // -------------------------------------------------------------------------
+    //! \brief Notify the browser that a drag operation has left the window.
+    // -------------------------------------------------------------------------
+    void dragLeave();
+
+    // -------------------------------------------------------------------------
+    //! \brief Notify the browser that a drop has occurred.
+    //! \param[in] x The x position of the drop event.
+    //! \param[in] y The y position of the drop event.
+    // -------------------------------------------------------------------------
+    void drop(int x, int y);
+
+    // -------------------------------------------------------------------------
+    //! \brief Check if an internal HTML5 drag operation is currently in progress.
+    //! \return True if dragging is in progress.
+    // -------------------------------------------------------------------------
+    bool isDragging() const;
+
+    // -------------------------------------------------------------------------
+    //! \brief End the current internal HTML5 drag operation.
+    //! Call this when the mouse button is released during a drag.
+    //! \param[in] x The x position where the drag ended.
+    //! \param[in] y The y position where the drag ended.
+    // -------------------------------------------------------------------------
+    void endDragging(int x, int y);
+
 private:
 
     void resize_(int width, int height);
@@ -923,6 +1055,38 @@ private:
                                   CefRefPtr<CefProcessMessage> message);
 
     // -------------------------------------------------------------------------
+    //! \brief Called by GDBrowserView::Impl::OnDragEnter
+    //! \return true to cancel the drag event, false for default handling.
+    // -------------------------------------------------------------------------
+    bool onDragEnter(CefRefPtr<CefBrowser> browser,
+                     CefRefPtr<CefDragData> dragData,
+                     CefDragHandler::DragOperationsMask mask);
+
+    // -------------------------------------------------------------------------
+    //! \brief Called by GDBrowserView::Impl::OnDraggableRegionsChanged
+    // -------------------------------------------------------------------------
+    void onDraggableRegionsChanged(CefRefPtr<CefBrowser> browser,
+                                   CefRefPtr<CefFrame> frame,
+                                   const std::vector<CefDraggableRegion>& regions);
+
+    // -------------------------------------------------------------------------
+    //! \brief Called by GDBrowserView::Impl::StartDragging when the user starts
+    //! dragging content in the web view (HTML5 drag and drop).
+    //! \return true to handle the drag operation, false to abort.
+    // -------------------------------------------------------------------------
+    bool onStartDragging(CefRefPtr<CefBrowser> browser,
+                         CefRefPtr<CefDragData> drag_data,
+                         CefRenderHandler::DragOperationsMask allowed_ops,
+                         int x,
+                         int y);
+
+    // -------------------------------------------------------------------------
+    //! \brief Called by GDBrowserView::Impl::UpdateDragCursor
+    // -------------------------------------------------------------------------
+    void onUpdateDragCursor(CefRefPtr<CefBrowser> browser,
+                            CefRenderHandler::DragOperation operation);
+
+    // -------------------------------------------------------------------------
     //! \brief Recursively convert JSON data to Godot Variant types
     //! \param[in] json JSON value to convert
     //! \return Converted Godot Variant
@@ -995,6 +1159,22 @@ private:
 
     //! \brief JS bindings
     std::unordered_map<std::string, godot::Callable> m_js_bindings;
+
+    //! \brief Enable or disable drag and drop. When disabled, all drag enter
+    //! events are cancelled.
+    bool m_drag_and_drop_enabled = true;
+
+    //! \brief Current drag data (used for drag operations from Godot to CEF)
+    CefRefPtr<CefDragData> m_drag_data = nullptr;
+
+    //! \brief True when an internal HTML5 drag operation is in progress
+    bool m_is_dragging = false;
+
+    //! \brief Allowed drag operations for the current drag
+    CefRenderHandler::DragOperationsMask m_drag_allowed_ops = DRAG_OPERATION_NONE;
+
+    //! \brief Current drag operation
+    CefRenderHandler::DragOperation m_current_drag_op = DRAG_OPERATION_NONE;
 };
 
 #if !defined(_WIN32)

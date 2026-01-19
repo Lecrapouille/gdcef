@@ -120,6 +120,13 @@ shortcut_feedback = false
 shortcut_in_tooltip = false
 text = "Radio"
 
+[node name="DragDrop" type="Button" parent="Panel/VBox/HBox2"]
+layout_mode = 2
+tooltip_text = "Test HTML5 Drag and Drop"
+shortcut_feedback = false
+shortcut_in_tooltip = false
+text = "Drag&Drop"
+
 [node name="RoutingAudio" type="CheckBox" parent="Panel/VBox/HBox2"]
 layout_mode = 2
 tooltip_text = "Route CEF audio to Godot and apply a sound effect"
@@ -173,6 +180,7 @@ presets_visible = false
 [connection signal="resized" from="Panel/VBox/TextureRect" to="." method="_on_texture_rect_resized"]
 [connection signal="pressed" from="Panel/VBox/HBox2/BGColor" to="." method="_on_BGColor_pressed"]
 [connection signal="pressed" from="Panel/VBox/HBox2/Radio" to="." method="_on_radio_pressed"]
+[connection signal="pressed" from="Panel/VBox/HBox2/DragDrop" to="." method="_on_dragdrop_pressed"]
 [connection signal="pressed" from="Panel/VBox/HBox2/RoutingAudio" to="." method="_on_routing_audio_pressed"]
 [connection signal="pressed" from="Panel/VBox/HBox2/Mute" to="." method="_on_mute_pressed"]
 [connection signal="pressed" from="Panel/VBox/HBox2/AddBlocker" to="." method="_on_add_blocker_pressed"]

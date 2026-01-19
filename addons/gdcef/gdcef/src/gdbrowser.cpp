@@ -170,6 +170,21 @@ void GDBrowserView::_bind_methods()
     ClassDB::bind_method(D_METHOD("log_error", "message"), &GDBrowserView::log_error);
     ClassDB::bind_method(D_METHOD("log_fatal", "message"), &GDBrowserView::log_fatal);
 
+    // Drag and drop methods
+    ClassDB::bind_method(D_METHOD("enable_drag_and_drop", "enable"),
+                         &GDBrowserView::enableDragAndDrop);
+    ClassDB::bind_method(D_METHOD("is_drag_and_drop_enabled"),
+                         &GDBrowserView::isDragAndDropEnabled);
+    ClassDB::bind_method(D_METHOD("drag_enter", "x", "y", "text", "html", "url"),
+                         &GDBrowserView::dragEnter);
+    ClassDB::bind_method(D_METHOD("drag_over", "x", "y"),
+                         &GDBrowserView::dragOver);
+    ClassDB::bind_method(D_METHOD("drag_leave"), &GDBrowserView::dragLeave);
+    ClassDB::bind_method(D_METHOD("drop", "x", "y"), &GDBrowserView::drop);
+    ClassDB::bind_method(D_METHOD("is_dragging"), &GDBrowserView::isDragging);
+    ClassDB::bind_method(D_METHOD("end_dragging", "x", "y"),
+                         &GDBrowserView::endDragging);
+
     // Signals
     ADD_SIGNAL(MethodInfo("on_download_updated",
                           PropertyInfo(Variant::STRING, "file"),
@@ -185,6 +200,18 @@ void GDBrowserView::_bind_methods()
                           PropertyInfo(Variant::OBJECT, "browser")));
     ADD_SIGNAL(MethodInfo("on_html_content_requested",
                           PropertyInfo(Variant::STRING, "html"),
+                          PropertyInfo(Variant::OBJECT, "browser")));
+    ADD_SIGNAL(MethodInfo("on_drag_enter",
+                          PropertyInfo(Variant::DICTIONARY, "drag_info"),
+                          PropertyInfo(Variant::OBJECT, "browser")));
+    ADD_SIGNAL(MethodInfo("on_draggable_regions_changed",
+                          PropertyInfo(Variant::ARRAY, "regions"),
+                          PropertyInfo(Variant::OBJECT, "browser")));
+    ADD_SIGNAL(MethodInfo("on_start_dragging",
+                          PropertyInfo(Variant::DICTIONARY, "drag_info"),
+                          PropertyInfo(Variant::OBJECT, "browser")));
+    ADD_SIGNAL(MethodInfo("on_update_drag_cursor",
+                          PropertyInfo(Variant::INT, "operation"),
                           PropertyInfo(Variant::OBJECT, "browser")));
 
     // Properties
@@ -1297,4 +1324,295 @@ void GDBrowserView::log_fatal(godot::String message)
     godot::String name = get_name();
     ss << "[browser id: " << m_id << ", name: " << name.utf8().get_data() << "] " << message.utf8().get_data();
     LOG(FATAL) << ss.str();
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::enableDragAndDrop(bool enable)
+{
+    BROWSER_DEBUG("Enabling drag and drop: " << (enable ? "true" : "false"));
+    m_drag_and_drop_enabled = enable;
+}
+
+//------------------------------------------------------------------------------
+bool GDBrowserView::isDragAndDropEnabled() const
+{
+    return m_drag_and_drop_enabled;
+}
+
+//------------------------------------------------------------------------------
+bool GDBrowserView::onDragEnter(CefRefPtr<CefBrowser> browser,
+                                CefRefPtr<CefDragData> dragData,
+                                CefDragHandler::DragOperationsMask mask)
+{
+    BROWSER_DEBUG("onDragEnter called");
+
+    // If drag and drop is disabled, cancel all drag events
+    if (!m_drag_and_drop_enabled)
+    {
+        BROWSER_DEBUG("Drag and drop disabled, cancelling drag event");
+        return true; // Cancel the drag event
+    }
+
+    // Emit signal for Godot script with drag information
+    godot::Dictionary drag_info;
+
+    // Check what type of data is being dragged
+    if (dragData->IsFile())
+    {
+        drag_info["type"] = "file";
+        std::vector<CefString> file_names;
+        dragData->GetFileNames(file_names);
+        godot::Array files;
+        for (const auto& file : file_names)
+        {
+            files.push_back(godot::String(file.ToString().c_str()));
+        }
+        drag_info["files"] = files;
+    }
+    else if (dragData->IsLink())
+    {
+        drag_info["type"] = "link";
+        drag_info["url"] = godot::String(dragData->GetLinkURL().ToString().c_str());
+        drag_info["title"] = godot::String(dragData->GetLinkTitle().ToString().c_str());
+    }
+    else if (dragData->IsFragment())
+    {
+        drag_info["type"] = "fragment";
+        drag_info["text"] = godot::String(dragData->GetFragmentText().ToString().c_str());
+        drag_info["html"] = godot::String(dragData->GetFragmentHtml().ToString().c_str());
+    }
+    else
+    {
+        drag_info["type"] = "unknown";
+    }
+
+    // Add mask information
+    drag_info["mask"] = static_cast<int>(mask);
+
+    emit_signal("on_drag_enter", drag_info, this);
+
+    return false; // Allow the drag event (default behavior)
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::onDraggableRegionsChanged(
+    CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefFrame> frame,
+    const std::vector<CefDraggableRegion>& regions)
+{
+    BROWSER_DEBUG("onDraggableRegionsChanged called with " << regions.size()
+                                                           << " regions");
+
+    // Convert regions to Godot format
+    godot::Array godot_regions;
+    for (const auto& region : regions)
+    {
+        godot::Dictionary region_dict;
+        region_dict["x"] = region.bounds.x;
+        region_dict["y"] = region.bounds.y;
+        region_dict["width"] = region.bounds.width;
+        region_dict["height"] = region.bounds.height;
+        region_dict["draggable"] = region.draggable;
+        godot_regions.push_back(region_dict);
+    }
+
+    emit_signal("on_draggable_regions_changed", godot_regions, this);
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::dragEnter(int x, int y, godot::String text,
+                               godot::String html, godot::String url)
+{
+    BROWSER_DEBUG("dragEnter at " << x << ", " << y);
+
+    if (!m_browser || !m_browser->GetHost())
+        return;
+
+    // Create drag data
+    m_drag_data = CefDragData::Create();
+
+    if (!text.is_empty())
+    {
+        m_drag_data->SetFragmentText(text.utf8().get_data());
+    }
+    if (!html.is_empty())
+    {
+        m_drag_data->SetFragmentHtml(html.utf8().get_data());
+    }
+    if (!url.is_empty())
+    {
+        m_drag_data->SetLinkURL(url.utf8().get_data());
+    }
+
+    CefMouseEvent mouse_event;
+    mouse_event.x = x;
+    mouse_event.y = y;
+    mouse_event.modifiers = m_mouse_event_modifiers;
+
+    // Notify CEF of the drag enter
+    m_browser->GetHost()->DragTargetDragEnter(
+        m_drag_data, mouse_event,
+        static_cast<CefBrowserHost::DragOperationsMask>(
+            DRAG_OPERATION_COPY | DRAG_OPERATION_MOVE | DRAG_OPERATION_LINK));
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::dragOver(int x, int y)
+{
+    if (!m_browser || !m_browser->GetHost())
+        return;
+
+    CefMouseEvent mouse_event;
+    mouse_event.x = x;
+    mouse_event.y = y;
+    mouse_event.modifiers = m_mouse_event_modifiers;
+
+    m_browser->GetHost()->DragTargetDragOver(
+        mouse_event,
+        static_cast<CefBrowserHost::DragOperationsMask>(
+            DRAG_OPERATION_COPY | DRAG_OPERATION_MOVE | DRAG_OPERATION_LINK));
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::dragLeave()
+{
+    BROWSER_DEBUG("dragLeave");
+
+    if (!m_browser || !m_browser->GetHost())
+        return;
+
+    m_browser->GetHost()->DragTargetDragLeave();
+    m_drag_data = nullptr;
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::drop(int x, int y)
+{
+    BROWSER_DEBUG("drop at " << x << ", " << y);
+
+    if (!m_browser || !m_browser->GetHost())
+        return;
+
+    CefMouseEvent mouse_event;
+    mouse_event.x = x;
+    mouse_event.y = y;
+    mouse_event.modifiers = m_mouse_event_modifiers;
+
+    m_browser->GetHost()->DragTargetDrop(mouse_event);
+    m_drag_data = nullptr;
+}
+
+//------------------------------------------------------------------------------
+bool GDBrowserView::isDragging() const
+{
+    return m_is_dragging;
+}
+
+//------------------------------------------------------------------------------
+bool GDBrowserView::onStartDragging(CefRefPtr<CefBrowser> browser,
+                                     CefRefPtr<CefDragData> drag_data,
+                                     CefRenderHandler::DragOperationsMask allowed_ops,
+                                     int x,
+                                     int y)
+{
+    BROWSER_DEBUG("onStartDragging at " << x << ", " << y);
+
+    if (!m_drag_and_drop_enabled)
+    {
+        BROWSER_DEBUG("Drag and drop disabled, aborting drag");
+        return false; // Abort the drag
+    }
+
+    // Store drag state
+    m_is_dragging = true;
+    m_drag_data = drag_data->Clone();
+    m_drag_allowed_ops = allowed_ops;
+    m_current_drag_op = DRAG_OPERATION_NONE;
+
+    // Notify the browser that a drag is entering
+    CefMouseEvent mouse_event;
+    mouse_event.x = x;
+    mouse_event.y = y;
+    mouse_event.modifiers = m_mouse_event_modifiers;
+
+    m_browser->GetHost()->DragTargetDragEnter(m_drag_data, mouse_event, allowed_ops);
+
+    // Emit signal for Godot
+    godot::Dictionary drag_info;
+    if (drag_data->IsFile())
+    {
+        drag_info["type"] = "file";
+        std::vector<CefString> file_names;
+        drag_data->GetFileNames(file_names);
+        godot::Array files;
+        for (const auto& file : file_names)
+        {
+            files.push_back(godot::String(file.ToString().c_str()));
+        }
+        drag_info["files"] = files;
+    }
+    else if (drag_data->IsLink())
+    {
+        drag_info["type"] = "link";
+        drag_info["url"] = godot::String(drag_data->GetLinkURL().ToString().c_str());
+    }
+    else if (drag_data->IsFragment())
+    {
+        drag_info["type"] = "fragment";
+        drag_info["text"] = godot::String(drag_data->GetFragmentText().ToString().c_str());
+        drag_info["html"] = godot::String(drag_data->GetFragmentHtml().ToString().c_str());
+    }
+    drag_info["x"] = x;
+    drag_info["y"] = y;
+
+    emit_signal("on_start_dragging", drag_info, this);
+
+    return true; // Handle the drag operation
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::onUpdateDragCursor(CefRefPtr<CefBrowser> browser,
+                                        CefRenderHandler::DragOperation operation)
+{
+    m_current_drag_op = operation;
+
+    // Emit signal for Godot to update cursor if needed
+    emit_signal("on_update_drag_cursor", static_cast<int>(operation), this);
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::endDragging(int x, int y)
+{
+    BROWSER_DEBUG("endDragging at " << x << ", " << y);
+
+    if (!m_is_dragging || !m_browser || !m_browser->GetHost())
+    {
+        m_is_dragging = false;
+        m_drag_data = nullptr;
+        return;
+    }
+
+    CefMouseEvent mouse_event;
+    mouse_event.x = x;
+    mouse_event.y = y;
+    mouse_event.modifiers = m_mouse_event_modifiers;
+
+    // Perform the drop
+    if (m_current_drag_op != DRAG_OPERATION_NONE)
+    {
+        m_browser->GetHost()->DragTargetDrop(mouse_event);
+    }
+    else
+    {
+        m_browser->GetHost()->DragTargetDragLeave();
+    }
+
+    // Notify CEF that the drag has ended
+    m_browser->GetHost()->DragSourceEndedAt(x, y, m_current_drag_op);
+    m_browser->GetHost()->DragSourceSystemDragEnded();
+
+    // Reset drag state
+    m_is_dragging = false;
+    m_drag_data = nullptr;
+    m_current_drag_op = DRAG_OPERATION_NONE;
 }

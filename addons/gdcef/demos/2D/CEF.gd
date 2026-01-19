@@ -9,6 +9,7 @@ extends Control
 # URL
 const DEFAULT_PAGE = "user://default_page.html"
 const SAVED_PAGE = "user://saved_page.html"
+const DRAG_DROP_PAGE = "user://dragdrop_page.html"
 const HOME_PAGE = "https://github.com/Lecrapouille/gdcef"
 const RADIO_PAGE = "http://streaming.radio.co/s9378c22ee/listen"
 #const RADIO_PAGE = "https://www.programmes-radio.com/fr/stream-e8BxeoRhsz9jY9mXXRiFTE/ecouter-KPJK"
@@ -24,6 +25,165 @@ const RADIO_PAGE = "http://streaming.radio.co/s9378c22ee/listen"
 func create_default_page():
 	var file = FileAccess.open(DEFAULT_PAGE, FileAccess.WRITE)
 	file.store_string("<html><body bgcolor=\"white\"><h2>Welcome to gdCEF !</h2><p>This a generated page.</p></body></html>")
+	file.close()
+	pass
+
+# ==============================================================================
+# Create the drag and drop test page (HTML5 Drag and Drop API).
+# Based on: https://www.w3schools.com/html/html5_draganddrop.asp
+# ==============================================================================
+func create_dragdrop_page():
+	var html = """<!DOCTYPE HTML>
+<html>
+<head>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    margin: 0;
+}
+h1 {
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+.container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+.drop-zone {
+    width: 200px;
+    height: 200px;
+    border: 3px dashed rgba(255,255,255,0.5);
+    border-radius: 15px;
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+.drop-zone:hover {
+    border-color: white;
+    background: rgba(255,255,255,0.2);
+}
+.drop-zone.drag-over {
+    border-color: #4CAF50;
+    background: rgba(76, 175, 80, 0.3);
+    transform: scale(1.05);
+}
+.draggable {
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    transition: transform 0.2s ease;
+}
+.draggable:hover {
+    transform: scale(1.1);
+}
+.draggable:active {
+    cursor: grabbing;
+}
+#drag1 { background: linear-gradient(45deg, #FF6B6B, #FF8E53); }
+#drag2 { background: linear-gradient(45deg, #4ECDC4, #44A08D); }
+#drag3 { background: linear-gradient(45deg, #A8E6CF, #88D8B0); }
+.info {
+    color: white;
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 10px;
+}
+</style>
+<script>
+function dragstartHandler(ev) {
+    ev.dataTransfer.setData("text", ev.target.id);
+    ev.target.style.opacity = '0.5';
+}
+
+function dragendHandler(ev) {
+    ev.target.style.opacity = '1';
+}
+
+function dragoverHandler(ev) {
+    ev.preventDefault();
+    ev.currentTarget.classList.add('drag-over');
+}
+
+function dragleaveHandler(ev) {
+    ev.currentTarget.classList.remove('drag-over');
+}
+
+function dropHandler(ev) {
+    ev.preventDefault();
+    ev.currentTarget.classList.remove('drag-over');
+    const data = ev.dataTransfer.getData("text");
+    const draggedElement = document.getElementById(data);
+    if (draggedElement) {
+        ev.currentTarget.appendChild(draggedElement);
+    }
+}
+</script>
+</head>
+<body>
+
+<h1>🎮 HTML5 Drag and Drop Test</h1>
+<p style="color: white;">Drag the emoji boxes into the drop zones!</p>
+
+<div class="container">
+    <div id="zone1" class="drop-zone"
+         ondrop="dropHandler(event)"
+         ondragover="dragoverHandler(event)"
+         ondragleave="dragleaveHandler(event)">
+        <div id="drag1" class="draggable" draggable="true"
+             ondragstart="dragstartHandler(event)"
+             ondragend="dragendHandler(event)">🎯</div>
+    </div>
+
+    <div id="zone2" class="drop-zone"
+         ondrop="dropHandler(event)"
+         ondragover="dragoverHandler(event)"
+         ondragleave="dragleaveHandler(event)">
+        <div id="drag2" class="draggable" draggable="true"
+             ondragstart="dragstartHandler(event)"
+             ondragend="dragendHandler(event)">🚀</div>
+    </div>
+
+    <div id="zone3" class="drop-zone"
+         ondrop="dropHandler(event)"
+         ondragover="dragoverHandler(event)"
+         ondragleave="dragleaveHandler(event)">
+        <div id="drag3" class="draggable" draggable="true"
+             ondragstart="dragstartHandler(event)"
+             ondragend="dragendHandler(event)">⭐</div>
+    </div>
+
+    <div id="zone4" class="drop-zone"
+         ondrop="dropHandler(event)"
+         ondragover="dragoverHandler(event)"
+         ondragleave="dragleaveHandler(event)">
+    </div>
+</div>
+
+<div class="info">
+    <strong>Instructions:</strong><br>
+    1. Click and hold on an emoji box<br>
+    2. Drag it to another drop zone<br>
+    3. Release to drop it<br><br>
+    <em>This tests the HTML5 Drag and Drop API in gdCEF!</em>
+</div>
+
+</body>
+</html>"""
+	var file = FileAccess.open(DRAG_DROP_PAGE, FileAccess.WRITE)
+	file.store_string(html)
 	file.close()
 	pass
 
@@ -234,6 +394,14 @@ func _on_radio_pressed():
 	pass
 
 # ==============================================================================
+# Drag and Drop test button pressed: load drag and drop test page.
+# ==============================================================================
+func _on_dragdrop_pressed():
+	if current_browser != null:
+		current_browser.load_url("file://" + ProjectSettings.globalize_path(DRAG_DROP_PAGE))
+	pass
+
+# ==============================================================================
 # Mute/unmute the sound
 # ==============================================================================
 func _on_mute_pressed():
@@ -286,8 +454,8 @@ func _on_TextureRect_gui_input(event):
 			else:
 				current_browser.set_mouse_middle_up()
 	elif event is InputEventMouseMotion:
-		if mouse_pressed:
-			current_browser.set_mouse_left_down()
+		# Just move the mouse - don't call set_mouse_left_down() during drag
+		# as this interferes with HTML5 drag and drop
 		current_browser.set_mouse_moved(event.position.x, event.position.y)
 	pass
 
@@ -341,6 +509,7 @@ func _on_texture_rect_resized():
 # ==============================================================================
 func _ready():
 	create_default_page()
+	create_dragdrop_page()
 
 	# See API.md for more details. CEF Configuration is:
 	# {
