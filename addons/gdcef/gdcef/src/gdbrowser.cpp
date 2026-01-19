@@ -27,6 +27,7 @@
 #include "helper_config.hpp"
 #include "helper_files.hpp"
 #include <godot_cpp/classes/json.hpp>
+#include <fstream>
 
 #include <gdextension_interface.h>
 #include <godot_cpp/core/class_db.hpp>
@@ -127,24 +128,86 @@ static inline void convertBGRAtoRGBA(unsigned char* dst,
 }
 
 //------------------------------------------------------------------------------
-// Visit the html content of the current page.
-class Visitor: public CefStringVisitor
+// Visit the html content of the current page and emit signal with content.
+class HtmlContentVisitor : public CefStringVisitor
 {
 public:
 
-    Visitor(GDBrowserView& node) : m_node(node) {}
+    HtmlContentVisitor(GDBrowserView& node) : m_node(node) {}
 
     virtual void Visit(const CefString& string) override
     {
         godot::String html(string.ToString().c_str());
-
         m_node.emit_signal("on_html_content_requested", html, &m_node);
     }
 
 private:
 
     GDBrowserView& m_node;
-    IMPLEMENT_REFCOUNTING(Visitor);
+    IMPLEMENT_REFCOUNTING(HtmlContentVisitor);
+};
+
+//------------------------------------------------------------------------------
+// Visit the html content and save it to a file.
+class SavePageVisitor : public CefStringVisitor
+{
+public:
+
+    SavePageVisitor(GDBrowserView& node, const godot::String& path)
+        : m_node(node), m_path(path) {}
+
+    virtual void Visit(const CefString& string) override
+    {
+        std::string html = string.ToString();
+        std::string filepath = m_path.utf8().get_data();
+
+        // Try to save to file using C++ standard library
+        std::ofstream file(filepath);
+        bool success = false;
+
+        if (file.is_open())
+        {
+            file << html;
+            file.close();
+            success = true;
+            GDCEF_DEBUG("Page saved to: " << filepath);
+        }
+        else
+        {
+            GDCEF_ERROR("Failed to save page to: " << filepath);
+        }
+
+        m_node.emit_signal("on_page_saved", m_path, success, &m_node);
+    }
+
+private:
+
+    GDBrowserView& m_node;
+    godot::String m_path;
+    IMPLEMENT_REFCOUNTING(SavePageVisitor);
+};
+
+//------------------------------------------------------------------------------
+// Callback for PDF printing completion.
+class PdfPrintCallback : public CefPdfPrintCallback
+{
+public:
+
+    PdfPrintCallback(GDBrowserView& node, const godot::String& path)
+        : m_node(node), m_path(path) {}
+
+    virtual void OnPdfPrintFinished(const CefString& path, bool ok) override
+    {
+        GDCEF_DEBUG("PDF save " << (ok ? "succeeded" : "failed")
+                    << ": " << path.ToString());
+        m_node.emit_signal("on_pdf_saved", m_path, ok, &m_node);
+    }
+
+private:
+
+    GDBrowserView& m_node;
+    godot::String m_path;
+    IMPLEMENT_REFCOUNTING(PdfPrintCallback);
 };
 
 //------------------------------------------------------------------------------
@@ -193,6 +256,10 @@ void GDBrowserView::_bind_methods()
     ClassDB::bind_method(D_METHOD("redo"), &GDBrowserView::redo);
     ClassDB::bind_method(D_METHOD("request_html_content"),
                          &GDBrowserView::requestHtmlContent);
+    ClassDB::bind_method(D_METHOD("save_page", "path"),
+                         &GDBrowserView::savePage);
+    ClassDB::bind_method(D_METHOD("save_page_as_pdf", "path"),
+                         &GDBrowserView::savePageAsPdf);
     ClassDB::bind_method(D_METHOD("has_previous_page"),
                          &GDBrowserView::canNavigateBackward);
     ClassDB::bind_method(D_METHOD("has_next_page"),
@@ -287,6 +354,14 @@ void GDBrowserView::_bind_methods()
                           PropertyInfo(Variant::OBJECT, "browser")));
     ADD_SIGNAL(MethodInfo("on_html_content_requested",
                           PropertyInfo(Variant::STRING, "html"),
+                          PropertyInfo(Variant::OBJECT, "browser")));
+    ADD_SIGNAL(MethodInfo("on_page_saved",
+                          PropertyInfo(Variant::STRING, "path"),
+                          PropertyInfo(Variant::BOOL, "success"),
+                          PropertyInfo(Variant::OBJECT, "browser")));
+    ADD_SIGNAL(MethodInfo("on_pdf_saved",
+                          PropertyInfo(Variant::STRING, "path"),
+                          PropertyInfo(Variant::BOOL, "success"),
                           PropertyInfo(Variant::OBJECT, "browser")));
     ADD_SIGNAL(MethodInfo("on_drag_enter",
                           PropertyInfo(Variant::DICTIONARY, "drag_info"),
@@ -707,13 +782,74 @@ void GDBrowserView::redo() const
 //------------------------------------------------------------------------------
 void GDBrowserView::requestHtmlContent()
 {
-    CefRefPtr<Visitor> visitor = new Visitor(*this);
     if (m_browser && m_browser->GetMainFrame())
     {
+        CefRefPtr<HtmlContentVisitor> visitor = new HtmlContentVisitor(*this);
         m_browser->GetMainFrame()->GetSource(visitor);
+        return;
     }
 
-    BROWSER_ERROR("Not possible to retrieving text");
+    BROWSER_ERROR("Cannot retrieve HTML content: no browser or frame");
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::savePage(godot::String path)
+{
+    if (m_browser && m_browser->GetMainFrame())
+    {
+        // Resolve Godot paths (res://, user://) to absolute paths
+        godot::String resolved_path = path;
+        if (path.begins_with("res://") || path.begins_with("user://"))
+        {
+            resolved_path = godot::ProjectSettings::get_singleton()
+                                ->globalize_path(path);
+        }
+
+        CefRefPtr<SavePageVisitor> visitor =
+            new SavePageVisitor(*this, resolved_path);
+        m_browser->GetMainFrame()->GetSource(visitor);
+        return;
+    }
+
+    BROWSER_ERROR("Cannot save page: no browser or frame");
+    emit_signal("on_page_saved", path, false, this);
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::savePageAsPdf(godot::String path)
+{
+    if (!m_browser)
+    {
+        BROWSER_ERROR("Cannot save PDF: no browser");
+        emit_signal("on_pdf_saved", path, false, this);
+        return;
+    }
+
+    // Resolve Godot paths (res://, user://) to absolute paths
+    godot::String resolved_path = path;
+    if (path.begins_with("res://") || path.begins_with("user://"))
+    {
+        resolved_path = godot::ProjectSettings::get_singleton()
+                            ->globalize_path(path);
+    }
+
+    // Configure PDF settings (A4 paper size)
+    CefPdfPrintSettings settings;
+    settings.landscape = 0;                    // Portrait mode
+    settings.print_background = 1;             // Include background graphics
+    settings.scale = 1.0;                      // 100% scale
+    settings.paper_width = 8.27;               // A4 width in inches (210mm)
+    settings.paper_height = 11.69;             // A4 height in inches (297mm)
+    settings.margin_type = PDF_PRINT_MARGIN_DEFAULT;
+    settings.display_header_footer = 0;        // No header/footer
+
+    CefRefPtr<PdfPrintCallback> callback =
+        new PdfPrintCallback(*this, resolved_path);
+
+    m_browser->GetHost()->PrintToPDF(
+        resolved_path.utf8().get_data(), settings, callback);
+
+    BROWSER_DEBUG("Saving page as PDF to: " << resolved_path.utf8().get_data());
 }
 
 //------------------------------------------------------------------------------

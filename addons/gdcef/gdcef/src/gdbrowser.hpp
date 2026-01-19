@@ -587,9 +587,25 @@ public:
 
     // -------------------------------------------------------------------------
     //! \brief Request the HTML content of the page. The result is given by the
-    //! Godot callback
+    //! Godot signal on_html_content_requested.
     // -------------------------------------------------------------------------
     void requestHtmlContent();
+
+    // -------------------------------------------------------------------------
+    //! \brief Save the current page HTML content to a file.
+    //! The result is given by the Godot signal on_page_saved.
+    //! \param[in] path The file path to save to. Supports Godot paths
+    //!            (res://, user://) and absolute paths.
+    // -------------------------------------------------------------------------
+    void savePage(godot::String path);
+
+    // -------------------------------------------------------------------------
+    //! \brief Save the current page as a PDF file with all rendered content
+    //! (images, CSS, etc.). The result is given by the Godot signal on_pdf_saved.
+    //! \param[in] path The file path to save to (must end with .pdf).
+    //!            Supports Godot paths (res://, user://) and absolute paths.
+    // -------------------------------------------------------------------------
+    void savePageAsPdf(godot::String path);
 
     // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Execute  Execute a string of

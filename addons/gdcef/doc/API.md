@@ -100,6 +100,8 @@ Nodes are created by `GDCef.create_browser` and are automatically destroyed when
 | `register_method` | `callable`: Callable | bool | Register a GDScript method to be callable from JavaScript. Returns true if registration was successful. |
 | `reload` | | bool | Reload the current page. Returns true if reload was initiated. |
 | `request_html_content` | | | Request the current page HTML content. Result will be sent through the `on_html_content_requested` signal. |
+| `save_page` | `path`: String | | Save the current page HTML content to a file. Supports Godot paths (`res://`, `user://`) and absolute paths. Result will be sent through the `on_page_saved` signal. |
+| `save_page_as_pdf` | `path`: String | | Save the current page as a PDF file with all rendered content (images, CSS, etc.). Supports Godot paths. Result will be sent through the `on_pdf_saved` signal. |
 | `resize` | `size`: Vector2 | | Resize the browser viewport to the specified width and height. |
 | `emit_js` | `event_name`: String, `data`: Variant | bool | Send data to JavaScript. Returns true if the data was successfully sent. |
 | `set_download_folder` | `path`: String | | Set the folder where downloaded files will be saved. Accepts absolute paths or Godot paths (`res://`, `user://`). |
@@ -114,8 +116,8 @@ Nodes are created by `GDCef.create_browser` and are automatically destroyed when
 | `set_mouse_right_click` | | | Send a right mouse button click event (down then up). |
 | `set_mouse_right_down` | | | Send a right mouse button down event. |
 | `set_mouse_right_up` | | | Send a right mouse button up event. |
-| `set_mouse_wheel_horizontal` | `delta`: int | | Send a horizontal mouse wheel scroll event. |
-| `set_mouse_wheel_vertical` | `delta`: int | | Send a vertical mouse wheel scroll event. |
+| `set_mouse_wheel_horizontal` | `delta`: int, `shift`: bool, `ctrl`: bool, `alt`: bool | | Send a horizontal mouse wheel scroll event with optional keyboard modifiers. |
+| `set_mouse_wheel_vertical` | `delta`: int, `shift`: bool, `ctrl`: bool, `alt`: bool | | Send a vertical mouse wheel scroll event with optional keyboard modifiers (e.g., Ctrl+scroll for zoom on Google Maps). |
 | `set_muted` | `mute`: bool | bool | Set the audio mute state. Returns true if the audio was successfully muted. |
 | `set_viewport` | `x`: float, `y`: float, `width`: float, `height`: float | | Set the viewport rectangle where the web content will be displayed. Values are in percent (0.0-1.0) of the surface dimensions. Default is x=0, y=0, width=1, height=1 (full surface). |
 | `set_zoom_level` | `delta`: float | | Set the browser zoom level. |
@@ -136,6 +138,8 @@ Nodes are created by `GDCef.create_browser` and are automatically destroyed when
 | `on_page_failed_loading` | `err_code`: int, `err_msg`: String, `browser`: GDBrowserView | Emitted when a page failed to load with the error code and message. |
 | `on_download_updated` | `file`: String, `percentage`: int, `browser`: GDBrowserView | Emitted when a file download progress is updated. The path of the downloading file and the percentage of completion are given. |
 | `on_html_content_requested` | `html`: String, `browser`: GDBrowserView | Emitted in response to `request_html_content()` with the page HTML content. |
+| `on_page_saved` | `path`: String, `success`: bool, `browser`: GDBrowserView | Emitted in response to `save_page()` with the file path and success status. |
+| `on_pdf_saved` | `path`: String, `success`: bool, `browser`: GDBrowserView | Emitted in response to `save_page_as_pdf()` with the file path and success status. |
 
 ### Browser properties
 

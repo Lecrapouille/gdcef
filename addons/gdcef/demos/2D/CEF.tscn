@@ -82,6 +82,18 @@ layout_mode = 2
 tooltip_text = "Go to homepage"
 text = "⌂"
 
+[node name="Save" type="Button" parent="Panel/VBox/TopBar/NavButtons"]
+custom_minimum_size = Vector2(36, 32)
+layout_mode = 2
+tooltip_text = "Save page as HTML (Ctrl+Shift+S)"
+text = "Save"
+
+[node name="SavePdf" type="Button" parent="Panel/VBox/TopBar/NavButtons"]
+custom_minimum_size = Vector2(36, 32)
+layout_mode = 2
+tooltip_text = "Save as PDF with images (Ctrl+S)"
+text = "PDF"
+
 [node name="Separator1" type="VSeparator" parent="Panel/VBox/TopBar"]
 layout_mode = 2
 
@@ -133,19 +145,19 @@ theme_override_constants/separation = 4
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 tooltip_text = "Change page background color via JavaScript"
-text = "🎨 Color"
+text = "Color"
 
 [node name="Radio" type="Button" parent="Panel/VBox/BottomBar/ToolButtons"]
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 tooltip_text = "Load a page with audio streaming"
-text = "📻 Radio"
+text = "Radio"
 
 [node name="DragDrop" type="Button" parent="Panel/VBox/BottomBar/ToolButtons"]
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 tooltip_text = "Test HTML5 Drag and Drop API"
-text = "🖱 Drag&Drop"
+text = "Drag&Drop"
 
 [node name="Separator3" type="VSeparator" parent="Panel/VBox/BottomBar"]
 layout_mode = 2
@@ -157,18 +169,18 @@ theme_override_constants/separation = 8
 [node name="RoutingAudio" type="CheckBox" parent="Panel/VBox/BottomBar/Options"]
 layout_mode = 2
 tooltip_text = "Route browser audio through Godot (enables effects)"
-text = "🔊 Audio Routing"
+text = "Audio Routing"
 
 [node name="Mute" type="CheckBox" parent="Panel/VBox/BottomBar/Options"]
 layout_mode = 2
 tooltip_text = "Mute all audio"
-text = "🔇 Mute"
+text = "Mute"
 
 [node name="AddBlocker" type="CheckBox" parent="Panel/VBox/BottomBar/Options"]
 layout_mode = 2
 tooltip_text = "Enable EasyList-based ad blocking"
 button_pressed = true
-text = "🛡 Ad Blocker"
+text = "Ad Blocker"
 
 [node name="Spacer" type="Control" parent="Panel/VBox/BottomBar"]
 layout_mode = 2
@@ -200,6 +212,8 @@ presets_visible = false
 [connection signal="pressed" from="Panel/VBox/TopBar/NavButtons/Next" to="." method="_on_Next_pressed"]
 [connection signal="pressed" from="Panel/VBox/TopBar/NavButtons/Refresh" to="." method="_on_refresh_pressed"]
 [connection signal="pressed" from="Panel/VBox/TopBar/NavButtons/Home" to="." method="_on_Home_pressed"]
+[connection signal="pressed" from="Panel/VBox/TopBar/NavButtons/Save" to="." method="_on_Save_pressed"]
+[connection signal="pressed" from="Panel/VBox/TopBar/NavButtons/SavePdf" to="." method="_on_SavePdf_pressed"]
 [connection signal="text_submitted" from="Panel/VBox/TopBar/URLContainer/TextEdit" to="." method="_on_url_submitted"]
 [connection signal="pressed" from="Panel/VBox/TopBar/URLContainer/Go" to="." method="_on_go_pressed"]
 [connection signal="item_selected" from="Panel/VBox/TopBar/BrowserList" to="." method="_on_BrowserList_item_selected"]

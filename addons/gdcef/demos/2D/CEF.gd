@@ -9,10 +9,10 @@ extends Control
 # URL
 const DEFAULT_PAGE = "user://default_page.html"
 const SAVED_PAGE = "user://saved_page.html"
+const SAVED_PDF = "user://saved_page.pdf"
 const DRAG_DROP_PAGE = "user://dragdrop_page.html"
 const HOME_PAGE = "https://github.com/Lecrapouille/gdcef"
-const RADIO_PAGE = "http://streaming.radio.co/s9378c22ee/listen"
-#const RADIO_PAGE = "https://www.programmes-radio.com/fr/stream-e8BxeoRhsz9jY9mXXRiFTE/ecouter-KPJK"
+const RADIO_PAGE = "https://streaming.radiostreamlive.com/radiorockon_devices"
 
 # The current browser as Godot node
 @onready var current_browser = null
@@ -134,7 +134,7 @@ function dropHandler(ev) {
 </head>
 <body>
 
-<h1>🎮 HTML5 Drag and Drop Test</h1>
+<h1>HTML5 Drag and Drop Test</h1>
 <p style="color: white;">Drag the emoji boxes into the drop zones!</p>
 
 <div class="container">
@@ -144,7 +144,7 @@ function dropHandler(ev) {
          ondragleave="dragleaveHandler(event)">
         <div id="drag1" class="draggable" draggable="true"
              ondragstart="dragstartHandler(event)"
-             ondragend="dragendHandler(event)">🎯</div>
+             ondragend="dragendHandler(event)">Cible</div>
     </div>
 
     <div id="zone2" class="drop-zone"
@@ -153,7 +153,7 @@ function dropHandler(ev) {
          ondragleave="dragleaveHandler(event)">
         <div id="drag2" class="draggable" draggable="true"
              ondragstart="dragstartHandler(event)"
-             ondragend="dragendHandler(event)">🚀</div>
+             ondragend="dragendHandler(event)">Fusee</div>
     </div>
 
     <div id="zone3" class="drop-zone"
@@ -162,7 +162,7 @@ function dropHandler(ev) {
          ondragleave="dragleaveHandler(event)">
         <div id="drag3" class="draggable" draggable="true"
              ondragstart="dragstartHandler(event)"
-             ondragend="dragendHandler(event)">⭐</div>
+             ondragend="dragendHandler(event)">Etoile</div>
     </div>
 
     <div id="zone4" class="drop-zone"
@@ -188,21 +188,38 @@ function dropHandler(ev) {
 	pass
 
 # ==============================================================================
-# Save page as html.
+# Callback when page has been saved to file (HTML).
 # ==============================================================================
-func _on_saving_page(html, browser):
-	var path = ProjectSettings.globalize_path(SAVED_PAGE)
-	var file = FileAccess.open(SAVED_PAGE, FileAccess.WRITE)
-	if (file != null):
-		file.store_string(html)
-		file.close()
-		$AcceptDialog.title = browser.get_url()
-		$AcceptDialog.dialog_text = "Page saved at:\n" + path
+func _on_page_saved(path, success, browser):
+	if success:
+		$AcceptDialog.title = "Page Saved (HTML)"
+		$AcceptDialog.dialog_text = "HTML saved successfully at:\n" + path
 	else:
-		$AcceptDialog.title = "Alert!"
-		$AcceptDialog.dialog_text = "Failed creating the file " + path
+		$AcceptDialog.title = "Save Failed"
+		$AcceptDialog.dialog_text = "Failed to save HTML to:\n" + path
 	$AcceptDialog.popup_centered(Vector2(0, 0))
 	$AcceptDialog.show()
+	pass
+
+# ==============================================================================
+# Callback when page has been saved as PDF (with images, CSS, etc.).
+# ==============================================================================
+func _on_pdf_saved(path, success, browser):
+	if success:
+		$AcceptDialog.title = "Page Saved (PDF)"
+		$AcceptDialog.dialog_text = "PDF saved successfully at:\n" + path + "\n\nIncludes all images and styles!"
+	else:
+		$AcceptDialog.title = "PDF Save Failed"
+		$AcceptDialog.dialog_text = "Failed to save PDF to:\n" + path
+	$AcceptDialog.popup_centered(Vector2(0, 0))
+	$AcceptDialog.show()
+	pass
+
+# ==============================================================================
+# Legacy callback for raw HTML content (kept for compatibility).
+# ==============================================================================
+func _on_html_content_requested(html, browser):
+	print("HTML content received: " + str(html.length()) + " characters")
 	pass
 
 # ==============================================================================
@@ -276,10 +293,12 @@ func create_browser(url):
 		return null
 
 	# Loading callbacks
-	browser.connect("on_html_content_requested", _on_saving_page)
 	browser.connect("on_page_loaded", _on_page_loaded)
 	browser.connect("on_page_failed_loading", _on_page_failed_loading)
 	browser.connect("on_download_updated", _on_download_updated)
+	browser.connect("on_page_saved", _on_page_saved)
+	browser.connect("on_pdf_saved", _on_pdf_saved)
+	browser.connect("on_html_content_requested", _on_html_content_requested)
 
 	# Add the URL to the list
 	var browser_list = $Panel/VBox/TopBar/BrowserList
@@ -321,6 +340,22 @@ func _on_Add_pressed():
 func _on_Home_pressed():
 	if current_browser != null:
 		current_browser.load_url(HOME_PAGE)
+	pass
+
+# ==============================================================================
+# Save button pressed: save current page as HTML file.
+# ==============================================================================
+func _on_Save_pressed():
+	if current_browser != null:
+		current_browser.save_page(SAVED_PAGE)
+	pass
+
+# ==============================================================================
+# Save PDF button pressed: save current page as PDF with all resources.
+# ==============================================================================
+func _on_SavePdf_pressed():
+	if current_browser != null:
+		current_browser.save_page_as_pdf(SAVED_PDF)
 	pass
 
 # ==============================================================================
@@ -483,8 +518,12 @@ func _input(event):
 	if event is InputEventKey:
 		if event.is_command_or_control_pressed() && event.pressed && not event.echo:
 			if event.keycode == KEY_S:
-				# Will call the callback 'on_html_content_requested'
-				current_browser.request_html_content()
+				if event.shift_pressed:
+					# Ctrl+Shift+S: Save as HTML only
+					current_browser.save_page(SAVED_PAGE)
+				else:
+					# Ctrl+S: Save as PDF with all images and resources
+					current_browser.save_page_as_pdf(SAVED_PDF)
 			# FIXME copy()/paste() inside a Godot text entry will freeze the application
 			# https://github.com/chromiumembedded/cef/issues/3117
 			#if event.keycode == KEY_C:
