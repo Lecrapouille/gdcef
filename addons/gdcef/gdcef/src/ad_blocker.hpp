@@ -27,50 +27,143 @@
 #define AD_BLOCKER_HPP
 
 #include "cef_resource_request_handler.h"
-#include <regex>
 #include <string>
 #include <vector>
+#include <unordered_set>
+#include <unordered_map>
 
-//! \brief Simple ad blocker based on URL pattern matching
-class AdBlocker: public CefResourceRequestHandler
+// =============================================================================
+//! \brief Ad blocker based on Adblock Plus filter list format (EasyList compatible).
+//!
+//! Supports the following filter syntax:
+//! - ||domain.com^ : Block requests to domain.com and subdomains
+//! - @@||domain.com^ : Exception (whitelist) for domain.com
+//! - /path/pattern : Block URLs containing this path pattern
+//! - @@/path/pattern : Exception for path pattern
+//! - domain.com : Simple domain blocking
+//!
+//! The blocker uses optimized matching:
+//! - Hash-based domain lookup for O(1) domain matching
+//! - Substring search for path patterns (no slow regex)
+// =============================================================================
+class AdBlocker : public CefResourceRequestHandler
 {
 public:
 
-    //! \brief Constructor loading default ad patterns
+    // -------------------------------------------------------------------------
+    //! \brief Constructor loading default EasyList-style rules.
+    // -------------------------------------------------------------------------
     AdBlocker();
 
-    //! \brief Enable or disable the ad blocker
+    // -------------------------------------------------------------------------
+    //! \brief Enable or disable the ad blocker.
+    //! \param[in] enable True to enable, false to disable.
+    // -------------------------------------------------------------------------
     void enable(bool enable);
 
-    //! \brief Check if the ad blocker is enabled
+    // -------------------------------------------------------------------------
+    //! \brief Check if the ad blocker is enabled.
+    //! \return True if enabled, false otherwise.
+    // -------------------------------------------------------------------------
     inline bool is_enabled() const
     {
         return m_enabled;
     }
 
-    //! \brief Add a custom pattern to block
-    //! \param[in] pattern Regex pattern to match URLs to block
-    //! \return true if the pattern is valid, false otherwise
-    bool addPattern(const std::string& pattern);
+    // -------------------------------------------------------------------------
+    //! \brief Add an EasyList-style filter rule.
+    //!
+    //! Supported formats:
+    //! - "||ads.example.com^" : Block domain and subdomains
+    //! - "@@||example.com^" : Exception (whitelist)
+    //! - "/ads/" : Block URLs containing /ads/
+    //! - "@@/good-script.js" : Exception for specific path
+    //!
+    //! \param[in] rule The filter rule in EasyList format.
+    //! \return True if the rule was parsed successfully.
+    // -------------------------------------------------------------------------
+    bool addRule(const std::string& rule);
 
-    //! \brief CEF callback to handle resource requests
-    //! \return CEF_RESPONSE_FILTER_RESPONSE to block the request
+    // -------------------------------------------------------------------------
+    //! \brief Load filter rules from a file (EasyList format).
+    //! \param[in] filepath Path to the filter list file.
+    //! \return Number of rules successfully loaded.
+    // -------------------------------------------------------------------------
+    size_t loadFilterList(const std::string& filepath);
+
+    // -------------------------------------------------------------------------
+    //! \brief Clear all rules.
+    // -------------------------------------------------------------------------
+    void clearRules();
+
+    // -------------------------------------------------------------------------
+    //! \brief Get statistics about loaded rules.
+    //! \return A string with rule counts.
+    // -------------------------------------------------------------------------
+    std::string getStats() const;
+
+    // -------------------------------------------------------------------------
+    //! \brief CEF callback to handle resource requests.
+    //! \return RV_CANCEL to block the request, RV_CONTINUE to allow.
+    // -------------------------------------------------------------------------
     virtual CefResourceRequestHandler::ReturnValue
     OnBeforeResourceLoad(CefRefPtr<CefBrowser> browser,
                          CefRefPtr<CefFrame> frame,
                          CefRefPtr<CefRequest> request,
                          CefRefPtr<CefCallback> callback) override;
 
-    //! \brief CEF reference counting
+    //! \brief CEF reference counting.
     IMPLEMENT_REFCOUNTING(AdBlocker);
 
 private:
 
-    //! \brief Patterns to block
-    std::vector<std::regex> m_patterns;
+    // -------------------------------------------------------------------------
+    //! \brief Extract the domain from a URL.
+    //! \param[in] url The full URL.
+    //! \return The domain (e.g., "ads.example.com").
+    // -------------------------------------------------------------------------
+    std::string extractDomain(const std::string& url) const;
 
-    //! \brief Enable or disable the ad blocker
+    // -------------------------------------------------------------------------
+    //! \brief Check if a URL should be blocked.
+    //! \param[in] url The URL to check.
+    //! \return True if the URL should be blocked.
+    // -------------------------------------------------------------------------
+    bool shouldBlock(const std::string& url) const;
+
+    // -------------------------------------------------------------------------
+    //! \brief Check if a URL matches an exception rule.
+    //! \param[in] url The URL to check.
+    //! \return True if the URL is whitelisted.
+    // -------------------------------------------------------------------------
+    bool isException(const std::string& url) const;
+
+    // -------------------------------------------------------------------------
+    //! \brief Check if a domain matches any blocked domain (including parents).
+    //! \param[in] domain The domain to check.
+    //! \return True if blocked.
+    // -------------------------------------------------------------------------
+    bool isDomainBlocked(const std::string& domain) const;
+
+    // -------------------------------------------------------------------------
+    //! \brief Load default blocking rules.
+    // -------------------------------------------------------------------------
+    void loadDefaultRules();
+
+    //! \brief Blocked domains (hash set for O(1) lookup).
+    std::unordered_set<std::string> m_blocked_domains;
+
+    //! \brief Exception domains (whitelist).
+    std::unordered_set<std::string> m_exception_domains;
+
+    //! \brief Path patterns to block (substring match).
+    std::vector<std::string> m_blocked_patterns;
+
+    //! \brief Path patterns to whitelist.
+    std::vector<std::string> m_exception_patterns;
+
+    //! \brief Enable flag.
     bool m_enabled = true;
 };
 
-#endif
+#endif // AD_BLOCKER_HPP
