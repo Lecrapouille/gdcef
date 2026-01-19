@@ -25,6 +25,7 @@
 
 #include "gdbrowser.hpp"
 #include "helper_files.hpp"
+#include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/core/math.hpp>
 
 //------------------------------------------------------------------------------

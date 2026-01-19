@@ -27,6 +27,7 @@
 #include "helper_config.hpp"
 #include "helper_files.hpp"
 #include <godot_cpp/classes/json.hpp>
+#include <godot_cpp/classes/input.hpp>
 #include <fstream>
 
 #include <gdextension_interface.h>
@@ -1795,6 +1796,89 @@ void GDBrowserView::onUpdateDragCursor(CefRefPtr<CefBrowser> browser,
 
     // Emit signal for Godot to update cursor if needed
     emit_signal("on_update_drag_cursor", static_cast<int>(operation), this);
+}
+
+//------------------------------------------------------------------------------
+void GDBrowserView::onCursorChange(CefRefPtr<CefBrowser> browser,
+                                    cef_cursor_type_t type)
+{
+    // Map CEF cursor types to Godot DisplayServer::CursorShape
+    godot::DisplayServer::CursorShape godot_cursor =
+        godot::DisplayServer::CURSOR_ARROW;
+
+    switch (type)
+    {
+        case CT_POINTER:
+            godot_cursor = godot::DisplayServer::CURSOR_ARROW;
+            break;
+        case CT_CROSS:
+            godot_cursor = godot::DisplayServer::CURSOR_CROSS;
+            break;
+        case CT_HAND:
+        case CT_GRAB:
+            godot_cursor = godot::DisplayServer::CURSOR_POINTING_HAND;
+            break;
+        case CT_IBEAM:
+            godot_cursor = godot::DisplayServer::CURSOR_IBEAM;
+            break;
+        case CT_WAIT:
+            godot_cursor = godot::DisplayServer::CURSOR_WAIT;
+            break;
+        case CT_HELP:
+            godot_cursor = godot::DisplayServer::CURSOR_HELP;
+            break;
+        case CT_PROGRESS:
+            godot_cursor = godot::DisplayServer::CURSOR_BUSY;
+            break;
+        case CT_EASTRESIZE:
+        case CT_WESTRESIZE:
+        case CT_EASTWESTRESIZE:
+        case CT_COLUMNRESIZE:
+            godot_cursor = godot::DisplayServer::CURSOR_HSIZE;
+            break;
+        case CT_NORTHRESIZE:
+        case CT_SOUTHRESIZE:
+        case CT_NORTHSOUTHRESIZE:
+        case CT_ROWRESIZE:
+            godot_cursor = godot::DisplayServer::CURSOR_VSIZE;
+            break;
+        case CT_NORTHEASTRESIZE:
+        case CT_SOUTHWESTRESIZE:
+            godot_cursor = godot::DisplayServer::CURSOR_BDIAGSIZE;
+            break;
+        case CT_NORTHWESTRESIZE:
+        case CT_SOUTHEASTRESIZE:
+            godot_cursor = godot::DisplayServer::CURSOR_FDIAGSIZE;
+            break;
+        case CT_MOVE:
+        case CT_GRABBING:
+        case CT_MIDDLEPANNING:
+            godot_cursor = godot::DisplayServer::CURSOR_MOVE;
+            break;
+        case CT_NODROP:
+        case CT_NOTALLOWED:
+            godot_cursor = godot::DisplayServer::CURSOR_FORBIDDEN;
+            break;
+        default:
+            godot_cursor = godot::DisplayServer::CURSOR_ARROW;
+            break;
+    }
+
+    // Only change cursor if it's different from the current one to avoid glitches
+    if (m_current_cursor != godot_cursor)
+    {
+        // Store the current cursor
+        m_current_cursor = godot_cursor;
+
+        BROWSER_DEBUG("Changing cursor to " << int(godot_cursor));
+
+        // Convert DisplayServer::CursorShape to Input::CursorShape (they have the same values)
+        godot::Input::CursorShape input_cursor = static_cast<godot::Input::CursorShape>(godot_cursor);
+
+        // Use Input::set_default_cursor_shape instead of DisplayServer::cursor_set_shape
+        // This integrates better with Godot's UI system
+        godot::Input::get_singleton()->set_default_cursor_shape(input_cursor);
+    }
 }
 
 //------------------------------------------------------------------------------

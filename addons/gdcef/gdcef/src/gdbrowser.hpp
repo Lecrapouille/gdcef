@@ -52,6 +52,7 @@
 
 // Godot 4
 #include <godot_cpp/classes/audio_stream_generator_playback.hpp>
+#include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/gd_script.hpp>
 #include <godot_cpp/classes/global_constants.hpp>
 #include <godot_cpp/classes/image_texture.hpp>
@@ -61,6 +62,7 @@
 // Chromium Embedded Framework
 #include "cef_app.h"
 #include "cef_client.h"
+#include "cef_display_handler.h"
 #include "cef_drag_handler.h"
 #include "cef_parser.h"
 #include "cef_render_handler.h"
@@ -124,7 +126,8 @@ private: // CEF interfaces
                 public CefDownloadHandler,
                 public CefRequestHandler,
                 public CefResourceRequestHandler,
-                public CefDragHandler
+                public CefDragHandler,
+                public CefDisplayHandler
     {
     public:
 
@@ -211,6 +214,14 @@ private: // CEF interfaces
         //! \brief Return the handler for drag events.
         // ---------------------------------------------------------------------
         virtual CefRefPtr<CefDragHandler> GetDragHandler() override
+        {
+            return this;
+        }
+
+        // ---------------------------------------------------------------------
+        //! \brief Return the handler for display events (cursor changes, etc.).
+        // ---------------------------------------------------------------------
+        virtual CefRefPtr<CefDisplayHandler> GetDisplayHandler() override
         {
             return this;
         }
@@ -432,6 +443,23 @@ private: // CEF interfaces
                                   const std::vector<CefDraggableRegion>& regions) override
         {
             m_owner.onDraggableRegionsChanged(browser, frame, regions);
+        }
+
+    private: // CefDisplayHandler interfaces
+
+        // ---------------------------------------------------------------------
+        //! \brief Called when the browser's cursor has changed. If |type| is
+        //! CT_CUSTOM then |custom_cursor_info| will be populated with the custom
+        //! cursor information. Return true if the cursor change was handled or
+        //! false for default handling.
+        // ---------------------------------------------------------------------
+        virtual bool OnCursorChange(CefRefPtr<CefBrowser> browser,
+                                    CefCursorHandle cursor,
+                                    cef_cursor_type_t type,
+                                    const CefCursorInfo& custom_cursor_info) override
+        {
+            m_owner.onCursorChange(browser, type);
+            return true;
         }
 
     private: // CefRequestContextHandler interfaces
@@ -1113,6 +1141,12 @@ private:
                             CefRenderHandler::DragOperation operation);
 
     // -------------------------------------------------------------------------
+    //! \brief Called by GDBrowserView::Impl::OnCursorChange when the browser
+    //! cursor changes (e.g., pointer, hand, text, etc.)
+    // -------------------------------------------------------------------------
+    void onCursorChange(CefRefPtr<CefBrowser> browser, cef_cursor_type_t type);
+
+    // -------------------------------------------------------------------------
     //! \brief Recursively convert JSON data to Godot Variant types
     //! \param[in] json JSON value to convert
     //! \return Converted Godot Variant
@@ -1201,6 +1235,9 @@ private:
 
     //! \brief Current drag operation
     CefRenderHandler::DragOperation m_current_drag_op = DRAG_OPERATION_NONE;
+
+    //! \brief Current cursor shape (stored to reapply after Godot resets it)
+    godot::DisplayServer::CursorShape m_current_cursor = godot::DisplayServer::CURSOR_ARROW;
 };
 
 #if !defined(_WIN32)
