@@ -25,7 +25,7 @@ Since this README is not included when importing gdCEF from the [Godot Asset Lib
 
 To compile this project, use the Python3 build script `build.py` for Linux, Windows and MacOS:
 
-```
+```bash
 cd addons/gdcef
 python3 -m pip install -r requirements.txt
 python3 build.py
@@ -47,7 +47,7 @@ If you're using this project, feel free to share your project links and pictures
 
 *Click the picture to watch the YouTube video "I made my own Browser" by FaceDev.*
 
-- https://elitemeta.city (discontinued metaverse project)
+- [Elitemeta](https://elitemeta.city) (discontinued metaverse project)
 
 [![elitemeta](addons/gdcef/doc/gallery/elitemeta.jpg)](https://ipfs.io/ipfs/QmaL7NY5qs3AtAdcX8vFhqaHwJeTMKfP3PbzcHZBLmo1QQ?filename=elitemeta_0.mp4)
 
@@ -56,3 +56,9 @@ If you're using this project, feel free to share your project links and pictures
 - [TNITRFR](https://gamejolt.com/games/TNITRFR/948968) with 90's computer browser look.
 
 ![TNITRFR](addons/gdcef/doc/gallery/tnitrfr.png)
+
+## Alternative Godot WebView Projects
+
+- In Rust: https://github.com/doceazedo/godot_wry
+- In Qt: https://godotwebview.com/
+- Godot 3 and Android: https://github.com/Sam2much96/GodotChrome/tree/master
