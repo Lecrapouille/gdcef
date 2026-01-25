@@ -142,7 +142,9 @@ elif platform == 'windows':
     # This makes sure to keep the session environment variables on windows,
     # that way you can run scons in a vs 2017 prompt and it will find all the required tools
     env.Append(ENV=os.environ)
-    env.Append(CPPDEFINES=['WIN32', '_WIN32', '_WINDOWS', '_CRT_SECURE_NO_WARNINGS'])
+    # WIN32_LEAN_AND_MEAN and NOMINMAX must be defined before any Windows headers
+    # to avoid conflicts with CEF (min/max macros vs std::min/std::max)
+    env.Append(CPPDEFINES=['WIN32_LEAN_AND_MEAN', 'NOMINMAX', 'WIN32', '_WIN32', '_WINDOWS', '_CRT_SECURE_NO_WARNINGS'])
     env.Append(CCFLAGS=['/W3', '/GR'])
     if compile_mode == 'debug':
         env.Append(CPPDEFINES=['_DEBUG', '_ITERATOR_DEBUG_LEVEL=0'])
