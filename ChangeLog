@@ -1,3 +1,7 @@
+Version 0.18.1:
+	* Fix resize flickering
+	* Fix keyboard management making HTML games not usable
+
 Version 0.18.0:
 	* Many fixes by AI
 	* Allow logging inside CEF logs from gdscript
