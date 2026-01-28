@@ -479,6 +479,8 @@ func _on_TextureRect_gui_input(event):
 	if current_browser == null:
 		return
 	if event is InputEventMouseButton:
+		# Take focus so keyboard events go to the browser, not the URL bar
+		$Panel/VBox/TextureRect.grab_focus()
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			current_browser.set_mouse_wheel_vertical(2, event.shift_pressed,
 				event.ctrl_pressed, event.alt_pressed)

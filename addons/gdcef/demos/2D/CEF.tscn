@@ -129,6 +129,7 @@ tooltip_text = "Select tab"
 [node name="TextureRect" type="TextureRect" parent="Panel/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
+focus_mode = 2
 mouse_filter = 0
 expand_mode = 3
 stretch_mode = 3
