@@ -926,6 +926,13 @@ void GDBrowserView::resize_(int width, int height)
     {
         height = 2;
     }
+
+    // Avoid calling WasResized() if size hasn't changed (prevents resize loops)
+    if (m_width == float(width) && m_height == float(height))
+    {
+        return;
+    }
+
     BROWSER_DEBUG(width << " x " << height);
 
     m_width = float(width);

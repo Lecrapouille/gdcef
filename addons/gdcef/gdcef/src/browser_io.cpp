@@ -78,15 +78,10 @@ void GDBrowserView::leftMouseDown()
     evt.y = m_mouse_y;
     evt.modifiers = m_mouse_event_modifiers;
 
+    // Set focus on click (not on every mouse move)
+    m_browser->GetHost()->SetFocus(true);
     m_browser->GetHost()->SendMouseClickEvent(
         evt, btn, false, m_left_click_count);
-
-    // Copy selected text
-    // FIXME https://github.com/chromiumembedded/cef/issues/3117
-    // if ((m_left_click_count > 1) && m_browser->GetMainFrame())
-    //{
-    //    m_browser->GetMainFrame()->Copy();
-    //}
 }
 
 //------------------------------------------------------------------------------
@@ -208,8 +203,6 @@ void GDBrowserView::mouseMove(int x, int y)
     }
 
     bool mouse_leave = false; // TODO
-    // AD - Adding focus just like what's done in BLUI
-    host->SetFocus(true);
     host->SendMouseMoveEvent(evt, mouse_leave);
 }
 
@@ -385,8 +378,14 @@ void GDBrowserView::keyPress(int key,
         }
         else
         {
-            event.windows_key_code = key;
-            event.native_key_code = key;
+            // For letters, windows_key_code uses uppercase (VK_A=65 to VK_Z=90)
+            int vk_code = key;
+            if (key >= 'a' && key <= 'z')
+            {
+                vk_code = key - 32;  // Convert to uppercase for virtual key code
+            }
+            event.windows_key_code = vk_code;
+            event.native_key_code = vk_code;
             event.character = key16;
             event.unmodified_character = key16;
         }
@@ -424,8 +423,15 @@ void GDBrowserView::keyPress(int key,
     // Printable ASCII characters (space to tilde)
     if (key >= 32 && key <= 126)
     {
-        event.windows_key_code = key;
-        event.native_key_code = key;
+        // For letters, windows_key_code uses uppercase (VK_A=65 to VK_Z=90)
+        // Lowercase letters (97-122) need to be converted to uppercase (65-90)
+        int vk_code = key;
+        if (key >= 'a' && key <= 'z')
+        {
+            vk_code = key - 32;  // Convert to uppercase for virtual key code
+        }
+        event.windows_key_code = vk_code;
+        event.native_key_code = vk_code;
         event.character = key16;
         event.unmodified_character = key16;
 
