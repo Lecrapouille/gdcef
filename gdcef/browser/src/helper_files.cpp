@@ -32,6 +32,7 @@
 #    include <Windows.h>
 #else
 #    include <unistd.h>
+#    include <dlfcn.h>
 #endif
 
 //------------------------------------------------------------------------------
@@ -119,4 +120,47 @@ godot::String convert_godot_url(godot::String const& url)
 
     // Build the file:// URL
     return "file://" + local_path;
+}
+
+//------------------------------------------------------------------------------
+// Helper function used by get_module_directory() to get an address inside this
+// module
+static void dummy_function_for_address() {}
+
+//------------------------------------------------------------------------------
+fs::path get_module_directory()
+{
+#if defined(_WIN32)
+    // Get a handle to the module containing this function
+    HMODULE hModule = nullptr;
+    if (GetModuleHandleExA(
+            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+            GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+            reinterpret_cast<LPCSTR>(&dummy_function_for_address),
+            &hModule))
+    {
+        char path[MAX_PATH];
+        if (GetModuleFileNameA(hModule, path, MAX_PATH) > 0)
+        {
+            return fs::path(path).parent_path();
+        }
+    }
+    // Fallback to current directory
+    PRINT_ERROR("Failed to get module directory, using current directory");
+    return fs::current_path();
+
+#else // Linux / macOS
+    Dl_info dl_info;
+    if (dladdr(reinterpret_cast<void*>(&dummy_function_for_address), &dl_info) != 0)
+    {
+        if (dl_info.dli_fname != nullptr)
+        {
+            return fs::canonical(fs::path(dl_info.dli_fname)).parent_path();
+        }
+    }
+    // Fallback to current directory
+    PRINT_ERROR("Failed to get module directory, using current directory");
+    return fs::current_path();
+
+#endif
 }

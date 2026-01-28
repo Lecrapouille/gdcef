@@ -79,6 +79,13 @@ bool are_valid_files(std::filesystem::path const& folder,
 fs::path real_path();
 
 // ****************************************************************************
+//! \brief Return the directory where the gdCEF module (libgdcef.so/.dll/.dylib)
+//! is located. This allows users to rename the cef_artifacts folder without
+//! recompiling.
+// ****************************************************************************
+fs::path get_module_directory();
+
+// ****************************************************************************
 //! \brief Convert a Godot URL (res:// or user://) to a file:// URL
 //! \param[in] url The Godot URL to convert
 //! \return The converted URL as file:// if it's a valid Godot path, empty

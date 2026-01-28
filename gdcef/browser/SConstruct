@@ -102,9 +102,6 @@ target_path = env['build_path']
 target_library = 'libgdcef'
 sources = Glob('src/*.cpp')
 
-# User defines
-env.Append(CXXFLAGS=['-DCEF_ARTIFACTS_FOLDER=' + env['cef_artifacts_folder']])
-
 # Platform specific compilation
 if platform == 'macos':
     env.Append(CXXFLAGS=['--std=c++17'])
@@ -233,9 +230,12 @@ env.Append(LIBS = [libcef, 'libcef_dll_wrapper'],
 # Paths header files of our module
 env.Append(CPPPATH=['src/'])
 
-# Add artifacts folder to (embedded into output binary file) list of paths to search for shared libraries
-# [2:-2] because we need value of cef_artifacts_folder without protected quotation marks
-env.Append(RPATH=[env['cef_artifacts_folder'][2:-2]])
+# Add $ORIGIN to RPATH so libcef.so is found in the same directory as libgdcef.so
+# This allows users to rename the cef_artifacts folder without recompilation
+if platform == 'linux':
+    env.Append(LINKFLAGS=['-Wl,-rpath,\\$$ORIGIN'])
+elif platform == 'macos':
+    env.Append(LINKFLAGS=['-Wl,-rpath,@loader_path'])
 
 # Compile the library
 library = env.SharedLibrary(target=target_path + '/' + target_library, source=sources)

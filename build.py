@@ -116,6 +116,19 @@ if ARCHI == "AMD64":
 NPROC = str(cpu_count())
 OSTYPE = system()
 
+# OS-specific subfolder name for artifacts
+if OSTYPE == "Linux":
+    OS_SUBDIR = "linux"
+elif OSTYPE == "Darwin":
+    OS_SUBDIR = "macos"
+elif OSTYPE == "Windows" or OSTYPE == "MinGW":
+    OS_SUBDIR = "windows"
+else:
+    OS_SUBDIR = "unknown"
+
+# Full path to OS-specific artifacts folder
+CEF_ARTIFACTS_OS_PATH = os.path.join(CEF_ARTIFACTS_BUILD_PATH, OS_SUBDIR)
+
 ###############################################################################
 #
 # Colored message helpers
@@ -519,7 +532,7 @@ def create_version_file():
         git_branch = "unknown"
         git_sha1 = "unknown"
 
-    with open(os.path.join(CEF_ARTIFACTS_BUILD_PATH, "GDCEF_VERSION.txt"), "w") as f:
+    with open(os.path.join(CEF_ARTIFACTS_OS_PATH, "GDCEF_VERSION.txt"), "w") as f:
         f.write("gdCEF Version: " + gdcef_version + "\n")
         f.write("gdCEF Git Branch: " + git_branch + "\n")
         f.write("gdCEF Git SHA1: " + git_sha1 + "\n")
@@ -532,37 +545,43 @@ def create_version_file():
 #
 ###############################################################################
 def copy_cef_assets():
-    build_path = CEF_ARTIFACTS_BUILD_PATH
-    mkdir(build_path)
+    # Create root artifacts folder and OS-specific subfolder
+    mkdir(CEF_ARTIFACTS_BUILD_PATH)
+    mkdir(CEF_ARTIFACTS_OS_PATH)
 
     # Copy all CEF artifacts required for the application.
     # Note: We do not copy chrome-sandbox, it is not required for GDCEF.
-    info("Installing Chromium Embedded Framework to " + build_path + " ...")
-    locales = os.path.join(build_path, "locales")
+    info("Installing Chromium Embedded Framework to " + CEF_ARTIFACTS_OS_PATH + " ...")
+
+    # Locales stay at the root level (shared across OS)
+    locales = os.path.join(CEF_ARTIFACTS_BUILD_PATH, "locales")
     mkdir(locales)
+
     if OSTYPE == "Linux" or OSTYPE == "Windows":
         S = os.path.join(THIRDPARTY_CEF_PATH, "Resources")
-        copyfile(os.path.join(S, "icudtl.dat"), build_path)
+        # OS-specific files go to OS subfolder
+        copyfile(os.path.join(S, "icudtl.dat"), CEF_ARTIFACTS_OS_PATH)
         for f in glob.glob(os.path.join(S, "*.pak")):
-            copyfile(f, build_path)
+            copyfile(f, CEF_ARTIFACTS_OS_PATH)
+        # Locales stay at root
         for f in glob.glob(os.path.join(S, "locales/*")):
             copyfile(f, locales)
 
         S = os.path.join(THIRDPARTY_CEF_PATH, CEF_TARGET)
-        copyfile(os.path.join(S, "vk_swiftshader_icd.json"), build_path)
+        copyfile(os.path.join(S, "vk_swiftshader_icd.json"), CEF_ARTIFACTS_OS_PATH)
         for f in glob.glob(os.path.join(S, "*snapshot*.bin")):
-            copyfile(f, build_path)
+            copyfile(f, CEF_ARTIFACTS_OS_PATH)
         if OSTYPE == "Linux":
             for f in glob.glob(os.path.join(S, "*.so")):
-                copyfile(f, build_path)
+                copyfile(f, CEF_ARTIFACTS_OS_PATH)
             for f in glob.glob(os.path.join(S, "*.so.*")):
-                copyfile(f, build_path)
+                copyfile(f, CEF_ARTIFACTS_OS_PATH)
         else:
             for f in glob.glob(os.path.join(S, "*.dll")):
-                copyfile(f, build_path)
+                copyfile(f, CEF_ARTIFACTS_OS_PATH)
     elif OSTYPE == "Darwin":
         S = os.path.join(THIRDPARTY_CEF_PATH, "build", "tests", "cefsimple", CEF_TARGET, "cefsimple.app")
-        shutil.copytree(S, build_path + "/cefsimple.app")
+        shutil.copytree(S, CEF_ARTIFACTS_OS_PATH + "/cefsimple.app")
         for f in glob.glob(os.path.join(S, "locales/*")):
             copyfile(f, locales)
     else:
@@ -620,7 +639,7 @@ def compile_godot_cpp():
 def gdnative_scons_cmd(platform):
     scons("api_path=" + GODOT_CPP_API_PATH,
           "cef_artifacts_folder=\\\"" + CEF_ARTIFACTS_FOLDER_NAME + "\\\"",
-          "build_path=" + CEF_ARTIFACTS_BUILD_PATH,
+          "build_path=" + CEF_ARTIFACTS_OS_PATH,
           "target=" + MODULE_TARGET,
           "platform=" + platform,
           "arch=" + ARCHI,

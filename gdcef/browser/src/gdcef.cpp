@@ -65,13 +65,6 @@
 #endif
 
 //------------------------------------------------------------------------------
-// Folder name (not the path) holding the CEF artifacts needed to make CEF
-// working
-#if (!defined(CEF_ARTIFACTS_FOLDER))
-#    error "CEF_ARTIFACTS_FOLDER is not defined"
-#endif
-
-//------------------------------------------------------------------------------
 static void configureCEF(fs::path const& folder,
                          CefSettings& cef_settings,
                          CefWindowInfo& window_info,
@@ -192,42 +185,10 @@ bool GdCEF::initialize(godot::Dictionary config)
     m_impl = new GdCEF::Impl(*this);
     assert((m_impl != nullptr) && "Failed allocating GdCEF");
 
-    // Folder path in which your application and CEF artifacts are present.
-    fs::path cef_folder_path;
-
-    // Check if this process is executing from the Godot editor or from the
-    // your standalone application.
-    if (IS_STARTED_FROM_GODOT_EDITOR())
-    {
-        std::string cef_artifacts_folder =
-            getConfig(config, "artifacts", std::string(CEF_ARTIFACTS_FOLDER));
-
-        if (cef_artifacts_folder.rfind("res://", 0) == 0)
-        {
-            // Note: exported projects don't support globalize_path, see:
-            // https://docs.godotengine.org/en/3.5/classes/class_projectsettings.html
-            // Section: class-projectsettings-method-globalize-path
-            cef_folder_path = GLOBALIZE_PATH(cef_artifacts_folder.c_str());
-        }
-        else
-        {
-            cef_folder_path =
-                std::filesystem::current_path() / cef_artifacts_folder;
-        }
-        GDCEF_DEBUG("Launching CEF from Godot editor");
-        GDCEF_DEBUG("Path where your project Godot files shall be located: "
-                    << cef_folder_path);
-    }
-    else
-    {
-        cef_folder_path =
-            getConfig(config,
-                      "exported_artifacts",
-                      real_path() / std::string(CEF_ARTIFACTS_FOLDER));
-        GDCEF_DEBUG("Launching CEF from your executable");
-        GDCEF_DEBUG("Path where your application files shall be located: "
-                    << cef_folder_path);
-    }
+    // Get the folder path where libgdcef is located (same folder as CEF artifacts).
+    // This is determined at runtime, allowing users to rename the folder freely.
+    fs::path cef_folder_path = get_module_directory();
+    GDCEF_DEBUG("CEF artifacts folder: " << cef_folder_path);
 
     // Check if needed files to make CEF working are present.
     if (!sanity_checks(cef_folder_path))
@@ -417,7 +378,7 @@ static void configureCEF(fs::path const& folder,
     /// Resources directory. Also configurable using the "locales-dir-path"
     /// command-line switch.
     fs::path locales_path =
-        getConfig(config, "locales_path", folder / "locales");
+        getConfig(config, "locales_path", folder.parent_path() / "locales");
     GDCEF_DEBUG("Setting locales path: " << locales_path.string());
     CefString(&cef_settings.locales_dir_path).FromString(locales_path.string());
 

@@ -125,11 +125,15 @@ If you want to change the Godot version (4.2 or 4.3), you can do it by modifying
 
 ## What to do if I dislike the folder name `cef_artifacts` holding CEF artifacts ?
 
-You can change the default folder name! Look for the line `CEF_ARTIFACTS_FOLDER = "cef_artifacts"` in the [build.py](../build.py) script and modify it. Then rerun `build.py`. This method will set the default path for Godot. Alternatively, you can specify the path in your GDScript code (see the API documentation for more details):
+You can rename the `cef_artifacts` folder to anything you want (e.g., `cef_artifacts_linux`, `browser_data`, etc.). Just update the paths in the `.gdextension` file inside the folder:
 
-``````bash
-$CEF.initialize({"artifacts": "res://cef_artifacts/", ... })
+```ini
+[libraries]
+linux.x86_64.release = "res://your_custom_folder/libgdcef.so"
+...
 ```
+
+The module automatically detects its location at runtime, so no recompilation is needed.
 
 ## I do not want to compile GDCEF!
 

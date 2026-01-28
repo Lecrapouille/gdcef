@@ -45,8 +45,6 @@ Since Godot `_init` does not accept arguments, you must use the `initialize` fun
 
 | Setting | Default Value | Description |
 |---------|--------------|-------------|
-| artifacts | CEF_ARTIFACTS_FOLDER | Path where CEF artifacts are stored. Required for CEF operation. Can be a local path, global path, or Godot path (starting with "res://"). Default value is set during compilation with build.py script. Referenced as `cef_folder_path` below. |
-| exported_artifacts | application_real_path() | Path where CEF artifacts are stored when the Godot application is exported. Defines `cef_folder_path`. |
 | incognito | false | When enabled, uses in-memory caches instead of disk storage. No data is persisted. |
 | cache_path | cef_folder_path / "cache" | Directory for storing CEF caches. |
 | root_cache_path | cef_folder_path / "cache" | Root directory for CEF cache storage. |

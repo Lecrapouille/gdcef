@@ -14,23 +14,19 @@ You need either:
 1. Copy the `cef_artifacts` folder containing the compiled CEF artifacts into your Godot project root.
 2. Delete the `cef_artifacts/cache` folder if you have previously used gdCEF.
 
-> **Note:** Do not rename the folder or remove files inside. The Godot extension file (`.gdextension`) is included, so you don't need to create one.
+> **Note:** The Godot extension file (`.gdextension`) is included, so you don't need to create one.
 
 ### Custom Artifacts Folder Name
 
-If you want to use a different name for the CEF artifacts folder:
+You can rename the `cef_artifacts` folder to anything you want (e.g., `cef_artifacts_linux`). Just update the paths inside the `.gdextension` file accordingly:
 
-**Option 1:** Modify `build.py` before compilation
-
-- Find the line `CEF_ARTIFACTS_FOLDER_NAME = "cef_artifacts"`
-- Change it to your desired name
-- Rerun `build.py`
-
-**Option 2:** Specify at runtime in your GDScript
-
-```gdscript
-$CEF.initialize({"artifacts": "res://your_custom_folder/", ... })
+```ini
+[libraries]
+linux.x86_64.release = "res://your_custom_folder/libgdcef.so"
+...
 ```
+
+The module automatically detects its location at runtime, so no recompilation is needed.
 
 ## Step 2: Set Up Your Scene
 
