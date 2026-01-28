@@ -408,8 +408,15 @@ void GDBrowserView::keyPress(int key,
     if (key >= 32 && key <= 126)
     {
         event.windows_key_code = key;
+        event.native_key_code = key;
         event.character = key16;
         event.unmodified_character = key16;
+
+        // Send KEYDOWN first (for games that listen to keydown)
+        event.type = KEYEVENT_KEYDOWN;
+        m_browser->GetHost()->SendKeyEvent(event);
+
+        // Then send CHAR (for text input)
         event.type = KEYEVENT_CHAR;
         m_browser->GetHost()->SendKeyEvent(event);
         return;

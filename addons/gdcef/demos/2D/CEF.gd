@@ -549,6 +549,8 @@ func _input(event):
 				event.unicode if event.unicode != 0 else event.keycode,
 				event.pressed, event.shift_pressed, event.alt_pressed,
 				event.is_command_or_control_pressed())
+		# Prevent Godot from using arrow keys for UI navigation when browser has focus
+		get_viewport().set_input_as_handled()
 	pass
 
 # ==============================================================================
