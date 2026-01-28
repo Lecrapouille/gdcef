@@ -373,6 +373,23 @@ void GDBrowserView::keyPress(int key,
     // Handle key release
     if (!pressed)
     {
+        // Set key info for KEYUP event
+        char16_t key16 = static_cast<char16_t>(key);
+        const KeyMapping* mapping = findKeyMapping(key);
+        if (mapping != nullptr)
+        {
+            event.windows_key_code = mapping->windows_key;
+            event.native_key_code = mapping->windows_key;
+            event.character = static_cast<char16_t>(mapping->windows_key);
+            event.unmodified_character = event.character;
+        }
+        else
+        {
+            event.windows_key_code = key;
+            event.native_key_code = key;
+            event.character = key16;
+            event.unmodified_character = key16;
+        }
         event.native_key_code |= int(0xC0000000);
         event.type = KEYEVENT_KEYUP;
         m_browser->GetHost()->SendKeyEvent(event);
