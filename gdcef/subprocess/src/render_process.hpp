@@ -78,7 +78,7 @@ public:
     // -------------------------------------------------------------------------
     //! \brief Called to execute a Godot method.
     //! Send an IPC message to the main process to execute the Godot method.
-    //! The GDBrowserView::onProcessMessageReceived method will be called.
+    //! The GdBrowserView::onProcessMessageReceived method will be called.
     //! \param[in] name The method name.
     //! \param[in] object The object.
     //! \param[in] arguments The arguments.

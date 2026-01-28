@@ -29,28 +29,28 @@
 #include <godot_cpp/core/math.hpp>
 
 //------------------------------------------------------------------------------
-void GDBrowserView::leftClick()
+void GdBrowserView::leftClick()
 {
     leftMouseDown();
     leftMouseUp();
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::rightClick()
+void GdBrowserView::rightClick()
 {
     rightMouseDown();
     rightMouseUp();
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::middleClick()
+void GdBrowserView::middleClick()
 {
     middleMouseDown();
     middleMouseUp();
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::leftMouseDown()
+void GdBrowserView::leftMouseDown()
 {
     if (!m_browser)
         return;
@@ -85,7 +85,7 @@ void GDBrowserView::leftMouseDown()
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::rightMouseDown()
+void GdBrowserView::rightMouseDown()
 {
     if (!m_browser)
         return;
@@ -103,7 +103,7 @@ void GDBrowserView::rightMouseDown()
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::leftMouseUp()
+void GdBrowserView::leftMouseUp()
 {
     if (!m_browser)
         return;
@@ -127,7 +127,7 @@ void GDBrowserView::leftMouseUp()
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::rightMouseUp()
+void GdBrowserView::rightMouseUp()
 {
     if (!m_browser)
         return;
@@ -145,7 +145,7 @@ void GDBrowserView::rightMouseUp()
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::middleMouseDown()
+void GdBrowserView::middleMouseDown()
 {
     if (!m_browser)
         return;
@@ -163,7 +163,7 @@ void GDBrowserView::middleMouseDown()
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::middleMouseUp()
+void GdBrowserView::middleMouseUp()
 {
     if (!m_browser)
         return;
@@ -181,7 +181,7 @@ void GDBrowserView::middleMouseUp()
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::mouseMove(int x, int y)
+void GdBrowserView::mouseMove(int x, int y)
 {
     if (!m_browser)
         return;
@@ -207,7 +207,7 @@ void GDBrowserView::mouseMove(int x, int y)
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::mouseWheelVertical(int wDelta, bool shift, bool ctrl,
+void GdBrowserView::mouseWheelVertical(int wDelta, bool shift, bool ctrl,
                                         bool alt)
 {
     if (m_browser == nullptr)
@@ -231,7 +231,7 @@ void GDBrowserView::mouseWheelVertical(int wDelta, bool shift, bool ctrl,
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::mouseWheelHorizontal(int wDelta, bool shift, bool ctrl,
+void GdBrowserView::mouseWheelHorizontal(int wDelta, bool shift, bool ctrl,
                                           bool alt)
 {
     if (m_browser == nullptr)
@@ -351,7 +351,7 @@ static const KeyMapping* findKeyMapping(int godot_key)
 // additional CEF IME integration which is not implemented here.
 // Current implementation handles pre-composed Unicode characters.
 //------------------------------------------------------------------------------
-void GDBrowserView::keyPress(int key,
+void GdBrowserView::keyPress(int key,
                              bool pressed,
                              bool shift,
                              bool alt,

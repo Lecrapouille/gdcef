@@ -1,7 +1,7 @@
 @startuml
 
 participant "GDScript\nTextureRect" as GD
-participant "GDCef\n(Main Process)" as MP
+participant "GdCEF\n(Main Process)" as MP
 participant "CEF" as CEF
 participant "Render Process" as RP
 

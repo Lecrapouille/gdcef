@@ -1,7 +1,7 @@
 @startuml
 
 participant "GDScript" as GD
-participant "GDCef\n(Main Process)" as MP
+participant "GdCEF\n(Main Process)" as MP
 participant "CEF" as CEF
 participant "Render Process" as RP
 
@@ -47,7 +47,7 @@ deactivate RP
 CEF --> MP : Browser instance
 deactivate CEF
 
-MP --> GD : GDBrowserView instance
+MP --> GD : GdBrowserView instance
 deactivate MP
 
 @enduml

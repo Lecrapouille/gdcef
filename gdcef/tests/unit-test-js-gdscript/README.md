@@ -1,6 +1,6 @@
 # JavaScript-GDScript Bindings Test
 
-This directory contains a test suite for the bidirectional communication between JavaScript and GDScript using GDCef.
+This directory contains a test suite for the bidirectional communication between JavaScript and GDScript using gdCEF.
 
 ## Purpose
 
@@ -57,4 +57,4 @@ For each test, a status indicator shows whether the test passed or failed.
 
 ## Using This as a Reference
 
-This test suite serves as a comprehensive reference for how to implement bidirectional communication between JavaScript and GDScript. You can refer to the code here when implementing your own communication patterns in your GDCef-powered Godot applications.
+This test suite serves as a comprehensive reference for how to implement bidirectional communication between JavaScript and GDScript. You can refer to the code here when implementing your own communication patterns in your gdCEF-powered Godot applications.

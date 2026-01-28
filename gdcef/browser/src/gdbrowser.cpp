@@ -134,7 +134,7 @@ class HtmlContentVisitor : public CefStringVisitor
 {
 public:
 
-    HtmlContentVisitor(GDBrowserView& node) : m_node(node) {}
+    HtmlContentVisitor(GdBrowserView& node) : m_node(node) {}
 
     virtual void Visit(const CefString& string) override
     {
@@ -144,7 +144,7 @@ public:
 
 private:
 
-    GDBrowserView& m_node;
+    GdBrowserView& m_node;
     IMPLEMENT_REFCOUNTING(HtmlContentVisitor);
 };
 
@@ -154,7 +154,7 @@ class SavePageVisitor : public CefStringVisitor
 {
 public:
 
-    SavePageVisitor(GDBrowserView& node, const godot::String& path)
+    SavePageVisitor(GdBrowserView& node, const godot::String& path)
         : m_node(node), m_path(path) {}
 
     virtual void Visit(const CefString& string) override
@@ -183,7 +183,7 @@ public:
 
 private:
 
-    GDBrowserView& m_node;
+    GdBrowserView& m_node;
     godot::String m_path;
     IMPLEMENT_REFCOUNTING(SavePageVisitor);
 };
@@ -194,7 +194,7 @@ class PdfPrintCallback : public CefPdfPrintCallback
 {
 public:
 
-    PdfPrintCallback(GDBrowserView& node, const godot::String& path)
+    PdfPrintCallback(GdBrowserView& node, const godot::String& path)
         : m_node(node), m_path(path) {}
 
     virtual void OnPdfPrintFinished(const CefString& path, bool ok) override
@@ -206,139 +206,139 @@ public:
 
 private:
 
-    GDBrowserView& m_node;
+    GdBrowserView& m_node;
     godot::String m_path;
     IMPLEMENT_REFCOUNTING(PdfPrintCallback);
 };
 
 //------------------------------------------------------------------------------
-GDBrowserView::Impl::~Impl()
+GdBrowserView::Impl::~Impl()
 {
-    WARN_PRINT("[gdCEF][GDBrowserView::Impl::~Impl] destroying browser");
+    WARN_PRINT("[gdCEF][GdBrowserView::Impl::~Impl] destroying browser");
 }
 
 //------------------------------------------------------------------------------
 // in a GDNative module, "_bind_methods" is replaced by the "_register_methods"
 // method CefRefPtr<CefBrowser> m_browser; this is used to expose various
 // methods of this class to Godot.
-void GDBrowserView::_bind_methods()
+void GdBrowserView::_bind_methods()
 {
-    WARN_PRINT("[gdCEF][GDBrowserView::_bind_methods]");
+    WARN_PRINT("[gdCEF][GdBrowserView::_bind_methods]");
 
     using namespace godot;
 
     // Methods
-    ClassDB::bind_method(D_METHOD("close"), &GDBrowserView::close);
-    ClassDB::bind_method(D_METHOD("id"), &GDBrowserView::id);
-    ClassDB::bind_method(D_METHOD("get_error"), &GDBrowserView::getError);
-    ClassDB::bind_method(D_METHOD("is_valid"), &GDBrowserView::isValid);
+    ClassDB::bind_method(D_METHOD("close"), &GdBrowserView::close);
+    ClassDB::bind_method(D_METHOD("id"), &GdBrowserView::id);
+    ClassDB::bind_method(D_METHOD("get_error"), &GdBrowserView::getError);
+    ClassDB::bind_method(D_METHOD("is_valid"), &GdBrowserView::isValid);
     ClassDB::bind_method(D_METHOD("set_texture", "texture"),
-                         &GDBrowserView::setTexture);
-    ClassDB::bind_method(D_METHOD("get_texture"), &GDBrowserView::getTexture);
+                         &GdBrowserView::setTexture);
+    ClassDB::bind_method(D_METHOD("get_texture"), &GdBrowserView::getTexture);
     ClassDB::bind_method(D_METHOD("set_zoom_level"),
-                         &GDBrowserView::setZoomLevel);
-    ClassDB::bind_method(D_METHOD("get_title"), &GDBrowserView::getTitle);
-    ClassDB::bind_method(D_METHOD("get_url"), &GDBrowserView::getURL);
-    ClassDB::bind_method(D_METHOD("load_url"), &GDBrowserView::loadURL);
+                         &GdBrowserView::setZoomLevel);
+    ClassDB::bind_method(D_METHOD("get_title"), &GdBrowserView::getTitle);
+    ClassDB::bind_method(D_METHOD("get_url"), &GdBrowserView::getURL);
+    ClassDB::bind_method(D_METHOD("load_url"), &GdBrowserView::loadURL);
     ClassDB::bind_method(D_METHOD("load_data_uri"),
-                         &GDBrowserView::loadDataURI);
+                         &GdBrowserView::loadDataURI);
     ClassDB::bind_method(D_METHOD("download_file"),
-                         &GDBrowserView::downloadFile);
+                         &GdBrowserView::downloadFile);
     ClassDB::bind_method(D_METHOD("allow_downloads"),
-                         &GDBrowserView::allowDownloads);
+                         &GdBrowserView::allowDownloads);
     ClassDB::bind_method(D_METHOD("set_download_folder"),
-                         &GDBrowserView::setDownloadFolder);
-    ClassDB::bind_method(D_METHOD("is_loaded"), &GDBrowserView::loaded);
-    ClassDB::bind_method(D_METHOD("reload"), &GDBrowserView::reload);
-    ClassDB::bind_method(D_METHOD("stop_loading"), &GDBrowserView::stopLoading);
-    ClassDB::bind_method(D_METHOD("copy"), &GDBrowserView::copy);
-    ClassDB::bind_method(D_METHOD("paste"), &GDBrowserView::paste);
-    ClassDB::bind_method(D_METHOD("undo"), &GDBrowserView::undo);
-    ClassDB::bind_method(D_METHOD("redo"), &GDBrowserView::redo);
+                         &GdBrowserView::setDownloadFolder);
+    ClassDB::bind_method(D_METHOD("is_loaded"), &GdBrowserView::loaded);
+    ClassDB::bind_method(D_METHOD("reload"), &GdBrowserView::reload);
+    ClassDB::bind_method(D_METHOD("stop_loading"), &GdBrowserView::stopLoading);
+    ClassDB::bind_method(D_METHOD("copy"), &GdBrowserView::copy);
+    ClassDB::bind_method(D_METHOD("paste"), &GdBrowserView::paste);
+    ClassDB::bind_method(D_METHOD("undo"), &GdBrowserView::undo);
+    ClassDB::bind_method(D_METHOD("redo"), &GdBrowserView::redo);
     ClassDB::bind_method(D_METHOD("request_html_content"),
-                         &GDBrowserView::requestHtmlContent);
+                         &GdBrowserView::requestHtmlContent);
     ClassDB::bind_method(D_METHOD("save_page", "path"),
-                         &GDBrowserView::savePage);
+                         &GdBrowserView::savePage);
     ClassDB::bind_method(D_METHOD("save_page_as_pdf", "path"),
-                         &GDBrowserView::savePageAsPdf);
+                         &GdBrowserView::savePageAsPdf);
     ClassDB::bind_method(D_METHOD("has_previous_page"),
-                         &GDBrowserView::canNavigateBackward);
+                         &GdBrowserView::canNavigateBackward);
     ClassDB::bind_method(D_METHOD("has_next_page"),
-                         &GDBrowserView::canNavigateForward);
+                         &GdBrowserView::canNavigateForward);
     ClassDB::bind_method(D_METHOD("previous_page"),
-                         &GDBrowserView::navigateBackward);
+                         &GdBrowserView::navigateBackward);
     ClassDB::bind_method(D_METHOD("next_page"),
-                         &GDBrowserView::navigateForward);
-    ClassDB::bind_method(D_METHOD("resize"), &GDBrowserView::resize);
-    ClassDB::bind_method(D_METHOD("set_viewport"), &GDBrowserView::viewport);
-    ClassDB::bind_method(D_METHOD("set_key_pressed"), &GDBrowserView::keyPress);
+                         &GdBrowserView::navigateForward);
+    ClassDB::bind_method(D_METHOD("resize"), &GdBrowserView::resize);
+    ClassDB::bind_method(D_METHOD("set_viewport"), &GdBrowserView::viewport);
+    ClassDB::bind_method(D_METHOD("set_key_pressed"), &GdBrowserView::keyPress);
     ClassDB::bind_method(D_METHOD("set_mouse_moved"),
-                         &GDBrowserView::mouseMove);
+                         &GdBrowserView::mouseMove);
     ClassDB::bind_method(D_METHOD("set_mouse_left_click"),
-                         &GDBrowserView::leftClick);
+                         &GdBrowserView::leftClick);
     ClassDB::bind_method(D_METHOD("set_mouse_right_click"),
-                         &GDBrowserView::rightClick);
+                         &GdBrowserView::rightClick);
     ClassDB::bind_method(D_METHOD("set_mouse_middle_click"),
-                         &GDBrowserView::middleClick);
+                         &GdBrowserView::middleClick);
     ClassDB::bind_method(D_METHOD("set_mouse_left_down"),
-                         &GDBrowserView::leftMouseDown);
+                         &GdBrowserView::leftMouseDown);
     ClassDB::bind_method(D_METHOD("set_mouse_left_up"),
-                         &GDBrowserView::leftMouseUp);
+                         &GdBrowserView::leftMouseUp);
     ClassDB::bind_method(D_METHOD("set_mouse_right_down"),
-                         &GDBrowserView::rightMouseDown);
+                         &GdBrowserView::rightMouseDown);
     ClassDB::bind_method(D_METHOD("set_mouse_right_up"),
-                         &GDBrowserView::rightMouseUp);
+                         &GdBrowserView::rightMouseUp);
     ClassDB::bind_method(D_METHOD("set_mouse_middle_down"),
-                         &GDBrowserView::middleMouseDown);
+                         &GdBrowserView::middleMouseDown);
     ClassDB::bind_method(D_METHOD("set_mouse_middle_up"),
-                         &GDBrowserView::middleMouseUp);
+                         &GdBrowserView::middleMouseUp);
     ClassDB::bind_method(D_METHOD("set_mouse_wheel_vertical", "delta", "shift",
                                    "ctrl", "alt"),
-                         &GDBrowserView::mouseWheelVertical,
+                         &GdBrowserView::mouseWheelVertical,
                          DEFVAL(false), DEFVAL(false), DEFVAL(false));
     ClassDB::bind_method(D_METHOD("set_mouse_wheel_horizontal", "delta", "shift",
                                    "ctrl", "alt"),
-                         &GDBrowserView::mouseWheelHorizontal,
+                         &GdBrowserView::mouseWheelHorizontal,
                          DEFVAL(false), DEFVAL(false), DEFVAL(false));
-    ClassDB::bind_method(D_METHOD("set_muted"), &GDBrowserView::mute);
-    ClassDB::bind_method(D_METHOD("is_muted"), &GDBrowserView::muted);
+    ClassDB::bind_method(D_METHOD("set_muted"), &GdBrowserView::mute);
+    ClassDB::bind_method(D_METHOD("is_muted"), &GdBrowserView::muted);
     ClassDB::bind_method(D_METHOD("set_audio_stream", "audio"),
-                         &GDBrowserView::setAudioStreamer);
+                         &GdBrowserView::setAudioStreamer);
     ClassDB::bind_method(D_METHOD("get_audio_stream"),
-                         &GDBrowserView::getAudioStreamer);
+                         &GdBrowserView::getAudioStreamer);
     ClassDB::bind_method(D_METHOD("get_pixel_color", "x", "y"),
-                         &GDBrowserView::getPixelColor);
+                         &GdBrowserView::getPixelColor);
     ClassDB::bind_method(D_METHOD("register_method", "object", "method"),
-                         &GDBrowserView::registerGodotMethod);
+                         &GdBrowserView::registerGodotMethod);
     ClassDB::bind_method(D_METHOD("js_emit", "event_name", "data"),
-                         &GDBrowserView::jsEmit);
+                         &GdBrowserView::jsEmit);
     ClassDB::bind_method(D_METHOD("execute_javascript"),
-                         &GDBrowserView::executeJavaScript);
+                         &GdBrowserView::executeJavaScript);
     ClassDB::bind_method(D_METHOD("add_ad_block_pattern", "pattern"),
-                         &GDBrowserView::addAdBlockPattern);
+                         &GdBrowserView::addAdBlockPattern);
     ClassDB::bind_method(D_METHOD("enable_ad_block", "enable"),
-                         &GDBrowserView::enableAdBlock);
+                         &GdBrowserView::enableAdBlock);
     ClassDB::bind_method(D_METHOD("is_ad_block_enabled"),
-                         &GDBrowserView::isAdBlockEnabled);
-    ClassDB::bind_method(D_METHOD("log_info", "message"), &GDBrowserView::log_info);
-    ClassDB::bind_method(D_METHOD("log_warning", "message"), &GDBrowserView::log_warning);
-    ClassDB::bind_method(D_METHOD("log_error", "message"), &GDBrowserView::log_error);
-    ClassDB::bind_method(D_METHOD("log_fatal", "message"), &GDBrowserView::log_fatal);
+                         &GdBrowserView::isAdBlockEnabled);
+    ClassDB::bind_method(D_METHOD("log_info", "message"), &GdBrowserView::log_info);
+    ClassDB::bind_method(D_METHOD("log_warning", "message"), &GdBrowserView::log_warning);
+    ClassDB::bind_method(D_METHOD("log_error", "message"), &GdBrowserView::log_error);
+    ClassDB::bind_method(D_METHOD("log_fatal", "message"), &GdBrowserView::log_fatal);
 
     // Drag and drop methods
     ClassDB::bind_method(D_METHOD("enable_drag_and_drop", "enable"),
-                         &GDBrowserView::enableDragAndDrop);
+                         &GdBrowserView::enableDragAndDrop);
     ClassDB::bind_method(D_METHOD("is_drag_and_drop_enabled"),
-                         &GDBrowserView::isDragAndDropEnabled);
+                         &GdBrowserView::isDragAndDropEnabled);
     ClassDB::bind_method(D_METHOD("drag_enter", "x", "y", "text", "html", "url"),
-                         &GDBrowserView::dragEnter);
+                         &GdBrowserView::dragEnter);
     ClassDB::bind_method(D_METHOD("drag_over", "x", "y"),
-                         &GDBrowserView::dragOver);
-    ClassDB::bind_method(D_METHOD("drag_leave"), &GDBrowserView::dragLeave);
-    ClassDB::bind_method(D_METHOD("drop", "x", "y"), &GDBrowserView::drop);
-    ClassDB::bind_method(D_METHOD("is_dragging"), &GDBrowserView::isDragging);
+                         &GdBrowserView::dragOver);
+    ClassDB::bind_method(D_METHOD("drag_leave"), &GdBrowserView::dragLeave);
+    ClassDB::bind_method(D_METHOD("drop", "x", "y"), &GdBrowserView::drop);
+    ClassDB::bind_method(D_METHOD("is_dragging"), &GdBrowserView::isDragging);
     ClassDB::bind_method(D_METHOD("end_dragging", "x", "y"),
-                         &GDBrowserView::endDragging);
+                         &GdBrowserView::endDragging);
 
     // Signals
     ADD_SIGNAL(MethodInfo("on_download_updated",
@@ -393,13 +393,13 @@ void GDBrowserView::_bind_methods()
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::_init()
+void GdBrowserView::_init()
 {
     BROWSER_DEBUG("");
 }
 
 //------------------------------------------------------------------------------
-godot::String GDBrowserView::getError()
+godot::String GdBrowserView::getError()
 {
     std::string err = m_error.str();
     m_error.clear();
@@ -407,13 +407,13 @@ godot::String GDBrowserView::getError()
 }
 
 //------------------------------------------------------------------------------
-int GDBrowserView::init(godot::String const& url,
+int GdBrowserView::init(godot::String const& url,
                         CefBrowserSettings const& settings,
                         CefWindowInfo const& window_info)
 {
     if (m_impl == nullptr)
     {
-        GDCEF_ERROR("GDBrowserView::init: m_impl is nullptr");
+        GDCEF_ERROR("GdBrowserView::init: m_impl is nullptr");
         return -1;
     }
 
@@ -447,24 +447,24 @@ int GDBrowserView::init(godot::String const& url,
 }
 
 //------------------------------------------------------------------------------
-GDBrowserView::GDBrowserView() : m_viewport({0.0f, 0.0f, 1.0f, 1.0f})
+GdBrowserView::GdBrowserView() : m_viewport({0.0f, 0.0f, 1.0f, 1.0f})
 {
-    BROWSER_DEBUG("Creating new GDBrowserView");
+    BROWSER_DEBUG("Creating new GdBrowserView");
 
-    m_impl = new GDBrowserView::Impl(*this);
-    assert((m_impl != nullptr) && "Failed allocating GDBrowserView");
+    m_impl = new GdBrowserView::Impl(*this);
+    assert((m_impl != nullptr) && "Failed allocating GdBrowserView");
     m_image.instantiate();
     m_texture.instantiate();
 }
 
 //------------------------------------------------------------------------------
-GDBrowserView::~GDBrowserView()
+GdBrowserView::~GdBrowserView()
 {
     close();
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::getViewRect(CefRefPtr<CefBrowser> /*browser*/,
+void GdBrowserView::getViewRect(CefRefPtr<CefBrowser> /*browser*/,
                                 CefRect& rect)
 {
     rect = CefRect(int(m_viewport[0] * m_width),
@@ -474,7 +474,7 @@ void GDBrowserView::getViewRect(CefRefPtr<CefBrowser> /*browser*/,
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
+void GdBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
                             CefRenderHandler::PaintElementType /*type*/,
                             const CefRenderHandler::RectList& dirtyRects,
                             const void* buffer,
@@ -538,7 +538,7 @@ void GDBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::onLoadEnd(CefRefPtr<CefBrowser> /*browser*/,
+void GdBrowserView::onLoadEnd(CefRefPtr<CefBrowser> /*browser*/,
                               CefRefPtr<CefFrame> frame,
                               int httpStatusCode)
 {
@@ -553,7 +553,7 @@ void GDBrowserView::onLoadEnd(CefRefPtr<CefBrowser> /*browser*/,
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::onLoadError(CefRefPtr<CefBrowser> /*browser*/,
+void GdBrowserView::onLoadError(CefRefPtr<CefBrowser> /*browser*/,
                                 CefRefPtr<CefFrame> frame,
                                 const int errCode,
                                 const CefString& errorText)
@@ -575,7 +575,7 @@ void GDBrowserView::onLoadError(CefRefPtr<CefBrowser> /*browser*/,
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::setZoomLevel(double delta)
+void GdBrowserView::setZoomLevel(double delta)
 {
     BROWSER_DEBUG(delta);
 
@@ -586,7 +586,7 @@ void GDBrowserView::setZoomLevel(double delta)
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::loadURL(godot::String url)
+void GdBrowserView::loadURL(godot::String url)
 {
     godot::String converted_url = convert_godot_url(url);
     if (!converted_url.is_empty())
@@ -611,7 +611,7 @@ void GDBrowserView::loadURL(godot::String url)
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::loadDataURI(godot::String html, godot::String mime_type)
+void GdBrowserView::loadDataURI(godot::String html, godot::String mime_type)
 {
     auto const& d = html.utf8();
     std::string uri("data:");
@@ -622,7 +622,7 @@ void GDBrowserView::loadDataURI(godot::String html, godot::String mime_type)
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::reload() const
+bool GdBrowserView::reload() const
 {
     BROWSER_DEBUG("");
 
@@ -634,7 +634,7 @@ bool GDBrowserView::reload() const
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::loaded() const
+bool GdBrowserView::loaded() const
 {
     BROWSER_DEBUG("");
 
@@ -645,7 +645,7 @@ bool GDBrowserView::loaded() const
 }
 
 //------------------------------------------------------------------------------
-godot::String GDBrowserView::getURL() const
+godot::String GdBrowserView::getURL() const
 {
     if (m_browser && m_browser->GetMainFrame())
     {
@@ -659,7 +659,7 @@ godot::String GDBrowserView::getURL() const
 }
 
 //------------------------------------------------------------------------------
-godot::String GDBrowserView::getTitle() const
+godot::String GdBrowserView::getTitle() const
 {
     BROWSER_DEBUG("");
 
@@ -678,7 +678,7 @@ godot::String GDBrowserView::getTitle() const
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::stopLoading()
+void GdBrowserView::stopLoading()
 {
     BROWSER_DEBUG("");
 
@@ -690,7 +690,7 @@ void GDBrowserView::stopLoading()
 
 //------------------------------------------------------------------------------
 // FIXME https://github.com/chromiumembedded/cef/issues/3117
-void GDBrowserView::copy() const
+void GdBrowserView::copy() const
 {
     BROWSER_DEBUG("");
 
@@ -706,7 +706,7 @@ void GDBrowserView::copy() const
 
 //------------------------------------------------------------------------------
 // FIXME https://github.com/chromiumembedded/cef/issues/3117
-void GDBrowserView::paste() const
+void GdBrowserView::paste() const
 {
     BROWSER_DEBUG("");
 
@@ -721,7 +721,7 @@ void GDBrowserView::paste() const
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::cut() const
+void GdBrowserView::cut() const
 {
     BROWSER_DEBUG("");
 
@@ -736,7 +736,7 @@ void GDBrowserView::cut() const
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::delete_() const
+void GdBrowserView::delete_() const
 {
     BROWSER_DEBUG("");
 
@@ -751,7 +751,7 @@ void GDBrowserView::delete_() const
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::undo() const
+void GdBrowserView::undo() const
 {
     BROWSER_DEBUG("");
 
@@ -766,7 +766,7 @@ void GDBrowserView::undo() const
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::redo() const
+void GdBrowserView::redo() const
 {
     BROWSER_DEBUG("");
 
@@ -781,7 +781,7 @@ void GDBrowserView::redo() const
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::requestHtmlContent()
+void GdBrowserView::requestHtmlContent()
 {
     if (m_browser && m_browser->GetMainFrame())
     {
@@ -794,7 +794,7 @@ void GDBrowserView::requestHtmlContent()
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::savePage(godot::String path)
+void GdBrowserView::savePage(godot::String path)
 {
     if (m_browser && m_browser->GetMainFrame())
     {
@@ -817,7 +817,7 @@ void GDBrowserView::savePage(godot::String path)
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::savePageAsPdf(godot::String path)
+void GdBrowserView::savePageAsPdf(godot::String path)
 {
     if (!m_browser)
     {
@@ -854,7 +854,7 @@ void GDBrowserView::savePageAsPdf(godot::String path)
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::executeJavaScript(godot::String javascript)
+void GdBrowserView::executeJavaScript(godot::String javascript)
 {
     BROWSER_DEBUG("");
 
@@ -872,7 +872,7 @@ void GDBrowserView::executeJavaScript(godot::String javascript)
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::canNavigateBackward() const
+bool GdBrowserView::canNavigateBackward() const
 {
     BROWSER_DEBUG("");
 
@@ -883,7 +883,7 @@ bool GDBrowserView::canNavigateBackward() const
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::navigateBackward()
+void GdBrowserView::navigateBackward()
 {
     BROWSER_DEBUG("");
 
@@ -894,7 +894,7 @@ void GDBrowserView::navigateBackward()
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::canNavigateForward() const
+bool GdBrowserView::canNavigateForward() const
 {
     BROWSER_DEBUG("");
 
@@ -905,7 +905,7 @@ bool GDBrowserView::canNavigateForward() const
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::navigateForward()
+void GdBrowserView::navigateForward()
 {
     BROWSER_DEBUG("");
 
@@ -916,7 +916,7 @@ void GDBrowserView::navigateForward()
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::resize_(int width, int height)
+void GdBrowserView::resize_(int width, int height)
 {
     if (width <= 0)
     {
@@ -945,7 +945,7 @@ void GDBrowserView::resize_(int width, int height)
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::viewport(float x, float y, float w, float h)
+bool GdBrowserView::viewport(float x, float y, float w, float h)
 {
     // BROWSER_DEBUG(x << ", " << y << ", " << w << ", " << h);
 
@@ -976,7 +976,7 @@ bool GDBrowserView::viewport(float x, float y, float w, float h)
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::isValid() const
+bool GdBrowserView::isValid() const
 {
     BROWSER_DEBUG("");
 
@@ -987,7 +987,7 @@ bool GDBrowserView::isValid() const
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::close()
+void GdBrowserView::close()
 {
     if (!m_browser)
         return;
@@ -1007,7 +1007,7 @@ void GDBrowserView::close()
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::mute(bool mute)
+bool GdBrowserView::mute(bool mute)
 {
     CEF_REQUIRE_UI_THREAD();
     if (m_browser == nullptr)
@@ -1018,7 +1018,7 @@ bool GDBrowserView::mute(bool mute)
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::muted()
+bool GdBrowserView::muted()
 {
     CEF_REQUIRE_UI_THREAD();
     if (m_browser == nullptr)
@@ -1028,7 +1028,7 @@ bool GDBrowserView::muted()
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::onAudioStreamStarted(CefRefPtr<CefBrowser> browser,
+void GdBrowserView::onAudioStreamStarted(CefRefPtr<CefBrowser> browser,
                                          const CefAudioParameters& params,
                                          int channels)
 {
@@ -1036,7 +1036,7 @@ void GDBrowserView::onAudioStreamStarted(CefRefPtr<CefBrowser> browser,
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::onAudioStreamPacket(CefRefPtr<CefBrowser> browser,
+void GdBrowserView::onAudioStreamPacket(CefRefPtr<CefBrowser> browser,
                                         const float** data,
                                         int frames,
                                         int64_t pts)
@@ -1060,7 +1060,7 @@ void GDBrowserView::onAudioStreamPacket(CefRefPtr<CefBrowser> browser,
 }
 
 //------------------------------------------------------------------------------
-godot::Color GDBrowserView::getPixelColor(int x, int y) const
+godot::Color GdBrowserView::getPixelColor(int x, int y) const
 {
     // Ensure the browser is valid and coordinates are within bounds
     if (x < 0 || y < 0 || x >= m_width || y >= m_height || m_data.size() == 0)
@@ -1076,7 +1076,7 @@ godot::Color GDBrowserView::getPixelColor(int x, int y) const
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::onBeforePopup(CefRefPtr<CefBrowser> browser,
+bool GdBrowserView::onBeforePopup(CefRefPtr<CefBrowser> browser,
                                   const CefString& target_url)
 {
     // Prevent opening page on new windows.
@@ -1086,13 +1086,13 @@ bool GDBrowserView::onBeforePopup(CefRefPtr<CefBrowser> browser,
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::allowDownloads(bool allow)
+void GdBrowserView::allowDownloads(bool allow)
 {
     m_allow_downloads = allow;
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::setDownloadFolder(godot::String path)
+void GdBrowserView::setDownloadFolder(godot::String path)
 {
     if (path.begins_with("user://") || path.begins_with("res://"))
     {
@@ -1105,13 +1105,13 @@ void GDBrowserView::setDownloadFolder(godot::String path)
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::downloadFile(godot::String url)
+void GdBrowserView::downloadFile(godot::String url)
 {
     m_browser->GetHost()->StartDownload(url.utf8().get_data());
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::canDownload(CefRefPtr<CefBrowser> browser,
+bool GdBrowserView::canDownload(CefRefPtr<CefBrowser> browser,
                                 const CefString& url,
                                 const CefString& request_method)
 {
@@ -1120,7 +1120,7 @@ bool GDBrowserView::canDownload(CefRefPtr<CefBrowser> browser,
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::onBeforeDownload(
+bool GdBrowserView::onBeforeDownload(
     CefRefPtr<CefBrowser> browser,
     CefRefPtr<CefDownloadItem> download_item,
     const CefString& suggested_name,
@@ -1137,7 +1137,7 @@ bool GDBrowserView::onBeforeDownload(
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::onDownloadUpdated(
+void GdBrowserView::onDownloadUpdated(
     CefRefPtr<CefBrowser> browser,
     CefRefPtr<CefDownloadItem> download_item,
     CefRefPtr<CefDownloadItemCallback> callback)
@@ -1163,7 +1163,7 @@ void GDBrowserView::onDownloadUpdated(
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::registerGodotMethod(godot::Object* object,
+bool GdBrowserView::registerGodotMethod(godot::Object* object,
                                         godot::String method_name)
 {
     BROWSER_DEBUG("Registering gdscript method "
@@ -1192,7 +1192,7 @@ bool GDBrowserView::registerGodotMethod(godot::Object* object,
 
 //------------------------------------------------------------------------------
 // Recursive method to convert JSON data to native Godot types
-godot::Variant GDBrowserView::JsonToGodot(const godot::Dictionary& json)
+godot::Variant GdBrowserView::JsonToGodot(const godot::Dictionary& json)
 {
     // Special case for binary data encoded in base64
     if (json.has("type") && json["type"] == "binary" && json.has("format") &&
@@ -1265,7 +1265,7 @@ godot::Variant GDBrowserView::JsonToGodot(const godot::Dictionary& json)
 
 //------------------------------------------------------------------------------
 // Overload to handle a Godot Array directly
-godot::Variant GDBrowserView::JsonToGodot(const godot::Array& json_array)
+godot::Variant GdBrowserView::JsonToGodot(const godot::Array& json_array)
 {
     godot::Array result;
     result.resize(json_array.size());
@@ -1295,7 +1295,7 @@ godot::Variant GDBrowserView::JsonToGodot(const godot::Array& json_array)
 
 //------------------------------------------------------------------------------
 // Generic overload to handle all Godot Variant types
-godot::Variant GDBrowserView::JsonToGodot(const godot::Variant& json_value)
+godot::Variant GdBrowserView::JsonToGodot(const godot::Variant& json_value)
 {
     switch (json_value.get_type())
     {
@@ -1321,7 +1321,7 @@ godot::Variant GDBrowserView::JsonToGodot(const godot::Variant& json_value)
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::onProcessMessageReceived(
+bool GdBrowserView::onProcessMessageReceived(
     CefRefPtr<CefBrowser> browser,
     CefRefPtr<CefFrame> frame,
     CefProcessId source_process,
@@ -1402,7 +1402,7 @@ bool GDBrowserView::onProcessMessageReceived(
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::jsEmit(godot::String event_name, const godot::Variant& data)
+bool GdBrowserView::jsEmit(godot::String event_name, const godot::Variant& data)
 {
     BROWSER_DEBUG("Sending message to render process '"
                   << event_name.utf8().get_data() << "'");
@@ -1467,7 +1467,7 @@ bool GDBrowserView::jsEmit(godot::String event_name, const godot::Variant& data)
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::addAdBlockPattern(godot::String pattern)
+bool GdBrowserView::addAdBlockPattern(godot::String pattern)
 {
     BROWSER_DEBUG("Adding ad block pattern " << pattern.utf8().get_data());
 
@@ -1490,7 +1490,7 @@ bool GDBrowserView::addAdBlockPattern(godot::String pattern)
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::enableAdBlock(bool enable)
+void GdBrowserView::enableAdBlock(bool enable)
 {
     BROWSER_DEBUG("Enabling ad blocker " << (enable ? "true" : "false"));
 
@@ -1504,7 +1504,7 @@ void GDBrowserView::enableAdBlock(bool enable)
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::isAdBlockEnabled() const
+bool GdBrowserView::isAdBlockEnabled() const
 {
     BROWSER_DEBUG("")
     if ((m_impl == nullptr) || (m_impl->m_ad_blocker == nullptr))
@@ -1516,7 +1516,7 @@ bool GDBrowserView::isAdBlockEnabled() const
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::log_info(godot::String message)
+void GdBrowserView::log_info(godot::String message)
 {
     std::stringstream ss;
     godot::String name = get_name();
@@ -1525,7 +1525,7 @@ void GDBrowserView::log_info(godot::String message)
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::log_warning(godot::String message)
+void GdBrowserView::log_warning(godot::String message)
 {
     std::stringstream ss;
     godot::String name = get_name();
@@ -1534,7 +1534,7 @@ void GDBrowserView::log_warning(godot::String message)
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::log_error(godot::String message)
+void GdBrowserView::log_error(godot::String message)
 {
     std::stringstream ss;
     godot::String name = get_name();
@@ -1543,7 +1543,7 @@ void GDBrowserView::log_error(godot::String message)
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::log_fatal(godot::String message)
+void GdBrowserView::log_fatal(godot::String message)
 {
     std::stringstream ss;
     godot::String name = get_name();
@@ -1552,20 +1552,20 @@ void GDBrowserView::log_fatal(godot::String message)
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::enableDragAndDrop(bool enable)
+void GdBrowserView::enableDragAndDrop(bool enable)
 {
     BROWSER_DEBUG("Enabling drag and drop: " << (enable ? "true" : "false"));
     m_drag_and_drop_enabled = enable;
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::isDragAndDropEnabled() const
+bool GdBrowserView::isDragAndDropEnabled() const
 {
     return m_drag_and_drop_enabled;
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::onDragEnter(CefRefPtr<CefBrowser> browser,
+bool GdBrowserView::onDragEnter(CefRefPtr<CefBrowser> browser,
                                 CefRefPtr<CefDragData> dragData,
                                 CefDragHandler::DragOperationsMask mask)
 {
@@ -1620,7 +1620,7 @@ bool GDBrowserView::onDragEnter(CefRefPtr<CefBrowser> browser,
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::onDraggableRegionsChanged(
+void GdBrowserView::onDraggableRegionsChanged(
     CefRefPtr<CefBrowser> browser,
     CefRefPtr<CefFrame> frame,
     const std::vector<CefDraggableRegion>& regions)
@@ -1645,7 +1645,7 @@ void GDBrowserView::onDraggableRegionsChanged(
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::dragEnter(int x, int y, godot::String text,
+void GdBrowserView::dragEnter(int x, int y, godot::String text,
                                godot::String html, godot::String url)
 {
     BROWSER_DEBUG("dragEnter at " << x << ", " << y);
@@ -1682,7 +1682,7 @@ void GDBrowserView::dragEnter(int x, int y, godot::String text,
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::dragOver(int x, int y)
+void GdBrowserView::dragOver(int x, int y)
 {
     if (!m_browser || !m_browser->GetHost())
         return;
@@ -1699,7 +1699,7 @@ void GDBrowserView::dragOver(int x, int y)
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::dragLeave()
+void GdBrowserView::dragLeave()
 {
     BROWSER_DEBUG("dragLeave");
 
@@ -1711,7 +1711,7 @@ void GDBrowserView::dragLeave()
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::drop(int x, int y)
+void GdBrowserView::drop(int x, int y)
 {
     BROWSER_DEBUG("drop at " << x << ", " << y);
 
@@ -1728,13 +1728,13 @@ void GDBrowserView::drop(int x, int y)
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::isDragging() const
+bool GdBrowserView::isDragging() const
 {
     return m_is_dragging;
 }
 
 //------------------------------------------------------------------------------
-bool GDBrowserView::onStartDragging(CefRefPtr<CefBrowser> browser,
+bool GdBrowserView::onStartDragging(CefRefPtr<CefBrowser> browser,
                                      CefRefPtr<CefDragData> drag_data,
                                      CefRenderHandler::DragOperationsMask allowed_ops,
                                      int x,
@@ -1796,7 +1796,7 @@ bool GDBrowserView::onStartDragging(CefRefPtr<CefBrowser> browser,
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::onUpdateDragCursor(CefRefPtr<CefBrowser> browser,
+void GdBrowserView::onUpdateDragCursor(CefRefPtr<CefBrowser> browser,
                                         CefRenderHandler::DragOperation operation)
 {
     m_current_drag_op = operation;
@@ -1806,7 +1806,7 @@ void GDBrowserView::onUpdateDragCursor(CefRefPtr<CefBrowser> browser,
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::onCursorChange(CefRefPtr<CefBrowser> browser,
+void GdBrowserView::onCursorChange(CefRefPtr<CefBrowser> browser,
                                     cef_cursor_type_t type)
 {
     // Map CEF cursor types to Godot DisplayServer::CursorShape
@@ -1889,7 +1889,7 @@ void GDBrowserView::onCursorChange(CefRefPtr<CefBrowser> browser,
 }
 
 //------------------------------------------------------------------------------
-void GDBrowserView::endDragging(int x, int y)
+void GdBrowserView::endDragging(int x, int y)
 {
     BROWSER_DEBUG("endDragging at " << x << ", " << y);
 

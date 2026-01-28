@@ -75,11 +75,11 @@
 
 // ****************************************************************************
 //! \brief Class wrapping the CefBrowser class and export methods for Godot
-//! script. This class is instantiate by GDCef.
+//! script. This class is instantiate by GdCEF.
 // ****************************************************************************
-class GDBrowserView: public godot::Node
+class GdBrowserView: public godot::Node
 {
-    friend class GDCef;
+    friend class GdCEF;
 
 public: // Godot interfaces
 
@@ -91,7 +91,7 @@ public: // Godot interfaces
     // -------------------------------------------------------------------------
     //! \brief Godot stuff
     // -------------------------------------------------------------------------
-    GDCLASS(GDBrowserView, godot::Node);
+    GDCLASS(GdBrowserView, godot::Node);
 
 protected:
 
@@ -130,12 +130,12 @@ private: // CEF interfaces
     {
     public:
 
-        friend GDBrowserView;
+        friend GdBrowserView;
 
         // ---------------------------------------------------------------------
         //! \brief Pass the owner instance.
         // ---------------------------------------------------------------------
-        Impl(GDBrowserView& view) : m_owner(view)
+        Impl(GdBrowserView& view) : m_owner(view)
         {
             m_ad_blocker = new AdBlocker();
             assert((m_ad_blocker != nullptr) && "Failed allocating AdBlocker");
@@ -487,7 +487,7 @@ private: // CEF interfaces
 
     private:
 
-        GDBrowserView& m_owner;
+        GdBrowserView& m_owner;
         CefRefPtr<AdBlocker> m_ad_blocker;
         RoutingAudio m_audio;
     };
@@ -501,12 +501,12 @@ public:
     //! CefBrowserSettings const&, CefWindowInfo const&) because Godot does not
     //! manage non dummy constructors.
     // -------------------------------------------------------------------------
-    GDBrowserView();
+    GdBrowserView();
 
     // -------------------------------------------------------------------------
     //! \brief Virtual to use dynamic_cast
     // -------------------------------------------------------------------------
-    virtual ~GDBrowserView();
+    virtual ~GdBrowserView();
 
     // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Return the globally unique
@@ -1003,7 +1003,7 @@ private:
 
     // -------------------------------------------------------------------------
     //! \brief hack: since Godot does not like Constructor with parameters we
-    //! have to finalize GDBrowserView::GDBrowserView().
+    //! have to finalize GdBrowserView::GdBrowserView().
     //! \return the browser unique identifier or -1 in case of failure.
     // -------------------------------------------------------------------------
     int init(godot::String const& url,
@@ -1011,12 +1011,12 @@ private:
              CefWindowInfo const& window_info);
 
     // -------------------------------------------------------------------------
-    //! \brief Called by GDBrowserView::Impl::GetViewRect
+    //! \brief Called by GdBrowserView::Impl::GetViewRect
     // -------------------------------------------------------------------------
     void getViewRect(CefRefPtr<CefBrowser> browser, CefRect& rect);
 
     // -------------------------------------------------------------------------
-    //! \brief Called by GDBrowserView::Impl::OnPaint
+    //! \brief Called by GdBrowserView::Impl::OnPaint
     // -------------------------------------------------------------------------
     void onPaint(CefRefPtr<CefBrowser> browser,
                  CefRenderHandler::PaintElementType type,
@@ -1026,14 +1026,14 @@ private:
                  int height);
 
     // -------------------------------------------------------------------------
-    //! \brief Called by GDBrowserView::Impl::OnLoadEnd
+    //! \brief Called by GdBrowserView::Impl::OnLoadEnd
     // -------------------------------------------------------------------------
     void onLoadEnd(CefRefPtr<CefBrowser> browser,
                    CefRefPtr<CefFrame> frame,
                    int httpStatusCode);
 
     // -------------------------------------------------------------------------
-    //! \brief Called by GDBrowserView::Impl::OnLoadError
+    //! \brief Called by GdBrowserView::Impl::OnLoadError
     // -------------------------------------------------------------------------
     void onLoadError(CefRefPtr<CefBrowser> browser,
                      CefRefPtr<CefFrame> frame,
@@ -1108,7 +1108,7 @@ private:
                                   CefRefPtr<CefProcessMessage> message);
 
     // -------------------------------------------------------------------------
-    //! \brief Called by GDBrowserView::Impl::OnDragEnter
+    //! \brief Called by GdBrowserView::Impl::OnDragEnter
     //! \return true to cancel the drag event, false for default handling.
     // -------------------------------------------------------------------------
     bool onDragEnter(CefRefPtr<CefBrowser> browser,
@@ -1116,14 +1116,14 @@ private:
                      CefDragHandler::DragOperationsMask mask);
 
     // -------------------------------------------------------------------------
-    //! \brief Called by GDBrowserView::Impl::OnDraggableRegionsChanged
+    //! \brief Called by GdBrowserView::Impl::OnDraggableRegionsChanged
     // -------------------------------------------------------------------------
     void onDraggableRegionsChanged(CefRefPtr<CefBrowser> browser,
                                    CefRefPtr<CefFrame> frame,
                                    const std::vector<CefDraggableRegion>& regions);
 
     // -------------------------------------------------------------------------
-    //! \brief Called by GDBrowserView::Impl::StartDragging when the user starts
+    //! \brief Called by GdBrowserView::Impl::StartDragging when the user starts
     //! dragging content in the web view (HTML5 drag and drop).
     //! \return true to handle the drag operation, false to abort.
     // -------------------------------------------------------------------------
@@ -1134,13 +1134,13 @@ private:
                          int y);
 
     // -------------------------------------------------------------------------
-    //! \brief Called by GDBrowserView::Impl::UpdateDragCursor
+    //! \brief Called by GdBrowserView::Impl::UpdateDragCursor
     // -------------------------------------------------------------------------
     void onUpdateDragCursor(CefRefPtr<CefBrowser> browser,
                             CefRenderHandler::DragOperation operation);
 
     // -------------------------------------------------------------------------
-    //! \brief Called by GDBrowserView::Impl::OnCursorChange when the browser
+    //! \brief Called by GdBrowserView::Impl::OnCursorChange when the browser
     //! cursor changes (e.g., pointer, hand, text, etc.)
     // -------------------------------------------------------------------------
     void onCursorChange(CefRefPtr<CefBrowser> browser, cef_cursor_type_t type);
@@ -1169,12 +1169,12 @@ private:
 private:
 
     //! \brief CEF interface implementation
-    friend GDBrowserView::Impl;
+    friend GdBrowserView::Impl;
 
     //! \brief CEF interface implementation
     CefRefPtr<Impl> m_impl = nullptr;
 
-    //! \brief One to one CEF browser. The GDCef is the class containing the
+    //! \brief One to one CEF browser. The GdCEF is the class containing the
     //! whole browsers.
     CefRefPtr<CefBrowser> m_browser = nullptr;
 

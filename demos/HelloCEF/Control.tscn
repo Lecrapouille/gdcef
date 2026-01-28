@@ -17,7 +17,7 @@ layout_mode = 0
 anchor_right = 0.113
 anchor_bottom = 0.151
 
-[node name="CEF" type="GDCef" parent="."]
+[node name="CEF" type="GdCEF" parent="."]
 
 [node name="Timer" type="Timer" parent="."]
 wait_time = 10.0

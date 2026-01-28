@@ -2,38 +2,38 @@
 
 Two main classes:
 
-- The CEF node `GDCef` managing browsers. You only need a single `GDCef` node for your project.
-- The CEF browser nodes `GDBrowserView` displaying web documents (aka webviews). You should not create directly a `GDBrowserView` node manually in the scene graph. Use instead `GDCef.create_browser`. Browser are created as child nodes of the `GDCef` node (but Godot does not show them in the scene graph).
+- The CEF node `gdCEF` managing browsers. You only need a single `gdCEF` node for your project.
+- The CEF browser nodes `GdBrowserView` displaying web documents (aka webviews). You should not create directly a `GdBrowserView` node manually in the scene graph. Use instead `gdCEF.create_browser`. Browser are created as child nodes of the `gdCEF` node (but Godot does not show them in the scene graph).
 
 ---
 
-## API for `GDCef` node
+## API for `gdCEF` node
 
-`GDCef` is a class deriving from Godot's Node and interfaces with the core of the Chromium Embedded Framework. This class can create instances of `GDBrowserView` (displaying web documents) and store them as Godot child nodes (accessible via `get_node`).
+`gdCEF` is a class deriving from Godot's Node and interfaces with the core of the Chromium Embedded Framework. This class can create instances of `GdBrowserView` (displaying web documents) and store them as Godot child nodes (accessible via `get_node`).
 
-### GDCef functions
+### gdCEF functions
 
 | Godot function name | Arguments | Return | Comment |
 |--------------------|-----------|---------|---------|
 | `_init` | | | Dummy function. Use `initialize` instead. |
 | `_process` | `dt`: float | void | Hidden function called automatically by Godot to process CEF internal messages (pump). `dt` is not used. |
-| `create_browser` | `url`: String, `texture_rect`: TextureRect, `settings`: Dictionary | GDBrowserView | Creates a browser tab and stores its instance as child node. `url`: the page link. `texture_rect`: the container holding the texture. `settings`: optional settings applied to newly created browsers. |
-| `get_error` | | String | Gives the reason of the failure of the latest GDCef function. |
+| `create_browser` | `url`: String, `texture_rect`: TextureRect, `settings`: Dictionary | GdBrowserView | Creates a browser tab and stores its instance as child node. `url`: the page link. `texture_rect`: the container holding the texture. `settings`: optional settings applied to newly created browsers. |
+| `get_error` | | String | Gives the reason of the failure of the latest gdCEF function. |
 | `get_full_version` | | String | Returns the full CEF version as string |
 | `get_version_part` | `part`: int | int | Returns part of the CEF version as integer |
 | `initialize` | `config`: Dictionary | bool | Replaces Godot _init() and passes optional [CEF configuration](#cef-settings). Returns false in case of failure or double initialization, in this case you should halt the execution of your application. |
-| `is_alive` | | bool | Returns if the `GDCef` is alive. |
+| `is_alive` | | bool | Returns if the `gdCEF` is alive. |
 | `log_info` | `message`: String | void | Write an info message to CEF logs from GDScript. |
 | `log_warning` | `message`: String | void | Write a warning message to CEF logs from GDScript. |
 | `log_error` | `message`: String | void | Write an error message to CEF logs from GDScript. |
 | `log_fatal` | `message`: String | void | Write a fatal message to CEF logs from GDScript. |
-| `shutdown` | | | Releases CEF memory and notifies sub CEF processes that the application is exiting. All browsers are destroyed. `GDCef` becomes inactive |
+| `shutdown` | | | Releases CEF memory and notifies sub CEF processes that the application is exiting. All browsers are destroyed. `gdCEF` becomes inactive |
 
-### GDCef signals
+### gdCEF signals
 
 None.
 
-### GDCef properties
+### gdCEF properties
 
 None.
 
@@ -61,9 +61,9 @@ Since Godot `_init` does not accept arguments, you must use the `initialize` fun
 
 For additional settings, refer to [cef_types.h](../thirdparty/cef_binary/include/internal/cef_types.h).
 
-## API for `GDBrowserView` nodes
+## API for `GdBrowserView` nodes
 
-Nodes are created by `GDCef.create_browser` and are automatically destroyed when `GDCef` is shut down. Since they inherit from `Node`, you can use Godot's scene graph functions to manage them, i.e. give them a name with `.name = "xxx".
+Nodes are created by `gdCEF.create_browser` and are automatically destroyed when `gdCEF` is shut down. Since they inherit from `Node`, you can use Godot's scene graph functions to manage them, i.e. give them a name with `.name = "xxx".
 
 ### Browser functions
 
@@ -74,9 +74,9 @@ Nodes are created by `GDCef.create_browser` and are automatically destroyed when
 | `close` | | | Close the browser and release its memory. |
 | `copy` | | | Copy the current selection to clipboard. |
 | `cut` | | | Cut the current selection to clipboard. |
-| `download_file` | `url`: String | | Start downloading a file from the specified URL. The download folder is set with `set_download_folder` or by the configuration passed to `GDCef.create_browser`. |
+| `download_file` | `url`: String | | Start downloading a file from the specified URL. The download folder is set with `set_download_folder` or by the configuration passed to `gdCEF.create_browser`. |
 | `execute_javascript` | `javascript`: string | | Execute custom JavaScript code in the browser window. This is a simple function to execute a string of JavaScript code. No value returned. |
-| `get_error` | | String | Gives the reason of the failure of the latest GDBrowserView function. |
+| `get_error` | | String | Gives the reason of the failure of the latest GdBrowserView function. |
 | `get_pixel_color` | `x`: int, `y`: int | Color | Get the color of the pixel at the specified coordinates. |
 | `get_texture` | | Ref ImageTexture | Return the Godot texture containing the page content for rendering in other Godot nodes. |
 | `get_title` | | string | Get the current web document title. |
@@ -133,13 +133,13 @@ Nodes are created by `GDCef.create_browser` and are automatically destroyed when
 
 | Signal name | Arguments | Description |
 |-------------|-----------|-------------|
-| `on_browser_paint` | `browser`: GDBrowserView | Emitted when the browser content has been painted to the texture. |
-| `on_page_loaded` | `browser`: GDBrowserView | Emitted when a page has been successfully loaded. |
-| `on_page_failed_loading` | `err_code`: int, `err_msg`: String, `browser`: GDBrowserView | Emitted when a page failed to load with the error code and message. |
-| `on_download_updated` | `file`: String, `percentage`: int, `browser`: GDBrowserView | Emitted when a file download progress is updated. The path of the downloading file and the percentage of completion are given. |
-| `on_html_content_requested` | `html`: String, `browser`: GDBrowserView | Emitted in response to `request_html_content()` with the page HTML content. |
-| `on_page_saved` | `path`: String, `success`: bool, `browser`: GDBrowserView | Emitted in response to `save_page()` with the file path and success status. |
-| `on_pdf_saved` | `path`: String, `success`: bool, `browser`: GDBrowserView | Emitted in response to `save_page_as_pdf()` with the file path and success status. |
+| `on_browser_paint` | `browser`: GdBrowserView | Emitted when the browser content has been painted to the texture. |
+| `on_page_loaded` | `browser`: GdBrowserView | Emitted when a page has been successfully loaded. |
+| `on_page_failed_loading` | `err_code`: int, `err_msg`: String, `browser`: GdBrowserView | Emitted when a page failed to load with the error code and message. |
+| `on_download_updated` | `file`: String, `percentage`: int, `browser`: GdBrowserView | Emitted when a file download progress is updated. The path of the downloading file and the percentage of completion are given. |
+| `on_html_content_requested` | `html`: String, `browser`: GdBrowserView | Emitted in response to `request_html_content()` with the page HTML content. |
+| `on_page_saved` | `path`: String, `success`: bool, `browser`: GdBrowserView | Emitted in response to `save_page()` with the file path and success status. |
+| `on_pdf_saved` | `path`: String, `success`: bool, `browser`: GdBrowserView | Emitted in response to `save_page_as_pdf()` with the file path and success status. |
 
 ### Browser properties
 
@@ -186,7 +186,7 @@ Part value for extraction CEF version with `get_version_part`:
 
 ## JavaScript and GDScript Communication
 
-GDCef provides bidirectional communication between JavaScript executed in the browser and GDScript code in Godot. This communication is essential for creating interactive web interfaces that can exchange data with your game.
+gdCEF provides bidirectional communication between JavaScript executed in the browser and GDScript code in Godot. This communication is essential for creating interactive web interfaces that can exchange data with your game.
 
 ### Binding JavaScript to GDScript
 

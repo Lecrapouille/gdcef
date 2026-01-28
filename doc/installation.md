@@ -35,7 +35,7 @@ Please check your PATH variables for Python3, CMake, Ninja, Scons and Git are se
 
 ![PATH](pics/windows_path.png)
 
-To compile GDCef for Windows:
+To compile gdCEF for Windows:
 
 - Make sure VS2022 is installed.
 - Open an **x64 Native Tools Command Prompt for VS 2022** with **Administrator** privileges (this should be available in the start menu under Visual Studio 2022). This ensures the environment is properly set up to use the VS tools (for example we use aliases which are disabled in the standard command prompt).

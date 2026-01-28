@@ -121,41 +121,41 @@ static bool sanity_checks(fs::path const& folder)
 // In a GDNative module, "_bind_methods" is replaced by the "_register_methods"
 // method CefRefPtr<CefBrowser> m_browser;this is used to expose various methods
 // of this class to Godot
-// void GDCef::_register_methods()
-void GDCef::_bind_methods()
+// void GdCEF::_register_methods()
+void GdCEF::_bind_methods()
 {
     GDCEF_DEBUG("");
 
     using namespace godot;
-    ClassDB::bind_method(D_METHOD("initialize", "config"), &GDCef::initialize);
-    ClassDB::bind_method(D_METHOD("get_full_version"), &GDCef::version);
-    ClassDB::bind_method(D_METHOD("get_version_part"), &GDCef::versionPart);
-    ClassDB::bind_method(D_METHOD("create_browser"), &GDCef::createBrowser);
-    ClassDB::bind_method(D_METHOD("shutdown"), &GDCef::shutdown);
-    ClassDB::bind_method(D_METHOD("is_alive"), &GDCef::isAlive);
-    ClassDB::bind_method(D_METHOD("get_error"), &GDCef::getError);
-    ClassDB::bind_method(D_METHOD("log_info", "message"), &GDCef::log_info);
-    ClassDB::bind_method(D_METHOD("log_warning", "message"), &GDCef::log_warning);
-    ClassDB::bind_method(D_METHOD("log_error", "message"), &GDCef::log_error);
-    ClassDB::bind_method(D_METHOD("log_fatal", "message"), &GDCef::log_fatal);
+    ClassDB::bind_method(D_METHOD("initialize", "config"), &GdCEF::initialize);
+    ClassDB::bind_method(D_METHOD("get_full_version"), &GdCEF::version);
+    ClassDB::bind_method(D_METHOD("get_version_part"), &GdCEF::versionPart);
+    ClassDB::bind_method(D_METHOD("create_browser"), &GdCEF::createBrowser);
+    ClassDB::bind_method(D_METHOD("shutdown"), &GdCEF::shutdown);
+    ClassDB::bind_method(D_METHOD("is_alive"), &GdCEF::isAlive);
+    ClassDB::bind_method(D_METHOD("get_error"), &GdCEF::getError);
+    ClassDB::bind_method(D_METHOD("log_info", "message"), &GdCEF::log_info);
+    ClassDB::bind_method(D_METHOD("log_warning", "message"), &GdCEF::log_warning);
+    ClassDB::bind_method(D_METHOD("log_error", "message"), &GdCEF::log_error);
+    ClassDB::bind_method(D_METHOD("log_fatal", "message"), &GdCEF::log_fatal);
 }
 
 //------------------------------------------------------------------------------
-// Replaced by GDCef::initialize(xxx)
-void GDCef::_init()
+// Replaced by GdCEF::initialize(xxx)
+void GdCEF::_init()
 {
     GDCEF_DEBUG("");
 }
 
 //------------------------------------------------------------------------------
-void GDCef::_exit_tree()
+void GdCEF::_exit_tree()
 {
     GDCEF_DEBUG("");
     shutdown();
 }
 
 //------------------------------------------------------------------------------
-void GDCef::shutdown()
+void GdCEF::shutdown()
 {
     GDCEF_DEBUG("");
 
@@ -172,7 +172,7 @@ void GDCef::shutdown()
 }
 
 //------------------------------------------------------------------------------
-bool GDCef::initialize(godot::Dictionary config)
+bool GdCEF::initialize(godot::Dictionary config)
 {
 #ifdef _OPENMP
 #    pragma omp parallel
@@ -189,8 +189,8 @@ bool GDCef::initialize(godot::Dictionary config)
         GDCEF_ERROR("Already initialized");
         return false;
     }
-    m_impl = new GDCef::Impl(*this);
-    assert((m_impl != nullptr) && "Failed allocating GDCef");
+    m_impl = new GdCEF::Impl(*this);
+    assert((m_impl != nullptr) && "Failed allocating GdCEF");
 
     // Folder path in which your application and CEF artifacts are present.
     fs::path cef_folder_path;
@@ -277,25 +277,25 @@ bool GDCef::initialize(godot::Dictionary config)
 }
 
 //------------------------------------------------------------------------------
-bool GDCef::isAlive()
+bool GdCEF::isAlive()
 {
     return m_impl != nullptr;
 }
 
 //------------------------------------------------------------------------------
-int GDCef::versionPart(int entry)
+int GdCEF::versionPart(int entry)
 {
     return cef_version_info(entry);
 }
 
 //------------------------------------------------------------------------------
-godot::String GDCef::version()
+godot::String GdCEF::version()
 {
     return CEF_VERSION;
 }
 
 //------------------------------------------------------------------------------
-godot::String GDCef::getError()
+godot::String GdCEF::getError()
 {
     std::string err = m_error.str();
     m_error.clear();
@@ -303,31 +303,31 @@ godot::String GDCef::getError()
 }
 
 //------------------------------------------------------------------------------
-void GDCef::log_info(godot::String message)
+void GdCEF::log_info(godot::String message)
 {
     LOG(INFO) << message.utf8().get_data();
 }
 
 //------------------------------------------------------------------------------
-void GDCef::log_warning(godot::String message)
+void GdCEF::log_warning(godot::String message)
 {
     LOG(WARNING) << message.utf8().get_data();
 }
 
 //------------------------------------------------------------------------------
-void GDCef::log_error(godot::String message)
+void GdCEF::log_error(godot::String message)
 {
     LOG(ERROR) << message.utf8().get_data();
 }
 
 //------------------------------------------------------------------------------
-void GDCef::log_fatal(godot::String message)
+void GdCEF::log_fatal(godot::String message)
 {
     LOG(FATAL) << message.utf8().get_data();
 }
 
 //------------------------------------------------------------------------------
-void GDCef::_process(double /*delta*/)
+void GdCEF::_process(double /*delta*/)
 {
     if (m_impl != nullptr)
     {
@@ -591,7 +591,7 @@ static void configureBrowser(CefBrowserSettings& browser_settings,
 }
 
 //------------------------------------------------------------------------------
-GDCef::~GDCef()
+GdCEF::~GdCEF()
 {
     if (m_impl != nullptr)
     {
@@ -600,7 +600,7 @@ GDCef::~GDCef()
 }
 
 //------------------------------------------------------------------------------
-GDBrowserView* GDCef::createBrowser(godot::String const& url,
+GdBrowserView* GdCEF::createBrowser(godot::String const& url,
                                     godot::TextureRect* texture_rect,
                                     godot::Dictionary config)
 {
@@ -616,7 +616,7 @@ GDBrowserView* GDCef::createBrowser(godot::String const& url,
     }
 
     // Godot node creation (note Godot cannot pass arguments to _new())
-    GDBrowserView* browser = memnew(GDBrowserView());
+    GdBrowserView* browser = memnew(GdBrowserView());
 
     // Complete BrowserView constructor (complete _new())
     CefBrowserSettings settings;
@@ -659,7 +659,7 @@ GDBrowserView* GDCef::createBrowser(godot::String const& url,
 }
 
 //------------------------------------------------------------------------------
-void GDCef::Impl::OnAfterCreated(CefRefPtr<CefBrowser> /*browser*/)
+void GdCEF::Impl::OnAfterCreated(CefRefPtr<CefBrowser> /*browser*/)
 {
     CEF_REQUIRE_UI_THREAD();
     GDCEF_DEBUG("");
@@ -669,7 +669,7 @@ void GDCef::Impl::OnAfterCreated(CefRefPtr<CefBrowser> /*browser*/)
 }
 
 //------------------------------------------------------------------------------
-bool GDCef::Impl::DoClose(CefRefPtr<CefBrowser> /*browser*/)
+bool GdCEF::Impl::DoClose(CefRefPtr<CefBrowser> /*browser*/)
 {
     CEF_REQUIRE_UI_THREAD();
     GDCEF_DEBUG("");
@@ -689,7 +689,7 @@ bool GDCef::Impl::DoClose(CefRefPtr<CefBrowser> /*browser*/)
 }
 
 //------------------------------------------------------------------------------
-void GDCef::Impl::OnBeforeClose(CefRefPtr<CefBrowser> browser)
+void GdCEF::Impl::OnBeforeClose(CefRefPtr<CefBrowser> browser)
 {
     CEF_REQUIRE_UI_THREAD();
     GDCEF_DEBUG("");
@@ -700,7 +700,7 @@ void GDCef::Impl::OnBeforeClose(CefRefPtr<CefBrowser> browser)
     while (i--)
     {
         godot::Node* node = m_owner.get_child(i);
-        GDBrowserView* bv = reinterpret_cast<GDBrowserView*>(node);
+        GdBrowserView* bv = reinterpret_cast<GdBrowserView*>(node);
         if ((bv != nullptr) && (bv->id() == browser->GetIdentifier()))
         {
             GDCEF_DEBUG("Removing browser ID " << bv->id());
@@ -712,14 +712,14 @@ void GDCef::Impl::OnBeforeClose(CefRefPtr<CefBrowser> browser)
 }
 
 //------------------------------------------------------------------------------
-void GDCef::Impl::closeAllBrowsers(bool force_close)
+void GdCEF::Impl::closeAllBrowsers(bool force_close)
 {
     if (!CefCurrentlyOn(TID_UI))
     {
         // Execute on the UI thread.
         CefPostTask(
             TID_UI,
-            base::BindOnce(&GDCef::Impl::closeAllBrowsers, this, force_close));
+            base::BindOnce(&GdCEF::Impl::closeAllBrowsers, this, force_close));
         return;
     }
 
@@ -729,7 +729,7 @@ void GDCef::Impl::closeAllBrowsers(bool force_close)
     while (i--)
     {
         godot::Node* node = m_owner.get_child(i);
-        GDBrowserView* browser = reinterpret_cast<GDBrowserView*>(node);
+        GdBrowserView* browser = reinterpret_cast<GdBrowserView*>(node);
         if (browser != nullptr)
         {
             GDCEF_DEBUG("Removing browser ID " << browser->id());
@@ -743,7 +743,7 @@ void GDCef::Impl::closeAllBrowsers(bool force_close)
 }
 
 //------------------------------------------------------------------------------
-void GDCef::Impl::OnBeforeCommandLineProcessing(
+void GdCEF::Impl::OnBeforeCommandLineProcessing(
     const CefString& ProcessType,
     CefRefPtr<CefCommandLine> command_line)
 {

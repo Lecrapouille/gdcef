@@ -63,14 +63,14 @@
 #include "cef_client.h"
 #include "cef_version.h"
 
-class GDBrowserView;
+class GdBrowserView;
 
 // *****************************************************************************
 //! \brief Class deriving from Godot's Node and interfacing Chromium Embedded
-//! Framework. This class can create isntances of GDBrowserView and manage their
+//! Framework. This class can create isntances of GdBrowserView and manage their
 //! lifetime.
 // *****************************************************************************
-class GDCef: public godot::Node
+class GdCEF: public godot::Node
 {
 public: // Godot interfaces.
 
@@ -158,7 +158,7 @@ private: // Godot interfaces.
     //! \brief Godot reference counting. Beware can conflict with CEF reference
     //! counting: this is why we have to implement the sub class Impl.
     // -------------------------------------------------------------------------
-    GDCLASS(GDCef, godot::Node);
+    GDCLASS(GdCEF, godot::Node);
 
 private: // CEF interfaces.
 
@@ -177,7 +177,7 @@ private: // CEF interfaces.
         // ---------------------------------------------------------------------
         //! \brief Default constructor getting the owner of the class instance.
         // ---------------------------------------------------------------------
-        Impl(GDCef& cef) : m_owner(cef) {}
+        Impl(GdCEF& cef) : m_owner(cef) {}
 
         // ---------------------------------------------------------------------
         //! \brief Should be called on the main application thread to shut down
@@ -237,7 +237,7 @@ private: // CEF interfaces.
 
     private:
 
-        GDCef& m_owner;
+        GdCEF& m_owner;
     };
 
 public:
@@ -246,7 +246,7 @@ public:
     //! \brief Destructor. Release CEF memory and sub CEF processes are notified
     //! that the application is exiting. All browsers are destroyed.
     // -------------------------------------------------------------------------
-    ~GDCef();
+    ~GdCEF();
 
     // -------------------------------------------------------------------------
     //! \brief Allow Godot script to release CEF.
@@ -308,14 +308,14 @@ public:
     //! \return the address of the newly created browser (or nullptr in case of
     //! error).
     // -------------------------------------------------------------------------
-    GDBrowserView* createBrowser(godot::String const& url,
+    GdBrowserView* createBrowser(godot::String const& url,
                                  godot::TextureRect* texture_rect,
                                  godot::Dictionary config);
 
 private:
 
     //! \brief CEF interface implementation
-    friend GDCef::Impl;
+    friend GdCEF::Impl;
 
     //! \brief Extra user settings passed from gdscript to the browser
     //! instances (passed from gdcef to gdbrowser).
@@ -339,7 +339,7 @@ private:
     };
 
     //! \brief CEF interface implementation
-    CefRefPtr<GDCef::Impl> m_impl = nullptr;
+    CefRefPtr<GdCEF::Impl> m_impl = nullptr;
     //! \brief Window info for the CEF browser instances
     CefWindowInfo m_window_info;
     //! \brief Settings for the CEF browser process

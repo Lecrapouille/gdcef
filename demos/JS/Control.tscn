@@ -20,7 +20,7 @@ grow_horizontal = 2
 grow_vertical = 2
 stretch_mode = 2
 
-[node name="CEF" type="GDCef" parent="."]
+[node name="CEF" type="GdCEF" parent="."]
 
 [node name="Timer" type="Timer" parent="."]
 wait_time = 10.0

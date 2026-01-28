@@ -250,7 +250,7 @@ For Godot to discover and load the gdCEF module, a gdextension file must be pres
     ┗ 📜gdcef.gdextension           ⬅️ Godot extension file
 ```
 
-This file specifies information about the shared library containing your C++ exported classes (`GDCef`, `GDBrowser`):
+This file specifies information about the shared library containing your C++ exported classes (`GdCEF`, `GdBrowser`):
 
 ```ini
 [configuration]

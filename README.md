@@ -66,7 +66,7 @@ Depending on your computer but count around 15 min to compile:
 
 ## 📝 Hello gdCEF World!
 
-1. Create a GDCef node in your scene graph.
+1. Create a gdCEF node in your scene graph.
 2. Create a TextureRect in your scene graph.
 3. Create a gdscript with the following basic content:
 

@@ -15,14 +15,14 @@ The gdCEF consists of two main processes:
 
 Two main classes are exposed to Godot as Nodes:
 
-- **GDCef**: The entry point class that:
+- **gdCEF**: The entry point class that:
   - Initializes CEF and manages its lifecycle.
   - Handles CEF settings and configuration.
   - Creates and manages browser instances.
   - Routes messages between CEF subprocesses.
   - Shall be considered as a singleton.
 
-- **GDBrowserView**: Represents a browser view instance that:
+- **GdBrowserView**: Represents a browser view instance that:
   - Manages web page display and rendering.
   - Handles user interactions (mouse, keyboard).
   - Controls page navigation and JavaScript execution.
@@ -33,7 +33,7 @@ These classes are derived from `godot::Node`, allowing them to be integrated int
 
 ![CEF node integration](pics/cef.png)
 
-`GDBrowserView` shall not directly be created by the user, but by the `GDCef` class through the `create_browser_view()` method. They are automatically added to the scene tree when created as a child of a `GDCef` node. They are automatically removed from the scene tree when destroyed or when closed. They are not shown in the Godot scene tree by design by Godot.
+`GdBrowserView` shall not directly be created by the user, but by the `gdCEF` class through the `create_browser_view()` method. They are automatically added to the scene tree when created as a child of a `gdCEF` node. They are automatically removed from the scene tree when destroyed or when closed. They are not shown in the Godot scene tree by design by Godot.
 
 In the above picture, the `Control` node is a 2D Control node used for the layout of the browser view. A `TextureRect` node is used to display the web page.
 
@@ -59,7 +59,7 @@ It is mandatory to for offscreen rendering (avoiding native window creation). Th
 
 ![Init Sequence](architecture/sequence_init.png)
 
-1. GDScript initializes GDCef with configuration.
+1. GDScript initializes gdCEF with configuration.
 2. CEF initializes and forks required processes.
 3. The render process starts and initializes its components.
 4. Browser instances can then be created.
@@ -122,9 +122,9 @@ The following diagram shows the relationships between the main components:
 
 ### Key Relationships
 
-- GDCef creates and manages GDBrowserView instances.
-- GDBrowserView communicates with CEF browser instances.
-- The render process communicates with both GDCef and browser instances.
+- gdCEF creates and manages GdBrowserView instances.
+- GdBrowserView communicates with CEF browser instances.
+- The render process communicates with both gdCEF and browser instances.
 - All CEF-related classes implement appropriate CEF interfaces.
 
 ## Implementation Details

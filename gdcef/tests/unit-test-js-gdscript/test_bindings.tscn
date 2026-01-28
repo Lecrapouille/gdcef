@@ -23,7 +23,7 @@ split_offset = 550
 [node name="LeftPanel" type="Control" parent="HSplitContainer"]
 layout_mode = 2
 
-[node name="CEF" type="GDCef" parent="HSplitContainer/LeftPanel"]
+[node name="CEF" type="GdCEF" parent="HSplitContainer/LeftPanel"]
 unique_name_in_owner = true
 
 [node name="TextureRect" type="TextureRect" parent="HSplitContainer/LeftPanel"]

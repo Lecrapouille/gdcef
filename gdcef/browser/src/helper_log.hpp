@@ -46,21 +46,21 @@
 #define GDCEF_DEBUG(x)                                    \
     {                                                     \
         std::stringstream ss;                             \
-        ss << "[gdCEF][GDCef::" << __func__ << "] " << x; \
+        ss << "[gdCEF][gdCEF::" << __func__ << "] " << x; \
         WARN_PRINT(godot::String(ss.str().c_str()));      \
     }
 
 #define GDCEF_ERROR(x)                                    \
     {                                                     \
         std::stringstream ss;                             \
-        ss << "[gdCEF][GDCef::" << __func__ << "] " << x; \
+        ss << "[gdCEF][gdCEF::" << __func__ << "] " << x; \
         ERR_PRINT(godot::String(ss.str().c_str()));       \
     }
 
 #define GDCEF_WARNING(x)                                  \
     {                                                     \
         std::stringstream ss;                             \
-        ss << "[gdCEF][GDCef::" << __func__ << "] " << x; \
+        ss << "[gdCEF][gdCEF::" << __func__ << "] " << x; \
         WARN_PRINT(godot::String(ss.str().c_str()));      \
     }
 
@@ -68,7 +68,7 @@
     {                                                                   \
         std::stringstream ss;                                           \
         godot::String name = get_name();                                \
-        ss << "[gdCEF][GDBrowserView::" << __func__ << "][id: " << m_id \
+        ss << "[gdCEF][GdBrowserView::" << __func__ << "][id: " << m_id \
            << ", name: " << name.utf8().get_data() << "] " << txt;      \
         WARN_PRINT(godot::String(ss.str().c_str()));                    \
     }
@@ -77,7 +77,7 @@
     {                                                                   \
         std::stringstream ss;                                           \
         godot::String name = get_name();                                \
-        ss << "[gdCEF][GDBrowserView::" << __func__ << "][id: " << m_id \
+        ss << "[gdCEF][GdBrowserView::" << __func__ << "][id: " << m_id \
            << ", name: " << name.utf8().get_data() << "] " << txt;      \
         ERR_PRINT(godot::String(ss.str().c_str()));                     \
         m_error << ss.str();                                            \

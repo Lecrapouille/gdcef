@@ -55,21 +55,21 @@ package "Godot Framework" #LightGreen {
 }
 
 package "GDCEF Core" #LightYellow {
-    class GDCef {
-        -m_impl: GDCef::Impl*
+    class GdCEF {
+        -m_impl: GdCEF::Impl*
         -m_cef_settings: CefSettings
         +initialize(config: Dictionary): bool
         +shutdown(): void
-        +create_browser(): GDBrowserView*
+        +create_browser(): GdBrowserView*
         +isAlive(): bool
         +get_error(): String
         +get_full_version(): String
         +get_version_part(entry: int): int
-        +register_method(godot_object: Object, browser: GDBrowserView, method_name: String): void
+        +register_method(godot_object: Object, browser: GdBrowserView, method_name: String): void
     }
 
-    class "GDCef::Impl" as GDCefImpl {
-        -m_gdcef: GDCef&
+    class "GdCEF::Impl" as GdCEFImpl {
+        -m_gdcef: GdCEF&
         +OnBeforeCommandLineProcessing()
         +OnAfterCreated()
         +DoClose()
@@ -77,14 +77,14 @@ package "GDCEF Core" #LightYellow {
         +closeAllBrowsers()
     }
 
-    GDCef --|> godot::Node
-    GDCef *-- GDCefImpl
-    GDCefImpl ..|> cef::CefApp
+    GdCEF --|> godot::Node
+    GdCEF *-- GdCEFImpl
+    GdCEFImpl ..|> cef::CefApp
 }
 
 package "GDCEF Browser" #LightPink {
-    class GDBrowserView {
-        -m_impl: GDBrowserView::Impl*
+    class GdBrowserView {
+        -m_impl: GdBrowserView::Impl*
         -m_texture: Ref<ImageTexture>
         +init(url: String): int
         +load_url(url: String): void
@@ -136,7 +136,7 @@ package "GDCEF Browser" #LightPink {
         +get_pixel_color(x: int, y: int): Color
     }
 
-    class "GDBrowserView::Impl" as GDBrowserViewImpl {
+    class "GdBrowserView::Impl" as GdBrowserViewImpl {
         -m_browser: CefRefPtr<CefBrowser>
         -m_texture_rect: TextureRect*
         +GetViewRect()
@@ -151,11 +151,11 @@ package "GDCEF Browser" #LightPink {
         +OnAudioStreamPacket()
     }
 
-    GDBrowserView --|> godot::Node
-    GDBrowserView *-- GDBrowserViewImpl
-    GDBrowserView o-- godot::TextureRect
-    GDBrowserViewImpl ..|> cef::CefClient
-    GDBrowserViewImpl ..|> cef::CefRenderHandler
+    GdBrowserView --|> godot::Node
+    GdBrowserView *-- GdBrowserViewImpl
+    GdBrowserView o-- godot::TextureRect
+    GdBrowserViewImpl ..|> cef::CefClient
+    GdBrowserViewImpl ..|> cef::CefRenderHandler
 }
 
 package "Render Process" #LightGray {
@@ -176,16 +176,16 @@ package "Render Process" #LightGray {
     GodotMethodHandler ..|> cef::CefV8Handler
 
     ' Interactions avec GDCEF Core
-    RenderProcess ..> GDCef : "Communique avec"
-    GodotMethodHandler ..> GDCef : "Envoie des messages à"
+    RenderProcess ..> GdCEF : "Communique avec"
+    GodotMethodHandler ..> GdCEF : "Envoie des messages à"
 }
 
-note top of GDCef
+note top of GdCEF
   Main entry point that initializes CEF
   and manages browser instances
 end note
 
-note top of GDBrowserView
+note top of GdBrowserView
   Represents a browser instance
   with its own texture
 end note

@@ -44,8 +44,8 @@ void initialize_gdcef_module(ModuleInitializationLevel p_level)
     if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE)
         return;
 
-    ClassDB::register_class<GDCef>();
-    ClassDB::register_class<GDBrowserView>();
+    ClassDB::register_class<GdCEF>();
+    ClassDB::register_class<GdBrowserView>();
 
 #ifdef __APPLE__
     String cef_artifacts_folder;

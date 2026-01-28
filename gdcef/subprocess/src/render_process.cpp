@@ -39,7 +39,7 @@
 #define DEBUG_BROWSER_PROCESS(txt)                                             \
     {                                                                          \
         std::stringstream ss;                                                  \
-        ss << "\033[32m[Secondary Process][GDCefBrowser::" << __func__ << "] " \
+        ss << "\033[32m[Secondary Process][gdCEFBrowser::" << __func__ << "] " \
            << txt << "\033[0m";                                                \
         std::cout << ss.str() << std::endl;                                    \
     }
@@ -149,9 +149,9 @@ void RenderProcess::OnContextCreated(CefRefPtr<CefBrowser> browser,
                     };
                 }
             });
-            console.log('[GDCef] Communication bridge initialized');
+            console.log('[gdCEF] Communication bridge initialized');
         } catch (e) {
-            console.error('[GDCef] Error setting up communication bridge:', e);
+            console.error('[gdCEF] Error setting up communication bridge:', e);
         }
     )";
 
@@ -206,9 +206,9 @@ void RenderProcess::OnContextCreated(CefRefPtr<CefBrowser> browser,
                 window.godotEvents.on(eventName, callback);
             };
 
-            console.log('[GDCef] Event system initialized');
+            console.log('[gdCEF] Event system initialized');
         } catch (e) {
-            console.error('[GDCef] Error setting up event system:', e);
+            console.error('[gdCEF] Error setting up event system:', e);
         }
     )";
 
@@ -233,9 +233,9 @@ void RenderProcess::OnContextReleased(CefRefPtr<CefBrowser> browser,
                 window.godotMethods = undefined;
                 window.godotEvents = undefined;
                 window.registerGodotEvent = undefined;
-                console.log('[GDCef] Cleanup completed');
+                console.log('[gdCEF] Cleanup completed');
             } catch (e) {
-                console.error('[GDCef] Cleanup error:', e);
+                console.error('[gdCEF] Cleanup error:', e);
             }
         )";
 
