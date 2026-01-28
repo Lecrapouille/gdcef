@@ -250,7 +250,7 @@ func _on_page_loaded(browser):
 # Callback when a page has ended to load with failure.
 # Display an error message in a generated HTML page, using data URI.
 # List of error are defined in the following file:
-# gdcef/addons/gdcef/thirdparty/cef_binary/include/base/internal/cef_net_error_list.h
+# thirdparty/cef_binary/include/base/internal/cef_net_error_list.h
 # ==============================================================================
 func _on_page_failed_loading(err_code, err_msg, browser):
 	var html = "<html><body bgcolor=\"white\">" \

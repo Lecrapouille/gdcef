@@ -2,7 +2,7 @@
 
 ## Compile demos
 
-You can run demos directly if you have already compiled gdCEF (`cd .. && /build.py`). Otherwise, you can add the folder `cef_artifacts` and its content from [GitHub releases](https://github.com/Lecrapouille/gdcef/releases) in each demo folder. No extra command line is needed.
+You can run demos directly if you have already compiled gdCEF (`python3 build.py` from the project root). Otherwise, you can add the folder `cef_artifacts` and its content from [GitHub releases](https://github.com/Lecrapouille/gdcef/releases) in each demo folder. No extra command line is needed.
 
 ![cef_artifacts](../doc/pics/cef_artifacts.png)
 

@@ -46,7 +46,7 @@
 
 //------------------------------------------------------------------------------
 bool GodotMethodHandler::Execute(const CefString& name,
-                                 CefRefPtr<CefV8Value> object,
+                                 CefRefPtr<CefV8Value> /*object*/,
                                  const CefV8ValueList& arguments,
                                  CefRefPtr<CefV8Value>& retval,
                                  CefString& exception)
@@ -253,9 +253,9 @@ void RenderProcess::OnContextReleased(CefRefPtr<CefBrowser> browser,
 
 //------------------------------------------------------------------------------
 bool RenderProcess::OnProcessMessageReceived(
-    CefRefPtr<CefBrowser> browser,
+    CefRefPtr<CefBrowser> /*browser*/,
     CefRefPtr<CefFrame> frame,
-    CefProcessId source_process,
+    CefProcessId /*source_process*/,
     CefRefPtr<CefProcessMessage> message)
 {
     DEBUG_RENDER_PROCESS(

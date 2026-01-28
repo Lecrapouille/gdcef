@@ -3,8 +3,8 @@ godot-cpp/
 thirdparty/
 build/
 cef_artifacts/
-addons/gdcef/demos/*/cef_artifacts
-addons/gdcef/tests/*/cef_artifacts
+demos/*/cef_artifacts
+gdcef/tests/*/cef_artifacts
 GPUCache
 demo/build
 DawnCache

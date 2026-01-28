@@ -1454,7 +1454,7 @@ bool GDBrowserView::jsEmit(godot::String event_name, const godot::Variant& data)
 
         // Send the message to the render process.
         // The GodotMethodHandler::Execute method in
-        // gdcef/addons/gdcef/render_process/src/render_process.cpp will be
+        // gdcef/subprocess/src/render_process.cpp will be
         // called.
         m_browser->GetMainFrame()->SendProcessMessage(PID_RENDERER, message);
         return true;

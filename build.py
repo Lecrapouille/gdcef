@@ -48,12 +48,6 @@ import re
 #
 ###############################################################################
 
-# If this variable is set, download prebuilt gdCEF artifacts from GitHub instead of compiling sources.
-# See https://github.com/Lecrapouille/gdcef/releases for available versions (exclude 'v' and Godot version).
-# You cannot choose individual Godot or CEF versions when downloading prebuilt artifacts.
-# If unset, this script will compile gdCEF from source.
-GITHUB_GDCEF_RELEASE = None                              # Example: "0.14.0"
-
 # The fixed folder name that will contain all CEF build artifacts.
 # (!) WARNING (!)
 #  - Only specify a folder name, not a path.
@@ -100,16 +94,16 @@ SCONS = "scons"                                           # Or ["python3", "-m",
 # Use the script's directory as the base for all other paths
 script_dir = Path(__file__).resolve().parent
 PWD = str(script_dir)
-GDCEF_PATH = os.path.join(PWD, "gdcef")
-GDCEF_PROCESSES_PATH = os.path.join(PWD, "render_process")
+GDCEF_PATH = os.path.join(PWD, "gdcef", "browser")
+GDCEF_PROCESSES_PATH = os.path.join(PWD, "gdcef", "subprocess")
 GDCEF_THIRDPARTY_PATH = os.path.join(PWD, "thirdparty")
 THIRDPARTY_CEF_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "cef_binary")
 THIRDPARTY_GODOT_PATH = os.path.join(GDCEF_THIRDPARTY_PATH, "godot-" + GODOT_VERSION)
 GODOT_CPP_API_PATH = os.path.join(THIRDPARTY_GODOT_PATH, "cpp")
-PATCHES_PATH = os.path.join(PWD, "patches")
+PATCHES_PATH = os.path.join(PWD, "gdcef", "patches")
 GDCEF_EXAMPLES_PATH = os.path.join(PWD, "demos")
-GDCEF_TESTS_PATH = os.path.join(PWD, "tests")
-CEF_ARTIFACTS_BUILD_PATH = str((script_dir.parent.parent / CEF_ARTIFACTS_FOLDER_NAME).resolve())
+GDCEF_TESTS_PATH = os.path.join(PWD, "gdcef", "tests")
+CEF_ARTIFACTS_BUILD_PATH = str((script_dir / CEF_ARTIFACTS_FOLDER_NAME).resolve())
 
 ###############################################################################
 #
@@ -148,17 +142,12 @@ def exec(*args):
         result = subprocess.run(
             command,
             text=True,
-            check=True,
-            capture_output=True  # Capture stdout/stderr
+            check=True
+            # Output is displayed in real-time (not captured)
         )
         return result
     except subprocess.CalledProcessError as e:
-        error_msg = f"Failed executing: {' '.join(map(str, command))}\n"
-        if e.stdout:
-            error_msg += f"STDOUT: {e.stdout}\n"
-        if e.stderr:
-            error_msg += f"STDERR: {e.stderr}"
-        fatal(error_msg)
+        fatal(f"Failed executing: {' '.join(map(str, command))}")
     except FileNotFoundError:
         fatal(f"Command not found: {command[0]}")
 
@@ -410,44 +399,6 @@ def check_paths():
 
 ###############################################################################
 #
-# Download prebuilt gdCEF artifacts from GitHub releases if available
-#
-###############################################################################
-def download_gdcef_release():
-    info("Downloading prebuilt gdCEF artifacts from GitHub instead of compiling sources")
-    if not ((OSTYPE == "Linux" or OSTYPE == "Windows") and (ARCHI == "x86_64")):
-        fatal("OS " + OSTYPE + " architecture " + ARCHI + " is not available as a GitHub release")
-
-    GITHUB_URL = "https://github.com/Lecrapouille/gdcef/releases/download/"
-    RELEASE_TAG = "v" + GITHUB_GDCEF_RELEASE + "-godot" + GODOT_VERSION[0] + "/"
-
-    # Tarball name format depends on the release version
-    version_num = version.parse(GITHUB_GDCEF_RELEASE)
-    version_0_13 = version.parse("0.13.0")
-    if version_num < version_0_13:
-        TARBALL_NAME = "gdcef-artifacts-godot_" + GODOT_VERSION[0] + "-" + OSTYPE.lower() + "_" + ARCHI + ".tar.gz"
-    else: # New format for versions >= 0.13.0
-        arch_str = "ARM64" if OSTYPE == "Darwin" else "X64"
-        os_str = ""
-        if OSTYPE == "Linux":
-            os_str = "Linux"
-        elif OSTYPE == "Windows":
-            os_str = "Windows"
-        elif OSTYPE == "Darwin":
-            os_str = "macOS"
-        TARBALL_NAME = "gdCEF-" + GITHUB_GDCEF_RELEASE + "_Godot-" + GODOT_VERSION + "_" + os_str + "_" + arch_str + ".tar.gz"
-
-    URL = GITHUB_URL + RELEASE_TAG + TARBALL_NAME
-
-    try:
-        download(URL, TARBALL_NAME)
-        untarbz2(TARBALL_NAME, CEF_ARTIFACTS_BUILD_PATH)
-        os.remove(TARBALL_NAME)
-    except Exception as err:
-        fatal(URL + " does not exist. Are you sure the desired version is correct? Otherwise, please try to compile GDCEF from source.")
-
-###############################################################################
-#
 # Download and extract Chromium Embedded Framework if not available locally
 #
 ###############################################################################
@@ -554,19 +505,11 @@ def compile_cef():
 def create_version_file():
     info("Creating GDCEF_VERSION.txt file")
     try:
-        with open(os.path.join("..", PWD, "VERSION"), "r") as f:
+        with open(os.path.join(PWD, "VERSION"), "r") as f:
             gdcef_version = f.read().strip()
     except:
-        try:
-            with open(os.path.join(PWD, "plugin.cfg"), "r") as f:
-                gdcef_version = "unknown"
-                for line in f:
-                    if line.startswith("version="):
-                        gdcef_version = line.split("=")[1].strip().strip('"')
-                        break
-        except:
-            warning("Could not read VERSION file or plugin.cfg")
-            gdcef_version = "unknown"
+        warning("Could not read VERSION file")
+        gdcef_version = "unknown"
 
     try:
         git_branch = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).decode("utf-8").strip()
@@ -879,21 +822,18 @@ def clone_github_projects():
 if __name__ == "__main__":
     check_run_as_windows_administrator()
     check_paths()
-    if GITHUB_GDCEF_RELEASE is None:
-        check_build_chain()
-        download_godot_cpp()
-        compile_godot_cpp()
-        download_cef()
-        compile_cef()
-        copy_cef_assets()
-        create_version_file()
-        compile_gdnative_cef(GDCEF_PATH)
-        # On macOS: use cefsimple.app instead of gdCefSubProcess
-        if OSTYPE != "Darwin":
-            compile_gdnative_cef(GDCEF_PROCESSES_PATH)
-        create_gdextension_file()
-    else:
-        download_gdcef_release()
+    check_build_chain()
+    download_godot_cpp()
+    compile_godot_cpp()
+    download_cef()
+    compile_cef()
+    copy_cef_assets()
+    create_version_file()
+    compile_gdnative_cef(GDCEF_PATH)
+    # On macOS: use cefsimple.app instead of gdCefSubProcess
+    if OSTYPE != "Darwin":
+        compile_gdnative_cef(GDCEF_PROCESSES_PATH)
+    create_gdextension_file()
     clone_github_projects()
     copy_gdcef_artifacts([GDCEF_EXAMPLES_PATH, GDCEF_TESTS_PATH])
     final_instructions()

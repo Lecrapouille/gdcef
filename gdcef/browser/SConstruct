@@ -165,7 +165,8 @@ if platform == 'linux' or platform == 'macos':
                          # Disable warnings
                          '-Wno-unused-parameter', '-Wno-unused-parameter', '-Wno-conversion',
                          '-Wno-cast-qual', '-Wno-float-equal',  '-Wno-unused-but-set-parameter',
-                         '-Wno-old-style-cast', '-Wno-sign-conversion', '-Wno-undef'
+                         '-Wno-old-style-cast', '-Wno-sign-conversion', '-Wno-undef',
+                         '-Wno-missing-field-initializers'
 ])
 
     # clang specific flags
@@ -215,7 +216,7 @@ libgodot = 'libgodot-cpp.' + platform + '.template_' + compile_mode + '.' + arch
 env.Append(LIBS=[libgodot], LIBPATH=[godot_api_path + '/bin'])
 
 # Paths of CEF header files
-cef_folder = '../thirdparty/cef_binary'
+cef_folder = '../../thirdparty/cef_binary'
 env.Append(CPPPATH = [cef_folder, cef_folder + '/include'])
 
 # CEF libraries that are linked against our library

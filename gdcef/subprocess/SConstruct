@@ -163,7 +163,9 @@ if platform == 'linux' or platform == 'macos':
                          '-Wconversion', '-Wfloat-equal', '-Wpointer-arith',
                          '-Wswitch-enum', '-Wpacked', '-Wold-style-cast',
                          '-Wdeprecated', '-Wvariadic-macros', '-Wvla',
-                         '-Wsign-conversion'])
+                         '-Wsign-conversion',
+                         # Disable warnings
+                         '-Wno-missing-field-initializers'])
 
     # clang specific flags
     if env['use_llvm']:
@@ -183,7 +185,7 @@ libgodot = 'libgodot-cpp.' + platform + '.template_' + compile_mode + '.' + arch
 env.Append(LIBS=[libgodot], LIBPATH=[godot_api_path + '/bin'])
 
 # Paths of CEF header files
-cef_folder = '../thirdparty/cef_binary'
+cef_folder = '../../thirdparty/cef_binary'
 env.Append(CPPPATH = [cef_folder, cef_folder + '/include'])
 
 # CEF libraries that are linked against our application

@@ -1,6 +1,6 @@
 # Details Design: How is gdCEF compiled?
 
-This document explains how the `gdCEF` module is organized and compiled. The detailed design of the internal workings is described in another [document](addons/gdcef/doc/detailsdesign.md) (currently unfinished). For implementation details, you will need to dive directly into the CEF source code, which contains extensive comments that may be challenging to understand at first.
+This document explains how the `gdCEF` module is organized and compiled. For implementation details, you will need to dive directly into the CEF source code, which contains extensive comments that may be challenging to understand at first.
 
 *Note:* This document was initially written for a parent project using gdCEF and Godot 3. Some legacy parts may remain that have not been fully updated.
 
@@ -10,12 +10,14 @@ The tree structure of the gdCEF project may differ slightly from what is shown h
 
 ```
 📦gdCEF
- ┣ 📂gdcef                 ⬅️ Code for the CEF main process (git cloned)
- ┣ 📂render_process        ⬅️ Code for the CEF secondary process (cloned)
- ┣ 📂thirdparty
- ┃ ┣ 📂cef_binary          ⬅️ CEF distribution used to build dependencies (downloaded)
- ┃ ┗ 📂godot-cpp           ⬅️ Godot C++ API and bindings (downloaded)
- ┗ 📂patches               ⬅️ Patch files to apply to the CEF source code
+ ┣ 📂gdcef
+ ┃ ┣ 📂browser             ⬅️ Code for the CEF main process (libgdcef)
+ ┃ ┣ 📂subprocess          ⬅️ Code for the CEF secondary process (gdCefRenderProcess)
+ ┃ ┣ 📂patches             ⬅️ Patch files to apply to the CEF source code
+ ┃ ┗ 📂tests               ⬅️ Unit tests
+ ┗ 📂thirdparty
+   ┣ 📂cef_binary          ⬅️ CEF distribution used to build dependencies (downloaded)
+   ┗ 📂godot-cpp           ⬅️ Godot C++ API and bindings (downloaded)
 ```
 
 ## The Godot C++ binding API (📂godot-cpp)
@@ -147,7 +149,7 @@ The following components are optional. If missing, CEF will continue to run, but
   Without these files WebGL will not function in software-only mode when the GPU
   is not available or disabled.
 
-## CEF secondary process (📂render_process)
+## CEF secondary process (📂gdcef/subprocess)
 
 Before speaking about the primary process (your Godot game), let's talk first about the secondary process.
 
@@ -173,21 +175,23 @@ The source code for this secondary process is a modified version of the CEF's `c
 
 ```
  ┣ 📂...                        ⬅️ Other folders seen in the previous section
- ┗ 📂render_process
+ ┗ 📂gdcef/subprocess
    ┣ 📂src
-   ┃ ┣ 📜main.cpp
-   ┃ ┗ 📜main.hpp
+   ┃ ┣ 📜main_unix.cpp
+   ┃ ┣ 📜main_windows.cpp
+   ┃ ┣ 📜render_process.cpp
+   ┃ ┗ 📜render_process.hpp
    ┗ 📜SConstruct               ⬅️ Godot build system
 ```
 
 To compile this source:
 
 ```
-cd 📂render_process
+cd gdcef/subprocess
 scons target=release platform=windows workspace=$WORKSPACE godot_version=4.3-stable -j8
 ```
 
-The executable `gdCefRenderProcess.exe` will be created and should be placed in the appropriate Godot project's `cef_artifcats` folder (which must be created). The `build.py` script handles this automatically.
+The executable `gdCefRenderProcess.exe` will be created and should be placed in the appropriate Godot project's `cef_artifacts` folder (which must be created). The `build.py` script handles this automatically.
 
 ```
 📦YourProject
@@ -198,12 +202,12 @@ The executable `gdCefRenderProcess.exe` will be created and should be placed in 
       ┗ 📦gdCefRenderProcess         ⬅️ CEF secondary process
 ```
 
-## CEF browser process (📂gdcef)
+## CEF browser process (📂gdcef/browser)
 
 This directory contains the source code for the Godot CEF node and browser view nodes. Rather than being your final application, it's a library (`libgdcef.dll`) that interacts with `libcef.dll` and enables you to create Godot games with CEF browser views. This DLL must be loaded by the Godot Extension system to allow creation of CEF nodes in your scene graph.
 
 ```
-📦gdcef
+📦gdcef/browser
  ┣ 📂src
  ┃ ┣ 📜gdcef.[ch]pp                  ⬅️ Godot CEF node instance for creating browser views
  ┃ ┣ 📜gdbrowser.[ch]pp              ⬅️ Browser view node created by the Godot CEF node
@@ -216,11 +220,11 @@ This directory contains the source code for the Godot CEF node and browser view 
 To compile this source:
 
 ```bash
-cd gdcef
+cd gdcef/browser
 scons target=release platform=windows workspace=$WORKSPACE godot_version=4.3-stable -j8
 ```
 
-The library `libgdcef.dll` will be generated in the build directory. It should be placed in your Godot project's `cef_artifcats` folder (which must be created). The `build.py` script handles this automatically.
+The library `libgdcef.dll` will be generated in the build directory. It should be placed in your Godot project's `cef_artifacts` folder (which must be created). The `build.py` script handles this automatically.
 
 ```
 📦gdcef

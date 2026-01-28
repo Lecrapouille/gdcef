@@ -1,64 +1,128 @@
-# Chromium Embedded Framework as Godot 4.3 Native Extension
+# 🌐 gdCEF - Chromium Embedded Framework for Godot 4
 
-**Note: Are you developing with Godot-3 ? If yes, you are on the wrong branch. Please go to https://github.com/Lecrapouille/gdcef/tree/godot-3.x instead!**
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Godot 4.2+](https://img.shields.io/badge/Godot-4.2+-blue.svg)](https://godotengine.org/) [![Version](https://img.shields.io/badge/version-0.18.1-green.svg)](https://github.com/yourusername/Prologot/releases)
 
-This repository contains C++ classes that wrap a subset of the [Chromium Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home) API into a Godot > 4.2 native extension (GDExtension). This allows you to implement a web browser in your 2D and 3D games using GDScript for Linux, Windows and MacOS. The name of this module is `gdcef`.
+Integrate a fully functional **web browser** 🖥️ into your Godot 4.2+ games for Linux, Windows (and for macOS, we need contributors!). This GDExtension wraps the [Chromium Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home) (CEF) API, allowing you to display web content in 2D and 3D scenes using GDScript.
 
-This module can be downloaded directly either:
-- as code source to compile, by git cloning this repository, from this [GitHub repository](https://github.com/Lecrapouille/gdcef).
-- as code source to compile, from the [Godot Asset Library](https://godotengine.org/asset-library/asset/2508).
-- as precompiled binaries, from the [GitHub releases](https://github.com/Lecrapouille/gdcef/releases).
+> ⚠️ **Godot 3 users:** Please use the [godot-3.x branch](https://github.com/Lecrapouille/gdcef/tree/godot-3.x) instead.
 
-## Full Documentation
+*🎥 Click the picture to watch the YouTube video "I made my own Browser" by FaceDev!*
 
-Since this README is not included when importing gdCEF from the [Godot Asset Library](https://godotengine.org/asset-library/asset/2508), all details can be found in the following documents:
+[![Wattesigma](doc/gallery/wattesigma.png)](https://youtu.be/37ISfJ2NSXQ)
 
-- [Installation](addons/gdcef/doc/installation.md)
-- [Releases](https://github.com/Lecrapouille/gdcef/releases)
-- [API](addons/gdcef/doc/API.md)
-- [Architecture](addons/gdcef/doc/architecture.md)
-- [Details Design](addons/gdcef/doc/detailsdesign.md)
-- [Demos](addons/gdcef/demos/README.md)
-- [FAQ](addons/gdcef/README.md#faq)
+---
 
-## TL;DR: Compilation
+## 📁 Repository Structure
 
-To compile this project, use the Python3 build script `build.py` for Linux, Windows and MacOS:
+```
+📦gdCEF
+ ┣ 📜 build.py              ⬅️ Python3 script for compiling the project
+ ┣ 📦 cef_artifacts         ⬅️ Folder with CEF and gdCEF artifacts created by build.py
+ ┣ 📂 demos                 ⬅️ Several examples of usage of gdCEF
+ ┣ 📂 doc                   ⬅️ Several documents to teach you how to use gdCEF
+ ┣ 📂 gdcef                 ⬅️ C++ code source of the gdextension (to be compiled)
+ ┃ ┣ 📂 browser             ⬅️ Code for the CEF main process (libgdcef used by CEF)
+ ┃ ┣ 📂 subprocess          ⬅️ Code for the CEF secondary process (gdCefRenderProcess used by libgdcef)
+ ┃ ┣ 📂 patches             ⬅️ Patch files to apply to the CEF source code
+ ┃ ┗ 📂 tests               ⬅️ Unit tests
+ ┗ 📂 thirdparty            ⬅️ Downloaded packages by build.py
+   ┣ 📂 cef_binary          ⬅️ CEF distribution used to build dependencies (downloaded)
+   ┗ 📂 godot-cpp           ⬅️ Godot C++ API and bindings (downloaded)
+```
+
+---
+
+## ⚡ Quick Start
+
+### 🛠️ Option 1: Compile from Source
 
 ```bash
-cd addons/gdcef
 python3 -m pip install -r requirements.txt
 python3 build.py
 ```
 
-This will download and compile Godot and CEF, and generate the gdCEF artifacts inside the `cef_artifacts` folder at the root of this project. Copy this folder into your Godot project folder. The GDExtension file is included on this folder, so you don't need to create one.
+The `cef_artifacts` folder will be created at the project root with all necessary files.
 
-## TL;DR: I don't want to compile? I want to use gdCEF right now!
+Depending on your computer but count around 15 min to compile:
 
-Check the [releases](https://github.com/Lecrapouille/gdcef/releases). Since tag 0.7.2, CEF artifacts are provided for Linux and Windows x86_64 architectures. Since tag 0.13.0, MacOS is also supported. Simply uncompress the tarball and move the folder `cef_artifacts` into your project. Do not rename it or remove files inside. The Godot extension file is also included, so you don't need to create one.
+- download and compile godot-cpp.
+- download and compile CEF.
+- compile gdCEF.
 
-## Gallery of projects using gdCEF
+### 📦 Option 2: Download Prebuilt Binaries from GitHub
 
-If you're using this project, feel free to share your project links and pictures by submitting a GitHub pull request. I'll add them to this gallery. Thanks to the teams who have contributed to the current gallery:
+1. ⬇️ Download the latest release from [GitHub Releases](https://github.com/Lecrapouille/gdcef/releases).
+2. 📁 Extract and copy the `cef_artifacts` folder into your Godot project.
+3. ✅ Done! The `.gdextension` file is already included in the folder.
 
-- [Wattesigma](https://github.com/face-hh/wattesigma) by FaceDev
+### 🎮 Option 3: Download Prebuilt Binaries from Godot Asset Lib
 
-[![Wattesigma](addons/gdcef/doc/gallery/wattesigma.png)](https://youtu.be/37ISfJ2NSXQ)
+1. 🏛️ Open the Godot editor, and click the "AssetLib" button.
+2. 🔎 In the search bar, type `gdcef`.
+3. 📁 Download the `cef_artifacts` folder into your Godot project.
+4. ✅ Done! The `.gdextension` file is already included in the folder.
 
-*Click the picture to watch the YouTube video "I made my own Browser" by FaceDev.*
+---
 
-- [Elitemeta](https://elitemeta.city) (discontinued metaverse project)
+## 📝 Hello gdCEF World!
 
-[![elitemeta](addons/gdcef/doc/gallery/elitemeta.jpg)](https://ipfs.io/ipfs/QmaL7NY5qs3AtAdcX8vFhqaHwJeTMKfP3PbzcHZBLmo1QQ?filename=elitemeta_0.mp4)
+1. Create a GDCef node in your scene graph.
+2. Create a TextureRect in your scene graph.
+3. Create a gdscript with the following basic content:
 
-*Click the picture to watch the Elitemeta video shared on IPFS (you need an IPFS client to watch it).*
+```gdscript
+extends GDCEF
 
-- [TNITRFR](https://gamejolt.com/games/TNITRFR/948968) with 90's computer browser look.
+func _ready():
+    $CEF.initialize({})
+    var browser = $CEF.create_browser("https://godotengine.org", $TextureRect, {})
+```
 
-![TNITRFR](addons/gdcef/doc/gallery/tnitrfr.png)
+> ⚠️ This minimal example needs more code to have a usable browser in your game. See the [Getting Started Guide](doc/getting-started.md) for detailed instructions.
 
-## Alternative Godot WebView Projects
+---
 
-- In Rust: https://github.com/doceazedo/godot_wry
-- In Qt: https://godotwebview.com/
-- Godot 3 and Android: https://github.com/Sam2much96/GodotChrome/tree/master
+## 📚 Documentation
+
+| Document | Description |
+|-------------|---------------|
+| [Getting Started](doc/getting-started.md) | 🚀 How to integrate gdCEF in your project |
+| [API Reference](doc/API.md) | 📑 Complete GDScript API documentation |
+| [Installation](doc/installation.md) | 🔧 Detailed compilation instructions |
+| [FAQ](doc/faq.md) | ❓ Common questions and troubleshooting |
+| [Architecture](doc/architecture.md) | 🏗️ How CEF works internally |
+| [Design Details](doc/detailsdesign.md) | 🗂️ Repository organization and build system |
+| [Gallery](doc/gallery.md) | 🖼️ Gallery of projects using gdCEF |
+
+---
+
+## 🎲 Demos
+
+Ready-to-use demos are included in the [demos/](demos/) folder:
+
+![CEF demos](doc/pics/demos.png)
+
+| Demo                             | Description                                        |
+|--------------------------------------|------------------------------------------------------|
+| **[Hello CEF](demos/HelloCEF/)**     | 👋 Minimal example to start with                                  |
+| **[2D Demo](demos/2D/)**             | 🌟 Full-featured browser with tabs, showcasing most of the API |
+| **[3D Demo](demos/3D/)**             | 🌀 Browser in a 3D scene with spatial audio           |
+| **[JS Bindings](demos/JS/)**         | 🔗 JavaScript to GDScript communication              |
+
+---
+
+## 🏆 Alternatives
+
+| Project | Description |
+|-----------------------------------|-------------------------------------------------------------|
+| [godot_wry](https://github.com/doceazedo/godot_wry) | 🦀 WebView in Rust |
+| [GodotWebView](https://godotwebview.com/) | 🧩 Qt-based solution |
+| [GodotChrome](https://github.com/Sam2much96/GodotChrome) | 🤖 Android/Godot 3 |
+
+---
+
+## ⚖️ License
+
+This project is licensed under the [MIT License](LICENSE).
+
+> ⚠️ **Note:** CEF uses LGPL third-party libraries. See the [FAQ](doc/faq.md#licensing) for licensing implications.

@@ -55,9 +55,7 @@ You can also use the virtual environment `venv` to install the required packages
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-python3 -m pip install -r addons/gdcef/requirements.txt
-
-cd addons/gdcef
+python3 -m pip install -r requirements.txt
 python3 build.py
 ```
 
@@ -76,7 +74,7 @@ For GDCEF version >= 0.10.0, this issue has been fixed. You no longer need to se
 ### Compilation of the GDExtension for Godot 3
 
 This module is not compatible with Godot 3. If you need Godot 3 support, please use the
-[dev-godot-3 branch](https://github.com/Lecrapouille/gdcef/blob/master/addons/gdcef/build.py)
+[godot-3.x branch](https://github.com/Lecrapouille/gdcef/tree/godot-3.x)
 instead.
 
 ### Compilation of the GDExtension for Godot < 4.2
@@ -88,23 +86,21 @@ This module is not compatible with Godot 4.0 and 4.1. Please use Godot 4.2 or hi
 The [build.py](../build.py) script does not require command-line arguments. It automatically handles all aspects of the build process (detecting your operating system, CPU cores, etc.). By default, it uses predefined versions for Godot and CEF, builds in release mode, and enables OpenMP for parallel processing. You can customize these settings by modifying the variables at the beginning of the script.
 
 ```bash
-cd addons/gdcef
 ./build.py
 ```
 
 Alternative methods:
 
-````bash
-cd addons/gdcef
+```bash
 python3 build.py
 ```
 
 Please be patient! The script performs several time-consuming tasks:
 
-- Downloads CEF (~600 MB) from https://cef-builds.spotifycdn.com/index.html, extracts it to `../thirdparty/cef_binary`, compiles it.
-- Clones and compiles [godot-cpp](https://github.com/godotengine/godot-cpp) into `../thirdparty/godot-4.2`
-- Compiles the [primary CEF process](../gdcef/).
-- Compiles the [secondary CEF process](../subprocess/).
+- Downloads CEF (~600 MB) from https://cef-builds.spotifycdn.com/index.html, extracts it to `thirdparty/cef_binary`, compiles it.
+- Clones and compiles [godot-cpp](https://github.com/godotengine/godot-cpp) into `thirdparty/godot-<version>`
+- Compiles the [primary CEF process](../gdcef/browser/) (libgdcef).
+- Compiles the [secondary CEF process](../gdcef/subprocess/) (gdCefRenderProcess).
 - Extracts CEF artifacts (*.so, *.pak, etc.) into the `cef_artifacts` folder (~1GB of data).
 
 ## Change the CEF version
@@ -137,19 +133,4 @@ $CEF.initialize({"artifacts": "res://cef_artifacts/", ... })
 
 ## I do not want to compile GDCEF!
 
-If you prefer not to compile GDCEF, there is an option in the [build.py](../build.py) script. Modify this line:
-
-``````bash
-GITHUB_GDCEF_RELEASE = None
-```
-
-Visit https://github.com/Lecrapouille/gdcef/releases to find your desired version (omit the 'v' prefix and Godot version). For example:
-
-``````bash
-GITHUB_GDCEF_RELEASE = "0.12.0"
-```
-
-Limitations:
-
-- You cannot choose the Godot version
-- You cannot choose the CEF version
+If you prefer not to compile GDCEF, you can download prebuilt artifacts from [GitHub Releases](https://github.com/Lecrapouille/gdcef/releases). Simply download the archive for your platform and extract the `cef_artifacts` folder into your Godot project.

@@ -337,7 +337,7 @@ void GDCef::_process(double /*delta*/)
 
 //------------------------------------------------------------------------------
 //! \brief See
-//! gdcef/addons/gdcef/thirdparty/cef_binary/include/internal/cef_types.h for
+//! thirdparty/cef_binary/include/internal/cef_types.h for
 //! more information about settings.
 //------------------------------------------------------------------------------
 static void configureCEF(fs::path const& folder,
@@ -524,7 +524,7 @@ static void configureCEF(fs::path const& folder,
 }
 
 //------------------------------------------------------------------------------
-//! \brief See gdcef/addons/gdcef/thirdparty/cef_binary/include/
+//! \brief See thirdparty/cef_binary/include/
 //! internal/cef_types.h for more information about settings.
 static void configureBrowser(CefBrowserSettings& browser_settings,
                              godot::Dictionary config)
