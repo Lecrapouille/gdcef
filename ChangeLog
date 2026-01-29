@@ -1,3 +1,9 @@
+Version 0.19.0:
+	* Reorganize project folders
+	* Manage renaming cef_artifacts folder
+	* Manage multiple OS folder inside cef_artifacts folder
+	* Update CI to create package for Godot Asset lib
+
 Version 0.18.1:
 	* Fix resize flickering
 	* Fix keyboard management making HTML games not usable
