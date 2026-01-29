@@ -56,16 +56,12 @@ jobs:
           ls cef_artifacts/linux/gdCefRenderProcess cef_artifacts/linux/libgdcef.so cef_artifacts/linux/libcef.so
           ls cef_artifacts/gdcef.gdextension cef_artifacts/locales/
 
-      # Upload artifact for packaging job
+      # Upload artifact
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
         with:
           name: gdcef-linux-x86_64
-          path: |
-            cef_artifacts/linux/
-            cef_artifacts/gdcef.gdextension
-            cef_artifacts/locales/
-          retention-days: 1
+          path: cef_artifacts/
 
   # ============================================================================
   # Windows Build Job
@@ -116,133 +112,86 @@ jobs:
           if (!(Test-Path -Path "cef_artifacts\gdcef.gdextension")) { exit 1 }
           if (!(Test-Path -Path "cef_artifacts\locales")) { exit 1 }
 
-      # Upload artifact for packaging job
+      # Upload artifact
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
           name: gdcef-windows-x86_64
-          path: |
-            cef_artifacts/windows/
-            cef_artifacts/gdcef.gdextension
-            cef_artifacts/locales/
-          retention-days: 1
+          path: cef_artifacts/
 
   # ============================================================================
-  # Release Packaging Job
+  # Release Packaging Job (only for tags or manual trigger)
   # ============================================================================
-  # This job combines all platform builds into a single release package.
-  #
-  # For version tags (v*):
-  # - Creates gdcef-<VERSION>.zip and attaches it to GitHub Release
-  # - GitHub Release files are kept indefinitely
-  #
-  # Package structure:
-  #   cef_artifacts/
-  #     gdcef.gdextension      - Godot extension configuration (all platforms)
-  #     locales/               - Locale files (shared across platforms)
-  #     linux/                 - Linux binaries (.so files)
-  #     windows/               - Windows binaries (.dll files)
-  #     macos/                 - macOS binaries (.dylib files) [future]
+  # Creates a combined zip with Linux + Windows artifacts for GitHub Releases
   # ============================================================================
   package:
     name: Package Release
     needs: [build-linux, build-windows]
     runs-on: ubuntu-latest
-    if: always() # Run even if one platform fails, package what's available
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: write
 
     steps:
-      # Clone the repository
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
-      # Read version from VERSION file
-      - name: Read version from VERSION file
+      - name: Read version
         id: version
         run: |
           VERSION=$(cat VERSION)
           GODOT_VERSION=$(grep "^GODOT_VERSION" build.py | head -1 | cut -d'"' -f2)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "godot_version=$GODOT_VERSION" >> $GITHUB_OUTPUT
-          echo "gdCEF version: $VERSION"
-          echo "Godot version: $GODOT_VERSION"
 
-      # Download all artifacts from previous jobs
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
 
-      # Prepare release folder
-      - name: Prepare release folder
+      - name: Combine artifacts
         run: |
-          RELEASE_DIR="cef_artifacts"
-          mkdir -p "$RELEASE_DIR/linux"
-          mkdir -p "$RELEASE_DIR/windows"
-          mkdir -p "$RELEASE_DIR/locales"
+          mkdir -p cef_artifacts/linux cef_artifacts/windows cef_artifacts/locales
 
           # Copy Linux binaries
-          if ls artifacts/gdcef-linux-x86_64/linux/* 1>/dev/null 2>&1; then
-            cp -r artifacts/gdcef-linux-x86_64/linux/* "$RELEASE_DIR/linux/"
+          if [ -d "artifacts/gdcef-linux-x86_64/linux" ]; then
+            cp -r artifacts/gdcef-linux-x86_64/linux/* cef_artifacts/linux/
+            chmod +x cef_artifacts/linux/*.so cef_artifacts/linux/*.so.* cef_artifacts/linux/gdCefRenderProcess 2>/dev/null || true
             echo "✓ Linux binaries copied"
-          else
-            echo "⚠ Warning: Linux artifacts not available (build may have failed)"
           fi
 
           # Copy Windows binaries
-          if ls artifacts/gdcef-windows-x86_64/windows/* 1>/dev/null 2>&1; then
-            cp -r artifacts/gdcef-windows-x86_64/windows/* "$RELEASE_DIR/windows/"
+          if [ -d "artifacts/gdcef-windows-x86_64/windows" ]; then
+            cp -r artifacts/gdcef-windows-x86_64/windows/* cef_artifacts/windows/
             echo "✓ Windows binaries copied"
-          else
-            echo "⚠ Warning: Windows artifacts not available (build may have failed)"
           fi
 
-          # Copy shared files (gdextension and locales) from Linux artifact (or Windows if Linux unavailable)
+          # Copy shared files from Linux (or Windows)
           if [ -f "artifacts/gdcef-linux-x86_64/gdcef.gdextension" ]; then
-            cp artifacts/gdcef-linux-x86_64/gdcef.gdextension "$RELEASE_DIR/"
-            cp -r artifacts/gdcef-linux-x86_64/locales/* "$RELEASE_DIR/locales/"
-            echo "✓ Shared files copied from Linux artifact"
+            cp artifacts/gdcef-linux-x86_64/gdcef.gdextension cef_artifacts/
+            cp -r artifacts/gdcef-linux-x86_64/locales/* cef_artifacts/locales/
           elif [ -f "artifacts/gdcef-windows-x86_64/gdcef.gdextension" ]; then
-            cp artifacts/gdcef-windows-x86_64/gdcef.gdextension "$RELEASE_DIR/"
-            cp -r artifacts/gdcef-windows-x86_64/locales/* "$RELEASE_DIR/locales/"
-            echo "✓ Shared files copied from Windows artifact"
-          else
-            echo "⚠ Warning: gdcef.gdextension not found"
+            cp artifacts/gdcef-windows-x86_64/gdcef.gdextension cef_artifacts/
+            cp -r artifacts/gdcef-windows-x86_64/locales/* cef_artifacts/locales/
           fi
 
-          # Copy VERSION and LICENSE for reference
-          cp VERSION LICENSE "$RELEASE_DIR/"
-          echo "✓ VERSION and LICENSE copied"
+          cp VERSION LICENSE cef_artifacts/
+          find cef_artifacts -type f | head -30
 
-          echo ""
-          echo "=== Final package contents ==="
-          find "$RELEASE_DIR" -type f | head -50
-
-      # Create release archive
-      - name: Create release archive
+      - name: Create release zip
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          GODOT_VERSION="${{ steps.version.outputs.godot_version }}"
-          ZIP_NAME="gdcef-${VERSION}_godot-${GODOT_VERSION}.zip"
+          ZIP_NAME="gdcef-${{ steps.version.outputs.version }}_godot-${{ steps.version.outputs.godot_version }}.zip"
           zip -r "$ZIP_NAME" cef_artifacts/
-          echo "Created: $ZIP_NAME"
-          unzip -l "$ZIP_NAME" | head -50
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
-      # Upload the zip file as a GitHub artifact (for all CI runs)
-      - name: Upload release zip artifact
+      - name: Upload combined artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ZIP_NAME }}
-          path: ${{ env.ZIP_NAME }}
-          retention-days: 30
+          name: gdcef-${{ steps.version.outputs.version }}_godot-${{ steps.version.outputs.godot_version }}
+          path: cef_artifacts/
 
-      # Create a GitHub Release with the zip file attached (only for tags)
       - name: Create GitHub Release
-        if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ env.ZIP_NAME }}
