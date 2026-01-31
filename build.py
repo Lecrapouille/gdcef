@@ -775,9 +775,9 @@ def copy_gdcef_artifacts(folder_paths):
             if os.path.isdir(path) and os.path.isfile(os.path.join(path, "project.godot")):
                 info("  - Demo " + path)
                 artifacts_path = os.path.join(path, CEF_ARTIFACTS_FOLDER_NAME)
-                mkdir(os.path.dirname(artifacts_path))
+                # Remove existing folder/symlink and create new symlink
                 # On Windows without administrator rights: fall back to copying the artifact folder.
-                symlink(CEF_ARTIFACTS_BUILD_PATH, artifacts_path)
+                symlink(CEF_ARTIFACTS_BUILD_PATH, artifacts_path, force=True)
 
 ###############################################################################
 #
