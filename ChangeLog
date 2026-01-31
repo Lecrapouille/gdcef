@@ -1,6 +1,13 @@
+Version 0.19.1:
+	* CI: Fix missing main folder inside the GitHub artifact
+	* CI: Fix broken binaries +x permissions lost by GitHub action
+	* CI: fix misplaced VERSION file inside GitHub artifact
+	* CI: Add documentation folder in GitHub artifact
+	* build: Fix minor symlinking CEF artifacts for demos
+
 Version 0.19.0:
 	* Reorganize project folders
-	* Manage renaming cef_artifacts folder
+	* Allow users to rename cef_artifacts folder
 	* Manage multiple OS folder inside cef_artifacts folder
 	* Update CI to create package for Godot Asset lib
 
