@@ -516,7 +516,7 @@ def compile_cef():
 #
 ###############################################################################
 def create_version_file():
-    info("Creating GDCEF_VERSION.txt file")
+    info("Creating VERSION file")
     try:
         with open(os.path.join(PWD, "VERSION"), "r") as f:
             gdcef_version = f.read().strip()
@@ -532,7 +532,8 @@ def create_version_file():
         git_branch = "unknown"
         git_sha1 = "unknown"
 
-    with open(os.path.join(CEF_ARTIFACTS_OS_PATH, "GDCEF_VERSION.txt"), "w") as f:
+    with open(os.path.join(CEF_ARTIFACTS_BUILD_PATH, "VERSION"), "w") as f:
+        f.write("https://github.com/Lecrapouille/gdcef\n")
         f.write("gdCEF Version: " + gdcef_version + "\n")
         f.write("gdCEF Git Branch: " + git_branch + "\n")
         f.write("gdCEF Git SHA1: " + git_sha1 + "\n")

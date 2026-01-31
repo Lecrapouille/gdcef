@@ -169,13 +169,15 @@ jobs:
           # Copy shared files from Linux (or Windows)
           if [ -f "artifacts/gdcef-linux-x86_64/gdcef.gdextension" ]; then
             cp artifacts/gdcef-linux-x86_64/gdcef.gdextension cef_artifacts/
+            cp artifacts/gdcef-linux-x86_64/VERSION cef_artifacts/
             cp -r artifacts/gdcef-linux-x86_64/locales/* cef_artifacts/locales/
           elif [ -f "artifacts/gdcef-windows-x86_64/gdcef.gdextension" ]; then
             cp artifacts/gdcef-windows-x86_64/gdcef.gdextension cef_artifacts/
+            cp artifacts/gdcef-windows-x86_64/VERSION cef_artifacts/
             cp -r artifacts/gdcef-windows-x86_64/locales/* cef_artifacts/locales/
           fi
 
-          cp VERSION LICENSE cef_artifacts/
+          cp LICENSE cef_artifacts/
           find cef_artifacts -type f | head -30
 
       - name: Create release zip
