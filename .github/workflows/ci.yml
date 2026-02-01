@@ -58,7 +58,7 @@ jobs:
 
       # Upload artifact
       - name: Upload Linux artifacts
-        uses: actions/upload-artifact@v4
+        uses: pyTooling/upload-artifact@v6
         with:
           name: gdcef-linux-x86_64
           path: cef_artifacts/
@@ -114,7 +114,7 @@ jobs:
 
       # Upload artifact
       - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v4
+        uses: pyTooling/upload-artifact@v6
         with:
           name: gdcef-windows-x86_64
           path: cef_artifacts/
@@ -131,6 +131,9 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: write
+    env:
+      # Using release/gdcef to avoid conflict with source gdcef/ folder from checkout
+      RELEASE_DIR: release/gdcef
 
     steps:
       - name: Checkout repository
@@ -145,52 +148,68 @@ jobs:
           echo "godot_version=$GODOT_VERSION" >> $GITHUB_OUTPUT
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: pyTooling/download-artifact@v7
         with:
           path: artifacts
 
       - name: Combine artifacts
         run: |
-          mkdir -p cef_artifacts/linux cef_artifacts/windows cef_artifacts/locales
+          CEF_DIR="$RELEASE_DIR/cef_artifacts"
+          LINUX_SRC="artifacts/gdcef-linux-x86_64/cef_artifacts"
+          WINDOWS_SRC="artifacts/gdcef-windows-x86_64/cef_artifacts"
+          mkdir -p "$CEF_DIR/linux" "$CEF_DIR/windows" "$CEF_DIR/locales"
 
           # Copy Linux binaries
-          if [ -d "artifacts/gdcef-linux-x86_64/linux" ]; then
-            cp -r artifacts/gdcef-linux-x86_64/linux/* cef_artifacts/linux/
-            chmod +x cef_artifacts/linux/*.so cef_artifacts/linux/*.so.* cef_artifacts/linux/gdCefRenderProcess 2>/dev/null || true
+          if [ -d "$LINUX_SRC/linux" ]; then
+            cp -a "$LINUX_SRC/linux/"* "$CEF_DIR/linux/"
+            # Ensure executable permissions on shared libraries and subprocess
+            find "$CEF_DIR/linux" -name "*.so*" -exec chmod +x {} \;
+            chmod +x "$CEF_DIR/linux/gdCefRenderProcess"
             echo "✓ Linux binaries copied"
+          else
+            echo "⚠ Linux artifact directory not found at $LINUX_SRC/linux"
           fi
 
           # Copy Windows binaries
-          if [ -d "artifacts/gdcef-windows-x86_64/windows" ]; then
-            cp -r artifacts/gdcef-windows-x86_64/windows/* cef_artifacts/windows/
+          if [ -d "$WINDOWS_SRC/windows" ]; then
+            cp -a "$WINDOWS_SRC/windows/"* "$CEF_DIR/windows/"
             echo "✓ Windows binaries copied"
+          else
+            echo "⚠ Windows artifact directory not found at $WINDOWS_SRC/windows"
           fi
 
           # Copy shared files from Linux (or Windows)
-          if [ -f "artifacts/gdcef-linux-x86_64/gdcef.gdextension" ]; then
-            cp artifacts/gdcef-linux-x86_64/gdcef.gdextension cef_artifacts/
-            cp artifacts/gdcef-linux-x86_64/VERSION cef_artifacts/
-            cp -r artifacts/gdcef-linux-x86_64/locales/* cef_artifacts/locales/
-          elif [ -f "artifacts/gdcef-windows-x86_64/gdcef.gdextension" ]; then
-            cp artifacts/gdcef-windows-x86_64/gdcef.gdextension cef_artifacts/
-            cp artifacts/gdcef-windows-x86_64/VERSION cef_artifacts/
-            cp -r artifacts/gdcef-windows-x86_64/locales/* cef_artifacts/locales/
+          if [ -f "$LINUX_SRC/gdcef.gdextension" ]; then
+            cp "$LINUX_SRC/gdcef.gdextension" "$CEF_DIR/"
+            cp "$LINUX_SRC/VERSION" "$CEF_DIR/"
+            cp -r "$LINUX_SRC/locales/"* "$CEF_DIR/locales/"
+          elif [ -f "$WINDOWS_SRC/gdcef.gdextension" ]; then
+            cp "$WINDOWS_SRC/gdcef.gdextension" "$CEF_DIR/"
+            cp "$WINDOWS_SRC/VERSION" "$CEF_DIR/"
+            cp -r "$WINDOWS_SRC/locales/"* "$CEF_DIR/locales/"
           fi
 
-          cp LICENSE cef_artifacts/
-          find cef_artifacts -type f | head -30
+          # Copy documentation and license
+          cp -r doc "$RELEASE_DIR/"
+          cp LICENSE "$CEF_DIR/"
 
       - name: Create release zip
         run: |
           ZIP_NAME="gdcef-${{ steps.version.outputs.version }}_godot-${{ steps.version.outputs.godot_version }}.zip"
-          zip -r "$ZIP_NAME" cef_artifacts/
+          # Verify permissions before zipping
+          echo "=== Checking permissions before zip ==="
+          ls -la "$RELEASE_DIR/cef_artifacts/linux/" | head -10
+          # Create zip with symlinks preserved (-y)
+          cd "$(dirname "$RELEASE_DIR")" && zip -ry "../$ZIP_NAME" "$(basename "$RELEASE_DIR")"/
+          echo "=== Checking permissions in zip ==="
+          zipinfo "../$ZIP_NAME" | grep -E "(gdCefRenderProcess|\.so)" | head -10
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
       - name: Upload combined artifact
-        uses: actions/upload-artifact@v4
+        uses: pyTooling/upload-artifact@v6
         with:
           name: gdcef-${{ steps.version.outputs.version }}_godot-${{ steps.version.outputs.godot_version }}
-          path: cef_artifacts/
+          path: ${{ env.RELEASE_DIR }}/
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/')

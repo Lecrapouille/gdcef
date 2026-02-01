@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Godot 4.2+](https://img.shields.io/badge/Godot-4.2+-blue.svg)](https://godotengine.org/) [![Version](https://img.shields.io/badge/version-0.19.0-green.svg)](https://github.com/yourusername/Prologot/releases)
 
-Integrate a fully functional **web browser** 🖥️ into your Godot 4.2+ games for Linux, Windows (and for macOS, we need contributors!). This GDExtension wraps the [Chromium Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home) (CEF) API, allowing you to display web content in 2D and 3D scenes using GDScript.
+Integrate a fully functional **web browser** into your Godot 4.2+ games for Linux, Windows (and for macOS, we need contributors!). This GDExtension wraps the [Chromium Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home) (CEF) API, allowing you to display web content in 2D and 3D scenes using GDScript.
 
 > ⚠️ **Godot 3 users:** Please use the [godot-3.x branch](https://github.com/Lecrapouille/gdcef/tree/godot-3.x) instead.
 
@@ -59,8 +59,9 @@ Depending on your computer but count around 15 min to compile:
 
 1. 🏛️ Open the Godot editor, and click the "AssetLib" button.
 2. 🔎 In the search bar, type `gdcef`.
-3. 📁 Download the `cef_artifacts` folder into your Godot project.
-4. ✅ Done! The `.gdextension` file is already included in the folder.
+3. 📁 Download the `cef_artifacts` folder into your Godot project. Be sure to have clicked on "Ignore asset root".
+4. ⚠️ Godot does not preserve file attributes. Call `cd cef_artifacts/linux/ && chmod +x *.so gdCefRenderProcess` to restore them.
+5. ✅ Done! The `.gdextension` file is already included in the folder.
 
 ---
 
