@@ -57,7 +57,7 @@ bool are_valid_files(fs::path const& folder,
 }
 
 //------------------------------------------------------------------------------
-// Posible alternative (but /proc/self/exe will return the canoncial path even
+// Possible alternative (but /proc/self/exe will return the canonical path even
 // from an alias.
 // extern char *__progname;
 // return __progname;
@@ -74,8 +74,10 @@ std::string executable_name()
 #else
 
     char path[1024];
-    if (readlink("/proc/self/exe", path, 1024) == -1)
+    ssize_t len = readlink("/proc/self/exe", path, sizeof(path) - 1);
+    if (len == -1)
         return {};
+    path[len] = '\0';  // readlink doesn't null-terminate
     return path;
 
 #endif
@@ -92,12 +94,20 @@ fs::path real_path()
     // This allows to remove possible symlink.
     //
     // Step 3: Return the path without your application name
-    return fs::canonical({fs::current_path() / executable_name()})
-        .parent_path();
+    try
+    {
+        return fs::canonical({fs::current_path() / executable_name()})
+            .parent_path();
+    }
+    catch (const fs::filesystem_error& e)
+    {
+        PRINT_ERROR("fs::canonical failed: " << e.what());
+        return fs::current_path();
+    }
 
 #else // if defined(PLATFORM_POSIX) || defined(__linux__)
 
-    // Since /proc/self/exe return the canoncial we can return it directly
+    // Since /proc/self/exe return the canonical we can return it directly
     fs::path p(executable_name());
     return p.parent_path();
 
@@ -155,7 +165,16 @@ fs::path get_module_directory()
     {
         if (dl_info.dli_fname != nullptr)
         {
-            return fs::canonical(fs::path(dl_info.dli_fname)).parent_path();
+            try
+            {
+                return fs::canonical(fs::path(dl_info.dli_fname)).parent_path();
+            }
+            catch (const fs::filesystem_error& e)
+            {
+                PRINT_ERROR("fs::canonical failed: " << e.what());
+                // Fallback: return the path without canonicalization
+                return fs::path(dl_info.dli_fname).parent_path();
+            }
         }
     }
     // Fallback to current directory

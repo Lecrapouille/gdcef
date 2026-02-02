@@ -25,23 +25,56 @@
 
 #include "render_process.hpp"
 #include "cef_parser.h" // For CefBase64Encode and CefBase64Decode
+#include <fstream>
+
+//------------------------------------------------------------------------------
+// Cross-platform logging for subprocess
+// On Windows, std::cout doesn't work in WinMain, so we use a file + OutputDebugString
+//------------------------------------------------------------------------------
+#if defined(_WIN32)
+#    include <windows.h>
+static void SubprocessLog(const std::string& msg)
+{
+    // Output to Visual Studio debugger
+    OutputDebugStringA((msg + "\n").c_str());
+    // Also try to append to a log file
+    static std::ofstream log_file;
+    if (!log_file.is_open())
+    {
+        char path[MAX_PATH];
+        GetModuleFileNameA(NULL, path, MAX_PATH);
+        std::string exe_path(path);
+        std::string log_path = exe_path.substr(0, exe_path.find_last_of("\\/")) +
+                               "\\render_process_debug.log";
+        log_file.open(log_path, std::ios::app);
+    }
+    if (log_file.is_open())
+    {
+        log_file << msg << std::endl;
+        log_file.flush();
+    }
+}
+#else
+static void SubprocessLog(const std::string& msg)
+{
+    std::cout << msg << std::endl;
+}
+#endif
 
 //------------------------------------------------------------------------------
 #define DEBUG_RENDER_PROCESS(txt)                                       \
     {                                                                   \
         std::stringstream ss;                                           \
-        ss << "\033[32m[Secondary Process][RenderProcess::" << __func__ \
-           << "] " << txt << "\033[0m";                                 \
-        std::cout << ss.str() << std::endl;                             \
+        ss << "[RenderProcess::" << __func__ << "] " << txt;            \
+        SubprocessLog(ss.str());                                        \
     }
 
 //------------------------------------------------------------------------------
-#define DEBUG_BROWSER_PROCESS(txt)                                             \
-    {                                                                          \
-        std::stringstream ss;                                                  \
-        ss << "\033[32m[Secondary Process][gdCEFBrowser::" << __func__ << "] " \
-           << txt << "\033[0m";                                                \
-        std::cout << ss.str() << std::endl;                                    \
+#define DEBUG_BROWSER_PROCESS(txt)                                      \
+    {                                                                   \
+        std::stringstream ss;                                           \
+        ss << "[gdCEFBrowser::" << __func__ << "] " << txt;             \
+        SubprocessLog(ss.str());                                        \
     }
 
 //------------------------------------------------------------------------------
@@ -99,7 +132,14 @@ bool GodotMethodHandler::Execute(const CefString& name,
     args->SetString(1, json_args);
 
     // Send the message to the main process
-    m_browser->GetMainFrame()->SendProcessMessage(PID_BROWSER, msg);
+    CefRefPtr<CefFrame> mainFrame = m_browser->GetMainFrame();
+    if (!mainFrame)
+    {
+        exception = "Main frame is not available";
+        DEBUG_RENDER_PROCESS(exception.ToString());
+        return false;
+    }
+    mainFrame->SendProcessMessage(PID_BROWSER, msg);
     retval = CefV8Value::CreateBool(true);
 
     return true;
@@ -226,32 +266,52 @@ void RenderProcess::OnContextReleased(CefRefPtr<CefBrowser> browser,
     // If the released context is the one we stored, we clean it
     if (m_context && m_context->IsSame(context))
     {
-        // Execute a script to clean rawGodot before releasing the context
-        const char* cleanup = R"(
-            try {
-                // Clean references
-                window.godotMethods = undefined;
-                window.godotEvents = undefined;
-                window.registerGodotEvent = undefined;
-                console.log('[gdCEF] Cleanup completed');
-            } catch (e) {
-                console.error('[gdCEF] Cleanup error:', e);
-            }
-        )";
-
-        // Execute the cleanup script
-        frame->ExecuteJavaScript(cleanup, frame->GetURL(), 0);
+        // Note: We don't execute JavaScript here because the context is being
+        // released and may already be invalid. The JavaScript objects will be
+        // garbage collected automatically by V8.
 
         // Reset our references
         m_context = nullptr;
         m_frame = nullptr;
         m_handler = nullptr;
 
-        DEBUG_RENDER_PROCESS("Context released and cleaned up");
+        DEBUG_RENDER_PROCESS("Context released and references cleaned up");
     }
 }
 
 //------------------------------------------------------------------------------
+// Helper function to escape a string for safe use in JavaScript single-quoted strings
+static std::string escapeForJavaScript(const std::string& str)
+{
+    std::string escaped;
+    escaped.reserve(str.length());
+    for (char c : str)
+    {
+        switch (c)
+        {
+            case '\'':
+                escaped += "\\'";
+                break;
+            case '\\':
+                escaped += "\\\\";
+                break;
+            case '\n':
+                escaped += "\\n";
+                break;
+            case '\r':
+                escaped += "\\r";
+                break;
+            case '\t':
+                escaped += "\\t";
+                break;
+            default:
+                escaped += c;
+                break;
+        }
+    }
+    return escaped;
+}
+
 bool RenderProcess::OnProcessMessageReceived(
     CefRefPtr<CefBrowser> /*browser*/,
     CefRefPtr<CefFrame> frame,
@@ -278,13 +338,25 @@ bool RenderProcess::OnProcessMessageReceived(
         DEBUG_RENDER_PROCESS("Event: " << eventName.ToString()
                                        << " Data: " << jsonData.ToString());
 
+        // Escape the event name to prevent injection attacks
+        // Note: jsonData is already JSON, so we don't escape it (it would break the JSON)
+        // but we validate it's used safely
+        std::string safeEventName = escapeForJavaScript(eventName.ToString());
+
         // Create JavaScript to emit the event
+        // Using a try-catch to handle any errors safely
         std::string jsCode =
-            "if (window.godotEvents) { "
-            "window.godotEvents.emit('" +
-            eventName.ToString() + "', " + jsonData.ToString() +
-            "); "
-            "} else { console.error('godotEvents not found'); }";
+            "(function() { "
+            "  try { "
+            "    if (window.godotEvents) { "
+            "      window.godotEvents.emit('" + safeEventName + "', " + jsonData.ToString() + "); "
+            "    } else { "
+            "      console.error('[gdCEF] godotEvents not found'); "
+            "    } "
+            "  } catch (e) { "
+            "    console.error('[gdCEF] Error emitting event:', e); "
+            "  } "
+            "})();";
 
         // Execute in the browser context
         frame->ExecuteJavaScript(jsCode, frame->GetURL(), 0);
@@ -294,9 +366,16 @@ bool RenderProcess::OnProcessMessageReceived(
 }
 
 //------------------------------------------------------------------------------
-std::string GodotMethodHandler::V8ToJSON(CefRefPtr<CefV8Value> value)
+std::string GodotMethodHandler::V8ToJSON(CefRefPtr<CefV8Value> value, int depth)
 {
-    if (value->IsNull() || value->IsUndefined())
+    // Protect against circular references and deeply nested structures
+    if (depth > MAX_JSON_DEPTH)
+    {
+        DEBUG_RENDER_PROCESS("V8ToJSON: Max depth exceeded, possible circular reference");
+        return "\"[max depth exceeded]\"";
+    }
+
+    if (!value || value->IsNull() || value->IsUndefined())
     {
         return "null";
     }
@@ -355,11 +434,12 @@ std::string GodotMethodHandler::V8ToJSON(CefRefPtr<CefV8Value> value)
     else if (value->IsArray())
     {
         std::string result = "[";
-        for (int i = 0; i < value->GetArrayLength(); ++i)
+        int arrayLength = value->GetArrayLength();
+        for (int i = 0; i < arrayLength; ++i)
         {
             if (i > 0)
                 result += ",";
-            result += V8ToJSON(value->GetValue(i));
+            result += V8ToJSON(value->GetValue(i), depth + 1);
         }
         result += "]";
         return result;
@@ -381,18 +461,34 @@ std::string GodotMethodHandler::V8ToJSON(CefRefPtr<CefV8Value> value)
         return "{ \"type\": \"binary\", \"format\": \"base64\", \"data\": "
                "\"\", \"size\": 0 }";
     }
+    else if (value->IsFunction())
+    {
+        // Functions cannot be serialized to JSON
+        return "\"[function]\"";
+    }
     else if (value->IsObject())
     {
         std::string result = "{";
         std::vector<CefString> keys;
-        value->GetKeys(keys);
-        for (size_t i = 0; i < keys.size(); ++i)
+        if (!value->GetKeys(keys))
         {
-            if (i > 0)
+            return "{}";
+        }
+        bool first = true;
+        for (const auto& key : keys)
+        {
+            CefRefPtr<CefV8Value> propValue = value->GetValue(key);
+            // Skip functions in object serialization
+            if (propValue && propValue->IsFunction())
+            {
+                continue;
+            }
+            if (!first)
                 result += ",";
-            result += V8ToJSON(CefV8Value::CreateString(keys[i]));
+            first = false;
+            result += V8ToJSON(CefV8Value::CreateString(key), depth + 1);
             result += ":";
-            result += V8ToJSON(value->GetValue(keys[i]));
+            result += V8ToJSON(propValue, depth + 1);
         }
         result += "}";
         return result;

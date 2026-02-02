@@ -196,7 +196,7 @@ bool GdCEF::initialize(godot::Dictionary config)
         GDCEF_ERROR("Error: at least one CEF artifact was not found in folder "
                     << cef_folder_path
                     << ". Your gdCEF node will still be present but disabled.");
-        m_impl = nullptr;
+        m_impl = nullptr;  // CefRefPtr handles deallocation automatically
         return false;
     }
 
@@ -230,7 +230,7 @@ bool GdCEF::initialize(godot::Dictionary config)
     {
         GDCEF_ERROR("CEF failed its initialization. Your gdCEF node will still "
                     "be present but disabled.");
-        m_impl = nullptr;
+        m_impl = nullptr;  // CefRefPtr handles deallocation automatically
         return false;
     }
     GDCEF_DEBUG("CefInitialize done with success");
@@ -655,21 +655,24 @@ void GdCEF::Impl::OnBeforeClose(CefRefPtr<CefBrowser> browser)
     CEF_REQUIRE_UI_THREAD();
     GDCEF_DEBUG("");
 
-    // Remove from the list of existing browsers from the Godot child.
-    // FIXME we suppose that all child node are BrowserView.
+    // Remove the specific browser from the list of Godot child nodes.
     int64_t i = m_owner.get_child_count();
     while (i--)
     {
         godot::Node* node = m_owner.get_child(i);
-        GdBrowserView* bv = reinterpret_cast<GdBrowserView*>(node);
+        // Use dynamic_cast-like check: verify the node is a GdBrowserView
+        // by checking if it has the expected method (safer than reinterpret_cast)
+        GdBrowserView* bv = godot::Object::cast_to<GdBrowserView>(node);
         if ((bv != nullptr) && (bv->id() == browser->GetIdentifier()))
         {
             GDCEF_DEBUG("Removing browser ID " << bv->id());
             bv->close(/*force_close*/);
+            m_owner.remove_child(node);
+            node->queue_free();
+            return; // Found and removed, exit early
         }
-        m_owner.remove_child(node);
-        node->queue_free();
     }
+    GDCEF_WARNING("Browser ID " << browser->GetIdentifier() << " not found in child nodes");
 }
 
 //------------------------------------------------------------------------------
@@ -685,22 +688,25 @@ void GdCEF::Impl::closeAllBrowsers(bool force_close)
     }
 
     // Close all browsers (stored as Godot child nodes).
-    int64_t i = m_owner.get_child_count();
-    GDCEF_DEBUG("Removing " << i << " browsers as Godot child nodes");
+    int64_t count = m_owner.get_child_count();
+    GDCEF_DEBUG("Checking " << count << " child nodes for browsers to close");
+    int64_t i = count;
     while (i--)
     {
         godot::Node* node = m_owner.get_child(i);
-        GdBrowserView* browser = reinterpret_cast<GdBrowserView*>(node);
+        // Use Godot's safe cast instead of reinterpret_cast
+        GdBrowserView* browser = godot::Object::cast_to<GdBrowserView>(node);
         if (browser != nullptr)
         {
             GDCEF_DEBUG("Removing browser ID " << browser->id());
             browser->close(/*force_close*/);
+            m_owner.remove_child(node);
+            node->queue_free();
         }
-        m_owner.remove_child(node);
-        node->queue_free();
+        // Note: Non-GdBrowserView children are left untouched
     }
 
-    GDCEF_DEBUG("Remaining " << m_owner.get_child_count() << " browser nodes");
+    GDCEF_DEBUG("Remaining " << m_owner.get_child_count() << " child nodes");
 }
 
 //------------------------------------------------------------------------------

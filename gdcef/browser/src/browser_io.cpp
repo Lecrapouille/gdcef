@@ -29,6 +29,15 @@
 #include <godot_cpp/core/math.hpp>
 
 //------------------------------------------------------------------------------
+// Helper macro to safely get the browser host, returns early if null
+#define GET_HOST_OR_RETURN()                                    \
+    if (!m_browser)                                             \
+        return;                                                 \
+    CefRefPtr<CefBrowserHost> host = m_browser->GetHost();      \
+    if (!host)                                                  \
+        return;
+
+//------------------------------------------------------------------------------
 void GdBrowserView::leftClick()
 {
     leftMouseDown();
@@ -52,8 +61,7 @@ void GdBrowserView::middleClick()
 //------------------------------------------------------------------------------
 void GdBrowserView::leftMouseDown()
 {
-    if (!m_browser)
-        return;
+    GET_HOST_OR_RETURN();
 
     // increase click count but max == 3
     // double-click to select a word.
@@ -79,16 +87,14 @@ void GdBrowserView::leftMouseDown()
     evt.modifiers = m_mouse_event_modifiers;
 
     // Set focus on click (not on every mouse move)
-    m_browser->GetHost()->SetFocus(true);
-    m_browser->GetHost()->SendMouseClickEvent(
-        evt, btn, false, m_left_click_count);
+    host->SetFocus(true);
+    host->SendMouseClickEvent(evt, btn, false, m_left_click_count);
 }
 
 //------------------------------------------------------------------------------
 void GdBrowserView::rightMouseDown()
 {
-    if (!m_browser)
-        return;
+    GET_HOST_OR_RETURN();
 
     m_mouse_event_modifiers |= EVENTFLAG_RIGHT_MOUSE_BUTTON;
 
@@ -99,14 +105,13 @@ void GdBrowserView::rightMouseDown()
     evt.y = m_mouse_y;
     evt.modifiers = m_mouse_event_modifiers;
 
-    m_browser->GetHost()->SendMouseClickEvent(evt, btn, false, 1);
+    host->SendMouseClickEvent(evt, btn, false, 1);
 }
 
 //------------------------------------------------------------------------------
 void GdBrowserView::leftMouseUp()
 {
-    if (!m_browser)
-        return;
+    GET_HOST_OR_RETURN();
 
     // If an internal HTML5 drag is in progress, end it
     if (m_is_dragging)
@@ -123,14 +128,13 @@ void GdBrowserView::leftMouseUp()
     evt.y = m_mouse_y;
     evt.modifiers = m_mouse_event_modifiers;
 
-    m_browser->GetHost()->SendMouseClickEvent(evt, btn, true, 1);
+    host->SendMouseClickEvent(evt, btn, true, 1);
 }
 
 //------------------------------------------------------------------------------
 void GdBrowserView::rightMouseUp()
 {
-    if (!m_browser)
-        return;
+    GET_HOST_OR_RETURN();
 
     m_mouse_event_modifiers &= ~EVENTFLAG_RIGHT_MOUSE_BUTTON;
 
@@ -141,14 +145,13 @@ void GdBrowserView::rightMouseUp()
     evt.y = m_mouse_y;
     evt.modifiers = m_mouse_event_modifiers;
 
-    m_browser->GetHost()->SendMouseClickEvent(evt, btn, true, 1);
+    host->SendMouseClickEvent(evt, btn, true, 1);
 }
 
 //------------------------------------------------------------------------------
 void GdBrowserView::middleMouseDown()
 {
-    if (!m_browser)
-        return;
+    GET_HOST_OR_RETURN();
 
     m_mouse_event_modifiers |= EVENTFLAG_MIDDLE_MOUSE_BUTTON;
 
@@ -159,14 +162,13 @@ void GdBrowserView::middleMouseDown()
     evt.y = m_mouse_y;
     evt.modifiers = m_mouse_event_modifiers;
 
-    m_browser->GetHost()->SendMouseClickEvent(evt, btn, false, 1);
+    host->SendMouseClickEvent(evt, btn, false, 1);
 }
 
 //------------------------------------------------------------------------------
 void GdBrowserView::middleMouseUp()
 {
-    if (!m_browser)
-        return;
+    GET_HOST_OR_RETURN();
 
     m_mouse_event_modifiers &= ~EVENTFLAG_MIDDLE_MOUSE_BUTTON;
 
@@ -177,14 +179,13 @@ void GdBrowserView::middleMouseUp()
     evt.y = m_mouse_y;
     evt.modifiers = m_mouse_event_modifiers;
 
-    m_browser->GetHost()->SendMouseClickEvent(evt, btn, true, 1);
+    host->SendMouseClickEvent(evt, btn, true, 1);
 }
 
 //------------------------------------------------------------------------------
 void GdBrowserView::mouseMove(int x, int y)
 {
-    if (!m_browser)
-        return;
+    GET_HOST_OR_RETURN();
 
     m_mouse_x = x;
     m_mouse_y = y;
@@ -193,8 +194,6 @@ void GdBrowserView::mouseMove(int x, int y)
     evt.x = x;
     evt.y = y;
     evt.modifiers = m_mouse_event_modifiers;
-
-    auto host = m_browser->GetHost();
 
     // If an internal HTML5 drag is in progress, update the drag target
     if (m_is_dragging)
@@ -210,8 +209,7 @@ void GdBrowserView::mouseMove(int x, int y)
 void GdBrowserView::mouseWheelVertical(int wDelta, bool shift, bool ctrl,
                                         bool alt)
 {
-    if (m_browser == nullptr)
-        return;
+    GET_HOST_OR_RETURN();
 
     CefMouseEvent evt;
     evt.x = m_mouse_x;
@@ -227,15 +225,14 @@ void GdBrowserView::mouseWheelVertical(int wDelta, bool shift, bool ctrl,
         modifiers |= EVENTFLAG_ALT_DOWN;
     evt.modifiers = modifiers;
 
-    m_browser->GetHost()->SendMouseWheelEvent(evt, 0, wDelta * 10);
+    host->SendMouseWheelEvent(evt, 0, wDelta * 10);
 }
 
 //------------------------------------------------------------------------------
 void GdBrowserView::mouseWheelHorizontal(int wDelta, bool shift, bool ctrl,
                                           bool alt)
 {
-    if (m_browser == nullptr)
-        return;
+    GET_HOST_OR_RETURN();
 
     CefMouseEvent evt;
     evt.x = m_mouse_x;
@@ -251,7 +248,7 @@ void GdBrowserView::mouseWheelHorizontal(int wDelta, bool shift, bool ctrl,
         modifiers |= EVENTFLAG_ALT_DOWN;
     evt.modifiers = modifiers;
 
-    m_browser->GetHost()->SendMouseWheelEvent(evt, wDelta * 10, 0);
+    host->SendMouseWheelEvent(evt, wDelta * 10, 0);
 }
 
 // =============================================================================
@@ -357,8 +354,7 @@ void GdBrowserView::keyPress(int key,
                              bool alt,
                              bool ctrl)
 {
-    if (!m_browser)
-        return;
+    GET_HOST_OR_RETURN();
 
     CefKeyEvent event;
     event.modifiers = getKeyboardModifiers(shift, alt, ctrl);
@@ -391,7 +387,7 @@ void GdBrowserView::keyPress(int key,
         }
         event.native_key_code |= int(0xC0000000);
         event.type = KEYEVENT_KEYUP;
-        m_browser->GetHost()->SendKeyEvent(event);
+        host->SendKeyEvent(event);
         return;
     }
 
@@ -409,13 +405,13 @@ void GdBrowserView::keyPress(int key,
 
         // Send KEYDOWN
         event.type = KEYEVENT_KEYDOWN;
-        m_browser->GetHost()->SendKeyEvent(event);
+        host->SendKeyEvent(event);
 
         // Send CHAR if needed (for keys like Enter, Backspace)
         if (mapping->send_char)
         {
             event.type = KEYEVENT_CHAR;
-            m_browser->GetHost()->SendKeyEvent(event);
+            host->SendKeyEvent(event);
         }
         return;
     }
@@ -437,11 +433,11 @@ void GdBrowserView::keyPress(int key,
 
         // Send KEYDOWN first (for games that listen to keydown)
         event.type = KEYEVENT_KEYDOWN;
-        m_browser->GetHost()->SendKeyEvent(event);
+        host->SendKeyEvent(event);
 
         // Then send CHAR (for text input)
         event.type = KEYEVENT_CHAR;
-        m_browser->GetHost()->SendKeyEvent(event);
+        host->SendKeyEvent(event);
         return;
     }
 
@@ -456,9 +452,9 @@ void GdBrowserView::keyPress(int key,
         event.unmodified_character = event.character;
 
         event.type = KEYEVENT_KEYDOWN;
-        m_browser->GetHost()->SendKeyEvent(event);
+        host->SendKeyEvent(event);
         event.type = KEYEVENT_CHAR;
-        m_browser->GetHost()->SendKeyEvent(event);
+        host->SendKeyEvent(event);
         return;
     }
 
@@ -472,7 +468,7 @@ void GdBrowserView::keyPress(int key,
     event.unmodified_character = key16;
 
     event.type = KEYEVENT_KEYDOWN;
-    m_browser->GetHost()->SendKeyEvent(event);
+    host->SendKeyEvent(event);
     event.type = KEYEVENT_CHAR;
-    m_browser->GetHost()->SendKeyEvent(event);
+    host->SendKeyEvent(event);
 }

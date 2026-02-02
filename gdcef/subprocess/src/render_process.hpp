@@ -98,9 +98,14 @@ private:
     //------------------------------------------------------------------------------
     //! \brief Convert a V8 value to a JSON string
     //! \param[in] value The V8 value to convert
+    //! \param[in] depth Current recursion depth (to prevent infinite loops)
     //! \return The JSON string representation
     //------------------------------------------------------------------------------
-    std::string V8ToJSON(CefRefPtr<CefV8Value> value);
+    std::string V8ToJSON(CefRefPtr<CefV8Value> value, int depth = 0);
+
+    //! Maximum recursion depth for V8ToJSON to prevent stack overflow
+    //! on circular references
+    static constexpr int MAX_JSON_DEPTH = 32;
 
     CefRefPtr<CefBrowser> m_browser;
 };
