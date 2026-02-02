@@ -216,6 +216,74 @@
             font-size: 12px;
             overflow-wrap: break-word;
         }
+
+        /* Custom dropdown (replaces native <select> for CEF compatibility) */
+        .custom-select {
+            position: relative;
+            display: inline-block;
+            min-width: 200px;
+        }
+
+        .custom-select-trigger {
+            padding: 8px 12px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .custom-select-trigger:hover {
+            border-color: var(--secondary-color);
+        }
+
+        .custom-select-trigger::after {
+            content: '▼';
+            font-size: 10px;
+            margin-left: 10px;
+            color: #666;
+        }
+
+        .custom-select.open .custom-select-trigger::after {
+            content: '▲';
+        }
+
+        .custom-select-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border: 1px solid #bdc3c7;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .custom-select.open .custom-select-options {
+            display: block;
+        }
+
+        .custom-select-option {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .custom-select-option:hover {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .custom-select-option.selected {
+            background-color: #e8f4fc;
+        }
     </style>
 </head>
 
@@ -283,13 +351,20 @@
                         <button onclick="clearBinaryData()" class="weapon-button">Clear Image Data</button>
                     </div>
 
-                    <!-- Binary data type selector -->
+                    <!-- Binary data type selector (custom dropdown for CEF compatibility) -->
                     <div style="margin-top: 15px;">
                         <h3 style="font-size: 1em; margin-bottom: 8px;">Request Binary Data Type:</h3>
-                        <select id="binaryDataTypeSelect" style="padding: 6px; border-radius: 4px; margin-right: 10px;">
-                            <!-- Options will be populated dynamically -->
-                        </select>
-                        <button onclick="requestBinaryDataType()" class="weapon-button">Request</button>
+                        <div style="display: flex; gap: 10px; align-items: flex-start;">
+                            <div class="custom-select" id="binaryDataTypeSelect">
+                                <div class="custom-select-trigger">
+                                    <span>Select type...</span>
+                                </div>
+                                <div class="custom-select-options">
+                                    <!-- Options will be populated dynamically -->
+                                </div>
+                            </div>
+                            <button onclick="requestBinaryDataType()" class="weapon-button">Request</button>
+                        </div>
                     </div>
 
                     <div id="binaryDataMessage" style="font-size: 0.9em; color: #e67e22; margin-top: 5px;"></div>
@@ -775,15 +850,40 @@
         window.godotEvents.on('binary_data_types', function (types) {
             console.log('Received binary data types:', types);
 
-            // Populate selector with available types
-            const select = document.getElementById('binaryDataTypeSelect');
-            select.innerHTML = ''; // Clear previous options
+            // Populate custom select with available types
+            const selectContainer = document.getElementById('binaryDataTypeSelect');
+            const optionsContainer = selectContainer.querySelector('.custom-select-options');
+            const trigger = selectContainer.querySelector('.custom-select-trigger span');
 
-            types.forEach(type => {
-                const option = document.createElement('option');
-                option.value = type.index;
+            optionsContainer.innerHTML = ''; // Clear previous options
+
+            types.forEach((type, index) => {
+                const option = document.createElement('div');
+                option.className = 'custom-select-option';
+                option.dataset.value = type.index;
                 option.textContent = type.name;
-                select.appendChild(option);
+
+                // Select first option by default
+                if (index === 0) {
+                    option.classList.add('selected');
+                    trigger.textContent = type.name;
+                    selectContainer.dataset.value = type.index;
+                }
+
+                option.addEventListener('click', function () {
+                    // Update selection
+                    optionsContainer.querySelectorAll('.custom-select-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    option.classList.add('selected');
+                    trigger.textContent = type.name;
+                    selectContainer.dataset.value = type.index;
+
+                    // Close dropdown
+                    selectContainer.classList.remove('open');
+                });
+
+                optionsContainer.appendChild(option);
             });
 
             updateStatus('Binary data types loaded!');
@@ -816,9 +916,15 @@
          * Requests a specific type of binary data from Godot
          */
         function requestBinaryDataType() {
-            const select = document.getElementById('binaryDataTypeSelect');
-            const typeIndex = parseInt(select.value, 10);
-            const typeName = select.options[select.selectedIndex].text;
+            const selectContainer = document.getElementById('binaryDataTypeSelect');
+            const typeIndex = parseInt(selectContainer.dataset.value, 10);
+            const selectedOption = selectContainer.querySelector('.custom-select-option.selected');
+            const typeName = selectedOption ? selectedOption.textContent : 'Unknown';
+
+            if (isNaN(typeIndex)) {
+                document.getElementById('binaryDataMessage').textContent = 'Please select a binary data type first';
+                return;
+            }
 
             document.getElementById('binaryDataMessage').textContent =
                 `Requesting binary data of type: ${typeName} (${typeIndex})...`;
@@ -831,6 +937,37 @@
                 document.getElementById('binaryDataMessage').textContent += ' ERROR: Method not available';
             }
         }
+
+        // Initialize custom select dropdown behavior
+        document.addEventListener('DOMContentLoaded', function () {
+            const customSelects = document.querySelectorAll('.custom-select');
+
+            customSelects.forEach(select => {
+                const trigger = select.querySelector('.custom-select-trigger');
+
+                // Toggle dropdown on click
+                trigger.addEventListener('click', function (e) {
+                    e.stopPropagation();
+
+                    // Close other dropdowns
+                    customSelects.forEach(other => {
+                        if (other !== select) {
+                            other.classList.remove('open');
+                        }
+                    });
+
+                    // Toggle this dropdown
+                    select.classList.toggle('open');
+                });
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function () {
+                customSelects.forEach(select => {
+                    select.classList.remove('open');
+                });
+            });
+        });
     </script>
 </body>
 
