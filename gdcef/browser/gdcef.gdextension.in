@@ -15,3 +15,9 @@ windows.x86_32.release = "res://CEF_ARTIFACTS_FOLDER_NAME/windows/libgdcef.dll"
 
 macos.debug = "res://CEF_ARTIFACTS_FOLDER_NAME/macos/libgdcef.dylib"
 macos.release = "res://CEF_ARTIFACTS_FOLDER_NAME/macos/libgdcef.dylib"
+
+[dependencies]
+linux.x86_64 = {"res://CEF_ARTIFACTS_FOLDER_NAME/linux/libcef.so": ""}
+linux.x86_32 = {"res://CEF_ARTIFACTS_FOLDER_NAME/linux/libcef.so": ""}
+windows.x86_64 = {"res://CEF_ARTIFACTS_FOLDER_NAME/windows/libcef.dll": ""}
+windows.x86_32 = {"res://CEF_ARTIFACTS_FOLDER_NAME/windows/libcef.dll": ""}
