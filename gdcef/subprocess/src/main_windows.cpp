@@ -176,43 +176,31 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     // CEF applications have multiple sub-processes (render, plugin, GPU, etc)
     // that share the same executable. This function checks the command-line
     // and, if this is a sub-process, executes the appropriate logic.
+    //
+    // IMPORTANT: This executable is ONLY meant to be launched by CEF as a
+    // subprocess. CefExecuteProcess will handle everything and return a valid
+    // exit code (>= 0). If it returns -1, it means this exe was launched
+    // incorrectly (e.g., manually by the user).
     LogDebug("Calling CefExecuteProcess");
     int exit_code = CefExecuteProcess(main_args, app.get(), nullptr);
-    if (exit_code >= 0)
+
+    ss.str("");
+    ss << "CefExecuteProcess returned exit_code: " << exit_code;
+    LogDebug(ss.str());
+
+    if (exit_code < 0)
     {
-        // The sub-process has completed so return here.
-        ss.str("");
-        ss << "CefExecuteProcess returned exit_code: " << exit_code;
-        LogDebug(ss.str());
-        return exit_code;
+        // This should not happen - it means this executable was launched
+        // directly instead of being spawned by CEF as a subprocess.
+        LogDebug("ERROR: This executable should only be launched by CEF as a subprocess!");
+        LogDebug("If you see this message, something is wrong with the CEF configuration.");
+        exit_code = 1;
     }
 
-    // Specify CEF global settings here.
-    LogDebug("Configuring CEF settings");
-    CefSettings settings;
-    settings.no_sandbox = true;
-
-    // Initialize CEF for the browser process.
-    LogDebug("Calling CefInitialize");
-    if (!CefInitialize(main_args, settings, app.get(), nullptr))
-    {
-        LogDebug("ERROR: Failed to initialize CEF");
-        return CefGetExitCode();
-    }
-
-    // Run the CEF message loop. This will block until CefQuitMessageLoop() is
-    // called.
-    LogDebug("Running CefRunMessageLoop");
-    CefRunMessageLoop();
-
-    // Shut down CEF.
-    LogDebug("Calling CefShutdown");
-    CefShutdown();
-
-    LogDebug("SubProcess shutdown complete");
+    LogDebug("SubProcess exiting");
     if (g_log_file.is_open())
     {
         g_log_file.close();
     }
-    return 0;
+    return exit_code;
 }

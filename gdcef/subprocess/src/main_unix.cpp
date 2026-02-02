@@ -62,30 +62,24 @@ int main(int argc, char* argv[])
     // CEF applications have multiple sub-processes (render, plugin, GPU, etc)
     // that share the same executable. This function checks the command-line
     // and, if this is a sub-process, executes the appropriate logic.
+    //
+    // IMPORTANT: This executable is ONLY meant to be launched by CEF as a
+    // subprocess. CefExecuteProcess will handle everything and return a valid
+    // exit code (>= 0). If it returns -1, it means this exe was launched
+    // incorrectly (e.g., manually by the user).
     int exit_code = CefExecuteProcess(main_args, app.get(), nullptr);
-    if (exit_code >= 0)
+
+    std::cout << "[SubProcess] CefExecuteProcess returned: " << exit_code << std::endl;
+
+    if (exit_code < 0)
     {
-        // The sub-process has completed so return here.
-        return exit_code;
+        // This should not happen - it means this executable was launched
+        // directly instead of being spawned by CEF as a subprocess.
+        std::cerr << "[SubProcess] ERROR: This executable should only be launched by CEF as a subprocess!" << std::endl;
+        std::cerr << "[SubProcess] If you see this message, something is wrong with the CEF configuration." << std::endl;
+        exit_code = 1;
     }
 
-    // Specify CEF global settings here.
-    CefSettings settings;
-
-    // Initialize CEF for the browser process.
-    if (!CefInitialize(main_args, settings, app.get(), nullptr))
-    {
-        std::cout << "[SubProcess] Failed to initialize CEF" << std::endl;
-        return CefGetExitCode();
-    }
-
-    // Run the CEF message loop. This will block until CefQuitMessageLoop() is
-    // called.
-    CefRunMessageLoop();
-
-    // Shut down CEF.
-    CefShutdown();
-
-    std::cout << "[SubProcess] is shutdown" << std::endl;
-    return 0;
+    std::cout << "[SubProcess] exiting" << std::endl;
+    return exit_code;
 }
