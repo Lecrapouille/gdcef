@@ -1,3 +1,9 @@
+Version 0.19.2:
+	* Fix Windows crash
+	* Add Windows logs
+	* Add minor security fixes, security and dead code
+	* Fix HTML select wrongly displayed in JS demo
+  
 Version 0.19.1:
 	* CI: Fix missing main folder inside the GitHub artifact
 	* CI: Fix broken binaries +x permissions lost by GitHub action
