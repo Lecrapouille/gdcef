@@ -223,7 +223,7 @@ GdBrowserView::Impl::~Impl()
 // methods of this class to Godot.
 void GdBrowserView::_bind_methods()
 {
-    WARN_PRINT("[gdCEF][GdBrowserView::_bind_methods]");
+    GDCEF_DEBUG("[gdCEF][GdBrowserView::_bind_methods]");
 
     using namespace godot;
 
