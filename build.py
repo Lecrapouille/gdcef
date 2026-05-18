@@ -25,7 +25,8 @@
 ###############################################################################
 #
 # This Python script is used to build a web viewer plugin based on the Chromium
-# Embedded Framework (CEF) for 2D and 3D applications. This plugin is compatible with Godot 4.2, 4.3, Linux, and Windows.
+# Embedded Framework (CEF) for 2D and 3D applications. This plugin is compatible
+# with Godot 4.2, 4.3, Linux, and Windows.
 # Edit the "Global user settings" section below to customize your build as needed.
 #
 # Note: If you are a Godot 3 user, you cloned the wrong branch :)
@@ -56,7 +57,7 @@ CEF_ARTIFACTS_FOLDER_NAME = "cef_artifacts"
 
 # CEF version to download from https://cef-builds.spotifycdn.com/index.html
 # Copy the version listed there WITHOUT the OS or architecture; this script chooses the correct binary.
-CEF_VERSION = "143.0.14+gdd46a37+chromium-143.0.7499.193"
+CEF_VERSION = "147.0.14+g76d2442+chromium-147.0.7727.138"
 
 # Your Godot editor version. Must match either:
 #  - a "godot-<version>-stable" tag at https://github.com/godotengine/godot-cpp/tags

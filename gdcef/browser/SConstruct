@@ -104,7 +104,7 @@ sources = Glob('src/*.cpp')
 
 # Platform specific compilation
 if platform == 'macos':
-    env.Append(CXXFLAGS=['--std=c++17'])
+    env.Append(CXXFLAGS=['--std=c++20'])
     env.Append(LINKFLAGS=['-arch', archi])
     env.Append(CCFLAGS=['-arch', archi])
     if compile_mode == 'debug':
@@ -118,8 +118,8 @@ if platform == 'macos':
                           '__STDC_CONSTANT_MACROS', '__STDC_FORMAT_MACROS'])
 
 elif platform == 'linux':
-    # C++20 may not available on all Linux distributions
-    env.Append(CXXFLAGS=['--std=c++17'])
+    # CEF upstream headers require C++20 (concepts, std::same_as, etc.)
+    env.Append(CXXFLAGS=['--std=c++20'])
     if compile_mode == 'debug':
         env.Append(CCFLAGS=['-g3', '-Og'])
         env.Append(CPPDEFINES=['DEBUG'])
@@ -131,7 +131,6 @@ elif platform == 'linux':
                           '__STDC_CONSTANT_MACROS', '__STDC_FORMAT_MACROS'])
 
 elif platform == 'windows':
-    # C++17 seems buggy on Windows and std::filesystem
     env.Append(CXXFLAGS='/std:c++20')
     # This makes sure to keep the session environment variables on windows,
     # that way you can run scons in a vs 2017 prompt and it will find all the required tools
