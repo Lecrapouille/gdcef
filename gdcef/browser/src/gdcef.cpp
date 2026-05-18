@@ -378,7 +378,7 @@ static void configureCEF(fs::path const& folder,
     /// Resources directory. Also configurable using the "locales-dir-path"
     /// command-line switch.
     fs::path locales_path =
-        getConfig(config, "locales_path", folder.parent_path() / "locales");
+        getConfig(config, "locales_path", folder / "locales");
     GDCEF_DEBUG("Setting locales path: " << locales_path.string());
     CefString(&cef_settings.locales_dir_path).FromString(locales_path.string());
 
