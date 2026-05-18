@@ -555,7 +555,7 @@ def copy_cef_assets():
     info("Installing Chromium Embedded Framework to " + CEF_ARTIFACTS_OS_PATH + " ...")
 
     # Locales stay at the root level (shared across OS)
-    locales = os.path.join(CEF_ARTIFACTS_BUILD_PATH, "locales")
+    locales = os.path.join(CEF_ARTIFACTS_OS_PATH, "locales")
     mkdir(locales)
 
     if OSTYPE == "Linux" or OSTYPE == "Windows":
