@@ -28,6 +28,7 @@
 
 // Godot 4
 #include <godot_cpp/core/error_macros.hpp>
+#include <godot_cpp/core/print_string.hpp>
 #include <godot_cpp/variant/string.hpp>
 
 #include <sstream>
@@ -47,7 +48,7 @@
     {                                                     \
         std::stringstream ss;                             \
         ss << "[gdCEF][gdCEF::" << __func__ << "] " << x; \
-        WARN_PRINT(godot::String(ss.str().c_str()));      \
+        godot::print_verbose(godot::String(ss.str().c_str()));      \
     }
 
 #define GDCEF_ERROR(x)                                    \
@@ -70,7 +71,7 @@
         godot::String name = get_name();                                \
         ss << "[gdCEF][GdBrowserView::" << __func__ << "][id: " << m_id \
            << ", name: " << name.utf8().get_data() << "] " << txt;      \
-        WARN_PRINT(godot::String(ss.str().c_str()));                    \
+        godot::print_verbose(godot::String(ss.str().c_str()));                    \
     }
 
 #define BROWSER_ERROR(txt)                                              \
