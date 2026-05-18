@@ -54,7 +54,7 @@ jobs:
       - name: Check build
         run: |
           ls cef_artifacts/linux/gdCefRenderProcess cef_artifacts/linux/libgdcef.so cef_artifacts/linux/libcef.so
-          ls cef_artifacts/gdcef.gdextension cef_artifacts/locales/
+          ls cef_artifacts/gdcef.gdextension cef_artifacts/linux/locales/
 
       # Upload artifact
       - name: Upload Linux artifacts
@@ -110,7 +110,7 @@ jobs:
           if (!(Test-Path -Path "cef_artifacts\windows\libgdcef.dll")) { exit 1 }
           if (!(Test-Path -Path "cef_artifacts\windows\libcef.dll")) { exit 1 }
           if (!(Test-Path -Path "cef_artifacts\gdcef.gdextension")) { exit 1 }
-          if (!(Test-Path -Path "cef_artifacts\locales")) { exit 1 }
+          if (!(Test-Path -Path "cef_artifacts\windows\locales")) { exit 1 }
 
       # Upload artifact
       - name: Upload Windows artifacts
@@ -157,9 +157,9 @@ jobs:
           CEF_DIR="$RELEASE_DIR/cef_artifacts"
           LINUX_SRC="artifacts/gdcef-linux-x86_64/cef_artifacts"
           WINDOWS_SRC="artifacts/gdcef-windows-x86_64/cef_artifacts"
-          mkdir -p "$CEF_DIR/linux" "$CEF_DIR/windows" "$CEF_DIR/locales"
+          mkdir -p "$CEF_DIR/linux" "$CEF_DIR/windows"
 
-          # Copy Linux binaries
+          # Copy Linux binaries (includes per-OS locales under linux/locales/)
           if [ -d "$LINUX_SRC/linux" ]; then
             cp -a "$LINUX_SRC/linux/"* "$CEF_DIR/linux/"
             # Ensure executable permissions on shared libraries and subprocess
@@ -182,11 +182,9 @@ jobs:
           if [ -f "$LINUX_SRC/gdcef.gdextension" ]; then
             cp "$LINUX_SRC/gdcef.gdextension" "$CEF_DIR/"
             cp "$LINUX_SRC/VERSION" "$CEF_DIR/"
-            cp -r "$LINUX_SRC/locales/"* "$CEF_DIR/locales/"
           elif [ -f "$WINDOWS_SRC/gdcef.gdextension" ]; then
             cp "$WINDOWS_SRC/gdcef.gdextension" "$CEF_DIR/"
             cp "$WINDOWS_SRC/VERSION" "$CEF_DIR/"
-            cp -r "$WINDOWS_SRC/locales/"* "$CEF_DIR/locales/"
           fi
 
           # Copy documentation and license
