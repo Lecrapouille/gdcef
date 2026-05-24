@@ -36,8 +36,8 @@ func _on_Timer_timeout():
 # ==============================================================================
 # CEF Callback when a page has ended to load with success.
 # ==============================================================================
-func _on_page_loaded(node):
-	print("The browser " + node.name + " has loaded " + node.get_url())
+func _on_page_loaded(http_code, node):
+	print("The browser " + node.name + " has loaded " + node.get_url() + " with HTTP code " + str(http_code))
 
 # ==============================================================================
 # Callback when a page has ended to load with failure.

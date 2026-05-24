@@ -132,7 +132,7 @@ Nodes are created by `gdCEF.create_browser` and are automatically destroyed when
 | Signal name | Arguments | Description |
 |-------------|-----------|-------------|
 | `on_browser_paint` | `browser`: GdBrowserView | Emitted when the browser content has been painted to the texture. |
-| `on_page_loaded` | `browser`: GdBrowserView | Emitted when a page has been successfully loaded. |
+| `on_page_loaded` | `browser`: GdBrowserView | Emitted when a page has been loaded. |
 | `on_page_failed_loading` | `err_code`: int, `err_msg`: String, `browser`: GdBrowserView | Emitted when a page failed to load with the error code and message. |
 | `on_download_updated` | `file`: String, `percentage`: int, `browser`: GdBrowserView | Emitted when a file download progress is updated. The path of the downloading file and the percentage of completion are given. |
 | `on_html_content_requested` | `html`: String, `browser`: GdBrowserView | Emitted in response to `request_html_content()` with the page HTML content. |
