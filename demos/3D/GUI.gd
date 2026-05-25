@@ -52,7 +52,9 @@ func _on_Next_pressed():
 # ==============================================================================
 # Callback when a page has ended to load: we print a message
 # ==============================================================================
-func _on_page_loaded(node):
+func _on_page_loaded(http_code, node):
+	if http_code != 200:
+		return
 	$Panel/Label.set_text(node.name + ": page " + node.get_url() + " loaded")
 
 # ==============================================================================

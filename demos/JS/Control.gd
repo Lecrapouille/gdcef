@@ -389,7 +389,10 @@ func _get_character_state() -> Dictionary:
 # ==============================================================================
 # CEF Callback when a page has ended to load with success.
 # ==============================================================================
-func _on_page_loaded(browser):
+func _on_page_loaded(http_code, browser):
+	if http_code != 200:
+		return
+	
 	print("The browser " + browser.name + " has loaded " + browser.get_url())
 
 	# Register methods for JS ==> Godot communication
