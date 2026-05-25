@@ -23,12 +23,13 @@ Thanks to contributors:
   - Routing audio stream
 - rpaciorek:
   - suppressing LD_LIBRARY_PATH by using rpath
+- rpaciorek:
+  - fixes on wine, fixes on loading page callbacks
 
 Thanks to users:
 
-- FaceDev
-  - DD for having be the first to use gdCEF in his game (metaverse).
-  - for his WTF youtube video using gdCEF :)
+- FaceDev for his WTF youtube video using gdCEF :)
+- DD for having be the first to use gdCEF in his game (metaverse).
 
 Thanks to IA:
 

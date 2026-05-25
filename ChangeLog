@@ -1,3 +1,9 @@
+Version 0.19.3:
+	* Update CEF to version 147
+	* Fix path of locales for Wine
+	* Fix loading event
+	* Use warn in logs
+
 Version 0.19.2:
 	* Fix Windows crash
 	* Add Windows logs
