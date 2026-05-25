@@ -306,6 +306,21 @@ private: // CEF interfaces
     private: // CefLoadHandler interfaces
 
         // ---------------------------------------------------------------------
+        //! \brief Called when the browser begins loading a frame. The |frame|
+        //! value will never be empty -- call the IsMain() method to check if
+        //! this frame is the main frame. Multiple frames may be loading at the
+        //! same time. Sub-frames may start or continue loading after the main
+        //! frame load has ended. This method may not be called for a particular
+        //! frame if the load request for that frame fails.
+        // ---------------------------------------------------------------------
+        virtual void OnLoadStart(CefRefPtr<CefBrowser> browser,
+                                 CefRefPtr<CefFrame> frame,
+                                 TransitionType transition_type) override
+        {
+            m_owner.onLoadStart(browser, frame);
+        }
+
+        // ---------------------------------------------------------------------
         //! \brief Called when the browser is done loading a frame. The |frame|
         //! value will never be empty -- call the IsMain() method to check if
         //! this frame is the main frame. Multiple frames may be loading at the
@@ -1024,6 +1039,12 @@ private:
                  const void* buffer,
                  int width,
                  int height);
+
+    // -------------------------------------------------------------------------
+    //! \brief Called by GdBrowserView::Impl::OnLoadStart
+    // -------------------------------------------------------------------------
+    void onLoadStart(CefRefPtr<CefBrowser> browser,
+                     CefRefPtr<CefFrame> frame);
 
     // -------------------------------------------------------------------------
     //! \brief Called by GdBrowserView::Impl::OnLoadEnd
