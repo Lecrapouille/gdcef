@@ -300,6 +300,14 @@ void GdBrowserView::_bind_methods()
                                    "ctrl", "alt"),
                          &GdBrowserView::mouseWheelHorizontal,
                          DEFVAL(false), DEFVAL(false), DEFVAL(false));
+    ClassDB::bind_method(D_METHOD("set_touch_down", "id", "x", "y"),
+                         &GdBrowserView::touchDown);
+    ClassDB::bind_method(D_METHOD("set_touch_move", "id", "x", "y"),
+                         &GdBrowserView::touchMove);
+    ClassDB::bind_method(D_METHOD("set_touch_up", "id", "x", "y"),
+                         &GdBrowserView::touchUp);
+    ClassDB::bind_method(D_METHOD("set_touch_cancel", "id"),
+                         &GdBrowserView::touchCancel);
     ClassDB::bind_method(D_METHOD("set_muted"), &GdBrowserView::mute);
     ClassDB::bind_method(D_METHOD("is_muted"), &GdBrowserView::muted);
     ClassDB::bind_method(D_METHOD("set_audio_stream", "audio"),
