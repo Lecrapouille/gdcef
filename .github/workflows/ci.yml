@@ -25,7 +25,6 @@ jobs:
       - name: Checkout GDCEF
         uses: actions/checkout@v4
         with:
-          ref: godot-4.x
           submodules: true
 
       # Install system packages
@@ -82,7 +81,6 @@ jobs:
       - name: Checkout GDCEF
         uses: actions/checkout@v4
         with:
-          ref: godot-4.x
           submodules: true
 
       # Setup Python Virtual Environment
