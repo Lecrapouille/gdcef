@@ -699,7 +699,7 @@ def check_compiler():
             fatal("MS C++ compiler is not working. "
                   "Please install Visual Studio (https://visualstudio.microsoft.com) "
                   "and open an x64 Native Tools Command Prompt for VS 2022 with Administrator privileges.")
-        if os.system(binfile) != 0:
+        if os.system(os.path.join(".", binfile)) != 0:
             os.remove(cppfile)
             fatal("MS C++ compiler failed to build a test program. "
                   "Please install Visual Studio (https://visualstudio.microsoft.com) "
