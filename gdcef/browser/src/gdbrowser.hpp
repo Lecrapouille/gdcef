@@ -818,6 +818,38 @@ public:
                               bool alt = false);
 
     // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Touch point pressed. Allows
+    //! multi-touch: each finger uses its own id (CEF tracks up to 16).
+    //! \param[in] id Unique id of the touch point (one id per finger).
+    //! \param[in] x The touch x position.
+    //! \param[in] y The touch y position.
+    // -------------------------------------------------------------------------
+    void touchDown(int id, int x, int y);
+
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Touch point moved.
+    //! \param[in] id Unique id of the touch point (one id per finger).
+    //! \param[in] x The touch x position.
+    //! \param[in] y The touch y position.
+    // -------------------------------------------------------------------------
+    void touchMove(int id, int x, int y);
+
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Touch point released.
+    //! \param[in] id Unique id of the touch point (one id per finger).
+    //! \param[in] x The touch x position.
+    //! \param[in] y The touch y position.
+    // -------------------------------------------------------------------------
+    void touchUp(int id, int x, int y);
+
+    // -------------------------------------------------------------------------
+    //! \brief Exported method to Godot script. Touch point cancelled (e.g.
+    //! palm rejection or focus loss).
+    //! \param[in] id Unique id of the touch point (one id per finger).
+    // -------------------------------------------------------------------------
+    void touchCancel(int id);
+
+    // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Set the new keyboard state (char
     //! typed ...).
     // -------------------------------------------------------------------------

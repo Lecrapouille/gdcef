@@ -252,6 +252,72 @@ void GdBrowserView::mouseWheelHorizontal(int wDelta, bool shift, bool ctrl,
 }
 
 // =============================================================================
+// Touch handling
+// =============================================================================
+
+//------------------------------------------------------------------------------
+void GdBrowserView::touchDown(int id, int x, int y)
+{
+    GET_HOST_OR_RETURN();
+
+    CefTouchEvent evt;
+    evt.id = id;
+    evt.x = float(x);
+    evt.y = float(y);
+    evt.type = CEF_TET_PRESSED;
+    evt.pointer_type = CEF_POINTER_TYPE_TOUCH;
+    evt.modifiers = 0;
+
+    host->SendTouchEvent(evt);
+}
+
+//------------------------------------------------------------------------------
+void GdBrowserView::touchMove(int id, int x, int y)
+{
+    GET_HOST_OR_RETURN();
+
+    CefTouchEvent evt;
+    evt.id = id;
+    evt.x = float(x);
+    evt.y = float(y);
+    evt.type = CEF_TET_MOVED;
+    evt.pointer_type = CEF_POINTER_TYPE_TOUCH;
+    evt.modifiers = 0;
+
+    host->SendTouchEvent(evt);
+}
+
+//------------------------------------------------------------------------------
+void GdBrowserView::touchUp(int id, int x, int y)
+{
+    GET_HOST_OR_RETURN();
+
+    CefTouchEvent evt;
+    evt.id = id;
+    evt.x = float(x);
+    evt.y = float(y);
+    evt.type = CEF_TET_RELEASED;
+    evt.pointer_type = CEF_POINTER_TYPE_TOUCH;
+    evt.modifiers = 0;
+
+    host->SendTouchEvent(evt);
+}
+
+//------------------------------------------------------------------------------
+void GdBrowserView::touchCancel(int id)
+{
+    GET_HOST_OR_RETURN();
+
+    CefTouchEvent evt;
+    evt.id = id;
+    evt.type = CEF_TET_CANCELLED;
+    evt.pointer_type = CEF_POINTER_TYPE_TOUCH;
+    evt.modifiers = 0;
+
+    host->SendTouchEvent(evt);
+}
+
+// =============================================================================
 // Keyboard handling
 // =============================================================================
 
