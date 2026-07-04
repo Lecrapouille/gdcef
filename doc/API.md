@@ -56,8 +56,33 @@ Since Godot `_init` does not accept arguments, you must use the `initialize` fun
 | exception_stack_size | 5 | Size of the exception stack. |
 | locale | "en-US" | Browser language setting. |
 | enable_media_stream | false | Controls access to camera and microphone. |
+| use_gpu | true | Use the system GPU for Chromium rendering via ANGLE. When `false`, falls back to SwiftShader software rendering (CPU-only, slower but more compatible). See [GPU rendering](#gpu-rendering). |
 
 For additional settings, refer to [cef_types.h](../thirdparty/cef_binary/include/internal/cef_types.h).
+
+#### GPU rendering
+
+gdCEF renders web pages off-screen (OSR). Chromium still needs an internal graphics backend for rasterization, compositing, and WebGL. The `use_gpu` setting selects that backend at startup by appending command-line switches in `OnBeforeCommandLineProcessing`:
+
+| `use_gpu` | Chromium switches | Effect |
+|-----------|-------------------|--------|
+| `true` (default) | `use-angle=default`, `use-gl=angle` | Native GPU via ANGLE. Much lower input-to-photon latency, faster first paint, and WebGL runs on the GPU. Recommended for interactive UIs and touch kiosks. |
+| `false` | `use-angle=swiftshader`, `use-gl=angle` | SwiftShader software renderer. All rasterization and WebGL emulation run on the CPU. Slower, but avoids GPU-related crashes or black screens on some systems. |
+
+This setting must be passed to `initialize()` before CEF starts; it cannot be changed later.
+
+```gdscript
+# Default: GPU enabled
+$CEF.initialize({"locale": "en-US"})
+
+# Explicit GPU (same as default)
+$CEF.initialize({"use_gpu": true, "locale": "en-US"})
+
+# Software fallback for problematic hardware
+$CEF.initialize({"use_gpu": false, "locale": "en-US"})
+```
+
+If you see a black browser texture or instability after enabling the GPU, set `use_gpu` to `false`. For background on GPU rendering in OSR mode, see the [CEF forum thread](https://magpcss.org/ceforum/viewtopic.php?f=17&t=18970).
 
 ## API for `GdBrowserView` nodes
 
