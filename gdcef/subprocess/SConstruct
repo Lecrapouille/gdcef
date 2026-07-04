@@ -101,8 +101,7 @@ target_path = env['build_path']
 target_binary = 'gdCefRenderProcess'
 sources = ['src/render_process.cpp']
 if platform == 'macos':
-    # FIXME sources += ['src/main_macos.mm']
-    sys.exit('MacOS is not implemented, currently we are taking the cefsimple example')
+    sources += ['src/main_unix.cpp']
 elif platform == 'linux':
     sources += ['src/main_unix.cpp']
 elif platform == 'windows':
@@ -188,7 +187,10 @@ cef_folder = '../../thirdparty/cef_binary'
 env.Append(CPPPATH = [cef_folder, cef_folder + '/include'])
 
 # CEF libraries that are linked against our application
-libcef = 'libcef' if platform != 'macos' else 'libcef_sandbox'
+libcef = 'libcef'
+if platform == 'macos':
+    env.Append(LIBS=File(cef_folder + '/' + cef_compile_mode + '/cef_sandbox.a'))
+    libcef = ''
 env.Append(LIBS = [libcef, 'libcef_dll_wrapper'],
            LIBPATH = [cef_folder + '/' + cef_compile_mode,
                       cef_folder + '/build',

@@ -591,6 +591,37 @@ def copy_cef_assets():
 
 ###############################################################################
 #
+# Replace cefsimple Helper executables with gdCefRenderProcess on macOS
+#
+###############################################################################
+def install_gdcef_render_process_macos():
+    render_process = os.path.join(CEF_ARTIFACTS_OS_PATH, "gdCefRenderProcess")
+    if not os.path.isfile(render_process):
+        fatal("gdCefRenderProcess binary not found at " + render_process)
+
+    app_path = os.path.join(CEF_ARTIFACTS_OS_PATH, "cefsimple.app")
+    frameworks = os.path.join(app_path, "Contents", "Frameworks")
+    if not os.path.isdir(frameworks):
+        fatal("cefsimple.app bundle is missing Contents/Frameworks at " + frameworks)
+
+    helper_count = 0
+    for helper_app in glob.glob(os.path.join(frameworks, "* Helper*.app")):
+        macos_dir = os.path.join(helper_app, "Contents", "MacOS")
+        if not os.path.isdir(macos_dir):
+            continue
+        for helper_exe in glob.glob(os.path.join(macos_dir, "*")):
+            if not os.path.isfile(helper_exe):
+                continue
+            info("Installing gdCefRenderProcess into " + helper_exe)
+            shutil.copy2(render_process, helper_exe)
+            os.chmod(helper_exe, 0o755)
+            helper_count += 1
+
+    if helper_count == 0:
+        fatal("No cefsimple Helper executables found under " + frameworks)
+
+###############################################################################
+#
 # Download the Godot-cpp wrapper needed for gdnative CEF modules
 #
 ###############################################################################
@@ -851,9 +882,9 @@ if __name__ == "__main__":
     copy_cef_assets()
     create_version_file()
     compile_gdnative_cef(GDCEF_PATH)
-    # On macOS: use cefsimple.app instead of gdCefSubProcess
-    if OSTYPE != "Darwin":
-        compile_gdnative_cef(GDCEF_PROCESSES_PATH)
+    compile_gdnative_cef(GDCEF_PROCESSES_PATH)
+    if OSTYPE == "Darwin":
+        install_gdcef_render_process_macos()
     create_gdextension_file()
     clone_github_projects()
     copy_gdcef_artifacts([GDCEF_EXAMPLES_PATH, GDCEF_TESTS_PATH])

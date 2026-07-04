@@ -25,6 +25,12 @@
 
 #include "render_process.hpp"
 
+#ifdef __APPLE__
+#    if defined(CEF_USE_SANDBOX)
+#        include "include/cef_sandbox_mac.h"
+#    endif
+#endif
+
 #ifdef _WIN32
 #    error "This file is only for Linux or macOS"
 #endif
@@ -44,10 +50,17 @@ int main(int argc, char* argv[])
     }
 
 #ifdef __APPLE__
+#    if defined(CEF_USE_SANDBOX)
+    // Initialize the macOS sandbox for this helper process.
+    CefScopedSandboxContext sandbox_context;
+    if (!sandbox_context.Initialize(argc, argv))
+        return 1;
+#    endif
+
     // Load the CEF framework library at runtime instead of linking directly
     // as required by the macOS sandbox implementation.
     CefScopedLibraryLoader library_loader;
-    if (!library_loader.LoadInMain())
+    if (!library_loader.LoadInHelper())
         return 1;
 #endif
 
