@@ -387,6 +387,9 @@ void GdBrowserView::_bind_methods()
     ADD_SIGNAL(MethodInfo("on_update_drag_cursor",
                           PropertyInfo(Variant::INT, "operation"),
                           PropertyInfo(Variant::OBJECT, "browser")));
+    ADD_SIGNAL(MethodInfo("on_cursor_changed",
+                          PropertyInfo(Variant::INT, "cursor_shape"),
+                          PropertyInfo(Variant::OBJECT, "browser")));
 
     // Properties
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT,
@@ -1907,9 +1910,29 @@ void GdBrowserView::onCursorChange(CefRefPtr<CefBrowser> browser,
         // Convert DisplayServer::CursorShape to Input::CursorShape (they have the same values)
         godot::Input::CursorShape input_cursor = static_cast<godot::Input::CursorShape>(godot_cursor);
 
-        // Use Input::set_default_cursor_shape instead of DisplayServer::cursor_set_shape
-        // This integrates better with Godot's UI system
+        // Input::set_default_cursor_shape() only affects areas of the screen
+        // NOT covered by a Control node. Since the CEF texture is usually
+        // displayed inside a Control (e.g. TextureRect), that Control's own
+        // "mouse_default_cursor_shape" wins on every mouse motion event and
+        // silently overrides this call, making the cursor appear to never
+        // change (or to flicker for a single frame). Kept here as a fallback
+        // for setups where the texture is NOT displayed inside a Control
+        // (e.g. a 3D mesh with no overlapping UI).
         godot::Input::get_singleton()->set_default_cursor_shape(input_cursor);
+
+        // Apply the shape directly on the Control displaying our texture (set
+        // by GdCEF::createBrowser() via setDisplayControl()). This is what
+        // Godot actually uses while the mouse hovers that Control, so this is
+        // the fix for the issue above: no GDScript wiring required.
+        if (m_display_control != nullptr)
+        {
+            m_display_control->set_default_cursor_shape(
+                static_cast<godot::Control::CursorShape>(int(godot_cursor)));
+        }
+
+        // Also notify GDScript, in case the application wants to react to
+        // the cursor change itself (e.g. custom cursor rendering).
+        emit_signal("on_cursor_changed", int(godot_cursor), this);
     }
 }
 

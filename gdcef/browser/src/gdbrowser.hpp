@@ -52,6 +52,7 @@
 
 // Godot 4
 #include <godot_cpp/classes/audio_stream_generator_playback.hpp>
+#include <godot_cpp/classes/control.hpp>
 #include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/gd_script.hpp>
 #include <godot_cpp/classes/global_constants.hpp>
@@ -691,6 +692,24 @@ public:
     }
 
     // -------------------------------------------------------------------------
+    //! \brief Set the Control node (typically the TextureRect) displaying
+    //! this browser's texture, so the mouse cursor requested by the page can
+    //! be applied on it directly (see onCursorChange()). Called by
+    //! GdCEF::createBrowser(); you should not need to call this yourself.
+    //!
+    //! \note If several browsers (e.g. tabs) share the same Control (only
+    //! one visible/receiving mouse events at a time), the last browser to
+    //! change its cursor wins on that Control. This is harmless as long as
+    //! only the browser currently receiving mouse events can trigger a
+    //! cursor change, which is the case if your application only forwards
+    //! mouse events (setMouseMoved()) to the currently displayed browser.
+    // -------------------------------------------------------------------------
+    inline void setDisplayControl(godot::Control* control)
+    {
+        m_display_control = control;
+    }
+
+    // -------------------------------------------------------------------------
     //! \brief Exported method to Godot script. Return true if the browser can
     //! navigate to the previous page.
     // -------------------------------------------------------------------------
@@ -1290,6 +1309,13 @@ private:
 
     //! \brief Current cursor shape (stored to reapply after Godot resets it)
     godot::DisplayServer::CursorShape m_current_cursor = godot::DisplayServer::CURSOR_ARROW;
+
+    //! \brief The Control node displaying this browser's texture (usually a
+    //! TextureRect, set by GdCEF::createBrowser()). Used by onCursorChange()
+    //! to apply the cursor shape directly on it, since this Control's own
+    //! "mouse_default_cursor_shape" is what Godot actually displays whenever
+    //! the mouse hovers it. Not owned: assumed to outlive this browser.
+    godot::Control* m_display_control = nullptr;
 };
 
 #if !defined(_WIN32)

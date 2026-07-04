@@ -609,6 +609,11 @@ GdBrowserView* GdCEF::createBrowser(godot::String const& url,
     browser->resize(texture_rect->get_size());
     texture_rect->set_texture(browser->m_texture);
 
+    // Remember the Control displaying our texture so the browser can apply
+    // the mouse cursor shape requested by the page directly on it (see
+    // GdBrowserView::onCursorChange()).
+    browser->setDisplayControl(texture_rect);
+
     // Attach the new Godot node as child node (sadly Godot does not show
     // created nodes at run time)
     add_child(browser);

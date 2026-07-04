@@ -163,6 +163,7 @@ Nodes are created by `gdCEF.create_browser` and are automatically destroyed when
 | `on_html_content_requested` | `html`: String, `browser`: GdBrowserView | Emitted in response to `request_html_content()` with the page HTML content. |
 | `on_page_saved` | `path`: String, `success`: bool, `browser`: GdBrowserView | Emitted in response to `save_page()` with the file path and success status. |
 | `on_pdf_saved` | `path`: String, `success`: bool, `browser`: GdBrowserView | Emitted in response to `save_page_as_pdf()` with the file path and success status. |
+| `on_cursor_changed` | `cursor_shape`: int (`DisplayServer.CursorShape`), `browser`: GdBrowserView | Emitted when the page wants to change the mouse cursor (link hover, text selection, resize handles, etc.). The `Control` passed to `create_browser()` (e.g. `TextureRect`) automatically gets its `mouse_default_cursor_shape` updated by gdCEF itself, so you usually don't need to connect this signal at all. It is only provided in case your application wants to react to cursor changes itself (e.g. custom cursor rendering). Note: a plain `Input.set_default_cursor_shape()` call from your own code would not be enough on its own, since a `Control` covering the browser area always wins over it on every mouse motion event. |
 
 ### Browser properties
 
