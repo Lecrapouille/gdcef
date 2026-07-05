@@ -7,6 +7,9 @@ Initial authors:
 
 Thanks to contributors:
 
+- BarshonClintonSarkar:
+  - multi-touch forwarding
+  - Fix Windows compilation.
 - BlayTheNinth:
   - initial portage to Godot 4.2.
 - eliopark-nsusla:

@@ -1,3 +1,10 @@
+Version 0.19.4:
+	* Update CEF to version 149
+	* Fix MS C++ compiler detection
+	* Add multi-touch forwarding via CefBrowserHost::SendTouchEvent
+	* Fix mouse cursor change
+	* Update doc
+
 Version 0.19.3:
 	* Update CEF to version 147
 	* Fix path of locales for Wine

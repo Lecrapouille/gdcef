@@ -1,6 +1,6 @@
 # 🌐 gdCEF - Chromium Embedded Framework for Godot 4
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Godot 4.2+](https://img.shields.io/badge/Godot-4.2+-blue.svg)](https://godotengine.org/) [![Version](https://img.shields.io/badge/version-0.19.3-green.svg)](https://github.com/Lecrapouille/gdcef/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Godot 4.2+](https://img.shields.io/badge/Godot-4.2+-blue.svg)](https://godotengine.org/) [![Version](https://img.shields.io/badge/version-0.19.4-green.svg)](https://github.com/Lecrapouille/gdcef/releases)
 
 Integrate a fully functional **web browser** into your Godot 4.2+ games for Linux, Windows (and for macOS, we need contributors!). This GDExtension wraps the [Chromium Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home) (CEF) API, allowing you to display web content in 2D and 3D scenes using GDScript.
 
