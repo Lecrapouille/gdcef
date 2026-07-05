@@ -24,7 +24,14 @@
 ## SOFTWARE.
 ###############################################################################
 
-import os, sys
+import os
+import sys
+
+# Import shared compiler warning flags.
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), '..')))
+from scons_flags import (CLANG_EXTRA_WARNING_ENABLE, GCC_ONLY_CXX_WARNING_DISABLE,
+                         MSVC_CXX_WARNING_DISABLE, UNIX_CXX_WARNING_DISABLE,
+                         UNIX_CXX_WARNING_ENABLE)
 
 # We let SCons build its default ENV as it includes OS-specific things which we don't
 # want to have to pull in manually.
@@ -154,29 +161,16 @@ elif platform == 'windows':
 
 # Unix compilation flags
 if platform == 'linux' or platform == 'macos':
-    # gcc/clang compilation flags
-    env.Append(CXXFLAGS=['-Wall', '-Wextra', '-Wuninitialized', '-Wundef',
-                         '-Wunused', '-Wunused-result', '-Wunused-parameter',
-                         '-Wtype-limits', '-Wcast-align', '-Wcast-qual',
-                         '-Wconversion', '-Wfloat-equal', '-Wpointer-arith',
-                         '-Wswitch-enum', '-Wpacked', '-Wold-style-cast',
-                         '-Wdeprecated', '-Wvariadic-macros', '-Wvla',
-                         '-Wsign-conversion',
-                         # Disable warnings
-                         '-Wno-missing-field-initializers'])
+    warning_disable = list(UNIX_CXX_WARNING_DISABLE)
+    if 'clang' not in env.get('CXX', 'g++'):
+        warning_disable.extend(GCC_ONLY_CXX_WARNING_DISABLE)
+    env.Append(CXXFLAGS=UNIX_CXX_WARNING_ENABLE + warning_disable)
 
-    # clang specific flags
     if env['use_llvm']:
-        env.Append(CXXFLAGS=['-Wused-but-marked-unused', '-Wzero-length-array',
-                             '-Wunused-member-function', '-Wvector-conversion',
-                             '-Wunused-getter-return-value', '-Wthread-safety',
-                             '-Wunneeded-member-function', '-Wshadow-all',
-                             '-Wunused-exception-parameter',
-                             '-Wunneeded-internal-declaration',
-                             '-Wunreachable-code-aggressive',
-                             '-Wsuper-class-method-mismatch',
-                             '-Werror=implicit-function-declaration',
-                             '-Wtautological-compare'])
+        env.Append(CXXFLAGS=CLANG_EXTRA_WARNING_ENABLE)
+
+elif platform == 'windows':
+    env.Append(CXXFLAGS=MSVC_CXX_WARNING_DISABLE)
 
 # Godot library that is linked against our library
 libgodot = 'libgodot-cpp.' + platform + '.template_' + compile_mode + '.' + archi
