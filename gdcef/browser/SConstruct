@@ -208,7 +208,7 @@ env.Append(CPPPATH = [cef_folder, cef_folder + '/include'])
 # CEF libraries that are linked against our library
 libcef = 'libcef'
 if platform == 'macos':
-    env.Append(LIBS=File(cef_folder + '/' + cef_compile_mode + '/cef_sandbox.a'))
+    # CEF M138+: sandbox is loaded at runtime from libcef_sandbox.dylib in the app bundle.
     libcef = ''
 env.Append(LIBS = [libcef, 'libcef_dll_wrapper'],
            LIBPATH = [cef_folder + '/' + cef_compile_mode,
