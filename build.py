@@ -80,6 +80,9 @@ MODULE_TARGET = COMPILATION_MODE                          # "release" or "debug"
 # Note: OpenMP is not installed by default on macOS :(
 CEF_USE_CPU_PARALLELISM = "no"                            # Or "yes"
 
+# macOS subprocess app bundle name (renamed from CEF's cefsimple.app after build).
+MACOS_SUBPROCESS_APP = "gdCefRenderProcess.app"
+
 # Minimum CMake version required to build CEF
 CMAKE_MIN_VERSION = "3.19"
 
@@ -583,7 +586,8 @@ def copy_cef_assets():
                 copyfile(f, CEF_ARTIFACTS_OS_PATH)
     elif OSTYPE == "Darwin":
         S = os.path.join(THIRDPARTY_CEF_PATH, "build", "tests", "cefsimple", CEF_TARGET, "cefsimple.app")
-        shutil.copytree(S, CEF_ARTIFACTS_OS_PATH + "/cefsimple.app")
+        macos_app_path = os.path.join(CEF_ARTIFACTS_OS_PATH, MACOS_SUBPROCESS_APP)
+        shutil.copytree(S, macos_app_path)
         for f in glob.glob(os.path.join(S, "locales/*")):
             copyfile(f, locales)
     else:
@@ -591,7 +595,7 @@ def copy_cef_assets():
 
 ###############################################################################
 #
-# Replace cefsimple Helper executables with gdCefRenderProcess on macOS
+# Install gdCefRenderProcess into the macOS app bundle Helper executables
 #
 ###############################################################################
 def install_gdcef_render_process_macos():
@@ -599,10 +603,10 @@ def install_gdcef_render_process_macos():
     if not os.path.isfile(render_process):
         fatal("gdCefRenderProcess binary not found at " + render_process)
 
-    app_path = os.path.join(CEF_ARTIFACTS_OS_PATH, "cefsimple.app")
+    app_path = os.path.join(CEF_ARTIFACTS_OS_PATH, MACOS_SUBPROCESS_APP)
     frameworks = os.path.join(app_path, "Contents", "Frameworks")
     if not os.path.isdir(frameworks):
-        fatal("cefsimple.app bundle is missing Contents/Frameworks at " + frameworks)
+        fatal(MACOS_SUBPROCESS_APP + " bundle is missing Contents/Frameworks at " + frameworks)
 
     helper_count = 0
     for helper_app in glob.glob(os.path.join(frameworks, "* Helper*.app")):
@@ -618,7 +622,10 @@ def install_gdcef_render_process_macos():
             helper_count += 1
 
     if helper_count == 0:
-        fatal("No cefsimple Helper executables found under " + frameworks)
+        fatal("No Helper executables found under " + frameworks)
+
+    os.remove(render_process)
+    info("Removed standalone gdCefRenderProcess (subprocess runs from " + MACOS_SUBPROCESS_APP + ")")
 
 ###############################################################################
 #

@@ -27,6 +27,7 @@
 
 #include "gdbrowser.hpp"
 #include "gdcef.hpp"
+#include "helper_files.hpp"
 #include "helper_log.hpp"
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
@@ -48,20 +49,13 @@ void initialize_gdcef_module(ModuleInitializationLevel p_level)
     ClassDB::register_class<GdBrowserView>();
 
 #ifdef __APPLE__
-    String cef_artifacts_folder;
-    if (OS::get_singleton()->has_feature("editor"))
-        cef_artifacts_folder = ProjectSettings::get_singleton()->globalize_path(
-            "res://" + String(CEF_ARTIFACTS_FOLDER));
-    else
-        cef_artifacts_folder =
-            OS::get_singleton()->get_executable_path().get_base_dir().path_join(
-                String(CEF_ARTIFACTS_FOLDER));
-
-    // Load the CEF framework library.
-    String framework_path = cef_artifacts_folder.path_join(
-        "cefsimple.app/Contents/Frameworks/Chromium Embedded "
-        "Framework.framework/Chromium Embedded Framework");
-    std::string framework_path_std = std::string(framework_path.utf8());
+    // Same folder as libgdcef.dylib (cef_artifacts/macos at runtime).
+    fs::path cef_artifacts_folder = get_module_directory();
+    fs::path framework_path =
+        cef_artifacts_folder /
+        "gdCefRenderProcess.app/Contents/Frameworks/Chromium Embedded "
+        "Framework.framework/Chromium Embedded Framework";
+    std::string framework_path_std = framework_path.string();
     if (!cef_load_library(framework_path_std.c_str()))
     {
         GDCEF_DEBUG("Failed to load the CEF framework: " + framework_path_std);

@@ -118,13 +118,68 @@ jobs:
           path: cef_artifacts/
 
   # ============================================================================
+  # macOS Build Job
+  # ============================================================================
+  build-macos:
+    name: Build on macOS
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    steps:
+      # Git checkout the gdCEF repository
+      - name: Checkout GDCEF
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      # build.py requires ninja on macOS
+      - name: Install build dependencies
+        run: brew install ninja
+
+      # Setup Python Virtual Environment
+      - name: Setup Python Virtual Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10.7'
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
+
+      # Install Python dependencies
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Compile GDCEF
+      - name: Compile GDCEF
+        run: python3 build.py
+
+      # Check the build
+      - name: Check build
+        run: |
+          ls cef_artifacts/macos/gdCefRenderProcess.app
+          ls cef_artifacts/macos/libgdcef.dylib
+          ls cef_artifacts/gdcef.gdextension
+          ls cef_artifacts/macos/locales/
+          test ! -f cef_artifacts/macos/gdCefRenderProcess
+          ls cef_artifacts/macos/gdCefRenderProcess.app/Contents/Frameworks/*\ Helper*.app/Contents/MacOS/*
+
+      # Upload artifact
+      - name: Upload macOS artifacts
+        uses: pyTooling/upload-artifact@v6
+        with:
+          name: gdcef-macos-arm64
+          path: cef_artifacts/
+
+  # ============================================================================
   # Release Packaging Job (only for tags or manual trigger)
   # ============================================================================
-  # Creates a combined zip with Linux + Windows artifacts for GitHub Releases
+  # Creates a combined zip with Linux + Windows + macOS artifacts for GitHub Releases
   # ============================================================================
   package:
     name: Package Release
-    needs: [build-linux, build-windows]
+    needs: [build-linux, build-windows, build-macos]
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
     permissions:
@@ -155,7 +210,8 @@ jobs:
           CEF_DIR="$RELEASE_DIR/cef_artifacts"
           LINUX_SRC="artifacts/gdcef-linux-x86_64/cef_artifacts"
           WINDOWS_SRC="artifacts/gdcef-windows-x86_64/cef_artifacts"
-          mkdir -p "$CEF_DIR/linux" "$CEF_DIR/windows"
+          MACOS_SRC="artifacts/gdcef-macos-arm64/cef_artifacts"
+          mkdir -p "$CEF_DIR/linux" "$CEF_DIR/windows" "$CEF_DIR/macos"
 
           # Copy Linux binaries (includes per-OS locales under linux/locales/)
           if [ -d "$LINUX_SRC/linux" ]; then
@@ -174,6 +230,15 @@ jobs:
             echo "✓ Windows binaries copied"
           else
             echo "⚠ Windows artifact directory not found at $WINDOWS_SRC/windows"
+          fi
+
+          # Copy macOS binaries (includes gdCefRenderProcess.app bundle and per-OS locales)
+          if [ -d "$MACOS_SRC/macos" ]; then
+            cp -a "$MACOS_SRC/macos/"* "$CEF_DIR/macos/"
+            find "$CEF_DIR/macos/gdCefRenderProcess.app" -path "*/Contents/MacOS/*" -type f -exec chmod +x {} \;
+            echo "✓ macOS binaries copied"
+          else
+            echo "⚠ macOS artifact directory not found at $MACOS_SRC/macos"
           fi
 
           # Copy shared files from Linux (or Windows)

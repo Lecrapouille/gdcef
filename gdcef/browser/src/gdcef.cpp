@@ -57,7 +57,7 @@
         "libcef.so", "libgdcef.so", "libvulkan.so.1", "libvk_swiftshader.so", \
             "libGLESv2.so", "libEGL.so"
 #elif defined(__APPLE__)
-#    define SUBPROCESS_NAME "cefsimple.app"
+#    define SUBPROCESS_NAME "gdCefRenderProcess.app"
 #    define NEEDED_LIBRARIES "libgdcef.dylib"
 #else
 #    error \
