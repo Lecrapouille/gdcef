@@ -313,12 +313,12 @@ func create_browser(url):
 # Search the desired by its name. Return the browser as Godot node or null if
 # not found.
 # ==============================================================================
-func get_browser(name):
+func get_browser(browser_name):
 	if not $CEF.is_alive():
 		return null
-	var browser = $CEF.get_node(name)
+	var browser = $CEF.get_node(browser_name)
 	if browser == null:
-		$Panel/VBox/BottomBar/Info.set_text("Unknown browser with name '" + name + "'")
+		$Panel/VBox/BottomBar/Info.set_text("Unknown browser with name '" + browser_name + "'")
 		return null
 	return browser
 
@@ -611,10 +611,6 @@ func _ready():
 		return
 	print("CEF version: " + $CEF.get_full_version())
 	print("You are listening CEF native audio")
-
-	# Logging from the main CEF instance
-	$CEF.log_info("This is an example info")
-	$CEF.log_warning("This is an example warning")
 
 	# Wait one frame for the texture rect to get its size
 	current_browser = await create_browser(HOME_PAGE)

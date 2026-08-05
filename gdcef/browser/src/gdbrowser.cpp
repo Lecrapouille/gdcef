@@ -1223,10 +1223,10 @@ bool GdBrowserView::registerGodotMethod(godot::Object* object,
 godot::Variant GdBrowserView::JsonToGodot(const godot::Dictionary& json)
 {
     // Special case for binary data encoded in base64
-    if (json.has("type") && json["type"] == "binary" && json.has("format") &&
-        json["format"] == "base64" && json.has("data") && json.has("size"))
+    if (json.has("type") && godot::String(json["type"]) == "binary" && json.has("format") &&
+        godot::String(json["format"]) == "base64" && json.has("data") && json.has("size"))
     {
-        godot::String base64_data = json["data"];
+        godot::String base64_data = godot::String(json["data"]);
         int expected_size = json["size"];
 
         // Decode base64 to binary data

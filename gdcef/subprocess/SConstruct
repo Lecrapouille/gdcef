@@ -126,7 +126,7 @@ if platform == 'macos':
         env.Append(CCFLAGS=['-g', '-O3'])
         env.Append(CPPDEFINES=['NDEBUG'])
     env.Append(CCFLAGS=['-fPIC'])
-    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-DWRAPPING_CEF_SHARED', '-D__STDC_CONSTANT_MACROS',
+    env.Append(CXXFLAGS=['-UCEF_USE_SANDBOX', '-DWRAPPING_CEF_SHARED', '-D__STDC_CONSTANT_MACROS',
                          '-D__STDC_FORMAT_MACROS'])
 
 elif platform == 'linux':
@@ -139,7 +139,7 @@ elif platform == 'linux':
         env.Append(CCFLAGS=['-g', '-O3'])
         env.Append(CPPDEFINES=['NDEBUG'])
     env.Append(CCFLAGS=['-fPIC'])
-    env.Append(CXXFLAGS=['-DCEF_USE_SANDBOX', '-D_FILE_OFFSET_BITS=64',
+    env.Append(CXXFLAGS=['-UCEF_USE_SANDBOX', '-D_FILE_OFFSET_BITS=64',
                          '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
 
 elif platform == 'windows':

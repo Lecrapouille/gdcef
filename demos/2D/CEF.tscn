@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3 uid="uid://cg0dpkfqho8xs"]
+[gd_scene format=3 uid="uid://cg0dpkfqho8xs"]
 
-[ext_resource type="Script" path="res://CEF.gd" id="1"]
+[ext_resource type="Script" uid="uid://5hyrfqd2oqui" path="res://CEF.gd" id="1"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
 bg_color = Color(0.12, 0.12, 0.14, 1)
@@ -9,7 +9,7 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
-[node name="GUI" type="Control"]
+[node name="GUI" type="Control" unique_id=1513449362]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -19,9 +19,9 @@ grow_vertical = 2
 mouse_filter = 1
 script = ExtResource("1")
 
-[node name="CEF" type="GdCEF" parent="."]
+[node name="CEF" type="GdCEF" parent="." unique_id=1406190802]
 
-[node name="Panel" type="Panel" parent="."]
+[node name="Panel" type="Panel" parent="." unique_id=247604075]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -30,7 +30,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="VBox" type="VBoxContainer" parent="Panel"]
+[node name="VBox" type="VBoxContainer" parent="Panel" unique_id=485320272]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -44,89 +44,89 @@ grow_vertical = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 6
 
-[node name="TopBar" type="HBoxContainer" parent="Panel/VBox"]
+[node name="TopBar" type="HBoxContainer" parent="Panel/VBox" unique_id=838852482]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="NavButtons" type="HBoxContainer" parent="Panel/VBox/TopBar"]
+[node name="NavButtons" type="HBoxContainer" parent="Panel/VBox/TopBar" unique_id=541134555]
 layout_mode = 2
 theme_override_constants/separation = 2
 
-[node name="New" type="Button" parent="Panel/VBox/TopBar/NavButtons"]
+[node name="New" type="Button" parent="Panel/VBox/TopBar/NavButtons" unique_id=1507589306]
 custom_minimum_size = Vector2(36, 32)
 layout_mode = 2
 tooltip_text = "Open new tab"
 text = "+"
 
-[node name="Prev" type="Button" parent="Panel/VBox/TopBar/NavButtons"]
+[node name="Prev" type="Button" parent="Panel/VBox/TopBar/NavButtons" unique_id=1853763862]
 custom_minimum_size = Vector2(36, 32)
 layout_mode = 2
 tooltip_text = "Go back"
 text = "◀"
 
-[node name="Next" type="Button" parent="Panel/VBox/TopBar/NavButtons"]
+[node name="Next" type="Button" parent="Panel/VBox/TopBar/NavButtons" unique_id=195934821]
 custom_minimum_size = Vector2(36, 32)
 layout_mode = 2
 tooltip_text = "Go forward"
 text = "▶"
 
-[node name="Refresh" type="Button" parent="Panel/VBox/TopBar/NavButtons"]
+[node name="Refresh" type="Button" parent="Panel/VBox/TopBar/NavButtons" unique_id=16116925]
 custom_minimum_size = Vector2(36, 32)
 layout_mode = 2
 tooltip_text = "Reload page"
 text = "↻"
 
-[node name="Home" type="Button" parent="Panel/VBox/TopBar/NavButtons"]
+[node name="Home" type="Button" parent="Panel/VBox/TopBar/NavButtons" unique_id=1803997907]
 custom_minimum_size = Vector2(36, 32)
 layout_mode = 2
 tooltip_text = "Go to homepage"
 text = "⌂"
 
-[node name="Save" type="Button" parent="Panel/VBox/TopBar/NavButtons"]
+[node name="Save" type="Button" parent="Panel/VBox/TopBar/NavButtons" unique_id=2141991062]
 custom_minimum_size = Vector2(36, 32)
 layout_mode = 2
 tooltip_text = "Save page as HTML (Ctrl+Shift+S)"
 text = "Save"
 
-[node name="SavePdf" type="Button" parent="Panel/VBox/TopBar/NavButtons"]
+[node name="SavePdf" type="Button" parent="Panel/VBox/TopBar/NavButtons" unique_id=813678971]
 custom_minimum_size = Vector2(36, 32)
 layout_mode = 2
 tooltip_text = "Save as PDF with images (Ctrl+S)"
 text = "PDF"
 
-[node name="Separator1" type="VSeparator" parent="Panel/VBox/TopBar"]
+[node name="Separator1" type="VSeparator" parent="Panel/VBox/TopBar" unique_id=1541375125]
 layout_mode = 2
 
-[node name="URLContainer" type="HBoxContainer" parent="Panel/VBox/TopBar"]
+[node name="URLContainer" type="HBoxContainer" parent="Panel/VBox/TopBar" unique_id=1321191447]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 0
 
-[node name="TextEdit" type="LineEdit" parent="Panel/VBox/TopBar/URLContainer"]
+[node name="TextEdit" type="LineEdit" parent="Panel/VBox/TopBar/URLContainer" unique_id=1995936157]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Enter URL..."
 caret_blink = true
 
-[node name="Go" type="Button" parent="Panel/VBox/TopBar/URLContainer"]
+[node name="Go" type="Button" parent="Panel/VBox/TopBar/URLContainer" unique_id=241581280]
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
 tooltip_text = "Navigate to URL"
 text = "Go"
 
-[node name="Separator2" type="VSeparator" parent="Panel/VBox/TopBar"]
+[node name="Separator2" type="VSeparator" parent="Panel/VBox/TopBar" unique_id=599446836]
 layout_mode = 2
 
-[node name="TabLabel" type="Label" parent="Panel/VBox/TopBar"]
+[node name="TabLabel" type="Label" parent="Panel/VBox/TopBar" unique_id=1746587210]
 layout_mode = 2
 text = "Tab:"
 
-[node name="BrowserList" type="OptionButton" parent="Panel/VBox/TopBar"]
+[node name="BrowserList" type="OptionButton" parent="Panel/VBox/TopBar" unique_id=1576602892]
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 tooltip_text = "Select tab"
 
-[node name="TextureRect" type="TextureRect" parent="Panel/VBox"]
+[node name="TextureRect" type="TextureRect" parent="Panel/VBox" unique_id=1492030267]
 layout_mode = 2
 size_flags_vertical = 3
 focus_mode = 2
@@ -134,79 +134,79 @@ mouse_filter = 0
 expand_mode = 3
 stretch_mode = 3
 
-[node name="BottomBar" type="HBoxContainer" parent="Panel/VBox"]
+[node name="BottomBar" type="HBoxContainer" parent="Panel/VBox" unique_id=1878231235]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="ToolButtons" type="HBoxContainer" parent="Panel/VBox/BottomBar"]
+[node name="ToolButtons" type="HBoxContainer" parent="Panel/VBox/BottomBar" unique_id=594532012]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="BGColor" type="Button" parent="Panel/VBox/BottomBar/ToolButtons"]
+[node name="BGColor" type="Button" parent="Panel/VBox/BottomBar/ToolButtons" unique_id=817486860]
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 tooltip_text = "Change page background color via JavaScript"
 text = "Color"
 
-[node name="Radio" type="Button" parent="Panel/VBox/BottomBar/ToolButtons"]
+[node name="Radio" type="Button" parent="Panel/VBox/BottomBar/ToolButtons" unique_id=1740599013]
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 tooltip_text = "Load a page with audio streaming"
 text = "Radio"
 
-[node name="DragDrop" type="Button" parent="Panel/VBox/BottomBar/ToolButtons"]
+[node name="DragDrop" type="Button" parent="Panel/VBox/BottomBar/ToolButtons" unique_id=2096954471]
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 tooltip_text = "Test HTML5 Drag and Drop API"
 text = "Drag&Drop"
 
-[node name="Separator3" type="VSeparator" parent="Panel/VBox/BottomBar"]
+[node name="Separator3" type="VSeparator" parent="Panel/VBox/BottomBar" unique_id=1513317867]
 layout_mode = 2
 
-[node name="Options" type="HBoxContainer" parent="Panel/VBox/BottomBar"]
+[node name="Options" type="HBoxContainer" parent="Panel/VBox/BottomBar" unique_id=2126574873]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="RoutingAudio" type="CheckBox" parent="Panel/VBox/BottomBar/Options"]
+[node name="RoutingAudio" type="CheckBox" parent="Panel/VBox/BottomBar/Options" unique_id=2112182139]
 layout_mode = 2
 tooltip_text = "Route browser audio through Godot (enables effects)"
 text = "Audio Routing"
 
-[node name="Mute" type="CheckBox" parent="Panel/VBox/BottomBar/Options"]
+[node name="Mute" type="CheckBox" parent="Panel/VBox/BottomBar/Options" unique_id=2099414594]
 layout_mode = 2
 tooltip_text = "Mute all audio"
 text = "Mute"
 
-[node name="AddBlocker" type="CheckBox" parent="Panel/VBox/BottomBar/Options"]
+[node name="AddBlocker" type="CheckBox" parent="Panel/VBox/BottomBar/Options" unique_id=1360162153]
 layout_mode = 2
 tooltip_text = "Enable EasyList-based ad blocking"
 button_pressed = true
 text = "Ad Blocker"
 
-[node name="Spacer" type="Control" parent="Panel/VBox/BottomBar"]
+[node name="Spacer" type="Control" parent="Panel/VBox/BottomBar" unique_id=691099720]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Info" type="Label" parent="Panel/VBox/BottomBar"]
+[node name="Info" type="Label" parent="Panel/VBox/BottomBar" unique_id=868895005]
 layout_mode = 2
 size_flags_horizontal = 8
 theme_override_colors/font_color = Color(0.6, 0.6, 0.65, 1)
 theme_override_font_sizes/font_size = 11
 horizontal_alignment = 2
 
-[node name="ColorPopup" type="Popup" parent="."]
+[node name="ColorPopup" type="Popup" parent="." unique_id=632141398]
 size = Vector2i(298, 471)
 
-[node name="ColorPicker" type="ColorPicker" parent="ColorPopup"]
+[node name="ColorPicker" type="ColorPicker" parent="ColorPopup" unique_id=1259750460]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 edit_alpha = false
 presets_visible = false
 
-[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="."]
+[node name="AudioStreamPlayer2D" type="AudioStreamPlayer2D" parent="." unique_id=1765581743]
 
-[node name="AcceptDialog" type="AcceptDialog" parent="."]
+[node name="AcceptDialog" type="AcceptDialog" parent="." unique_id=1312274917]
 
 [connection signal="pressed" from="Panel/VBox/TopBar/NavButtons/New" to="." method="_on_Add_pressed"]
 [connection signal="pressed" from="Panel/VBox/TopBar/NavButtons/Prev" to="." method="_on_Prev_pressed"]

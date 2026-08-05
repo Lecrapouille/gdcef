@@ -89,7 +89,7 @@ public:
                  CefRefPtr<CefV8Value> object,
                  const CefV8ValueList& arguments,
                  CefRefPtr<CefV8Value>& retval,
-                 CefString& exception);
+                 CefString& exception) override;
 
     IMPLEMENT_REFCOUNTING(GodotMethodHandler);
 
