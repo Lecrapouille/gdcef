@@ -125,13 +125,15 @@ text = "Tab:"
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 tooltip_text = "Select tab"
+clip_text = true
+fit_to_longest_item = false
 
 [node name="TextureRect" type="TextureRect" parent="Panel/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
 focus_mode = 2
 mouse_filter = 0
-expand_mode = 3
+expand_mode = 1
 stretch_mode = 3
 
 [node name="BottomBar" type="HBoxContainer" parent="Panel/VBox"]
@@ -189,10 +191,12 @@ size_flags_horizontal = 3
 
 [node name="Info" type="Label" parent="Panel/VBox/BottomBar"]
 layout_mode = 2
-size_flags_horizontal = 8
+size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.6, 0.6, 0.65, 1)
 theme_override_font_sizes/font_size = 11
 horizontal_alignment = 2
+clip_text = true
+text_overrun_behavior = 3
 
 [node name="ColorPopup" type="Popup" parent="."]
 size = Vector2i(298, 471)
