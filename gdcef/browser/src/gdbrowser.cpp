@@ -1526,13 +1526,17 @@ bool GdBrowserView::onProcessMessageReceived(
     // Get the method name
     std::string method_name = args_list->GetString(0).ToString();
 
-    // Check that the method exists in the bindings
-    auto callable = m_js_bindings[method_name];
-    if (!callable.is_valid())
+    // Check that the method exists in the bindings. Note: do not use
+    // m_js_bindings[method_name] here, since operator[] would insert an entry
+    // for each unknown name and the names come from the web page: a page
+    // calling unknown methods in a loop would make this map grow forever.
+    auto it = m_js_bindings.find(method_name);
+    if ((it == m_js_bindings.end()) || !it->second.is_valid())
     {
         BROWSER_ERROR("Callable not found for method " << method_name);
         return false;
     }
+    godot::Callable const& callable = it->second;
 
     try
     {
