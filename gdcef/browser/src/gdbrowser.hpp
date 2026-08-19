@@ -997,10 +997,32 @@ public:
 
     // -------------------------------------------------------------------------
     //! \brief Add a custom pattern to the ad blocker
-    //! \param[in] pattern Regex pattern to match URLs to block
+    //! \param[in] pattern Rule in EasyList format ("||domain.com^",
+    //! "/path/pattern", "domain.com", "keyword", prefixed by "@@" to whitelist)
     //! \return true if pattern was successfully added
     // -------------------------------------------------------------------------
     bool addAdBlockPattern(godot::String pattern);
+
+    // -------------------------------------------------------------------------
+    //! \brief Add to the ad blocker all the rules of an EasyList compatible
+    //! filter list file (one rule per line, "!" and "[" starting a comment).
+    //! \param[in] filepath Path of the filter list ("res://", "user://" and
+    //! system paths are accepted).
+    //! \return The number of rules that have been added.
+    // -------------------------------------------------------------------------
+    int loadAdBlockFilterList(godot::String filepath);
+
+    // -------------------------------------------------------------------------
+    //! \brief Remove all the ad blocker rules, including the default ones, to
+    //! start from an empty filter list.
+    // -------------------------------------------------------------------------
+    void clearAdBlockRules();
+
+    // -------------------------------------------------------------------------
+    //! \brief Get the number of rules currently held by the ad blocker.
+    //! \return A human readable description of the loaded rules.
+    // -------------------------------------------------------------------------
+    godot::String getAdBlockStats() const;
 
     // -------------------------------------------------------------------------
     //! \brief Enable or disable ad blocking

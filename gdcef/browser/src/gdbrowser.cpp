@@ -326,6 +326,12 @@ void GdBrowserView::_bind_methods()
                          &GdBrowserView::executeJavaScript);
     ClassDB::bind_method(D_METHOD("add_ad_block_pattern", "pattern"),
                          &GdBrowserView::addAdBlockPattern);
+    ClassDB::bind_method(D_METHOD("load_ad_block_filter_list", "filepath"),
+                         &GdBrowserView::loadAdBlockFilterList);
+    ClassDB::bind_method(D_METHOD("clear_ad_block_rules"),
+                         &GdBrowserView::clearAdBlockRules);
+    ClassDB::bind_method(D_METHOD("get_ad_block_stats"),
+                         &GdBrowserView::getAdBlockStats);
     ClassDB::bind_method(D_METHOD("enable_ad_block", "enable"),
                          &GdBrowserView::enableAdBlock);
     ClassDB::bind_method(D_METHOD("is_ad_block_enabled"),
@@ -1672,6 +1678,51 @@ bool GdBrowserView::addAdBlockPattern(godot::String pattern)
             "Invalid ad blocking pattern: " << pattern.utf8().get_data());
         return false;
     }
+}
+
+//------------------------------------------------------------------------------
+int GdBrowserView::loadAdBlockFilterList(godot::String filepath)
+{
+    if ((m_impl == nullptr) || (m_impl->m_ad_blocker == nullptr))
+    {
+        BROWSER_ERROR("Ad blocker not initialized");
+        return 0;
+    }
+
+    std::string path = GLOBALIZE_PATH(filepath);
+    BROWSER_DEBUG("Loading ad block filter list " << path);
+    size_t count = m_impl->m_ad_blocker->loadFilterList(path);
+    if (count == 0u)
+    {
+        BROWSER_ERROR("No ad blocking rule loaded from " << path);
+    }
+    return int(count);
+}
+
+//------------------------------------------------------------------------------
+void GdBrowserView::clearAdBlockRules()
+{
+    BROWSER_DEBUG("");
+
+    if ((m_impl == nullptr) || (m_impl->m_ad_blocker == nullptr))
+    {
+        BROWSER_ERROR("Ad blocker not initialized");
+        return;
+    }
+
+    m_impl->m_ad_blocker->clearRules();
+}
+
+//------------------------------------------------------------------------------
+godot::String GdBrowserView::getAdBlockStats() const
+{
+    if ((m_impl == nullptr) || (m_impl->m_ad_blocker == nullptr))
+    {
+        BROWSER_ERROR("Ad blocker not initialized");
+        return {};
+    }
+
+    return godot::String::utf8(m_impl->m_ad_blocker->getStats().c_str());
 }
 
 //------------------------------------------------------------------------------

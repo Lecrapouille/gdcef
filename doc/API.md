@@ -148,7 +148,10 @@ Nodes are created by `gdCEF.create_browser` and are automatically destroyed when
 | `get_audio_stream` | | AudioStreamGeneratorPlayback | Get the current audio stream playback. |
 | `stop_loading` | | | Stop loading the current page. |
 | `undo` | | | Undo the last edit action. |
-| `add_ad_block_pattern` | `pattern`: String | bool | Add a custom regex pattern to block ads matching this pattern. Returns true if pattern was successfully added. |
+| `add_ad_block_pattern` | `pattern`: String | bool | Add a rule in EasyList format: `\|\|domain.com^` and `domain.com` block a domain and its subdomains, `/path/pattern` and `keyword` are searched inside the whole URL, a `@@` prefix whitelists instead of blocking. Returns true if the rule was understood. |
+| `load_ad_block_filter_list` | `filepath`: String | int | Add all the rules of an EasyList compatible filter list file (one rule per line, lines starting with `!` or `[` are comments). Returns the number of rules added. |
+| `clear_ad_block_rules` | | void | Remove all the rules, including the default ones, to start from an empty filter list. |
+| `get_ad_block_stats` | | String | Human readable description of the number of loaded rules. |
 | `enable_ad_block` | `enable`: bool | void | Enable or disable the ad blocker. When enabled, common ad patterns are blocked by default. |
 | `is_ad_block_enabled` | | bool | Check if the ad blocker is currently enabled. |
 

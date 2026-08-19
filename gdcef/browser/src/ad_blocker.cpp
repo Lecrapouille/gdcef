@@ -219,18 +219,39 @@ bool AdBlocker::addRuleUnlocked(const std::string& rule)
     // Simple domain or keyword (no special prefix)
     else if (!trimmed.empty() && trimmed[0] != '*')
     {
-        // Treat as a substring pattern
-        std::string pattern = trimmed;
-        std::transform(pattern.begin(), pattern.end(), pattern.begin(),
+        std::string token = trimmed;
+        std::transform(token.begin(), token.end(), token.begin(),
                        [](unsigned char c) { return std::tolower(c); });
 
+        // A bare domain is a domain rule, as documented and as the default
+        // rules do. Keeping it as a substring pattern instead would make
+        // "example.com" block any URL merely mentioning it, such as
+        // "https://other.org/?from=example.com".
+        bool is_domain = (token.find('.') != std::string::npos) &&
+                         (token.find('/') == std::string::npos);
+        if (is_domain)
+        {
+            if (is_exception)
+            {
+                m_exception_domains.insert(token);
+                GDCEF_DEBUG("Added exception domain: " << token);
+            }
+            else
+            {
+                m_blocked_domains.insert(token);
+                GDCEF_DEBUG("Added blocked domain: " << token);
+            }
+            return true;
+        }
+
+        // Anything else is a keyword searched inside the whole URL.
         if (is_exception)
         {
-            m_exception_patterns.push_back(pattern);
+            m_exception_patterns.push_back(token);
         }
         else
         {
-            m_blocked_patterns.push_back(pattern);
+            m_blocked_patterns.push_back(token);
         }
         return true;
     }
@@ -536,7 +557,7 @@ void AdBlocker::loadDefaultRules()
     // -------------------------------------------------------------------------
     // Exceptions (whitelist) - important legitimate resources
     // -------------------------------------------------------------------------
-    const char* exception_patterns[] = {
+    const char* exception_domains[] = {
         // Three.js and common JS libraries
         "threejs.org",
         "cdnjs.cloudflare.com",
@@ -567,7 +588,21 @@ void AdBlocker::loadDefaultRules()
         "github.io",
         "githubassets.com",
 
-        // Common utility scripts (not tracking)
+        // Legitimate analytics that site owners need (opt-in)
+        // Note: google-analytics is blocked by default, but can be whitelisted
+    };
+
+    for (const auto& domain : exception_domains)
+    {
+        m_exception_domains.insert(domain);
+    }
+
+    // -------------------------------------------------------------------------
+    // Exceptions matched inside the whole URL. Note: the file names of the
+    // common utility scripts belong here and not to the domains above, where
+    // they could never match.
+    // -------------------------------------------------------------------------
+    const char* exception_patterns[] = {
         "stats.js",
         "stats.module.js",
         "stats.min.js",
@@ -576,29 +611,11 @@ void AdBlocker::loadDefaultRules()
         "vue",
         "angular",
         "bootstrap",
-
-        // Legitimate analytics that site owners need (opt-in)
-        // Note: google-analytics is blocked by default, but can be whitelisted
     };
 
     for (const auto& pattern : exception_patterns)
     {
-        // Domain-like patterns go to exception domains
-        if (std::string(pattern).find('/') == std::string::npos &&
-            std::string(pattern).find('.') != std::string::npos)
-        {
-            std::string domain = pattern;
-            std::transform(domain.begin(), domain.end(), domain.begin(),
-                           [](unsigned char c) { return std::tolower(c); });
-            m_exception_domains.insert(domain);
-        }
-        else
-        {
-            std::string pat = pattern;
-            std::transform(pat.begin(), pat.end(), pat.begin(),
-                           [](unsigned char c) { return std::tolower(c); });
-            m_exception_patterns.push_back(pat);
-        }
+        m_exception_patterns.push_back(pattern);
     }
 
     GDCEF_DEBUG(getStats());
