@@ -501,12 +501,21 @@ void GdBrowserView::getViewRect(CefRefPtr<CefBrowser> /*browser*/,
 
 //------------------------------------------------------------------------------
 void GdBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
-                            CefRenderHandler::PaintElementType /*type*/,
+                            CefRenderHandler::PaintElementType type,
                             const CefRenderHandler::RectList& dirtyRects,
                             const void* buffer,
                             int width,
                             int height)
 {
+    // CEF renders native popup widgets (i.e. an expanded <select> list) in
+    // their own and smaller buffer. We do not composite them over the page, so
+    // ignore them: else the page texture would be replaced by the popup bitmap
+    // until the next PET_VIEW paint. Compositing them would mean implementing
+    // CefRenderHandler::OnPopupShow() and OnPopupSize() to know where to blit
+    // this buffer over the page.
+    if (type != PET_VIEW)
+        return;
+
     // Sanity check
     if ((width <= 0) || (height <= 0) || (buffer == nullptr))
         return;

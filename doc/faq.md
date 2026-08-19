@@ -52,6 +52,9 @@ See your Godot project settings to disable the default keyboard bindings.
 - Keyboard limitation: https://github.com/Lecrapouille/gdCEF/issues/55
 - Slow and with limitations: https://github.com/Lecrapouille/gdCEF/issues/50
 - Restricted for some access: https://github.com/Lecrapouille/gdCEF/issues/75
+- Native popup widgets (i.e. an expanded `<select>` list) are not rendered:
+  CEF paints them in a separate buffer that gdCEF does not composite over the
+  page texture.
 
 ### I cannot watch videos!
 
