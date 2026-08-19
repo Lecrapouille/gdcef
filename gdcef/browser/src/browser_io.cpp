@@ -387,6 +387,33 @@ static constexpr size_t KEY_MAPPINGS_COUNT =
     sizeof(KEY_MAPPINGS) / sizeof(KEY_MAPPINGS[0]);
 
 //------------------------------------------------------------------------------
+// Send the KEYEVENT_CHAR event completing a key press, which is what makes the
+// character appear in the page.
+//
+// On Windows, CEF follows the WM_CHAR semantics: it takes the typed character
+// from windows_key_code and ignores the character field. The virtual key code
+// carried by the KEYDOWN event therefore has to be replaced by the character
+// itself, else typing 'a' (whose virtual key code is VK_A, i.e. uppercase 'A')
+// would insert 'A' in the page. CEF does the same swap in its own off-screen
+// rendering tests (tests/ceftests/os_rendering_unittest.cc).
+//
+// On Linux and macOS the character field is used instead, and windows_key_code
+// is what CEF derives the DOM key from, so it is left untouched.
+//
+// The event is taken by copy since only this event is concerned by the swap.
+//------------------------------------------------------------------------------
+static void sendCharEvent(CefRefPtr<CefBrowserHost> host,
+                          CefKeyEvent event,
+                          int character)
+{
+    event.type = KEYEVENT_CHAR;
+#if defined(_WIN32)
+    event.windows_key_code = character;
+#endif
+    host->SendKeyEvent(event);
+}
+
+//------------------------------------------------------------------------------
 // Look up a Godot key in the mapping table.
 // Returns nullptr if not found.
 //------------------------------------------------------------------------------
@@ -473,11 +500,12 @@ void GdBrowserView::keyPress(int key,
         event.type = KEYEVENT_KEYDOWN;
         host->SendKeyEvent(event);
 
-        // Send CHAR if needed (for keys like Enter, Backspace)
+        // Send CHAR if needed (for keys like Enter, Backspace). The virtual key
+        // code of these keys is already their ASCII control code (VK_RETURN is
+        // 13), so both are the same character.
         if (mapping->send_char)
         {
-            event.type = KEYEVENT_CHAR;
-            host->SendKeyEvent(event);
+            sendCharEvent(host, event, mapping->windows_key);
         }
         return;
     }
@@ -502,8 +530,7 @@ void GdBrowserView::keyPress(int key,
         host->SendKeyEvent(event);
 
         // Then send CHAR (for text input)
-        event.type = KEYEVENT_CHAR;
-        host->SendKeyEvent(event);
+        sendCharEvent(host, event, key);
         return;
     }
 
@@ -519,8 +546,10 @@ void GdBrowserView::keyPress(int key,
 
         event.type = KEYEVENT_KEYDOWN;
         host->SendKeyEvent(event);
-        event.type = KEYEVENT_CHAR;
-        host->SendKeyEvent(event);
+
+        // Without the swap done by sendCharEvent(), Windows would type the
+        // letters '`' to 'i' (VK_NUMPAD0 is 96) instead of the digits.
+        sendCharEvent(host, event, '0' + digit);
         return;
     }
 
@@ -535,6 +564,5 @@ void GdBrowserView::keyPress(int key,
 
     event.type = KEYEVENT_KEYDOWN;
     host->SendKeyEvent(event);
-    event.type = KEYEVENT_CHAR;
-    host->SendKeyEvent(event);
+    sendCharEvent(host, event, key);
 }
