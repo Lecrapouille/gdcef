@@ -1,3 +1,37 @@
+Version 0.20.0:
+	* Update CEF to version 151
+	* Composite the CEF popup widget over the page: an expanded HTML select
+	  list is displayed again
+	* Display the hand or the forbidden cursor while dragging inside a page
+	  with the HTML5 drag and drop
+	* Fix keyboard input typed uppercase on Windows (#102)
+	* Fix the non ASCII paths mangled on Windows: download folder and file
+	  name, and the cache, locales, subprocess and log paths given to CEF
+	* Decode as UTF-8 the strings coming from the web (URL, title, downloaded
+	  file, dragged content and arguments of the JavaScript calls)
+	* Escape the remaining control characters when JavaScript calls a Godot
+	  method
+	* Actually call CefShutdown() from shutdown() instead of leaking the
+	  whole framework, and refuse to initialize CEF twice in a process
+	* Report the CEF errors through get_error() instead of losing them, and
+	  empty the buffer that get_error() is supposed to consume
+	* log_fatal() no longer terminates the application
+	* Protect the ad blocker rules shared by the Godot and the CEF IO threads
+	* Treat a bare ad blocking rule holding a domain as a domain rule and
+	  expose the filter list API: load_ad_block_filter_list(),
+	  clear_ad_block_rules() and get_ad_block_stats()
+	* Stop letting a web page grow the JavaScript bindings map without bound
+	* Free the browser node when its initialization fails
+	* Stop duplicating the whole page image at every paint
+	* Detect the browser resize from the paint dimensions and fix an out of
+	  bounds read in get_pixel_color() after a resize
+	* Remove the texture property of the browser, use get_texture(), and fix
+	  the hint of the audio_stream property: this removes the warning about
+	  an instantiated ImageTexture used as a default value
+	* Stop the interface of the 2D demo from growing when a page fails to
+	  load
+	* Update doc
+
 Version 0.19.4:
 	* Update CEF to version 149
 	* Fix MS C++ compiler detection
