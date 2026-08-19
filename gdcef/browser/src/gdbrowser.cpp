@@ -1902,6 +1902,7 @@ void GdBrowserView::dragEnter(int x, int y, godot::String text,
 
     // Create drag data
     m_drag_data = CefDragData::Create();
+    m_cursor_before_drag = m_current_cursor;
 
     if (!text.is_empty())
     {
@@ -1955,6 +1956,7 @@ void GdBrowserView::dragLeave()
 
     m_browser->GetHost()->DragTargetDragLeave();
     m_drag_data = nullptr;
+    applyCursorShape(m_cursor_before_drag);
 }
 
 //------------------------------------------------------------------------------
@@ -1972,6 +1974,7 @@ void GdBrowserView::drop(int x, int y)
 
     m_browser->GetHost()->DragTargetDrop(mouse_event);
     m_drag_data = nullptr;
+    applyCursorShape(m_cursor_before_drag);
 }
 
 //------------------------------------------------------------------------------
@@ -2000,6 +2003,7 @@ bool GdBrowserView::onStartDragging(CefRefPtr<CefBrowser> browser,
     m_drag_data = drag_data->Clone();
     m_drag_allowed_ops = allowed_ops;
     m_current_drag_op = DRAG_OPERATION_NONE;
+    m_cursor_before_drag = m_current_cursor;
 
     // Notify the browser that a drag is entering
     CefMouseEvent mouse_event;
@@ -2050,6 +2054,16 @@ void GdBrowserView::onUpdateDragCursor(CefRefPtr<CefBrowser> browser,
                                         CefRenderHandler::DragOperation operation)
 {
     m_current_drag_op = operation;
+
+    // While a drag is in progress, CEF stops calling OnCursorChange() and
+    // gives the cursor to display here instead: without this the mouse would
+    // keep the arrow shape during the whole HTML5 drag and drop, giving the
+    // user no clue about where the dragged content can be dropped.
+    // CURSOR_CAN_DROP would be the natural shape for a droppable target but
+    // Godot renders it as a plain arrow on Windows, hence the hand.
+    applyCursorShape(operation == DRAG_OPERATION_NONE
+                         ? godot::DisplayServer::CURSOR_FORBIDDEN
+                         : godot::DisplayServer::CURSOR_POINTING_HAND);
 
     // Emit signal for Godot to update cursor if needed
     emit_signal("on_update_drag_cursor", static_cast<int>(operation), this);
@@ -2121,9 +2135,17 @@ void GdBrowserView::onCursorChange(CefRefPtr<CefBrowser> browser,
             break;
     }
 
+    applyCursorShape(godot_cursor);
+}
+
+//------------------------------------------------------------------------------
+void GdBrowserView::applyCursorShape(godot::DisplayServer::CursorShape shape)
+{
     // Only change cursor if it's different from the current one to avoid glitches
-    if (m_current_cursor != godot_cursor)
+    if (m_current_cursor != shape)
     {
+        godot::DisplayServer::CursorShape godot_cursor = shape;
+
         // Store the current cursor
         m_current_cursor = godot_cursor;
 
@@ -2169,6 +2191,8 @@ void GdBrowserView::endDragging(int x, int y)
         m_drag_data = nullptr;
         return;
     }
+
+    applyCursorShape(m_cursor_before_drag);
 
     CefMouseEvent mouse_event;
     mouse_event.x = x;

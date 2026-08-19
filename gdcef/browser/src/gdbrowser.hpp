@@ -1304,6 +1304,14 @@ private:
     void onCursorChange(CefRefPtr<CefBrowser> browser, cef_cursor_type_t type);
 
     // -------------------------------------------------------------------------
+    //! \brief Display the given mouse cursor shape and emit the
+    //! "on_cursor_changed" signal. Does nothing when the shape is already the
+    //! displayed one.
+    //! \param[in] shape the shape asked by the web page.
+    // -------------------------------------------------------------------------
+    void applyCursorShape(godot::DisplayServer::CursorShape shape);
+
+    // -------------------------------------------------------------------------
     //! \brief Recursively convert JSON data to Godot Variant types
     //! \param[in] json JSON value to convert
     //! \return Converted Godot Variant
@@ -1423,6 +1431,11 @@ private:
 
     //! \brief Current cursor shape (stored to reapply after Godot resets it)
     godot::DisplayServer::CursorShape m_current_cursor = godot::DisplayServer::CURSOR_ARROW;
+
+    //! \brief Cursor shape displayed when the drag started, restored once the
+    //! drag ends: while dragging, CEF replaces OnCursorChange() by
+    //! UpdateDragCursor() and therefore never asks for the previous shape back.
+    godot::DisplayServer::CursorShape m_cursor_before_drag = godot::DisplayServer::CURSOR_ARROW;
 
     //! \brief The Control node displaying this browser's texture (usually a
     //! TextureRect, set by GdCEF::createBrowser()). Used by onCursorChange()
