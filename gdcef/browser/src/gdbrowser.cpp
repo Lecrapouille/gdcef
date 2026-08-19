@@ -419,6 +419,10 @@ void GdBrowserView::_init()
 godot::String GdBrowserView::getError()
 {
     std::string err = m_error.str();
+    // Note: clear() only resets the state flags of the stream, str() is what
+    // empties its buffer. Without it every call would return all the errors
+    // collected since the browser creation.
+    m_error.str(std::string{});
     m_error.clear();
     return {err.c_str()};
 }
