@@ -131,7 +131,8 @@ public: // Godot interfaces.
     void log_error(godot::String message);
 
     // -------------------------------------------------------------------------
-    //! \brief Write a fatal message to CEF logs from GDScript.
+    //! \brief Write a fatal message to CEF logs from GDScript. Note: written
+    //! with the error severity, this does not terminate the application.
     //! \param[in] message the fatal message to log
     // -------------------------------------------------------------------------
     void log_fatal(godot::String message);

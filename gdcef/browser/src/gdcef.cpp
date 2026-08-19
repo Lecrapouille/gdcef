@@ -310,7 +310,10 @@ void GdCEF::log_error(godot::String message)
 //------------------------------------------------------------------------------
 void GdCEF::log_fatal(godot::String message)
 {
-    LOG(FATAL) << message.utf8().get_data();
+    // Note: deliberately not LOG(FATAL), which immediately aborts the process:
+    // a GDScript call shall not be able to kill the application without letting
+    // Godot and CEF release their resources.
+    LOG(ERROR) << "FATAL: " << message.utf8().get_data();
 }
 
 //------------------------------------------------------------------------------
@@ -593,7 +596,8 @@ GdBrowserView* GdCEF::createBrowser(godot::String const& url,
 {
     if (m_impl == nullptr)
     {
-        GDCEF_ERROR("CEF was not created (memory allocation issue)");
+        GDCEF_ERROR("CEF is not initialized: call initialize() first and check "
+                    "its return value");
         return nullptr;
     }
     if (texture_rect == nullptr)

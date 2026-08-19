@@ -1730,7 +1730,10 @@ void GdBrowserView::log_fatal(godot::String message)
     std::stringstream ss;
     godot::String name = get_name();
     ss << "[browser id: " << m_id << ", name: " << name.utf8().get_data() << "] " << message.utf8().get_data();
-    LOG(FATAL) << ss.str();
+    // Note: deliberately not LOG(FATAL), which immediately aborts the process:
+    // a GDScript call shall not be able to kill the application without letting
+    // Godot and CEF release their resources.
+    LOG(ERROR) << "FATAL: " << ss.str();
 }
 
 //------------------------------------------------------------------------------

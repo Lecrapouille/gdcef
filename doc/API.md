@@ -26,7 +26,7 @@ Two main classes:
 | `log_info` | `message`: String | void | Write an info message to CEF logs from GDScript. |
 | `log_warning` | `message`: String | void | Write a warning message to CEF logs from GDScript. |
 | `log_error` | `message`: String | void | Write an error message to CEF logs from GDScript. |
-| `log_fatal` | `message`: String | void | Write a fatal message to CEF logs from GDScript. |
+| `log_fatal` | `message`: String | void | Write a fatal message to CEF logs from GDScript. Logged with the error severity: it does not terminate the application. |
 | `shutdown` | | | Releases CEF memory and notifies sub CEF processes that the application is exiting. All browsers are destroyed. `gdCEF` becomes inactive |
 
 ### gdCEF signals
@@ -115,7 +115,7 @@ Nodes are created by `gdCEF.create_browser` and are automatically destroyed when
 | `log_info` | `message`: String | void | Write an info message to CEF logs from GDScript. |
 | `log_warning` | `message`: String | void | Write a warning message to CEF logs from GDScript. |
 | `log_error` | `message`: String | void | Write an error message to CEF logs from GDScript. |
-| `log_fatal` | `message`: String | void | Write a fatal message to CEF logs from GDScript. |
+| `log_fatal` | `message`: String | void | Write a fatal message to CEF logs from GDScript. Logged with the error severity: it does not terminate the application. |
 | `next_page` | | | Navigate to the next page if possible. |
 | `paste` | | | Paste clipboard content at cursor position. |
 | `previous_page` | | | Navigate to the previous page if possible. |
