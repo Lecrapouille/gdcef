@@ -426,10 +426,26 @@ int GdBrowserView::init(godot::String const& url,
                         CefBrowserSettings const& settings,
                         CefWindowInfo const& window_info)
 {
+    // Allocate the CEF client and the Godot rendering resources here instead of
+    // in the constructor: Godot also builds throw-away instances of registered
+    // classes (to collect the default value of the properties or to generate
+    // the class documentation) and none of this is needed for them.
     if (m_impl == nullptr)
     {
-        GDCEF_ERROR("GdBrowserView::init: m_impl is nullptr");
-        return -1;
+        m_impl = new GdBrowserView::Impl(*this);
+        if (m_impl == nullptr)
+        {
+            GDCEF_ERROR("Failed allocating GdBrowserView::Impl");
+            return -1;
+        }
+    }
+    if (!m_image.is_valid())
+    {
+        m_image.instantiate();
+    }
+    if (!m_texture.is_valid())
+    {
+        m_texture.instantiate();
     }
 
     // Create a new browser using the window parameters specified by
@@ -465,11 +481,6 @@ int GdBrowserView::init(godot::String const& url,
 GdBrowserView::GdBrowserView() : m_viewport({0.0f, 0.0f, 1.0f, 1.0f})
 {
     BROWSER_DEBUG("Creating new GdBrowserView");
-
-    m_impl = new GdBrowserView::Impl(*this);
-    assert((m_impl != nullptr) && "Failed allocating GdBrowserView");
-    m_image.instantiate();
-    m_texture.instantiate();
 }
 
 //------------------------------------------------------------------------------
@@ -1061,6 +1072,9 @@ void GdBrowserView::onAudioStreamStarted(CefRefPtr<CefBrowser> browser,
                                          const CefAudioParameters& params,
                                          int channels)
 {
+    if (m_impl == nullptr)
+        return;
+
     m_impl->m_audio.channels = int(params.channel_layout);
 }
 

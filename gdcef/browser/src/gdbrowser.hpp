@@ -516,6 +516,11 @@ public:
     //! You shall complete the constructor by calling init(godot::String const&,
     //! CefBrowserSettings const&, CefWindowInfo const&) because Godot does not
     //! manage non dummy constructors.
+    //!
+    //! \note The CEF client and the Godot image and texture are allocated by
+    //! init() and not here, because Godot also builds throw-away instances of
+    //! registered classes (to collect the default value of the properties or
+    //! to generate the class documentation) for which this is pure waste.
     // -------------------------------------------------------------------------
     GdBrowserView();
 
@@ -676,6 +681,8 @@ public:
     //! \brief Exported method to Godot script. Return the Godot texture holding
     //! the page content to other Godot element that needs it for the rendering
     //! (i.e. TextureRect: $TextureRect.texture = browser.get_texture()).
+    //! \return a null reference as long as the browser has not been initialized
+    //! by GdCEF::createBrowser().
     //! \fixme FIXME Need mutex ?
     // -------------------------------------------------------------------------
     inline godot::Ref<godot::ImageTexture> getTexture()
