@@ -711,7 +711,7 @@ void GdCEF::Impl::closeAllBrowsers(bool force_close)
         // Note: Non-GdBrowserView children are left untouched
     }
 
-    GDCEF_DEBUG("Remaining " << m_owner.get_child_count() << " child nodes");
+    GDCEF_WARNING("Remaining " << m_owner.get_child_count() << " child nodes");
 }
 
 //------------------------------------------------------------------------------

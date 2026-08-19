@@ -214,7 +214,7 @@ private:
 //------------------------------------------------------------------------------
 GdBrowserView::Impl::~Impl()
 {
-    WARN_PRINT("[gdCEF][GdBrowserView::Impl::~Impl] destroying browser");
+    GDCEF_DEBUG("[gdCEF][GdBrowserView::Impl::~Impl] destroying browser");
 }
 
 //------------------------------------------------------------------------------
