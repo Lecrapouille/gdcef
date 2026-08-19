@@ -177,7 +177,7 @@ public:
         }
         else
         {
-            GDCEF_ERROR("Failed to save page to: " << filepath);
+            PRINT_ERROR("Failed to save page to: " << filepath);
         }
 
         m_node.emit_signal("on_page_saved", m_path, success, &m_node);
@@ -441,7 +441,7 @@ int GdBrowserView::init(godot::String const& url,
         m_impl = new GdBrowserView::Impl(*this);
         if (m_impl == nullptr)
         {
-            GDCEF_ERROR("Failed allocating GdBrowserView::Impl");
+            BROWSER_ERROR("Failed allocating GdBrowserView::Impl");
             return -1;
         }
     }

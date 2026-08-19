@@ -51,11 +51,15 @@
         godot::print_verbose(godot::String(ss.str().c_str()));      \
     }
 
+// Note: reserved to classes holding a m_error stream since the message is also
+// stored there to be returned by their get_error() method. Use PRINT_ERROR()
+// from the other classes.
 #define GDCEF_ERROR(x)                                    \
     {                                                     \
         std::stringstream ss;                             \
         ss << "[gdCEF][gdCEF::" << __func__ << "] " << x; \
         ERR_PRINT(godot::String(ss.str().c_str()));       \
+        m_error << ss.str();                              \
     }
 
 #define GDCEF_WARNING(x)                                  \

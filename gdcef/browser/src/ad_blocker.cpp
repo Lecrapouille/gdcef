@@ -232,7 +232,7 @@ size_t AdBlocker::loadFilterList(const std::string& filepath)
     std::ifstream file(filepath);
     if (!file.is_open())
     {
-        GDCEF_ERROR("Failed to open filter list: " << filepath);
+        PRINT_ERROR("Failed to open filter list: " << filepath);
         return 0;
     }
 
