@@ -1119,11 +1119,14 @@ void GdBrowserView::onAudioStreamPacket(CefRefPtr<CefBrowser> browser,
 //------------------------------------------------------------------------------
 godot::Color GdBrowserView::getPixelColor(int x, int y) const
 {
-    // Ensure the browser is valid and coordinates are within bounds
-    if (x < 0 || y < 0 || x >= m_width || y >= m_height || m_data.size() == 0)
+    // Bound the coordinates with the dimension of the painted buffer and not
+    // with m_width and m_height: those are the desired dimension, applied by
+    // CEF only at its next paint, so they can be larger than m_data which would
+    // make us read out of its bounds.
+    if ((x < 0) || (y < 0) || (x >= m_painted_width) || (y >= m_painted_height))
         return godot::Color(1, 1, 1, 1); // Return full white as fallback
 
-    int index = (y * m_width + x) * 4;
+    int index = (y * m_painted_width + x) * 4;
     unsigned char r = m_data[index + 0];
     unsigned char g = m_data[index + 1];
     unsigned char b = m_data[index + 2];
