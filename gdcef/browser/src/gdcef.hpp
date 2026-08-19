@@ -180,13 +180,13 @@ private: // CEF interfaces.
         Impl(GdCEF& cef) : m_owner(cef) {}
 
         // ---------------------------------------------------------------------
-        //! \brief Should be called on the main application thread to shut down
-        //! the CEF browser process before the application exits.
+        //! \brief CefShutdown() is deliberately not called here. This class is
+        //! given to CefInitialize() as CefApp, therefore CEF holds a reference
+        //! on it until CefShutdown() releases it: calling CefShutdown() from
+        //! this destructor could never happen since this destructor cannot run
+        //! before that release. GdCEF::shutdown() calls CefShutdown() instead.
         // ---------------------------------------------------------------------
-        virtual ~Impl()
-        {
-            CefShutdown();
-        }
+        virtual ~Impl() = default;
 
         // -------------------------------------------------------------------------
         //! \brief Close all browsers.
@@ -340,6 +340,9 @@ private:
 
     //! \brief CEF interface implementation
     CefRefPtr<GdCEF::Impl> m_impl = nullptr;
+    //! \brief Set once CefShutdown() has been called. CEF cannot be
+    //! reinitialized inside the same process, so initialize() has to refuse.
+    bool m_cef_shutdown = false;
     //! \brief Window info for the CEF browser instances
     CefWindowInfo m_window_info;
     //! \brief Settings for the CEF browser process

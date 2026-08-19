@@ -152,16 +152,28 @@ void GdCEF::shutdown()
 {
     GDCEF_DEBUG("");
 
-    if (m_impl != nullptr)
+    if (m_impl == nullptr)
+        return;
+
+    GDCEF_DEBUG("Closing all browsers");
+    m_impl->closeAllBrowsers(true);
+
+    // Let CEF run the browser destruction tasks that closeAllBrowsers() has
+    // just posted: we are the one pumping the CEF message loop (see _process())
+    // and _process() will not be called anymore once we are shut down.
+    constexpr int PENDING_TASKS_ITERATIONS = 10;
+    for (int i = 0; i < PENDING_TASKS_ITERATIONS; ++i)
     {
-        GDCEF_DEBUG("Closing all browsers");
-        m_impl->closeAllBrowsers(true);
-
-        m_impl = nullptr;
-
-        GDCEF_DEBUG("CefQuitMessageLoop");
-        CefQuitMessageLoop();
+        CefDoMessageLoopWork();
     }
+
+    // Release our reference before asking CEF to shut down. Note that
+    // m_impl is kept alive by CEF itself (it has been given to CefInitialize()
+    // as CefApp) and CefShutdown() is what finally releases it.
+    m_impl = nullptr;
+    GDCEF_DEBUG("CefShutdown");
+    CefShutdown();
+    m_cef_shutdown = true;
 }
 
 //------------------------------------------------------------------------------
@@ -182,6 +194,12 @@ bool GdCEF::initialize(godot::Dictionary config)
         GDCEF_ERROR("Already initialized");
         return false;
     }
+    if (m_cef_shutdown)
+    {
+        GDCEF_ERROR("CEF has been shut down and cannot be initialized again "
+                    "inside the same process: restart your application");
+        return false;
+    }
     m_impl = new GdCEF::Impl(*this);
     assert((m_impl != nullptr) && "Failed allocating GdCEF");
 
@@ -196,7 +214,9 @@ bool GdCEF::initialize(godot::Dictionary config)
         GDCEF_ERROR("Error: at least one CEF artifact was not found in folder "
                     << cef_folder_path
                     << ". Your gdCEF node will still be present but disabled.");
-        m_impl = nullptr;  // CefRefPtr handles deallocation automatically
+        // CefInitialize() has not been called: releasing our only reference
+        // destroys the implementation and CefShutdown() shall not be called.
+        m_impl = nullptr;
         return false;
     }
 
@@ -230,7 +250,9 @@ bool GdCEF::initialize(godot::Dictionary config)
     {
         GDCEF_ERROR("CEF failed its initialization. Your gdCEF node will still "
                     "be present but disabled.");
-        m_impl = nullptr;  // CefRefPtr handles deallocation automatically
+        // CefInitialize() failed, therefore CefShutdown() shall not be called
+        // and releasing our only reference destroys the implementation.
+        m_impl = nullptr;
         return false;
     }
     GDCEF_DEBUG("CefInitialize done with success");
