@@ -683,7 +683,13 @@ public:
     //! (i.e. TextureRect: $TextureRect.texture = browser.get_texture()).
     //! \return a null reference as long as the browser has not been initialized
     //! by GdCEF::createBrowser().
-    //! \fixme FIXME Need mutex ?
+    //!
+    //! \note No mutex is needed to share this texture with CEF: since
+    //! CefSettings::multi_threaded_message_loop is disabled and the CEF message
+    //! loop is pumped by GdCEF::_process() calling CefDoMessageLoopWork(), the
+    //! CEF UI thread filling this texture in onPaint() is the Godot main
+    //! thread. The only callback running on another thread is
+    //! onAudioStreamPacket().
     // -------------------------------------------------------------------------
     inline godot::Ref<godot::ImageTexture> getTexture()
     {
