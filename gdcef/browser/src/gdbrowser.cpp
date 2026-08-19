@@ -28,6 +28,8 @@
 #include "helper_files.hpp"
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/input.hpp>
+#include <algorithm>
+#include <cstring>
 #include <fstream>
 
 #include <gdextension_interface.h>
@@ -503,18 +505,17 @@ void GdBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
                             int width,
                             int height)
 {
-    // CEF renders native popup widgets (i.e. an expanded <select> list) in
-    // their own and smaller buffer. We do not composite them over the page, so
-    // ignore them: else the page texture would be replaced by the popup bitmap
-    // until the next PET_VIEW paint. Compositing them would mean implementing
-    // CefRenderHandler::OnPopupShow() and OnPopupSize() to know where to blit
-    // this buffer over the page.
-    if (type != PET_VIEW)
-        return;
-
     // Sanity check
     if ((width <= 0) || (height <= 0) || (buffer == nullptr))
         return;
+
+    // CEF renders the popup widget (i.e. an expanded <select> list) in its own
+    // and smaller buffer, to be composited over the page by the client.
+    if (type == PET_POPUP)
+    {
+        onPaintPopup(buffer, width, height);
+        return;
+    }
 
     // BGRA8: blue, green, red components each coded as byte
     int const COLOR_CHANELS = 4;
@@ -527,6 +528,13 @@ void GdBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
     bool bResized = (width != m_painted_width) || (height != m_painted_height);
     m_painted_width = width;
     m_painted_height = height;
+
+    // The dirty rectangles refresh the page from its previous paint, which is
+    // not enough when the pixels we hold are not those of the page: a hidden
+    // popup widget leaves its own pixels behind, and we do not want to rely on
+    // CEF marking the whole page dirty after CefBrowserHost::Invalidate().
+    bool const bFullPaint = bResized || m_repaint_page;
+    m_repaint_page = false;
 
     // Copy CEF image buffer to Godot PoolByteArray
     m_data.resize(TEXTURE_SIZE);
@@ -542,7 +550,7 @@ void GdBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
             copyWidth);
     };
 
-    if (bResized)
+    if (bFullPaint)
     {
         PARALLEL_FOR(int y = 0; y < height; ++y)
         {
@@ -560,15 +568,118 @@ void GdBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
         }
     }
 
+    // The page has just erased the area covered by the popup widget.
+    compositePopup();
+    updateTexture(bResized);
+
+    emit_signal("on_browser_paint", this);
+}
+
+//------------------------------------------------------------------------------
+void GdBrowserView::onPaintPopup(const void* buffer, int width, int height)
+{
+    // Keep the converted pixels: they have to be composited over the page again
+    // each time CEF repaints the page below the popup.
+    m_popup_data.resize(4 * width * height);
+    m_popup_width = width;
+    m_popup_height = height;
+
+    unsigned char* imageData = m_popup_data.ptrw();
+    const unsigned char* cbuffer = static_cast<const unsigned char*>(buffer);
+    PARALLEL_FOR(int y = 0; y < height; ++y)
+    {
+        int const pixelOffset = y * width;
+        convertBGRAtoRGBA(
+            imageData + pixelOffset * 4, cbuffer + pixelOffset * 4, width);
+    }
+
+    // The popup cannot be composited before the page has been painted once.
+    if (m_data.size() == 0)
+        return;
+
+    compositePopup();
+    updateTexture(false);
+
+    emit_signal("on_browser_paint", this);
+}
+
+//------------------------------------------------------------------------------
+void GdBrowserView::onPopupShow(CefRefPtr<CefBrowser> browser, bool show)
+{
+    if (show)
+        return;
+
+    // Forget the popup and repaint the page area it was covering.
+    m_popup_data.resize(0);
+    m_popup_width = 0;
+    m_popup_height = 0;
+    m_popup_x = 0;
+    m_popup_y = 0;
+    m_repaint_page = true;
+
+    if ((browser != nullptr) && (browser->GetHost() != nullptr))
+    {
+        browser->GetHost()->Invalidate(PET_VIEW);
+    }
+}
+
+//------------------------------------------------------------------------------
+void GdBrowserView::onPopupSize(CefRefPtr<CefBrowser> browser,
+                                const CefRect& rect)
+{
+    if ((rect.width <= 0) || (rect.height <= 0))
+        return;
+
+    // CEF expects its client to keep the popup inside the page.
+    int const view_width =
+        (m_painted_width > 0) ? m_painted_width : int(m_width);
+    int const view_height =
+        (m_painted_height > 0) ? m_painted_height : int(m_height);
+
+    m_popup_x = std::max(0, std::min(rect.x, view_width - rect.width));
+    m_popup_y = std::max(0, std::min(rect.y, view_height - rect.height));
+}
+
+//------------------------------------------------------------------------------
+void GdBrowserView::compositePopup()
+{
+    if ((m_popup_width <= 0) || (m_popup_height <= 0) ||
+        (m_popup_data.size() == 0))
+        return;
+
+    // Clip the popup: CEF may have sized it for a page dimension that our next
+    // paint has not applied yet.
+    int const width = std::min(m_popup_width, m_painted_width - m_popup_x);
+    int const height = std::min(m_popup_height, m_painted_height - m_popup_y);
+    if ((width <= 0) || (height <= 0))
+        return;
+
+    unsigned char* page = m_data.ptrw();
+    const unsigned char* popup = m_popup_data.ptr();
+    for (int line = 0; line < height; ++line)
+    {
+        std::memcpy(
+            page + ((m_popup_y + line) * m_painted_width + m_popup_x) * 4,
+            popup + line * m_popup_width * 4,
+            size_t(width) * 4u);
+    }
+}
+
+//------------------------------------------------------------------------------
+void GdBrowserView::updateTexture(bool recreate)
+{
     // Wrap the pixels inside a Godot image to upload them to the Godot texture.
     // This image is deliberately temporary: holding it as a member would hold a
     // reference on m_data, and Godot's copy-on-write would then duplicate the
     // whole frame at the first write of the next paint, making the partial copy
     // of the dirty rectangles pointless.
-    godot::Ref<godot::Image> image = godot::Image::create_from_data(
-        width, height, false, godot::Image::FORMAT_RGBA8, m_data);
-
-    if (bResized)
+    godot::Ref<godot::Image> image =
+        godot::Image::create_from_data(m_painted_width,
+                                       m_painted_height,
+                                       false,
+                                       godot::Image::FORMAT_RGBA8,
+                                       m_data);
+    if (recreate)
     {
         // ImageTexture::update() only accepts an image of the dimension of the
         // texture, so the texture has to be recreated.
@@ -578,8 +689,6 @@ void GdBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
     {
         m_texture->update(image);
     }
-
-    emit_signal("on_browser_paint", this);
 }
 
 //------------------------------------------------------------------------------

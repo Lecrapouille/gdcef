@@ -251,6 +251,27 @@ private: // CEF interfaces
         }
 
         // ---------------------------------------------------------------------
+        //! \brief Called when the browser wants to show or hide the popup
+        //! widget (i.e. an expanded <select> list).
+        // ---------------------------------------------------------------------
+        virtual void OnPopupShow(CefRefPtr<CefBrowser> browser,
+                                 bool show) override
+        {
+            m_owner.onPopupShow(browser, show);
+        }
+
+        // ---------------------------------------------------------------------
+        //! \brief Called when the browser wants to move or resize the popup
+        //! widget. \param[in] rect the new location and size in view
+        //! coordinates.
+        // ---------------------------------------------------------------------
+        virtual void OnPopupSize(CefRefPtr<CefBrowser> browser,
+                                 const CefRect& rect) override
+        {
+            m_owner.onPopupSize(browser, rect);
+        }
+
+        // ---------------------------------------------------------------------
         //! \brief Called when an element should be painted. Pixel values passed
         //! to this method are scaled relative to view coordinates based on the
         //! value of CefScreenInfo.device_scale_factor returned from
@@ -1105,6 +1126,35 @@ private:
                  int height);
 
     // -------------------------------------------------------------------------
+    //! \brief Called by onPaint() for the pixels of the popup widget, which CEF
+    //! renders in its own buffer.
+    // -------------------------------------------------------------------------
+    void onPaintPopup(const void* buffer, int width, int height);
+
+    // -------------------------------------------------------------------------
+    //! \brief Called by GdBrowserView::Impl::OnPopupShow
+    // -------------------------------------------------------------------------
+    void onPopupShow(CefRefPtr<CefBrowser> browser, bool show);
+
+    // -------------------------------------------------------------------------
+    //! \brief Called by GdBrowserView::Impl::OnPopupSize
+    // -------------------------------------------------------------------------
+    void onPopupSize(CefRefPtr<CefBrowser> browser, const CefRect& rect);
+
+    // -------------------------------------------------------------------------
+    //! \brief Composite the pixels of the popup widget over the page pixels.
+    //! Done again after each page paint since the page erases the popup.
+    // -------------------------------------------------------------------------
+    void compositePopup();
+
+    // -------------------------------------------------------------------------
+    //! \brief Send the page pixels to the Godot texture.
+    //! \param[in] recreate set to true when the dimension changed, since
+    //! ImageTexture::update() only accepts an image of the same dimension.
+    // -------------------------------------------------------------------------
+    void updateTexture(bool recreate);
+
+    // -------------------------------------------------------------------------
     //! \brief Called by GdBrowserView::Impl::OnLoadStart
     // -------------------------------------------------------------------------
     void onLoadStart(CefRefPtr<CefBrowser> browser,
@@ -1272,11 +1322,29 @@ private:
     godot::PackedByteArray m_data;
 
     //! \brief Dimension of the last painted CEF buffer, and therefore the
-    //! dimension of the pixels currently held by m_data, m_image and m_texture.
-    //! Differs from m_width and m_height, which are the desired dimension that
-    //! CEF only applies at its next paint.
+    //! dimension of the pixels currently held by m_data and m_texture. Differs
+    //! from m_width and m_height, which are the desired dimension that CEF only
+    //! applies at its next paint.
     int m_painted_width = 0;
     int m_painted_height = 0;
+
+    //! \brief Pixels of the popup widget (i.e. an expanded <select> list),
+    //! converted from CEF's BGRA to Godot's RGBA. CEF renders the popup in its
+    //! own buffer, so they are kept to be composited over the page again each
+    //! time the page below is repainted. Empty when no popup is shown.
+    godot::PackedByteArray m_popup_data;
+    int m_popup_width = 0;
+    int m_popup_height = 0;
+
+    //! \brief Position of the popup widget inside the page, in pixels, given by
+    //! CEF and clamped to stay inside the page.
+    int m_popup_x = 0;
+    int m_popup_y = 0;
+
+    //! \brief Set when the pixels we hold are not those of the page (a popup
+    //! widget was composited over them) and CEF's dirty rectangles are
+    //! therefore not enough to refresh them.
+    bool m_repaint_page = false;
 
     //! \brief Mouse cursor position on the main window
     int m_mouse_x = 0;
