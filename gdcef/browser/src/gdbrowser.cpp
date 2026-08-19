@@ -140,7 +140,7 @@ public:
 
     virtual void Visit(const CefString& string) override
     {
-        godot::String html(string.ToString().c_str());
+        godot::String html = godot::String::utf8(string.ToString().c_str());
         m_node.emit_signal("on_html_content_requested", html, &m_node);
     }
 
@@ -424,7 +424,7 @@ godot::String GdBrowserView::getError()
     // collected since the browser creation.
     m_error.str(std::string{});
     m_error.clear();
-    return {err.c_str()};
+    return godot::String::utf8(err.c_str());
 }
 
 //------------------------------------------------------------------------------
@@ -740,7 +740,7 @@ void GdBrowserView::onLoadError(CefRefPtr<CefBrowser> /*browser*/,
     {
         std::string str = errorText.ToString();
         BROWSER_ERROR("has failed loading " << frame->GetURL() << ": " << str);
-        godot::String msg(str.c_str());
+        godot::String msg = godot::String::utf8(str.c_str());
         // Emit signal for Godot script
         emit_signal("on_page_failed_loading", errCode, msg, this);
     }
@@ -779,7 +779,7 @@ void GdBrowserView::loadURL(godot::String url)
     error_html += "</h2></body></html>";
 
     // Load the error page using data URI
-    loadDataURI(godot::String(error_html.c_str()), "text/html");
+    loadDataURI(godot::String::utf8(error_html.c_str()), "text/html");
 }
 
 //------------------------------------------------------------------------------
@@ -823,7 +823,7 @@ godot::String GdBrowserView::getURL() const
     {
         std::string str = m_browser->GetMainFrame()->GetURL().ToString();
         BROWSER_DEBUG(str);
-        return {str.c_str()};
+        return godot::String::utf8(str.c_str());
     }
 
     BROWSER_ERROR("Not possible to retrieving URL");
@@ -1337,7 +1337,10 @@ void GdBrowserView::onDownloadUpdated(
 
     // Emit signal for Godot script
     emit_signal(
-        "on_download_updated", godot::String(file.c_str()), percentage, this);
+        "on_download_updated",
+        godot::String::utf8(file.c_str()),
+        percentage,
+        this);
 }
 
 //------------------------------------------------------------------------------
@@ -1542,7 +1545,7 @@ bool GdBrowserView::onProcessMessageReceived(
     {
         // Get the JSON string of the arguments
         std::string json_args = args_list->GetString(1).ToString();
-        godot::String json_godot(json_args.c_str());
+        godot::String json_godot = godot::String::utf8(json_args.c_str());
 
         // Parse the JSON to a Godot Variant
         godot::Variant parsed = godot::JSON::parse_string(json_godot);
@@ -1775,21 +1778,25 @@ bool GdBrowserView::onDragEnter(CefRefPtr<CefBrowser> browser,
         godot::Array files;
         for (const auto& file : file_names)
         {
-            files.push_back(godot::String(file.ToString().c_str()));
+            files.push_back(godot::String::utf8(file.ToString().c_str()));
         }
         drag_info["files"] = files;
     }
     else if (dragData->IsLink())
     {
         drag_info["type"] = "link";
-        drag_info["url"] = godot::String(dragData->GetLinkURL().ToString().c_str());
-        drag_info["title"] = godot::String(dragData->GetLinkTitle().ToString().c_str());
+        drag_info["url"] =
+            godot::String::utf8(dragData->GetLinkURL().ToString().c_str());
+        drag_info["title"] =
+            godot::String::utf8(dragData->GetLinkTitle().ToString().c_str());
     }
     else if (dragData->IsFragment())
     {
         drag_info["type"] = "fragment";
-        drag_info["text"] = godot::String(dragData->GetFragmentText().ToString().c_str());
-        drag_info["html"] = godot::String(dragData->GetFragmentHtml().ToString().c_str());
+        drag_info["text"] =
+            godot::String::utf8(dragData->GetFragmentText().ToString().c_str());
+        drag_info["html"] =
+            godot::String::utf8(dragData->GetFragmentHtml().ToString().c_str());
     }
     else
     {
@@ -1957,20 +1964,23 @@ bool GdBrowserView::onStartDragging(CefRefPtr<CefBrowser> browser,
         godot::Array files;
         for (const auto& file : file_names)
         {
-            files.push_back(godot::String(file.ToString().c_str()));
+            files.push_back(godot::String::utf8(file.ToString().c_str()));
         }
         drag_info["files"] = files;
     }
     else if (drag_data->IsLink())
     {
         drag_info["type"] = "link";
-        drag_info["url"] = godot::String(drag_data->GetLinkURL().ToString().c_str());
+        drag_info["url"] =
+            godot::String::utf8(drag_data->GetLinkURL().ToString().c_str());
     }
     else if (drag_data->IsFragment())
     {
         drag_info["type"] = "fragment";
-        drag_info["text"] = godot::String(drag_data->GetFragmentText().ToString().c_str());
-        drag_info["html"] = godot::String(drag_data->GetFragmentHtml().ToString().c_str());
+        drag_info["text"] =
+            godot::String::utf8(drag_data->GetFragmentText().ToString().c_str());
+        drag_info["html"] =
+            godot::String::utf8(drag_data->GetFragmentHtml().ToString().c_str());
     }
     drag_info["x"] = x;
     drag_info["y"] = y;

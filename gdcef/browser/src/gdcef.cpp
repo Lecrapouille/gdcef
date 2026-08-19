@@ -286,7 +286,7 @@ godot::String GdCEF::getError()
     // collected since the startup.
     m_error.str(std::string{});
     m_error.clear();
-    return {err.c_str()};
+    return godot::String::utf8(err.c_str());
 }
 
 //------------------------------------------------------------------------------
