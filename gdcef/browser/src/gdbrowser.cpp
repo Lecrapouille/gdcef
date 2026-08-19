@@ -525,7 +525,12 @@ void GdBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
     int const SIZEOF_COLOR = COLOR_CHANELS * sizeof(char);
     int const TEXTURE_SIZE = SIZEOF_COLOR * width * height;
 
-    bool bResized = m_data.size() != TEXTURE_SIZE;
+    // Compare the dimension and not the size of the buffer: a resize keeping
+    // the pixel count (i.e. 400 x 300 becoming 300 x 400) would else be missed
+    // and ImageTexture::update() refuses an image of different dimension.
+    bool bResized = (width != m_painted_width) || (height != m_painted_height);
+    m_painted_width = width;
+    m_painted_height = height;
 
     // Copy CEF image buffer to Godot PoolByteArray
     m_data.resize(TEXTURE_SIZE);

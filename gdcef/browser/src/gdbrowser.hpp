@@ -1262,6 +1262,13 @@ private:
     godot::Ref<godot::Image> m_image;
     godot::PackedByteArray m_data;
 
+    //! \brief Dimension of the last painted CEF buffer, and therefore the
+    //! dimension of the pixels currently held by m_data, m_image and m_texture.
+    //! Differs from m_width and m_height, which are the desired dimension that
+    //! CEF only applies at its next paint.
+    int m_painted_width = 0;
+    int m_painted_height = 0;
+
     //! \brief Mouse cursor position on the main window
     int m_mouse_x = 0;
     int m_mouse_y = 0;
