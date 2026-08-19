@@ -611,7 +611,11 @@ GdBrowserView* GdCEF::createBrowser(godot::String const& url,
     int id = browser->init(convert_godot_url(url), settings, windowInfo());
     if (id < 0)
     {
-        GDCEF_ERROR("browser->init() failed");
+        GDCEF_ERROR("browser->init() failed: "
+                    << browser->getError().utf8().get_data());
+        // The node has not been added to the scene tree yet, therefore nobody
+        // else will free it.
+        memdelete(browser);
         return nullptr;
     }
 
