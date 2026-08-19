@@ -391,19 +391,20 @@ void GdBrowserView::_bind_methods()
                           PropertyInfo(Variant::INT, "cursor_shape"),
                           PropertyInfo(Variant::OBJECT, "browser")));
 
-    // Properties
+    // Properties.
+    //
+    // Note: the browser texture is deliberately not exposed as a property. It
+    // is an output owned by the browser (created and resized by onPaint()) and
+    // shall be read with get_texture(). Exposing it also made Godot warn about
+    // an instantiated ImageTexture used as class default value, because the
+    // engine snapshots the default value of every editor/storage property from
+    // a throw-away instance of the class.
     ADD_PROPERTY(PropertyInfo(Variant::OBJECT,
                               "audio_stream",
-                              PROPERTY_HINT_NODE_TYPE,
+                              PROPERTY_HINT_RESOURCE_TYPE,
                               "AudioStreamGeneratorPlayback"),
                  "set_audio_stream",
                  "get_audio_stream");
-    ADD_PROPERTY(PropertyInfo(Variant::OBJECT,
-                              "texture",
-                              PROPERTY_HINT_NODE_TYPE,
-                              "ImageTexture"),
-                 "set_texture",
-                 "get_texture");
 }
 
 //------------------------------------------------------------------------------

@@ -169,8 +169,10 @@ Nodes are created by `gdCEF.create_browser` and are automatically destroyed when
 
 | Property name | Type | Description |
 |---------------|------|-------------|
-| `texture` | ImageTexture | Godot texture containing the page content for rendering in other Godot nodes. |
 | `audio_stream` | AudioStreamGeneratorPlayback | Audio stream for playing audio content. |
+
+The browser texture is not a property: it is owned and resized by the browser
+itself, use `get_texture()` to read it.
 
 ### Browser settings
 
