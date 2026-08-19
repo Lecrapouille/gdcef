@@ -439,10 +439,6 @@ int GdBrowserView::init(godot::String const& url,
             return -1;
         }
     }
-    if (!m_image.is_valid())
-    {
-        m_image.instantiate();
-    }
     if (!m_texture.is_valid())
     {
         m_texture.instantiate();
@@ -552,11 +548,6 @@ void GdBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
         {
             doCopyLine(y, 0, width);
         }
-
-        // Copy Godot PoolByteArray to Godot texture.
-        m_image->set_data(
-            width, height, false, godot::Image::FORMAT_RGBA8, m_data);
-        m_texture->set_image(m_image);
     }
     else
     {
@@ -567,11 +558,25 @@ void GdBrowserView::onPaint(CefRefPtr<CefBrowser> /*browser*/,
                 doCopyLine(y, rect.x, rect.width);
             }
         }
+    }
 
-        // Copy Godot PoolByteArray to Godot texture.
-        m_image->set_data(
-            width, height, false, godot::Image::FORMAT_RGBA8, m_data);
-        m_texture->update(m_image);
+    // Wrap the pixels inside a Godot image to upload them to the Godot texture.
+    // This image is deliberately temporary: holding it as a member would hold a
+    // reference on m_data, and Godot's copy-on-write would then duplicate the
+    // whole frame at the first write of the next paint, making the partial copy
+    // of the dirty rectangles pointless.
+    godot::Ref<godot::Image> image = godot::Image::create_from_data(
+        width, height, false, godot::Image::FORMAT_RGBA8, m_data);
+
+    if (bResized)
+    {
+        // ImageTexture::update() only accepts an image of the dimension of the
+        // texture, so the texture has to be recreated.
+        m_texture->set_image(image);
+    }
+    else
+    {
+        m_texture->update(image);
     }
 
     emit_signal("on_browser_paint", this);

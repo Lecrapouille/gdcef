@@ -517,7 +517,7 @@ public:
     //! CefBrowserSettings const&, CefWindowInfo const&) because Godot does not
     //! manage non dummy constructors.
     //!
-    //! \note The CEF client and the Godot image and texture are allocated by
+    //! \note The CEF client and the Godot texture are allocated by
     //! init() and not here, because Godot also builds throw-away instances of
     //! registered classes (to collect the default value of the properties or
     //! to generate the class documentation) for which this is pure waste.
@@ -1263,9 +1263,12 @@ private:
     //! whole browsers.
     CefRefPtr<CefBrowser> m_browser = nullptr;
 
-    //! \brief Godot's temporary image (CEF => Godot)
+    //! \brief Godot's texture holding the page content (CEF => Godot)
     godot::Ref<godot::ImageTexture> m_texture;
-    godot::Ref<godot::Image> m_image;
+
+    //! \brief Page pixels converted from CEF's BGRA to Godot's RGBA. Kept
+    //! between paints so that CEF's dirty rectangles can be applied on the
+    //! previous frame instead of converting the whole page.
     godot::PackedByteArray m_data;
 
     //! \brief Dimension of the last painted CEF buffer, and therefore the
