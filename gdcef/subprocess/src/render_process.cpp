@@ -25,6 +25,7 @@
 
 #include "render_process.hpp"
 #include "cef_parser.h" // For CefBase64Encode and CefBase64Decode
+#include <cstdio>
 #include <fstream>
 
 //------------------------------------------------------------------------------
@@ -424,8 +425,25 @@ std::string GodotMethodHandler::V8ToJSON(CefRefPtr<CefV8Value> value, int depth)
                     escaped += "\\t";
                     break;
                 default:
-                    escaped += c;
+                {
+                    // The remaining control characters are not allowed inside a
+                    // JSON string: unescaped, they made Godot's
+                    // JSON::parse_string() reject the whole message. Note the
+                    // cast to unsigned char, so that the bytes of the UTF-8
+                    // sequences (negative on a signed char) are copied as is.
+                    unsigned char byte = static_cast<unsigned char>(c);
+                    if (byte < 0x20u)
+                    {
+                        char unicode[7];
+                        snprintf(unicode, sizeof(unicode), "\\u%04x", byte);
+                        escaped += unicode;
+                    }
+                    else
+                    {
+                        escaped += c;
+                    }
                     break;
+                }
             }
         }
         escaped += '"';
