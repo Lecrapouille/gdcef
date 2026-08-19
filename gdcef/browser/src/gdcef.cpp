@@ -346,19 +346,19 @@ static void configureCEF(fs::path const& folder,
 #if !defined(__APPLE__)
     fs::path sub_process_path =
         getConfig(config, "browser_subprocess_path", folder / SUBPROCESS_NAME);
-    GDCEF_DEBUG("Setting SubProcess path: " << sub_process_path.string());
+    GDCEF_DEBUG("Setting SubProcess path: " << path_to_utf8(sub_process_path));
     CefString(&cef_settings.browser_subprocess_path)
-        .FromString(sub_process_path.string());
+        .FromString(path_to_utf8(sub_process_path));
 #else
     fs::path main_bundle_path = folder / SUBPROCESS_NAME;
     fs::path subprocess_path = main_bundle_path /
                                "Contents/Frameworks/cefsimple "
                                "Helper.app/Contents/MacOS/cefsimple Helper";
     CefString(&cef_settings.main_bundle_path)
-        .FromString(main_bundle_path.string());
+        .FromString(path_to_utf8(main_bundle_path));
     CefString(&cef_settings.browser_subprocess_path)
-        .FromString(subprocess_path.string());
-    GDCEF_DEBUG("Setting SubProcess path: " << main_bundle_path.string());
+        .FromString(path_to_utf8(subprocess_path));
+    GDCEF_DEBUG("Setting SubProcess path: " << path_to_utf8(main_bundle_path));
 #endif
 
     // The root directory that all CefSettings.cache_path and
@@ -370,8 +370,8 @@ static void configureCEF(fs::path const& folder,
     // directory.
     fs::path root_cache =
         getConfig(config, "root_cache_path", folder / "cache");
-    GDCEF_DEBUG("Setting root cache path: " << root_cache.string());
-    CefString(&cef_settings.root_cache_path).FromString(root_cache.string());
+    GDCEF_DEBUG("Setting root cache path: " << path_to_utf8(root_cache));
+    CefString(&cef_settings.root_cache_path).FromString(path_to_utf8(root_cache));
 
     // Incognito mode: cache directories not used.
 
@@ -395,9 +395,9 @@ static void configureCEF(fs::path const& folder,
     {
         fs::path sub_process_cache =
             getConfig(config, "cache_path", root_cache);
-        GDCEF_DEBUG("Setting cache path: " << sub_process_cache.string());
+        GDCEF_DEBUG("Setting cache path: " << path_to_utf8(sub_process_cache));
         CefString(&cef_settings.cache_path)
-            .FromString(sub_process_cache.string());
+            .FromString(path_to_utf8(sub_process_cache));
     }
 
     /// The fully qualified path for the locales directory. If this value is
@@ -408,8 +408,9 @@ static void configureCEF(fs::path const& folder,
     /// command-line switch.
     fs::path locales_path =
         getConfig(config, "locales_path", folder / "locales");
-    GDCEF_DEBUG("Setting locales path: " << locales_path.string());
-    CefString(&cef_settings.locales_dir_path).FromString(locales_path.string());
+    GDCEF_DEBUG("Setting locales path: " << path_to_utf8(locales_path));
+    CefString(&cef_settings.locales_dir_path)
+        .FromString(path_to_utf8(locales_path));
 
     // The locale string that will be passed to WebKit. If empty the default
     // locale of "en-US" will be used. This value is ignored on Linux where
@@ -428,7 +429,7 @@ static void configureCEF(fs::path const& folder,
     // using the "log-file" command-line switch.
     fs::path log_file_path =
         getConfig(config, "log_file", folder / "debug.log");
-    CefString(&cef_settings.log_file).FromString(log_file_path.string());
+    CefString(&cef_settings.log_file).FromString(path_to_utf8(log_file_path));
     std::string logString =
         getConfig(config, "log_severity", std::string("warning"));
     if (logString == "verbose")

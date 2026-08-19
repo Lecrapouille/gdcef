@@ -1280,11 +1280,11 @@ void GdBrowserView::setDownloadFolder(godot::String path)
 {
     if (path.begins_with("user://") || path.begins_with("res://"))
     {
-        m_download_folder = GLOBALIZE_PATH(path);
+        m_download_folder = utf8_to_path(GLOBALIZE_PATH(path));
     }
     else
     {
-        m_download_folder = path.utf8().get_data();
+        m_download_folder = utf8_to_path(path.utf8().get_data());
     }
 }
 
@@ -1310,12 +1310,16 @@ bool GdBrowserView::onBeforeDownload(
     const CefString& suggested_name,
     CefRefPtr<CefBeforeDownloadCallback> callback)
 {
-    fs::path download_path =
-        fs::path(m_download_folder) / fs::path(suggested_name.c_str());
-    BROWSER_DEBUG("Downloading file for path " << download_path.string());
+    // Note: only keep the file name of the suggestion, which comes from the
+    // server: a name holding path separators or ".." would write outside of the
+    // download folder, and an absolute one would even replace it entirely.
+    fs::path name = utf8_to_path(suggested_name.ToString()).filename();
+    fs::path download_path = m_download_folder / name;
+    std::string utf8_path = path_to_utf8(download_path);
+    BROWSER_DEBUG("Downloading file to path " << utf8_path);
 
     // Don't show the download dialog, just go for it
-    callback->Continue(download_path.string().c_str(), false);
+    callback->Continue(utf8_path, false);
 
     return false;
 }

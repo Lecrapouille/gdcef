@@ -56,6 +56,28 @@ namespace fs = std::experimental::filesystem;
         .get_data()
 
 // ****************************************************************************
+//! \brief Convert an UTF-8 string, the encoding used by both Godot and CEF,
+//! into a filesystem path.
+//! \note A path shall not be built directly from a std::string: its bytes are
+//! then decoded with the narrow encoding of the system, which is the active
+//! code page on Windows and not UTF-8, mangling every non ASCII character.
+//! \param[in] utf8 The path as an UTF-8 string.
+//! \return The same path, using the native encoding of the system.
+// ****************************************************************************
+fs::path utf8_to_path(std::string const& utf8);
+
+// ****************************************************************************
+//! \brief Convert a filesystem path into an UTF-8 string, the encoding
+//! expected by both Godot and CEF.
+//! \note std::filesystem::path::string() shall not be used for that purpose: on
+//! Windows it encodes with the active code page and even throws an exception
+//! when the path cannot be represented with it.
+//! \param[in] path The path using the native encoding of the system.
+//! \return The same path as an UTF-8 string.
+// ****************************************************************************
+std::string path_to_utf8(fs::path const& path);
+
+// ****************************************************************************
 //! \brief Get the name of the current application since we cannot directly
 //! access to the command line (argv[0]).
 // ****************************************************************************

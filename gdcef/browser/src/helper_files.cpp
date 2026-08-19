@@ -36,6 +36,20 @@
 #endif
 
 //------------------------------------------------------------------------------
+fs::path utf8_to_path(std::string const& utf8)
+{
+    return fs::path(std::u8string(reinterpret_cast<const char8_t*>(utf8.data()),
+                                  utf8.size()));
+}
+
+//------------------------------------------------------------------------------
+std::string path_to_utf8(fs::path const& path)
+{
+    std::u8string utf8 = path.u8string();
+    return std::string(reinterpret_cast<const char*>(utf8.data()), utf8.size());
+}
+
+//------------------------------------------------------------------------------
 bool are_valid_files(fs::path const& folder,
                      std::vector<std::string> const& files)
 {
