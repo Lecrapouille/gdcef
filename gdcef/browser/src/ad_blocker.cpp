@@ -47,6 +47,8 @@ void AdBlocker::enable(bool enable)
 //------------------------------------------------------------------------------
 void AdBlocker::clearRules()
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     m_blocked_domains.clear();
     m_exception_domains.clear();
     m_blocked_patterns.clear();
@@ -56,6 +58,8 @@ void AdBlocker::clearRules()
 //------------------------------------------------------------------------------
 std::string AdBlocker::getStats() const
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     std::ostringstream ss;
     ss << "AdBlocker stats: "
        << m_blocked_domains.size() << " blocked domains, "
@@ -97,6 +101,14 @@ std::string AdBlocker::extractDomain(const std::string& url) const
 
 //------------------------------------------------------------------------------
 bool AdBlocker::addRule(const std::string& rule)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+
+    return addRuleUnlocked(rule);
+}
+
+//------------------------------------------------------------------------------
+bool AdBlocker::addRuleUnlocked(const std::string& rule)
 {
     // Skip empty lines and comments
     if (rule.empty() || rule[0] == '!' || rule[0] == '[')
@@ -238,9 +250,10 @@ size_t AdBlocker::loadFilterList(const std::string& filepath)
 
     size_t count = 0;
     std::string line;
+    std::lock_guard<std::mutex> lock(m_mutex);
     while (std::getline(file, line))
     {
-        if (addRule(line))
+        if (addRuleUnlocked(line))
         {
             count++;
         }
@@ -324,6 +337,11 @@ bool AdBlocker::isException(const std::string& url) const
 //------------------------------------------------------------------------------
 bool AdBlocker::shouldBlock(const std::string& url) const
 {
+    // The rules can be edited from the Godot thread while we are matching them
+    // from the CEF IO thread. isException() and isDomainBlocked() are called
+    // with the lock held.
+    std::lock_guard<std::mutex> lock(m_mutex);
+
     // First check if URL matches an exception
     if (isException(url))
     {

@@ -27,10 +27,11 @@
 #define AD_BLOCKER_HPP
 
 #include "cef_resource_request_handler.h"
+#include <atomic>
+#include <mutex>
 #include <string>
-#include <vector>
 #include <unordered_set>
-#include <unordered_map>
+#include <vector>
 
 // =============================================================================
 //! \brief Ad blocker based on Adblock Plus filter list format (EasyList compatible).
@@ -45,6 +46,11 @@
 //! The blocker uses optimized matching:
 //! - Hash-based domain lookup for O(1) domain matching
 //! - Substring search for path patterns (no slow regex)
+//!
+//! Note on threads: the rules are modified from the Godot thread (through
+//! GdBrowserView::addAdBlockPattern() and friends) while they are read from
+//! the CEF IO thread (OnBeforeResourceLoad), therefore they are protected by
+//! m_mutex.
 // =============================================================================
 class AdBlocker : public CefResourceRequestHandler
 {
@@ -132,7 +138,8 @@ private:
     bool shouldBlock(const std::string& url) const;
 
     // -------------------------------------------------------------------------
-    //! \brief Check if a URL matches an exception rule.
+    //! \brief Check if a URL matches an exception rule. Shall be called with
+    //! m_mutex held.
     //! \param[in] url The URL to check.
     //! \return True if the URL is whitelisted.
     // -------------------------------------------------------------------------
@@ -140,15 +147,28 @@ private:
 
     // -------------------------------------------------------------------------
     //! \brief Check if a domain matches any blocked domain (including parents).
+    //! Shall be called with m_mutex held.
     //! \param[in] domain The domain to check.
     //! \return True if blocked.
     // -------------------------------------------------------------------------
     bool isDomainBlocked(const std::string& domain) const;
 
     // -------------------------------------------------------------------------
-    //! \brief Load default blocking rules.
+    //! \brief Parse and store a rule. Shall be called with m_mutex held.
+    //! \param[in] rule The filter rule in EasyList format.
+    //! \return True if the rule was parsed successfully.
+    // -------------------------------------------------------------------------
+    bool addRuleUnlocked(const std::string& rule);
+
+    // -------------------------------------------------------------------------
+    //! \brief Load default blocking rules. Called by the constructor, when the
+    //! instance is not shared yet, therefore without holding m_mutex.
     // -------------------------------------------------------------------------
     void loadDefaultRules();
+
+    //! \brief Protect the rules against the concurrent access of the Godot
+    //! thread (rule edition) and of the CEF IO thread (rule matching).
+    mutable std::mutex m_mutex;
 
     //! \brief Blocked domains (hash set for O(1) lookup).
     std::unordered_set<std::string> m_blocked_domains;
@@ -162,8 +182,9 @@ private:
     //! \brief Path patterns to whitelist.
     std::vector<std::string> m_exception_patterns;
 
-    //! \brief Enable flag.
-    bool m_enabled = true;
+    //! \brief Enable flag. Atomic so that the CEF IO thread can read it while
+    //! the Godot thread writes it.
+    std::atomic<bool> m_enabled{true};
 };
 
 #endif // AD_BLOCKER_HPP
