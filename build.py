@@ -59,16 +59,19 @@ CEF_ARTIFACTS_FOLDER_NAME = "cef_artifacts"
 # Copy the version listed there WITHOUT the OS or architecture; this script chooses the correct binary.
 CEF_VERSION = "151.3.18+gbeff58d+chromium-151.0.7922.138"
 
-# Your Godot editor version. Must match either:
-#  - a "godot-<version>-stable" tag at https://github.com/godotengine/godot-cpp/tags
-#  - or a "<version>" branch at https://github.com/godotengine/godot-cpp/branches
+# Godot editor version your extension must match (same major.minor as the user).
+# build.py selects how to fetch godot-cpp automatically:
+#  - Godot 4.2 .. 4.5: clone the matching branch on godotengine/godot-cpp.
+#  - Godot 4.6 and later: clone godot-cpp 10.x (GODOT_CPP_MODERN_GIT_REF) and pass
+#    api_version=GODOT_VERSION to scons (no dedicated 4.6/4.7 branches anymore).
+# See https://github.com/godotengine/godot-cpp#compatibility
 # (!) WARNING (!)
 #  - Do not use version 4.1: gdextension is not compatible.
 #  - Do not use version 3.x: use the godot-3.x branch of gdCEF instead.
-GODOT_VERSION = "4.5"                                     # Example: "4.2" or a tag
+GODOT_VERSION = "4.7"                                     # Example: "4.5", "4.7"
 
-# Use "godot-<version>-stable" for a tag, or "<version>" to track the HEAD of a branch.
-GODOT_CPP_GIT_TAG_OR_BRANCH = GODOT_VERSION
+# Branch/tag of godot-cpp 10.x when GODOT_VERSION is 4.6 or newer (ignored for <= 4.5).
+GODOT_CPP_MODERN_GIT_REF = "10.0.0-stable"                # Or "master" for bleeding edge
 
 # Build/compilation modes
 COMPILATION_MODE = "release"                              # Or "debug"
@@ -629,15 +632,60 @@ def install_gdcef_render_process_macos():
 
 ###############################################################################
 #
+# Godot-cpp fetch mode (legacy branch vs godot-cpp 10.x + api_version)
+#
+###############################################################################
+def resolve_godot_cpp_settings():
+    """Return (git_ref, api_version). api_version is None for the branch-per-Godot model."""
+    try:
+        godot_ver = version.parse(GODOT_VERSION)
+    except version.InvalidVersion:
+        fatal("Invalid GODOT_VERSION: " + GODOT_VERSION)
+
+    if godot_ver < version.parse("4.2"):
+        fatal("GODOT_VERSION " + GODOT_VERSION + " is not supported (minimum 4.2)")
+
+    if godot_ver <= version.parse("4.5"):
+        return (GODOT_VERSION, None)
+
+    return (GODOT_CPP_MODERN_GIT_REF, GODOT_VERSION)
+
+
+def format_godot_cpp_mode(git_ref, api_version):
+    if api_version is None:
+        return "branch " + git_ref
+    return git_ref + ", api_version=" + api_version
+
+
+def godot_cpp_scons_extra_args():
+    """SCons arguments shared by all platforms when building godot-cpp."""
+    args = ["target=" + GODOT_CPP_TARGET, "use_static_cpp=no"]
+    _, api_version = resolve_godot_cpp_settings()
+    if api_version:
+        args.append("api_version=" + api_version)
+    return args
+
+
+def log_godot_build_target():
+    git_ref, api_version = resolve_godot_cpp_settings()
+    info("GODOT_VERSION=" + GODOT_VERSION + " (godot-cpp: "
+         + format_godot_cpp_mode(git_ref, api_version) + ")")
+
+
+###############################################################################
+#
 # Download the Godot-cpp wrapper needed for gdnative CEF modules
 #
 ###############################################################################
 def download_godot_cpp():
+    git_ref, api_version = resolve_godot_cpp_settings()
     if not os.path.exists(GODOT_CPP_API_PATH):
-        info("Cloning Godot C++ wrapper (" + GODOT_VERSION + ") into " + GODOT_CPP_API_PATH)
+        info("Cloning godot-cpp for Godot " + GODOT_VERSION + " ("
+             + format_godot_cpp_mode(git_ref, api_version) + ") into "
+             + GODOT_CPP_API_PATH)
         mkdir(GODOT_CPP_API_PATH)
-        exec("git", "ls-remote", "https://github.com/godotengine/godot-cpp", GODOT_CPP_GIT_TAG_OR_BRANCH)
-        exec("git", "clone", "--recursive", "-b", GODOT_CPP_GIT_TAG_OR_BRANCH,
+        exec("git", "ls-remote", "https://github.com/godotengine/godot-cpp", git_ref)
+        exec("git", "clone", "--recursive", "-b", git_ref,
              "https://github.com/godotengine/godot-cpp", GODOT_CPP_API_PATH)
 
 ###############################################################################
@@ -647,27 +695,21 @@ def download_godot_cpp():
 ###############################################################################
 def compile_godot_cpp():
     lib = os.path.join(GODOT_CPP_API_PATH, "bin", "libgodot-cpp*" + GODOT_CPP_TARGET + "*")
-    if not os.path.exists(lib):
-        info("Compiling Godot C++ API (inside " + GODOT_CPP_API_PATH + ") ...")
+    if not glob.glob(lib):
+        git_ref, api_version = resolve_godot_cpp_settings()
+        info("Compiling Godot C++ API for Godot " + GODOT_VERSION + " ("
+             + format_godot_cpp_mode(git_ref, api_version) + ") in "
+             + GODOT_CPP_API_PATH + " ...")
         os.chdir(GODOT_CPP_API_PATH)
+        extra = godot_cpp_scons_extra_args()
         if OSTYPE == "Linux":
-            scons("platform=linux",
-                  "target=" + GODOT_CPP_TARGET,
-                  "use_static_cpp=no")
+            scons("platform=linux", *extra)
         elif OSTYPE == "Darwin":
-            scons("platform=macos",
-                  "arch=" + ARCHI,
-                  "target=" + GODOT_CPP_TARGET,
-                  "use_static_cpp=no")
+            scons("platform=macos", "arch=" + ARCHI, *extra)
         elif OSTYPE == "MinGW":
-            scons("platform=windows",
-                  "use_mingw=True",
-                  "target=" + GODOT_CPP_TARGET,
-                  "use_static_cpp=no")
+            scons("platform=windows", "use_mingw=True", *extra)
         elif OSTYPE == "Windows":
-            scons("platform=windows",
-                  "target=" + GODOT_CPP_TARGET,
-                  "use_static_cpp=no")
+            scons("platform=windows", *extra)
         else:
             fatal("Unknown OS " + OSTYPE + ": Cannot compile godot-cpp")
 
@@ -879,6 +921,7 @@ def clone_github_projects():
 #
 ###############################################################################
 if __name__ == "__main__":
+    log_godot_build_target()
     check_run_as_windows_administrator()
     check_paths()
     check_build_chain()
