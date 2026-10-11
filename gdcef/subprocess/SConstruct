@@ -30,8 +30,8 @@ import sys
 # Import shared compiler warning flags.
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), '..')))
 from scons_flags import (CLANG_EXTRA_WARNING_ENABLE, GCC_ONLY_CXX_WARNING_DISABLE,
-                         MSVC_CXX_WARNING_DISABLE, UNIX_CXX_WARNING_DISABLE,
-                         UNIX_CXX_WARNING_ENABLE)
+                         MSVC_CXX_STANDARD, MSVC_CXX_WARNING_DISABLE,
+                         UNIX_CXX_WARNING_DISABLE, UNIX_CXX_WARNING_ENABLE)
 
 # We let SCons build its default ENV as it includes OS-specific things which we don't
 # want to have to pull in manually.
@@ -143,7 +143,7 @@ elif platform == 'linux':
                          '-D__STDC_CONSTANT_MACROS', '-D__STDC_FORMAT_MACROS'])
 
 elif platform == 'windows':
-    env.Append(CXXFLAGS='/std:c++20')
+    env.Append(CXXFLAGS=MSVC_CXX_STANDARD)
     # This makes sure to keep the session environment variables on windows,
     # that way you can run scons in a vs 2017 prompt and it will find all the required tools
     env.Append(ENV=os.environ)

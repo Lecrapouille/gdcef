@@ -32,6 +32,9 @@ GCC_ONLY_CXX_WARNING_DISABLE = [
     '-Wno-stringop-overflow',
 ]
 
+# /Zc:__cplusplus: godot-cpp static_assert(__cplusplus >= 201703L) fails on MSVC without this.
+MSVC_CXX_STANDARD = ['/std:c++20', '/Zc:__cplusplus']
+
 MSVC_CXX_WARNING_DISABLE = [
     '/wd4100',  # unreferenced formal parameter
     '/wd4101',  # unreferenced local variable
