@@ -52,6 +52,13 @@ static std::ofstream g_log_file;
 
 static void InitLogFile()
 {
+    // Only log with verbose or info severity
+    CefRefPtr<CefCommandLine> command_line = CefCommandLine::CreateCommandLine();
+    command_line->InitFromString(::GetCommandLineW());
+    std::string severity = command_line->GetSwitchValue("log-severity").ToString();
+    if ((severity != "verbose") && (severity != "info"))
+        return;
+
     // Get the executable directory
     char path[MAX_PATH];
     GetModuleFileNameA(NULL, path, MAX_PATH);
