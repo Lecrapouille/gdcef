@@ -37,8 +37,14 @@
 
 //------------------------------------------------------------------------------
 // Entry point function for all Linux process.
+//
+// Chromium rotates the stack canary when forking sub-processes. This frame
+// stays live across CefExecuteProcess(), so the canary check must be disabled
+// or the process aborts in __stack_chk_fail on the way out.
+// https://github.com/chromiumembedded/cef/issues/3912
 //------------------------------------------------------------------------------
 
+NO_STACK_PROTECTOR
 int main(int argc, char* argv[])
 {
     std::cout << ::getpid() << "::" << ::getppid() << ": [SubProcess]  "

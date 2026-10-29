@@ -24,6 +24,7 @@
 //*****************************************************************************
 
 #include "render_process.hpp"
+#include "include/base/cef_compiler_specific.h"
 
 #ifndef _WIN32
 #    error "This file is only for Windows"
@@ -145,6 +146,12 @@ DWORD getppid()
 }
 
 //------------------------------------------------------------------------------
+// Chromium rotates the stack canary when forking sub-processes. This frame
+// stays live across CefExecuteProcess(), so it carries the same annotation as
+// main() on Unix. With MSVC the macro is empty.
+// https://github.com/chromiumembedded/cef/issues/3912
+//------------------------------------------------------------------------------
+NO_STACK_PROTECTOR
 int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPTSTR lpCmdLine,
