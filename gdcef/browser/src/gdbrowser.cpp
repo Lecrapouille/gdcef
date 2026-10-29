@@ -876,18 +876,17 @@ godot::String GdBrowserView::getTitle() const
 {
     BROWSER_DEBUG("");
 
-    if (!m_browser)
+    if (!m_browser || !m_browser->GetHost())
         return godot::String();
 
-    if (m_browser->GetMainFrame())
-    {
-        CefString title =
-            m_browser->GetHost()->GetVisibleNavigationEntry()->GetTitle();
-        std::string utf8_title = title.ToString();
-        return godot::String::utf8(utf8_title.c_str());
-    }
+    // No navigation entry before the first navigation is committed.
+    CefRefPtr<CefNavigationEntry> entry =
+        m_browser->GetHost()->GetVisibleNavigationEntry();
+    if (entry == nullptr)
+        return godot::String();
 
-    return godot::String();
+    std::string utf8_title = entry->GetTitle().ToString();
+    return godot::String::utf8(utf8_title.c_str());
 }
 
 //------------------------------------------------------------------------------
