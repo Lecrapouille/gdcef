@@ -45,17 +45,17 @@
 #endif
 
 //------------------------------------------------------------------------------
-// List of file libraries and artifacts mandatory to make CEF working
+// List of file libraries and artifacts mandatory to make CEF working.
+// Since CEF 152, ANGLE is linked into libcef. The separate libEGL and
+// libGLESv2 binaries are no longer shipped (cef#3974) and must not be required.
 #if defined(_WIN32)
 #    define SUBPROCESS_NAME "gdCefRenderProcess.exe"
-#    define NEEDED_LIBRARIES                                                \
-        "libcef.dll", "libgdcef.dll", "vulkan-1.dll", "vk_swiftshader.dll", \
-            "libGLESv2.dll", "libEGL.dll"
+#    define NEEDED_LIBRARIES \
+        "libcef.dll", "libgdcef.dll", "vulkan-1.dll", "vk_swiftshader.dll"
 #elif defined(__linux__)
 #    define SUBPROCESS_NAME "gdCefRenderProcess"
-#    define NEEDED_LIBRARIES                                                  \
-        "libcef.so", "libgdcef.so", "libvulkan.so.1", "libvk_swiftshader.so", \
-            "libGLESv2.so", "libEGL.so"
+#    define NEEDED_LIBRARIES \
+        "libcef.so", "libgdcef.so", "libvulkan.so.1", "libvk_swiftshader.so"
 #elif defined(__APPLE__)
 #    define SUBPROCESS_NAME "gdCefRenderProcess.app"
 #    define NEEDED_LIBRARIES "libgdcef.dylib"
@@ -86,8 +86,6 @@ static bool sanity_checks(fs::path const& folder)
         SUBPROCESS_NAME,
         NEEDED_LIBRARIES,
         lib_dir + "libvk_swiftshader.dylib",
-        lib_dir + "libGLESv2.dylib",
-        lib_dir + "libEGL.dylib",
         res_dir + "icudtl.dat",
         res_dir + "chrome_100_percent.pak",
         res_dir + "chrome_200_percent.pak",

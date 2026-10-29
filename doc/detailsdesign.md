@@ -86,8 +86,8 @@ The `cef_artifacts` folder contains the following files (which may vary dependin
     ┃ ┗ 📜*.pak                     ⬅️ Other languages
     ┣ 📜chrome_elf.dll              ⬅️ Crash reporting library
     ┣ 📜d3dcompiler_47.dll          ⬅️ Or Vulkan for other OS
-    ┣ 📜libEGL.dll                  ⬅️ Accelerated compositing support libraries
-    ┣ 📜libGLESv2.dll               ⬅️ Accelerated compositing support libraries
+    ┣ 📜vk_swiftshader.dll          ⬅️ SwiftShader software rendering (Vulkan)
+    ┣ 📜vulkan-1.dll                ⬅️ Vulkan loader
     ┣ 📜libcef.dll                  ⬅️ CEF core library
     ┣ 📜snapshot_blob.bin           ⬅️ JavaScript V8 initial snapshot
     ┣ 📜v8_context_snapshot.bin     ⬅️ JavaScript V8 initial snapshot
@@ -138,16 +138,16 @@ The following components are optional. If missing, CEF will continue to run, but
 
 * Angle and Direct3D support.
   * d3dcompiler_47.dll (required for Windows Vista and newer)
-  * libEGL.dll
-  * libGLESv2.dll
+  ANGLE is linked into libcef since CEF 152: the separate libEGL and libGLESv2
+  libraries are no longer shipped.
   Without these files HTML5 accelerated content like 2D canvas, 3D CSS and WebGL
   will not function.
 
 * SwiftShader support.
-  * swiftshader/libEGL.dll
-  * swiftshader/libGLESv2.dll
+  * vk_swiftshader.dll, vk_swiftshader_icd.json and vulkan-1.dll
+    (libvk_swiftshader.so and libvulkan.so.1 on Linux)
   Without these files WebGL will not function in software-only mode when the GPU
-  is not available or disabled.
+  is not available or disabled (see the `use_gpu` setting).
 
 ## CEF secondary process (📂gdcef/subprocess)
 
