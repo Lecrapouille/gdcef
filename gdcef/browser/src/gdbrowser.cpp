@@ -1161,16 +1161,17 @@ bool GdBrowserView::viewport(float x, float y, float w, float h)
 {
     // BROWSER_DEBUG(x << ", " << y << ", " << w << ", " << h);
 
-    if (!(x >= 0.0f) && (x < 1.0f))
+    // Note: written as negated ranges to also reject NaN.
+    if (!((x >= 0.0f) && (x < 1.0f)))
         return false;
 
-    if (!(x >= 0.0f) && (y < 1.0f))
+    if (!((y >= 0.0f) && (y < 1.0f)))
         return false;
 
-    if (!(w > 0.0f) && (w <= 1.0f))
+    if (!((w > 0.0f) && (w <= 1.0f)))
         return false;
 
-    if (!(h > 0.0f) && (h <= 1.0f))
+    if (!((h > 0.0f) && (h <= 1.0f)))
         return false;
 
     if (x + w > 1.0f)
