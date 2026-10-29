@@ -26,7 +26,11 @@
 #include "render_process.hpp"
 #include "cef_parser.h" // For CefBase64Encode and CefBase64Decode
 #include "include/base/cef_logging.h"
+#include <cmath>
 #include <cstdio>
+#include <limits>
+#include <locale>
+#include <sstream>
 
 //------------------------------------------------------------------------------
 // Traces go to the CEF log_file shared with the browser process. CEF forwards
@@ -352,7 +356,18 @@ std::string GodotMethodHandler::V8ToJSON(CefRefPtr<CefV8Value> value, int depth)
     }
     else if (value->IsDouble())
     {
-        return std::to_string(value->GetDoubleValue());
+        // Not std::to_string(): it rounds to 6 decimals (1e-9 became 0) and
+        // depends on the C locale for the decimal separator. NaN and Infinity
+        // do not exist in JSON and are converted to null like JSON.stringify().
+        double const number = value->GetDoubleValue();
+        if (!std::isfinite(number))
+            return "null";
+
+        std::ostringstream ss;
+        ss.imbue(std::locale::classic());
+        ss.precision(std::numeric_limits<double>::max_digits10);
+        ss << number;
+        return ss.str();
     }
     else if (value->IsString())
     {
