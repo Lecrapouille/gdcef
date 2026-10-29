@@ -47,6 +47,12 @@
 #    include <omp.h>
 #endif
 
+#if defined(_WIN32)
+#    include <windows.h>
+#elif defined(__linux__)
+#    include <dlfcn.h>
+#endif
+
 //------------------------------------------------------------------------------
 // List of file libraries and artifacts mandatory to make CEF working.
 // Since CEF 152, ANGLE is linked into libcef. The separate libEGL and
@@ -72,6 +78,30 @@ static void configureCEF(fs::path const& folder,
                          CefSettings& cef_settings,
                          CefWindowInfo& window_info,
                          godot::Dictionary config);
+
+//------------------------------------------------------------------------------
+// Keep libcef loaded until the end of the process. It is a dependency of
+// libgdcef, so Godot unloading the extension at exit also unloaded libcef
+// while some Chromium threads were still running, crashing in the unloaded
+// code (#106). CEF cannot be initialized twice in a process anyway.
+// Note: on macOS the framework is loaded and unloaded by register_types.cpp.
+static void pinCefLibrary()
+{
+#if defined(_WIN32)
+    HMODULE module = nullptr;
+    if (!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN, L"libcef.dll", &module))
+    {
+        PRINT_ERROR("Failed pinning libcef.dll: error " << GetLastError());
+    }
+#elif defined(__linux__)
+    // RTLD_NOLOAD: only get the already loaded library, flagged RTLD_NODELETE.
+    // The handle is deliberately never closed.
+    if (dlopen("libcef.so", RTLD_NOW | RTLD_NOLOAD | RTLD_NODELETE) == nullptr)
+    {
+        PRINT_ERROR("Failed pinning libcef.so: " << dlerror());
+    }
+#endif
+}
 
 //------------------------------------------------------------------------------
 // Check if needed files to make CEF working are present and well formed. We
@@ -273,6 +303,7 @@ bool GdCEF::initialize(godot::Dictionary config)
         return false;
     }
     GDCEF_DEBUG("CefInitialize done with success");
+    pinCefLibrary();
     return true;
 }
 
