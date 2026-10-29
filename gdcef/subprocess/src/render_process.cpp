@@ -119,6 +119,13 @@ void RenderProcess::OnContextCreated(CefRefPtr<CefBrowser> browser,
 {
     DEBUG_RENDER_PROCESS(browser->GetIdentifier());
 
+    // Only the page loaded by the application may call Godot methods: not the
+    // iframes it embeds (ads, third-party content ...). Note: the messages are
+    // sent through the main frame, so the browser process could not tell them
+    // apart afterwards.
+    if (!frame->IsMain())
+        return;
+
     // Store the context and frame for later use
     m_context = context;
     m_frame = frame;

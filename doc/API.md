@@ -265,6 +265,8 @@ window.godotMethods.my_function_for_js({key: "value"});      // Object
 window.godotMethods.my_function_for_js([1, 2, 3]);           // Array
 ```
 
+*Note:* `window.godotMethods` only exists in the main frame of the page: iframes (ads, third-party content) cannot call your GDScript methods.
+
 ### Binding GDScript to JavaScript
 
 To make your GDScript code send data to JavaScript:

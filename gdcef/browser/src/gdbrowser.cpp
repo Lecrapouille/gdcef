@@ -1583,6 +1583,14 @@ bool GdBrowserView::onProcessMessageReceived(
         return false;
     }
 
+    // The render process only binds Godot methods in the main frame: do not
+    // trust a message coming from another frame.
+    if ((frame == nullptr) || !frame->IsMain())
+    {
+        BROWSER_ERROR("Ignoring 'callGodotMethod' from a sub frame");
+        return false;
+    }
+
     // Check that we have at least the method name and arguments
     CefRefPtr<CefListValue> args_list = message->GetArgumentList();
     if (args_list->GetSize() < 2)
