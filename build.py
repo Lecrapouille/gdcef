@@ -57,7 +57,7 @@ CEF_ARTIFACTS_FOLDER_NAME = "cef_artifacts"
 
 # CEF version to download from https://cef-builds.spotifycdn.com/index.html
 # Copy the version listed there WITHOUT the OS or architecture; this script chooses the correct binary.
-CEF_VERSION = "151.3.18+gbeff58d+chromium-151.0.7922.138"
+CEF_VERSION = "156.0.14+g4fa4ab5+chromium-156.0.8078.48"
 
 # Godot editor version your extension must match (same major.minor as the user).
 # build.py selects how to fetch godot-cpp automatically:
