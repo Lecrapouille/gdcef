@@ -189,10 +189,6 @@ private: // CEF interfaces
         {
             // FIXME this is called once, so we cannot swap modes :( How to do
             // that ?
-            std::cout << (m_audio.streamer == nullptr
-                              ? "GetAudioHandler CEF Audio"
-                              : "GetAudioHandler Godot audio")
-                      << "\n";
             return m_audio.streamer != nullptr ? this : nullptr;
         }
 
