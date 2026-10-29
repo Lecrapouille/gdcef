@@ -789,6 +789,12 @@ void GdBrowserView::setZoomLevel(double delta)
 //------------------------------------------------------------------------------
 void GdBrowserView::loadURL(godot::String url)
 {
+    if (!m_browser || !m_browser->GetMainFrame())
+    {
+        BROWSER_ERROR("Cannot load URL: no browser or frame");
+        return;
+    }
+
     godot::String converted_url = convert_godot_url(url);
     if (!converted_url.is_empty())
     {
@@ -814,6 +820,12 @@ void GdBrowserView::loadURL(godot::String url)
 //------------------------------------------------------------------------------
 void GdBrowserView::loadDataURI(godot::String html, godot::String mime_type)
 {
+    if (!m_browser || !m_browser->GetMainFrame())
+    {
+        BROWSER_ERROR("Cannot load data URI: no browser or frame");
+        return;
+    }
+
     auto const& d = html.utf8();
     std::string uri("data:");
     uri += mime_type.utf8().get_data();
@@ -1322,6 +1334,12 @@ void GdBrowserView::setDownloadFolder(godot::String path)
 //------------------------------------------------------------------------------
 void GdBrowserView::downloadFile(godot::String url)
 {
+    if (!m_browser || !m_browser->GetHost())
+    {
+        BROWSER_ERROR("Cannot download file: no browser");
+        return;
+    }
+
     m_browser->GetHost()->StartDownload(url.utf8().get_data());
 }
 
