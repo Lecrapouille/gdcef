@@ -428,6 +428,20 @@ private: // CEF interfaces
 
     private: // CefLifeSpanHandler interfaces
 
+        // ---------------------------------------------------------------------
+        //! \brief Count the browsers not yet closed by CEF. Does not need the
+        //! owner, which may already be detached when the browser is closed.
+        // ---------------------------------------------------------------------
+        virtual void OnAfterCreated(CefRefPtr<CefBrowser> /*browser*/) override
+        {
+            ++s_open_browsers;
+        }
+
+        virtual void OnBeforeClose(CefRefPtr<CefBrowser> /*browser*/) override
+        {
+            --s_open_browsers;
+        }
+
         virtual bool OnBeforePopup(
             CefRefPtr<CefBrowser> browser,
             CefRefPtr<CefFrame> frame,
@@ -597,6 +611,16 @@ public:
     inline int id() const
     {
         return m_id;
+    }
+
+    // -------------------------------------------------------------------------
+    //! \brief Return the number of browsers created and not yet closed by CEF.
+    //! CloseBrowser() being asynchronous, it is used by GdCEF::shutdown() to
+    //! wait for them before calling CefShutdown().
+    // -------------------------------------------------------------------------
+    static inline int openBrowsers()
+    {
+        return s_open_browsers;
     }
 
     // -------------------------------------------------------------------------
@@ -1371,6 +1395,10 @@ private:
     godot::Variant JsonToGodot(const godot::Variant& json_value);
 
 private:
+
+    //! \brief Number of browsers created and not yet closed by CEF. Only
+    //! accessed from the CEF UI thread, which is the Godot main thread.
+    static inline int s_open_browsers = 0;
 
     //! \brief CEF interface implementation
     friend GdBrowserView::Impl;

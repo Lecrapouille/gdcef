@@ -40,6 +40,9 @@
 #include "wrapper/cef_closure_task.h"
 #include "cef_version_info.h"
 
+#include <chrono>
+#include <thread>
+
 #ifdef _OPENMP
 #    include <omp.h>
 #endif
@@ -156,9 +159,25 @@ void GdCEF::shutdown()
     GDCEF_DEBUG("Closing all browsers");
     m_impl->closeAllBrowsers(true);
 
-    // Let CEF run the browser destruction tasks that closeAllBrowsers() has
-    // just posted: we are the one pumping the CEF message loop (see _process())
-    // and _process() will not be called anymore once we are shut down.
+    // CloseBrowser() is asynchronous and CefShutdown() requires all browsers
+    // to be closed: we are the one pumping the CEF message loop (see
+    // _process()) and _process() will not be called anymore once we are shut
+    // down. Bounded so a stuck render process cannot freeze the application.
+    using namespace std::chrono;
+    auto const deadline = steady_clock::now() + seconds(2);
+    while ((GdBrowserView::openBrowsers() > 0) &&
+           (steady_clock::now() < deadline))
+    {
+        CefDoMessageLoopWork();
+        std::this_thread::sleep_for(milliseconds(1));
+    }
+    if (GdBrowserView::openBrowsers() > 0)
+    {
+        GDCEF_WARNING(GdBrowserView::openBrowsers()
+                      << " browser(s) not closed before CefShutdown");
+    }
+
+    // Then let CEF run the remaining destruction tasks.
     constexpr int PENDING_TASKS_ITERATIONS = 10;
     for (int i = 0; i < PENDING_TASKS_ITERATIONS; ++i)
     {
