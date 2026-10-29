@@ -671,62 +671,6 @@ GdBrowserView* GdCEF::createBrowser(godot::String const& url,
 }
 
 //------------------------------------------------------------------------------
-void GdCEF::Impl::OnAfterCreated(CefRefPtr<CefBrowser> /*browser*/)
-{
-    CEF_REQUIRE_UI_THREAD();
-    GDCEF_DEBUG("");
-
-    // Add to the list of existing browsers.
-    // m_browsers[browser->GetIdentifier()] = browser;
-}
-
-//------------------------------------------------------------------------------
-bool GdCEF::Impl::DoClose(CefRefPtr<CefBrowser> /*browser*/)
-{
-    CEF_REQUIRE_UI_THREAD();
-    GDCEF_DEBUG("");
-
-    // Closing the main window requires special handling. See the DoClose()
-    // documentation in the CEF header for a detailed description of this
-    // process.
-    // if (m_browsers.size() == 1u)
-    {
-        // Set a flag to indicate that the window close should be allowed.
-        // is_closing_ = true;
-    }
-
-    // Allow the close. For windowed browsers this will result in the OS close
-    // event being sent.
-    return false;
-}
-
-//------------------------------------------------------------------------------
-void GdCEF::Impl::OnBeforeClose(CefRefPtr<CefBrowser> browser)
-{
-    CEF_REQUIRE_UI_THREAD();
-    GDCEF_DEBUG("");
-
-    // Remove the specific browser from the list of Godot child nodes.
-    int64_t i = m_owner.get_child_count();
-    while (i--)
-    {
-        godot::Node* node = m_owner.get_child(i);
-        // Use dynamic_cast-like check: verify the node is a GdBrowserView
-        // by checking if it has the expected method (safer than reinterpret_cast)
-        GdBrowserView* bv = godot::Object::cast_to<GdBrowserView>(node);
-        if ((bv != nullptr) && (bv->id() == browser->GetIdentifier()))
-        {
-            GDCEF_DEBUG("Removing browser ID " << bv->id());
-            bv->close(/*force_close*/);
-            m_owner.remove_child(node);
-            node->queue_free();
-            return; // Found and removed, exit early
-        }
-    }
-    GDCEF_WARNING("Browser ID " << browser->GetIdentifier() << " not found in child nodes");
-}
-
-//------------------------------------------------------------------------------
 void GdCEF::Impl::closeAllBrowsers(bool force_close)
 {
     if (!CefCurrentlyOn(TID_UI))

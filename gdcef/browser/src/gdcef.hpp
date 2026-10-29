@@ -168,9 +168,7 @@ private: // CEF interfaces.
     //! reference counting and therefore we reach with pure virtual destructor
     //! called. To avoid this crash, we have to create this intermediate class.
     // *************************************************************************
-    class Impl: public CefLifeSpanHandler,
-                public CefClient,
-                public CefApp,
+    class Impl: public CefApp,
                 public CefBrowserProcessHandler
     {
     public:
@@ -194,22 +192,14 @@ private: // CEF interfaces.
         // -------------------------------------------------------------------------
         void closeAllBrowsers(bool force_close);
 
-    private: // CefClient::CefBaseRefCounted interfaces.
+    private: // CefBaseRefCounted interfaces.
 
         // ---------------------------------------------------------------------
         //! \brief CEF reference couting
         // ---------------------------------------------------------------------
         IMPLEMENT_REFCOUNTING(Impl);
 
-    private: // CefClient interfaces
-
-        // ---------------------------------------------------------------------
-        //! \brief Return the handler for browser life span events.
-        // ---------------------------------------------------------------------
-        virtual CefRefPtr<CefLifeSpanHandler> GetLifeSpanHandler() override
-        {
-            return this;
-        }
+    private: // CefApp interfaces
 
         // ---------------------------------------------------------------------
         //! \brief Return the handler for browser process callbacks.
@@ -219,12 +209,6 @@ private: // CEF interfaces.
         {
             return this;
         }
-
-    private: // CefLifeSpanHandler interfaces
-
-        virtual void OnAfterCreated(CefRefPtr<CefBrowser> browser) override;
-        virtual bool DoClose(CefRefPtr<CefBrowser> browser) override;
-        virtual void OnBeforeClose(CefRefPtr<CefBrowser> browser) override;
 
     private: // CefApp
 
