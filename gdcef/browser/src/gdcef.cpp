@@ -493,8 +493,10 @@ static void configureCEF(fs::path const& folder,
     // loading the chrome://inspect page in Google Chrome. Port numbers 9222 and
     // 9229 are discoverable by default. Other port numbers may need to be
     // configured via "Discover network targets" on the Devices tab.
+    // Disabled by default: an exported game shall not expose the DevTools
+    // of its pages to every local process.
     cef_settings.remote_debugging_port =
-        getConfig(config, "remote_debugging_port", 7777);
+        getConfig(config, "remote_debugging_port", 0);
 
     // The number of stack trace frames to capture for uncaught exceptions.
     // Specify a positive value to enable the CefRenderProcessHandler::

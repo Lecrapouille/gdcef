@@ -94,7 +94,7 @@ public: // Godot interfaces.
     //!   - {"browser_subprocess_path", cef_folder_path / SUBPROCESS_NAME}
     //!   - {"log_file", cef_folder_path / "debug.log"}
     //!   - {"log_severity", "warning"}
-    //!   - {"remote_debugging_port", 7777}
+    //!   - {"remote_debugging_port", 0} (disabled)
     //!   - {"exception_stack_size", 5}
     //!   - {"locale", "en-US"}
     //! \return true if CEF init with success. Return false if CEF init ends

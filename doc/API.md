@@ -51,8 +51,8 @@ Since Godot `_init` does not accept arguments, you must use the `initialize` fun
 | browser_subprocess_path | cef_folder_path / SUBPROCESS_NAME | Path to the CEF subprocess executable. Name is determined during compilation. |
 | log_file | cef_folder_path / "debug.log" | Path for CEF log files. Shared by the browser process and all CEF subprocesses (including gdCEF render process traces). |
 | log_severity | "warning" | Log verbosity level of `log_file`. Options: "verbose", "info", "warning", "error", "fatal", "disable". Use "info" or "verbose" to see the gdCEF subprocess traces. |
-| remote_allow_origin | "*" | Controls which origins can connect for debugging. "*" allows all. |
-| remote_debugging_port | 7777 | Port for Chrome DevTools debugging. Access via [http://localhost:7777](http://localhost:7777). |
+| remote_allow_origin | "" | Controls which origins can connect for debugging. "*" allows all. |
+| remote_debugging_port | 0 | Port for Chrome DevTools debugging (between 1024 and 65535), for example 7777 then access via [http://localhost:7777](http://localhost:7777). 0 disables remote debugging: do not enable it in an exported game. |
 | exception_stack_size | 5 | Size of the exception stack. |
 | locale | "en-US" | Browser language setting. |
 | enable_media_stream | false | Controls access to camera and microphone. |
