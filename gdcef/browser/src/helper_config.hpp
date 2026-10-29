@@ -69,7 +69,10 @@ inline fs::path getConfig<fs::path>(godot::Dictionary const& config,
 {
     if ((property != nullptr) && config.has(property))
     {
+        // CEF requires absolute paths: resolve the Godot ones.
         godot::String str = config[property];
+        if (str.begins_with("res://") || str.begins_with("user://"))
+            return utf8_to_path(GLOBALIZE_PATH(str));
         return utf8_to_path(str.utf8().get_data());
     }
     return default_value;

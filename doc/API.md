@@ -58,6 +58,8 @@ Since Godot `_init` does not accept arguments, you must use the `initialize` fun
 | enable_media_stream | false | Controls access to camera and microphone. |
 | use_gpu | true | Use the system GPU for Chromium rendering via ANGLE. When `false`, falls back to SwiftShader software rendering (CPU-only, slower but more compatible). See [GPU rendering](#gpu-rendering). |
 
+Path settings (`cache_path`, `root_cache_path`, `browser_subprocess_path`, `log_file`, `locales_path`) accept absolute paths as well as Godot `user://` and `res://` paths.
+
 For additional settings, refer to [cef_types.h](../thirdparty/cef_binary/include/internal/cef_types.h).
 
 #### Logs
