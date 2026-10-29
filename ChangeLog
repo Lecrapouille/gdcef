@@ -1,3 +1,22 @@
+Version 0.21.0:
+	* Update CEF to version 156: libEGL and libGLESv2 are no longer needed
+	* Support godot-cpp >= 4.6 (#103)
+	* Fix the subprocess crash with the stack protector on Linux (#107)
+	* Fix the "Minimum of C++17 required" error on Windows
+	* The subprocess traces go to log_file and are filtered by log_severity,
+	  which accepts "disable"
+	* Path settings accept user:// and res:// paths
+	* Remote debugging is now disabled by default
+	* Only the main frame of a page can call the Godot methods, not iframes
+	* Fix crashes when a browser node or its Control is freed, and when
+	  calling load_url(), load_data_uri(), download_file() or get_title()
+	* Wait for the browsers to be closed before shutting CEF down, and keep
+	  libcef loaded until the process exits (crash at exit, #106)
+	* Fix the stereo audio routed to Godot, set_viewport() checks, JS
+	  numbers sent to Godot, non ASCII paths on Windows and the build with
+	  cpu_parallelism
+	* Update doc
+
 Version 0.20.0:
 	* Update CEF to version 151
 	* Composite the CEF popup widget over the page: an expanded HTML select
