@@ -47,14 +47,6 @@
 NO_STACK_PROTECTOR
 int main(int argc, char* argv[])
 {
-    std::cout << ::getpid() << "::" << ::getppid() << ": [SubProcess]  "
-              << __FILE__ << ": " << __PRETTY_FUNCTION__ << std::endl;
-
-    for (int i = 0; i < argc; ++i)
-    {
-        std::cout << "[SubProcess] arg " << i << ": " << argv[i] << std::endl;
-    }
-
 #ifdef __APPLE__
 #    if defined(CEF_USE_SANDBOX)
     // Initialize the macOS sandbox for this helper process.
@@ -88,8 +80,6 @@ int main(int argc, char* argv[])
     // incorrectly (e.g., manually by the user).
     int exit_code = CefExecuteProcess(main_args, app.get(), nullptr);
 
-    std::cout << "[SubProcess] CefExecuteProcess returned: " << exit_code << std::endl;
-
     if (exit_code < 0)
     {
         // This should not happen - it means this executable was launched
@@ -99,6 +89,5 @@ int main(int argc, char* argv[])
         exit_code = 1;
     }
 
-    std::cout << "[SubProcess] exiting" << std::endl;
     return exit_code;
 }

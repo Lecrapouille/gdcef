@@ -49,8 +49,8 @@ Since Godot `_init` does not accept arguments, you must use the `initialize` fun
 | cache_path | cef_folder_path / "cache" | Directory for storing CEF caches. |
 | root_cache_path | cef_folder_path / "cache" | Root directory for CEF cache storage. |
 | browser_subprocess_path | cef_folder_path / SUBPROCESS_NAME | Path to the CEF subprocess executable. Name is determined during compilation. |
-| log_file | cef_folder_path / "debug.log" | Path for CEF log files. |
-| log_severity | "warning" | Log verbosity level. Options: "verbose", "info", "warning", "error", "fatal". |
+| log_file | cef_folder_path / "debug.log" | Path for CEF log files. Shared by the browser process and all CEF subprocesses (including gdCEF render process traces). |
+| log_severity | "warning" | Log verbosity level of `log_file`. Options: "verbose", "info", "warning", "error", "fatal", "disable". Use "info" or "verbose" to see the gdCEF subprocess traces. |
 | remote_allow_origin | "*" | Controls which origins can connect for debugging. "*" allows all. |
 | remote_debugging_port | 7777 | Port for Chrome DevTools debugging. Access via [http://localhost:7777](http://localhost:7777). |
 | exception_stack_size | 5 | Size of the exception stack. |
@@ -59,6 +59,13 @@ Since Godot `_init` does not accept arguments, you must use the `initialize` fun
 | use_gpu | true | Use the system GPU for Chromium rendering via ANGLE. When `false`, falls back to SwiftShader software rendering (CPU-only, slower but more compatible). See [GPU rendering](#gpu-rendering). |
 
 For additional settings, refer to [cef_types.h](../thirdparty/cef_binary/include/internal/cef_types.h).
+
+#### Logs
+
+gdCEF has two independent log outputs:
+
+- **Godot side**: gdCEF traces from the GDExtension (initialization, browser creation, ...) use `print_verbose` and are shown in the Godot console only when Godot is started with `--verbose`. Errors and warnings are always shown.
+- **CEF side**: CEF, Chromium and the gdCEF subprocess write to `log_file`, filtered by `log_severity`. CEF forwards both settings to all its subprocesses, so no extra setting is needed for them. Use `"disable"` in a shipped game to avoid creating the log file.
 
 #### GPU rendering
 

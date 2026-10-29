@@ -428,6 +428,9 @@ static void configureCEF(fs::path const& folder,
     fs::path log_file_path =
         getConfig(config, "log_file", folder / "debug.log");
     CefString(&cef_settings.log_file).FromString(path_to_utf8(log_file_path));
+
+    // CEF forwards the log file and severity to all its subprocesses, so this
+    // also filters the traces of the gdCEF render process.
     std::string logString =
         getConfig(config, "log_severity", std::string("warning"));
     if (logString == "verbose")
@@ -440,6 +443,14 @@ static void configureCEF(fs::path const& folder,
         cef_settings.log_severity = LOGSEVERITY_ERROR;
     else if (logString == "fatal")
         cef_settings.log_severity = LOGSEVERITY_FATAL;
+    else if (logString == "disable")
+        cef_settings.log_severity = LOGSEVERITY_DISABLE;
+    else
+    {
+        GDCEF_WARNING("Unknown log_severity '"
+                      << logString << "'. Fallback to 'warning'");
+        cef_settings.log_severity = LOGSEVERITY_WARNING;
+    }
 
     // Set to true (1) to enable windowless (off-screen) rendering support. Do
     // not enable this value if the application does not use windowless

@@ -25,6 +25,7 @@
 
 #include "render_process.hpp"
 #include "include/base/cef_compiler_specific.h"
+#include "include/base/cef_logging.h"
 
 #ifndef _WIN32
 #    error "This file is only for Windows"
@@ -39,110 +40,35 @@
 //------------------------------------------------------------------------------
 // Entry point function for all Window process.
 //------------------------------------------------------------------------------
-#include <process.h>
-#include <stdio.h>
-#include <tlhelp32.h>
 #include <windows.h>
-#include <fstream>
-#include <sstream>
 
 //------------------------------------------------------------------------------
-// Debug logging for Windows subprocess (writes to file since no console)
-//------------------------------------------------------------------------------
-static std::ofstream g_log_file;
-
-static void InitLogFile()
-{
-    // Get the executable directory
-    char path[MAX_PATH];
-    GetModuleFileNameA(NULL, path, MAX_PATH);
-    std::string exe_path(path);
-    std::string log_path = exe_path.substr(0, exe_path.find_last_of("\\/")) + "\\subprocess_debug.log";
-    g_log_file.open(log_path, std::ios::app);
-    if (g_log_file.is_open())
-    {
-        g_log_file << "=== SubProcess started ===" << std::endl;
-        g_log_file.flush();
-    }
-}
-
-static void LogDebug(const std::string& msg)
-{
-    if (g_log_file.is_open())
-    {
-        g_log_file << "[SubProcess] " << msg << std::endl;
-        g_log_file.flush();
-    }
-    // Also output to Visual Studio debugger
-    OutputDebugStringA(("[SubProcess] " + msg + "\n").c_str());
-}
-
-//------------------------------------------------------------------------------
-// Exception handler to capture crashes
+// Exception handler to capture crashes. Written to the CEF log_file shared
+// with the browser process.
 //------------------------------------------------------------------------------
 static LONG WINAPI UnhandledExceptionHandler(EXCEPTION_POINTERS* exceptionInfo)
 {
-    std::stringstream ss;
-    ss << "CRASH! Exception code: 0x" << std::hex << exceptionInfo->ExceptionRecord->ExceptionCode
-       << " at address: 0x" << exceptionInfo->ExceptionRecord->ExceptionAddress;
-    LogDebug(ss.str());
-
-    // Log common exception codes
+    const char* name = "";
     switch (exceptionInfo->ExceptionRecord->ExceptionCode)
     {
     case EXCEPTION_ACCESS_VIOLATION:
-        LogDebug("Exception: ACCESS_VIOLATION");
+        name = " (ACCESS_VIOLATION)";
         break;
     case EXCEPTION_STACK_OVERFLOW:
-        LogDebug("Exception: STACK_OVERFLOW");
+        name = " (STACK_OVERFLOW)";
         break;
     case STATUS_DLL_NOT_FOUND:
-        LogDebug("Exception: DLL_NOT_FOUND");
+        name = " (DLL_NOT_FOUND)";
         break;
     default:
         break;
     }
 
-    if (g_log_file.is_open())
-    {
-        g_log_file.close();
-    }
+    LOG(ERROR) << "[SubProcess] CRASH! Exception code: 0x" << std::hex
+               << exceptionInfo->ExceptionRecord->ExceptionCode << name
+               << " at address: "
+               << exceptionInfo->ExceptionRecord->ExceptionAddress;
     return EXCEPTION_EXECUTE_HANDLER;
-}
-
-//------------------------------------------------------------------------------
-DWORD getppid()
-{
-    HANDLE hSnapshot;
-    PROCESSENTRY32 pe32;
-    DWORD ppid = 0, pid = GetCurrentProcessId();
-
-    hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    __try
-    {
-        if (hSnapshot == INVALID_HANDLE_VALUE)
-            __leave;
-
-        ZeroMemory(&pe32, sizeof(pe32));
-        pe32.dwSize = sizeof(pe32);
-        if (!Process32First(hSnapshot, &pe32))
-            __leave;
-
-        do
-        {
-            if (pe32.th32ProcessID == pid)
-            {
-                ppid = pe32.th32ParentProcessID;
-                break;
-            }
-        } while (Process32Next(hSnapshot, &pe32));
-    }
-    __finally
-    {
-        if (hSnapshot != INVALID_HANDLE_VALUE)
-            CloseHandle(hSnapshot);
-    }
-    return ppid;
 }
 
 //------------------------------------------------------------------------------
@@ -164,20 +90,12 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     // Set up exception handler to capture crashes
     SetUnhandledExceptionFilter(UnhandledExceptionHandler);
 
-    InitLogFile();
-
-    std::stringstream ss;
-    ss << "PID: " << ::_getpid() << ", Parent PID: " << ::getppid();
-    LogDebug(ss.str());
-
     // Provide CEF with command-line arguments.
-    LogDebug("Creating CefMainArgs");
     CefMainArgs main_args(hInstance);
 
     // SimpleApp implements application-level callbacks. It will create the
     // first browser instance in OnContextInitialized() after CEF has
     // initialized.
-    LogDebug("Creating RenderProcess");
     CefRefPtr<RenderProcess> app(new RenderProcess);
 
     // CEF applications have multiple sub-processes (render, plugin, GPU, etc)
@@ -188,26 +106,17 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     // subprocess. CefExecuteProcess will handle everything and return a valid
     // exit code (>= 0). If it returns -1, it means this exe was launched
     // incorrectly (e.g., manually by the user).
-    LogDebug("Calling CefExecuteProcess");
     int exit_code = CefExecuteProcess(main_args, app.get(), nullptr);
-
-    ss.str("");
-    ss << "CefExecuteProcess returned exit_code: " << exit_code;
-    LogDebug(ss.str());
 
     if (exit_code < 0)
     {
         // This should not happen - it means this executable was launched
         // directly instead of being spawned by CEF as a subprocess.
-        LogDebug("ERROR: This executable should only be launched by CEF as a subprocess!");
-        LogDebug("If you see this message, something is wrong with the CEF configuration.");
+        // No console in a WinMain application: use the debugger output.
+        OutputDebugStringA("[SubProcess] ERROR: This executable should only "
+                           "be launched by CEF as a subprocess!\n");
         exit_code = 1;
     }
 
-    LogDebug("SubProcess exiting");
-    if (g_log_file.is_open())
-    {
-        g_log_file.close();
-    }
     return exit_code;
 }

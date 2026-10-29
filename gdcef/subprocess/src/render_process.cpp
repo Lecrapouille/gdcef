@@ -25,58 +25,20 @@
 
 #include "render_process.hpp"
 #include "cef_parser.h" // For CefBase64Encode and CefBase64Decode
+#include "include/base/cef_logging.h"
 #include <cstdio>
-#include <fstream>
 
 //------------------------------------------------------------------------------
-// Cross-platform logging for subprocess
-// On Windows, std::cout doesn't work in WinMain, so we use a file + OutputDebugString
+// Traces go to the CEF log_file shared with the browser process. CEF forwards
+// --log-file and --log-severity to every subprocess, so they are filtered by
+// the GDScript "log_severity" setting ("info" or "verbose" to see them).
 //------------------------------------------------------------------------------
-#if defined(_WIN32)
-#    include <windows.h>
-static void SubprocessLog(const std::string& msg)
-{
-    // Output to Visual Studio debugger
-    OutputDebugStringA((msg + "\n").c_str());
-    // Also try to append to a log file
-    static std::ofstream log_file;
-    if (!log_file.is_open())
-    {
-        char path[MAX_PATH];
-        GetModuleFileNameA(NULL, path, MAX_PATH);
-        std::string exe_path(path);
-        std::string log_path = exe_path.substr(0, exe_path.find_last_of("\\/")) +
-                               "\\render_process_debug.log";
-        log_file.open(log_path, std::ios::app);
-    }
-    if (log_file.is_open())
-    {
-        log_file << msg << std::endl;
-        log_file.flush();
-    }
-}
-#else
-static void SubprocessLog(const std::string& msg)
-{
-    std::cout << msg << std::endl;
-}
-#endif
+#define DEBUG_RENDER_PROCESS(txt) \
+    LOG(INFO) << "[RenderProcess::" << __func__ << "] " << txt
 
 //------------------------------------------------------------------------------
-#define DEBUG_RENDER_PROCESS(txt)                                       \
-    {                                                                   \
-        std::stringstream ss;                                           \
-        ss << "[RenderProcess::" << __func__ << "] " << txt;            \
-        SubprocessLog(ss.str());                                        \
-    }
-
-//------------------------------------------------------------------------------
-#define DEBUG_BROWSER_PROCESS(txt)                                      \
-    {                                                                   \
-        std::stringstream ss;                                           \
-        ss << "[gdCEFBrowser::" << __func__ << "] " << txt;             \
-        SubprocessLog(ss.str());                                        \
-    }
+#define DEBUG_BROWSER_PROCESS(txt) \
+    LOG(INFO) << "[gdCEFBrowser::" << __func__ << "] " << txt
 
 //------------------------------------------------------------------------------
 bool GodotMethodHandler::Execute(const CefString& name,

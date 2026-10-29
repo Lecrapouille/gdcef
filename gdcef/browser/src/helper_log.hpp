@@ -38,54 +38,54 @@
 // ****************************************************************************
 
 #define PRINT_ERROR(x)                                   \
-    {                                                    \
+    do {                                                 \
         std::stringstream ss;                            \
         ss << "[gdCEF][ERROR][" << __func__ << "]" << x; \
         ERR_PRINT(godot::String(ss.str().c_str()));      \
-    }
+    } while (0)
 
 #define GDCEF_DEBUG(x)                                    \
-    {                                                     \
+    do {                                                  \
         std::stringstream ss;                             \
         ss << "[gdCEF][gdCEF::" << __func__ << "] " << x; \
-        godot::print_verbose(godot::String(ss.str().c_str()));      \
-    }
+        godot::print_verbose(godot::String(ss.str().c_str())); \
+    } while (0)
 
 // Note: reserved to classes holding a m_error stream since the message is also
 // stored there to be returned by their get_error() method. Use PRINT_ERROR()
 // from the other classes.
 #define GDCEF_ERROR(x)                                    \
-    {                                                     \
+    do {                                                  \
         std::stringstream ss;                             \
         ss << "[gdCEF][gdCEF::" << __func__ << "] " << x; \
         ERR_PRINT(godot::String(ss.str().c_str()));       \
         m_error << ss.str();                              \
-    }
+    } while (0)
 
 #define GDCEF_WARNING(x)                                  \
-    {                                                     \
+    do {                                                  \
         std::stringstream ss;                             \
         ss << "[gdCEF][gdCEF::" << __func__ << "] " << x; \
         WARN_PRINT(godot::String(ss.str().c_str()));      \
-    }
+    } while (0)
 
 #define BROWSER_DEBUG(txt)                                              \
-    {                                                                   \
+    do {                                                                \
         std::stringstream ss;                                           \
         godot::String name = get_name();                                \
         ss << "[gdCEF][GdBrowserView::" << __func__ << "][id: " << m_id \
            << ", name: " << name.utf8().get_data() << "] " << txt;      \
-        godot::print_verbose(godot::String(ss.str().c_str()));                    \
-    }
+        godot::print_verbose(godot::String(ss.str().c_str()));          \
+    } while (0)
 
 #define BROWSER_ERROR(txt)                                              \
-    {                                                                   \
+    do {                                                                \
         std::stringstream ss;                                           \
         godot::String name = get_name();                                \
         ss << "[gdCEF][GdBrowserView::" << __func__ << "][id: " << m_id \
            << ", name: " << name.utf8().get_data() << "] " << txt;      \
         ERR_PRINT(godot::String(ss.str().c_str()));                     \
         m_error << ss.str();                                            \
-    }
+    } while (0)
 
 #endif // GDCEF_HELPER_LOG_HPP
