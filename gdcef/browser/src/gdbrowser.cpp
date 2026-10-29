@@ -131,22 +131,37 @@ static inline void convertBGRAtoRGBA(unsigned char* dst,
 }
 
 //------------------------------------------------------------------------------
+// The visitors and callbacks below are called asynchronously by CEF, when the
+// browser node may have been freed: they only keep its Godot object identifier
+// and return nullptr when the node no longer exists.
+static GdBrowserView* findBrowserView(uint64_t node_id)
+{
+    return godot::Object::cast_to<GdBrowserView>(
+        godot::ObjectDB::get_instance(node_id));
+}
+
+//------------------------------------------------------------------------------
 // Visit the html content of the current page and emit signal with content.
 class HtmlContentVisitor : public CefStringVisitor
 {
 public:
 
-    HtmlContentVisitor(GdBrowserView& node) : m_node(node) {}
+    HtmlContentVisitor(GdBrowserView& node) : m_node_id(node.get_instance_id())
+    {}
 
     virtual void Visit(const CefString& string) override
     {
+        GdBrowserView* node = findBrowserView(m_node_id);
+        if (node == nullptr)
+            return;
+
         godot::String html = godot::String::utf8(string.ToString().c_str());
-        m_node.emit_signal("on_html_content_requested", html, &m_node);
+        node->emit_signal("on_html_content_requested", html, node);
     }
 
 private:
 
-    GdBrowserView& m_node;
+    uint64_t m_node_id;
     IMPLEMENT_REFCOUNTING(HtmlContentVisitor);
 };
 
@@ -157,7 +172,7 @@ class SavePageVisitor : public CefStringVisitor
 public:
 
     SavePageVisitor(GdBrowserView& node, const godot::String& path)
-        : m_node(node), m_path(path) {}
+        : m_node_id(node.get_instance_id()), m_path(path) {}
 
     virtual void Visit(const CefString& string) override
     {
@@ -180,12 +195,16 @@ public:
             PRINT_ERROR("Failed to save page to: " << filepath);
         }
 
-        m_node.emit_signal("on_page_saved", m_path, success, &m_node);
+        GdBrowserView* node = findBrowserView(m_node_id);
+        if (node != nullptr)
+        {
+            node->emit_signal("on_page_saved", m_path, success, node);
+        }
     }
 
 private:
 
-    GdBrowserView& m_node;
+    uint64_t m_node_id;
     godot::String m_path;
     IMPLEMENT_REFCOUNTING(SavePageVisitor);
 };
@@ -197,18 +216,22 @@ class PdfPrintCallback : public CefPdfPrintCallback
 public:
 
     PdfPrintCallback(GdBrowserView& node, const godot::String& path)
-        : m_node(node), m_path(path) {}
+        : m_node_id(node.get_instance_id()), m_path(path) {}
 
     virtual void OnPdfPrintFinished(const CefString& path, bool ok) override
     {
         GDCEF_DEBUG("PDF save " << (ok ? "succeeded" : "failed")
                     << ": " << path.ToString());
-        m_node.emit_signal("on_pdf_saved", m_path, ok, &m_node);
+        GdBrowserView* node = findBrowserView(m_node_id);
+        if (node != nullptr)
+        {
+            node->emit_signal("on_pdf_saved", m_path, ok, node);
+        }
     }
 
 private:
 
-    GdBrowserView& m_node;
+    uint64_t m_node_id;
     godot::String m_path;
     IMPLEMENT_REFCOUNTING(PdfPrintCallback);
 };
