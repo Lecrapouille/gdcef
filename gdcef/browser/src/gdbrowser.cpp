@@ -2199,9 +2199,11 @@ void GdBrowserView::applyCursorShape(godot::DisplayServer::CursorShape shape)
         // by GdCEF::createBrowser() via setDisplayControl()). This is what
         // Godot actually uses while the mouse hovers that Control, so this is
         // the fix for the issue above: no GDScript wiring required.
-        if (m_display_control != nullptr)
+        godot::Control* display_control = godot::Object::cast_to<godot::Control>(
+            godot::ObjectDB::get_instance(m_display_control_id));
+        if (display_control != nullptr)
         {
-            m_display_control->set_default_cursor_shape(
+            display_control->set_default_cursor_shape(
                 static_cast<godot::Control::CursorShape>(int(godot_cursor)));
         }
 

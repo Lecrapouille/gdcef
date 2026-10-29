@@ -781,7 +781,8 @@ public:
     // -------------------------------------------------------------------------
     inline void setDisplayControl(godot::Control* control)
     {
-        m_display_control = control;
+        m_display_control_id =
+            (control != nullptr) ? control->get_instance_id() : 0u;
     }
 
     // -------------------------------------------------------------------------
@@ -1482,8 +1483,9 @@ private:
     //! TextureRect, set by GdCEF::createBrowser()). Used by onCursorChange()
     //! to apply the cursor shape directly on it, since this Control's own
     //! "mouse_default_cursor_shape" is what Godot actually displays whenever
-    //! the mouse hovers it. Not owned: assumed to outlive this browser.
-    godot::Control* m_display_control = nullptr;
+    //! the mouse hovers it. Not owned and it may be freed before this browser,
+    //! therefore only its Godot object identifier is kept (0 when unset).
+    uint64_t m_display_control_id = 0u;
 };
 
 #if !defined(_WIN32)
