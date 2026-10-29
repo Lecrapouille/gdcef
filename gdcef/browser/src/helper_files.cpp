@@ -139,7 +139,7 @@ godot::String convert_godot_url(godot::String const& url)
     godot::String local_path = GLOBALIZE_PATH(url);
 
     // Check if the file exists
-    if (!fs::exists(local_path.utf8().get_data()))
+    if (!fs::exists(utf8_to_path(local_path.utf8().get_data())))
         return {};
 
     // Build the file:// URL

@@ -180,7 +180,7 @@ public:
         std::string filepath = m_path.utf8().get_data();
 
         // Try to save to file using C++ standard library
-        std::ofstream file(filepath);
+        std::ofstream file(utf8_to_path(filepath));
         bool success = false;
 
         if (file.is_open())

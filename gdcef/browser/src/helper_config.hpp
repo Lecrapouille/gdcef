@@ -70,7 +70,7 @@ inline fs::path getConfig<fs::path>(godot::Dictionary const& config,
     if ((property != nullptr) && config.has(property))
     {
         godot::String str = config[property];
-        return str.utf8().get_data();
+        return utf8_to_path(str.utf8().get_data());
     }
     return default_value;
 }
