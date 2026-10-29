@@ -1167,6 +1167,15 @@ bool GdBrowserView::isValid() const
 //------------------------------------------------------------------------------
 void GdBrowserView::close()
 {
+    // CEF closes the browser asynchronously and keeps calling m_impl until it
+    // is really closed, while this node may be freed meanwhile: m_impl shall
+    // no longer reach it.
+    if (m_impl != nullptr)
+    {
+        m_impl->detach();
+        m_impl = nullptr;
+    }
+
     if (!m_browser)
         return;
 
@@ -1175,13 +1184,12 @@ void GdBrowserView::close()
                                      << "'");
 
     auto host = m_browser->GetHost();
-    if (!host)
-        return;
-
-    host->CloseDevTools();    // remote_debugging_port
-    host->CloseBrowser(true); // TryCloseBrowser();
+    if (host)
+    {
+        host->CloseDevTools();    // remote_debugging_port
+        host->CloseBrowser(true); // TryCloseBrowser();
+    }
     m_browser = nullptr;
-    m_impl = nullptr;
 }
 
 //------------------------------------------------------------------------------

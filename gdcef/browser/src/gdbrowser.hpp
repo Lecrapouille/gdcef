@@ -136,10 +136,20 @@ private: // CEF interfaces
         // ---------------------------------------------------------------------
         //! \brief Pass the owner instance.
         // ---------------------------------------------------------------------
-        Impl(GdBrowserView& view) : m_owner(view)
+        Impl(GdBrowserView& view) : m_owner(&view)
         {
             m_ad_blocker = new AdBlocker();
             assert((m_ad_blocker != nullptr) && "Failed allocating AdBlocker");
+        }
+
+        // ---------------------------------------------------------------------
+        //! \brief Forget the owner. CEF keeps its reference on this instance
+        //! and keeps calling it until the browser is really closed, while the
+        //! Godot node may be freed meanwhile: called by GdBrowserView::close().
+        // ---------------------------------------------------------------------
+        void detach()
+        {
+            m_owner = nullptr;
         }
 
         // ---------------------------------------------------------------------
@@ -235,7 +245,9 @@ private: // CEF interfaces
                                  CefProcessId source_process,
                                  CefRefPtr<CefProcessMessage> message) override
         {
-            return m_owner.onProcessMessageReceived(
+            if (m_owner == nullptr)
+                return false;
+            return m_owner->onProcessMessageReceived(
                 browser, frame, source_process, message);
         }
 
@@ -247,7 +259,11 @@ private: // CEF interfaces
         virtual void GetViewRect(CefRefPtr<CefBrowser> browser,
                                  CefRect& rect) override
         {
-            m_owner.getViewRect(browser, rect);
+            // CEF requires a non-empty rectangle.
+            if (m_owner != nullptr)
+                m_owner->getViewRect(browser, rect);
+            else
+                rect = CefRect(0, 0, 1, 1);
         }
 
         // ---------------------------------------------------------------------
@@ -257,7 +273,8 @@ private: // CEF interfaces
         virtual void OnPopupShow(CefRefPtr<CefBrowser> browser,
                                  bool show) override
         {
-            m_owner.onPopupShow(browser, show);
+            if (m_owner != nullptr)
+                m_owner->onPopupShow(browser, show);
         }
 
         // ---------------------------------------------------------------------
@@ -268,7 +285,8 @@ private: // CEF interfaces
         virtual void OnPopupSize(CefRefPtr<CefBrowser> browser,
                                  const CefRect& rect) override
         {
-            m_owner.onPopupSize(browser, rect);
+            if (m_owner != nullptr)
+                m_owner->onPopupSize(browser, rect);
         }
 
         // ---------------------------------------------------------------------
@@ -290,7 +308,8 @@ private: // CEF interfaces
                              int width,
                              int height) override
         {
-            m_owner.onPaint(browser, type, dirtyRects, buffer, width, height);
+            if (m_owner != nullptr)
+                m_owner->onPaint(browser, type, dirtyRects, buffer, width, height);
         }
 
         // ---------------------------------------------------------------------
@@ -311,7 +330,9 @@ private: // CEF interfaces
                                    int x,
                                    int y) override
         {
-            return m_owner.onStartDragging(browser, drag_data, allowed_ops, x, y);
+            if (m_owner == nullptr)
+                return false;
+            return m_owner->onStartDragging(browser, drag_data, allowed_ops, x, y);
         }
 
         // ---------------------------------------------------------------------
@@ -322,7 +343,8 @@ private: // CEF interfaces
         virtual void UpdateDragCursor(CefRefPtr<CefBrowser> browser,
                                       CefRenderHandler::DragOperation operation) override
         {
-            m_owner.onUpdateDragCursor(browser, operation);
+            if (m_owner != nullptr)
+                m_owner->onUpdateDragCursor(browser, operation);
         }
 
     private: // CefLoadHandler interfaces
@@ -339,7 +361,8 @@ private: // CEF interfaces
                                  CefRefPtr<CefFrame> frame,
                                  TransitionType transition_type) override
         {
-            m_owner.onLoadStart(browser, frame);
+            if (m_owner != nullptr)
+                m_owner->onLoadStart(browser, frame);
         }
 
         // ---------------------------------------------------------------------
@@ -356,7 +379,8 @@ private: // CEF interfaces
                                CefRefPtr<CefFrame> frame,
                                int httpStatusCode) override
         {
-            m_owner.onLoadEnd(browser, frame, httpStatusCode);
+            if (m_owner != nullptr)
+                m_owner->onLoadEnd(browser, frame, httpStatusCode);
         }
 
         // ---------------------------------------------------------------------
@@ -373,7 +397,8 @@ private: // CEF interfaces
                                  const CefString& errorText,
                                  const CefString& failedUrl) override
         {
-            m_owner.onLoadError(browser, frame, int(errorCode), errorText);
+            if (m_owner != nullptr)
+                m_owner->onLoadError(browser, frame, int(errorCode), errorText);
         }
 
     private: // CefAudioHandler interfaces
@@ -382,7 +407,8 @@ private: // CEF interfaces
                                           const CefAudioParameters& params,
                                           int channels) override
         {
-            m_owner.onAudioStreamStarted(browser, params, channels);
+            if (m_owner != nullptr)
+                m_owner->onAudioStreamStarted(browser, params, channels);
         }
 
         virtual void OnAudioStreamPacket(CefRefPtr<CefBrowser> browser,
@@ -390,7 +416,8 @@ private: // CEF interfaces
                                          int frames,
                                          int64_t pts) override
         {
-            m_owner.onAudioStreamPacket(browser, data, frames, pts);
+            if (m_owner != nullptr)
+                m_owner->onAudioStreamPacket(browser, data, frames, pts);
         }
 
         virtual void
@@ -420,7 +447,10 @@ private: // CEF interfaces
             CefRefPtr<CefDictionaryValue>& extra_info,
             bool* no_javascript_access) override
         {
-            return m_owner.onBeforePopup(browser, target_url);
+            // Returning true cancels the popup.
+            if (m_owner == nullptr)
+                return true;
+            return m_owner->onBeforePopup(browser, target_url);
         }
 
     private: // CefDownloadHandler interfaces
@@ -429,7 +459,9 @@ private: // CEF interfaces
                                  const CefString& url,
                                  const CefString& request_method) override
         {
-            return m_owner.canDownload(browser, url, request_method);
+            if (m_owner == nullptr)
+                return false;
+            return m_owner->canDownload(browser, url, request_method);
         }
 
         virtual bool
@@ -438,7 +470,9 @@ private: // CEF interfaces
                          const CefString& suggested_name,
                          CefRefPtr<CefBeforeDownloadCallback> callback) override
         {
-            return m_owner.onBeforeDownload(
+            if (m_owner == nullptr)
+                return false;
+            return m_owner->onBeforeDownload(
                 browser, download_item, suggested_name, callback);
         }
 
@@ -447,7 +481,8 @@ private: // CEF interfaces
                           CefRefPtr<CefDownloadItem> download_item,
                           CefRefPtr<CefDownloadItemCallback> callback) override
         {
-            m_owner.onDownloadUpdated(browser, download_item, callback);
+            if (m_owner != nullptr)
+                m_owner->onDownloadUpdated(browser, download_item, callback);
         }
 
     private: // CefDragHandler interfaces
@@ -462,7 +497,10 @@ private: // CEF interfaces
                                  CefRefPtr<CefDragData> dragData,
                                  CefDragHandler::DragOperationsMask mask) override
         {
-            return m_owner.onDragEnter(browser, dragData, mask);
+            // Returning true cancels the drag event.
+            if (m_owner == nullptr)
+                return true;
+            return m_owner->onDragEnter(browser, dragData, mask);
         }
 
         // ---------------------------------------------------------------------
@@ -478,7 +516,8 @@ private: // CEF interfaces
                                   CefRefPtr<CefFrame> frame,
                                   const std::vector<CefDraggableRegion>& regions) override
         {
-            m_owner.onDraggableRegionsChanged(browser, frame, regions);
+            if (m_owner != nullptr)
+                m_owner->onDraggableRegionsChanged(browser, frame, regions);
         }
 
     private: // CefDisplayHandler interfaces
@@ -494,7 +533,8 @@ private: // CEF interfaces
                                     cef_cursor_type_t type,
                                     const CefCursorInfo& custom_cursor_info) override
         {
-            m_owner.onCursorChange(browser, type);
+            if (m_owner != nullptr)
+                m_owner->onCursorChange(browser, type);
             return true;
         }
 
@@ -524,7 +564,8 @@ private: // CEF interfaces
 
     private:
 
-        GdBrowserView& m_owner;
+        //! \brief Owner node, nullptr once detached.
+        GdBrowserView* m_owner;
         CefRefPtr<AdBlocker> m_ad_blocker;
         RoutingAudio m_audio;
     };
