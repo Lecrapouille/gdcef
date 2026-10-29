@@ -41,8 +41,12 @@
 
 #ifdef _OPENMP
 #    include <omp.h>
-#    define OPENMP_PARALLEL_FOR #pragma omp parallel for
-#    define PARALLEL_FOR OPENMP_PARALLEL_FOR for
+// Note: a #pragma cannot be produced by a macro, the operator form is needed.
+#    if defined(_MSC_VER)
+#        define PARALLEL_FOR __pragma(omp parallel for) for
+#    else
+#        define PARALLEL_FOR _Pragma("omp parallel for") for
+#    endif
 #else
 #    define PARALLEL_FOR for
 #endif
