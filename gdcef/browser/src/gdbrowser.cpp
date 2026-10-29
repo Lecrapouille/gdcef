@@ -1256,7 +1256,8 @@ void GdBrowserView::onAudioStreamStarted(CefRefPtr<CefBrowser> browser,
     if (m_impl == nullptr)
         return;
 
-    m_impl->m_audio.channels = int(params.channel_layout);
+    // Note: params.channel_layout is an enum and not a number of channels.
+    m_impl->m_audio.channels = channels;
 }
 
 //------------------------------------------------------------------------------
@@ -1270,15 +1271,21 @@ void GdBrowserView::onAudioStreamPacket(CefRefPtr<CefBrowser> browser,
         return;
     }
 
-    if ((data == nullptr) || (frames <= 0) || (m_impl->m_audio.channels == -1))
+    int const channels = m_impl->m_audio.channels;
+    if ((data == nullptr) || (frames <= 0) || (channels <= 0))
         return;
+
+    // data[c] holds the samples of the channel c. Godot plays stereo frames:
+    // a mono stream is played on both sides and extra channels are dropped.
+    const float* left = data[0];
+    const float* right = (channels >= 2) ? data[1] : data[0];
 
     auto& streamer = *(m_impl->m_audio.streamer.ptr());
     if (streamer.can_push_buffer(frames))
     {
         for (int i = 0; i < frames; i++)
         {
-            streamer.push_frame(godot::Vector2(data[0][i], data[0][i]));
+            streamer.push_frame(godot::Vector2(left[i], right[i]));
         }
     }
 }
