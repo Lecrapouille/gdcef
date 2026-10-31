@@ -52,6 +52,18 @@ See your Godot project settings to disable the default keyboard bindings.
 - Keyboard limitation: https://github.com/Lecrapouille/gdCEF/issues/55
 - Slow and with limitations: https://github.com/Lecrapouille/gdCEF/issues/50
 - Restricted for some access: https://github.com/Lecrapouille/gdCEF/issues/75
+- Linux: crash when the game heap passes 2 GiB, see [below](#linux-cef-crashes-with-sigill-once-my-game-uses-more-than-2-gib)
+
+### Linux: CEF crashes with SIGILL once my game uses more than 2 GiB
+
+CEF runs its browser process inside the Godot process. On Linux, the official CEF binaries make Chromium memory dumps (`MallocDumpProvider`) read the glibc heap with the deprecated `mallinfo()`, whose counters are 32-bit: they count the heap of the whole game. Once the game heap passes 2 GiB, the counters overflow and CEF crashes with `SIGILL` in the `MemoryInfra` thread. Nothing leaks. See [issue #108](https://github.com/Lecrapouille/gdcef/issues/108).
+
+gdCEF works around it: `libgdcef.so` defines its own `mallinfo()`, which returns the `mallinfo2()` values clamped to `INT_MAX / 4`. Since Godot loads the extension with `RTLD_DEEPBIND`, `libcef.so` calls this function instead of the glibc one. Limitations:
+
+- The workaround relies on `RTLD_DEEPBIND`, which Godot does not use when built with sanitizers: the crash can still happen there.
+- It needs `mallinfo2()`, available since glibc 2.33. gdCEF prints a warning at initialization when it is missing. In practice, a `libgdcef.so` built on a recent distribution already requires glibc 2.34.
+- The memory statistics reported by Chromium are wrong above 512 MiB per counter. They are only used for diagnostics.
+- The CEF subprocesses are not concerned: they have their own heap, without the Godot one.
 
 ### I cannot watch videos!
 

@@ -1,6 +1,7 @@
 Coming version:
-	* Add the command_line_switches setting to give extra Chromium switches,
-	  and document the mallinfo() crash on Linux with a heap > 2 GiB (#108)
+	* Add the command_line_switches setting to give extra Chromium switches
+	* Fix the SIGILL in Chromium memory dumps on Linux when the Godot heap
+	  passes 2 GiB: libgdcef replaces the 32-bit mallinfo() used by libcef (#108)
 
 Version 0.21.0:
 	* Update CEF to version 156: libEGL and libGLESv2 are no longer needed

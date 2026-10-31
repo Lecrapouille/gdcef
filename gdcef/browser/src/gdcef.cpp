@@ -51,6 +51,75 @@
 #    include <windows.h>
 #elif defined(__linux__)
 #    include <dlfcn.h>
+#    include <malloc.h>
+#    include <climits>
+#endif
+
+//------------------------------------------------------------------------------
+// Replace the glibc mallinfo() called by libcef (#108).
+// The official CEF Linux binaries are built against a glibc older than 2.33,
+// so Chromium's MallocDumpProvider calls mallinfo(), whose fields are 32-bit
+// int, instead of mallinfo2(). Since the CEF browser process is the Godot
+// process, mallinfo() counts the whole game heap: once it passes 2 GiB, the
+// sum arena + hblkhd overflows and Chromium traps (SIGILL in MemoryInfra).
+// Godot loads libgdcef with RTLD_DEEPBIND: libcef, a dependency of libgdcef,
+// then looks up its symbols in libgdcef before libc, so it calls this
+// function. The values come from mallinfo2() and are clamped to INT_MAX / 4
+// so that Chromium can add them without overflowing. mallinfo2() is looked up
+// at runtime because libcef only requires glibc 2.25.
+// Limitations: see doc/faq.md.
+#if defined(__linux__) && defined(__GLIBC__)
+// Same layout as the glibc struct mallinfo2.
+struct MallInfo2
+{
+    size_t arena, ordblks, smblks, hblks, hblkhd;
+    size_t usmblks, fsmblks, uordblks, fordblks, keepcost;
+};
+using MallInfo2Fn = MallInfo2 (*)();
+
+// Return the glibc mallinfo2() or nullptr if glibc < 2.33.
+static MallInfo2Fn getMallinfo2()
+{
+    static auto const mallinfo2_fn =
+        reinterpret_cast<MallInfo2Fn>(dlsym(RTLD_DEFAULT, "mallinfo2"));
+    return mallinfo2_fn;
+}
+
+extern "C" __attribute__((visibility("default"))) struct mallinfo
+mallinfo() __THROW
+{
+    using MallInfoFn = struct mallinfo (*)();
+
+    MallInfo2Fn const mallinfo2_fn = getMallinfo2();
+    if (mallinfo2_fn == nullptr)
+    {
+        // glibc < 2.33: forward to the glibc mallinfo(), next in the scope.
+        static auto const mallinfo_fn =
+            reinterpret_cast<MallInfoFn>(dlsym(RTLD_NEXT, "mallinfo"));
+        if (mallinfo_fn != nullptr)
+            return mallinfo_fn();
+        return {};
+    }
+
+    auto clamp = [](size_t value) -> int {
+        constexpr size_t max = INT_MAX / 4;
+        return static_cast<int>(value < max ? value : max);
+    };
+
+    MallInfo2 const info = mallinfo2_fn();
+    struct mallinfo result = {};
+    result.arena = clamp(info.arena);
+    result.ordblks = clamp(info.ordblks);
+    result.smblks = clamp(info.smblks);
+    result.hblks = clamp(info.hblks);
+    result.hblkhd = clamp(info.hblkhd);
+    result.usmblks = clamp(info.usmblks);
+    result.fsmblks = clamp(info.fsmblks);
+    result.uordblks = clamp(info.uordblks);
+    result.fordblks = clamp(info.fordblks);
+    result.keepcost = clamp(info.keepcost);
+    return result;
+}
 #endif
 
 //------------------------------------------------------------------------------
@@ -306,6 +375,14 @@ bool GdCEF::initialize(godot::Dictionary config)
     }
     GDCEF_DEBUG("CefInitialize done with success");
     pinCefLibrary();
+#if defined(__linux__) && defined(__GLIBC__)
+    // Warned here since mallinfo() is called from a Chromium thread.
+    if (getMallinfo2() == nullptr)
+    {
+        GDCEF_WARNING("glibc < 2.33 has no mallinfo2(): CEF may crash once "
+                      "the Godot heap passes 2 GiB (#108)");
+    }
+#endif
     return true;
 }
 

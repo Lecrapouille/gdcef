@@ -89,10 +89,6 @@ $CEF.initialize({
 
 These switches are not checked by gdCEF: a wrong switch can make CEF fail or behave unexpectedly.
 
-#### Linux: host heap larger than 2 GiB
-
-CEF runs its browser process inside the Godot process. On Linux, Chromium memory dumps (`MallocDumpProvider`) read the glibc heap with the deprecated `mallinfo()`, whose counters are 32-bit: they therefore count the heap of the whole game. Once the game heap passes 2 GiB, the counters overflow and CEF can crash with `SIGILL` in the `MemoryInfra` thread. Nothing leaks. See [issue #108](https://github.com/Lecrapouille/gdcef/issues/108).
-
 #### GPU rendering
 
 gdCEF renders web pages off-screen (OSR). Chromium still needs an internal graphics backend for rasterization, compositing, and WebGL. The `use_gpu` setting selects that backend at startup by appending command-line switches in `OnBeforeCommandLineProcessing`:
