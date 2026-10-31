@@ -285,6 +285,8 @@ bool GdCEF::initialize(godot::Dictionary config)
         getConfig(config, "user_gesture_required", true);
     m_browsers_settings.user_agent =
         getConfig(config, "user_agent", std::string{});
+    m_browsers_settings.command_line_switches =
+        getConfig(config, "command_line_switches", godot::Dictionary());
 
     // This function should be called on the main application thread to
     // initialize the CEF browser process. A return value of true indicates
@@ -821,6 +823,37 @@ void GdCEF::Impl::OnBeforeCommandLineProcessing(
                                             settings.user_agent.c_str());
     }
 
-    // TBD: Do we have to allow gdscript to give command line ?
+    // Extra Chromium switches given by the user. Applied last so they
+    // override the ones set above.
     // https://peter.sh/experiments/chromium-command-line-switches/
+    // https://github.com/Lecrapouille/gdcef/issues/108
+    godot::Array keys = settings.command_line_switches.keys();
+    for (int64_t i = 0; i < keys.size(); ++i)
+    {
+        godot::String name = godot::String(keys[i]).trim_prefix("--");
+        if (name.is_empty())
+            continue;
+
+        godot::Variant value = settings.command_line_switches[keys[i]];
+        if (value.get_type() == godot::Variant::BOOL)
+        {
+            // {"switch": false} is ignored, {"switch": true} gives --switch
+            if (!bool(value))
+                continue;
+            value = godot::String();
+        }
+
+        godot::String str = value;
+        GDCEF_DEBUG("Command line switch: --" << name.utf8().get_data() << " "
+                                               << str.utf8().get_data());
+        if (str.is_empty())
+        {
+            command_line->AppendSwitch(name.utf8().get_data());
+        }
+        else
+        {
+            command_line->AppendSwitchWithValue(name.utf8().get_data(),
+                                                str.utf8().get_data());
+        }
+    }
 }

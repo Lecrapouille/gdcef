@@ -97,6 +97,7 @@ public: // Godot interfaces.
     //!   - {"remote_debugging_port", 0} (disabled)
     //!   - {"exception_stack_size", 5}
     //!   - {"locale", "en-US"}
+    //!   - {"command_line_switches", {}} extra Chromium switches
     //! \return true if CEF init with success. Return false if CEF init ends
     //! badly or if this method is called more than once.
     // -------------------------------------------------------------------------
@@ -321,6 +322,8 @@ private:
         //! \brief Use GPU for rendering (true) or software SwiftShader (false).
         //! GPU rendering is much faster but may not work on all systems.
         bool use_gpu = true;
+        //! \brief Extra Chromium command line switches given by the user.
+        godot::Dictionary command_line_switches;
     };
 
     //! \brief CEF interface implementation

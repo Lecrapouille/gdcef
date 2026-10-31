@@ -57,6 +57,7 @@ Since Godot `_init` does not accept arguments, you must use the `initialize` fun
 | locale | "en-US" | Browser language setting. |
 | enable_media_stream | false | Controls access to camera and microphone. |
 | use_gpu | true | Use the system GPU for Chromium rendering via ANGLE. When `false`, falls back to SwiftShader software rendering (CPU-only, slower but more compatible). See [GPU rendering](#gpu-rendering). |
+| command_line_switches | {} | Extra Chromium command line switches, as a Dictionary `{"switch": value}`. See [Command line switches](#command-line-switches). |
 
 Path settings (`cache_path`, `root_cache_path`, `browser_subprocess_path`, `log_file`, `locales_path`) accept absolute paths as well as Godot `user://` and `res://` paths.
 
@@ -68,6 +69,29 @@ gdCEF has two independent log outputs:
 
 - **Godot side**: gdCEF traces from the GDExtension (initialization, browser creation, ...) use `print_verbose` and are shown in the Godot console only when Godot is started with `--verbose`. Errors and warnings are always shown.
 - **CEF side**: CEF, Chromium and the gdCEF subprocess write to `log_file`, filtered by `log_severity`. CEF forwards both settings to all its subprocesses, so no extra setting is needed for them. Use `"disable"` in a shipped game to avoid creating the log file.
+
+#### Command line switches
+
+gdCEF cannot read the command line of your game, so CEF is started with `command_line_args_disabled`. Use `command_line_switches` to give Chromium extra [switches](https://peter.sh/experiments/chromium-command-line-switches/). They are appended after the switches set by gdCEF (`use_gpu`, `user_agent`, ...) and therefore override them:
+
+- the key is the switch name, with or without the leading `--`;
+- a `String` or number value gives `--switch=value`;
+- `true` or `""` gives `--switch` without value, `false` ignores the switch.
+
+```gdscript
+$CEF.initialize({
+    "command_line_switches": {
+        "disable-features": "Translate,MediaRouter",
+        "disable-gpu-shader-disk-cache": true,
+    }
+})
+```
+
+These switches are not checked by gdCEF: a wrong switch can make CEF fail or behave unexpectedly.
+
+#### Linux: host heap larger than 2 GiB
+
+CEF runs its browser process inside the Godot process. On Linux, Chromium memory dumps (`MallocDumpProvider`) read the glibc heap with the deprecated `mallinfo()`, whose counters are 32-bit: they therefore count the heap of the whole game. Once the game heap passes 2 GiB, the counters overflow and CEF can crash with `SIGILL` in the `MemoryInfra` thread. Nothing leaks. See [issue #108](https://github.com/Lecrapouille/gdcef/issues/108).
 
 #### GPU rendering
 
