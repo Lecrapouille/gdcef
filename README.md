@@ -55,14 +55,6 @@ Depending on your computer but count around 15 min to compile:
 2. 📁 Extract and copy the `cef_artifacts` folder into your Godot project.
 3. ✅ Done! The `.gdextension` file is already included in the folder.
 
-### 🎮 Option 3: Download Prebuilt Binaries from Godot Asset Lib or Godot Asset Store
-
-1. 🏛️ Open the Godot editor, and click the "AssetLib" button.
-2. 🔎 In the search bar, type `gdcef`.
-3. 📁 Download the `cef_artifacts` folder into your Godot project. Be sure to have clicked on "Ignore asset root".
-4. ⚠️ Godot does not preserve file attributes. Call `cd cef_artifacts/linux/ && chmod +x *.so gdCefRenderProcess` to restore them.
-5. ✅ Done! The `.gdextension` file is already included in the folder.
-
 Direct links:
 - https://store.godotengine.org/asset/quentin-quadrat/gdcef/
 - https://godotengine.org/asset-library/asset/2508
