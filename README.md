@@ -2,9 +2,7 @@
 
 This repository contains the source code of C++ classes that wrap a subset of the [Chromium Embedded Framework](https://bitbucket.org/chromiumembedded/cef/wiki/Home) (CEF for short) [API](https://magpcss.org/ceforum/apidocs/). These classes are compiled to be used either as a Godot 3.5 native module (GDNative) or a Godot 4.2 extension (GDExtension), allowing you to implement a webview in your 2D and 3D games through GDScript for Linux, Windows and macOS.
 
-We have named this CEF module/extension `gdcef`. You can download it directly from the Godot Asset Library:
-- For Godot 3.5: https://godotengine.org/asset-library/asset/1426
-- For Godot 4.2: https://godotengine.org/asset-library/asset/2508
+We have named this CEF module/extension `gdcef`.
 
 For users who don't want to compile this project themselves, pre-built artifacts are available at https://github.com/Lecrapouille/gdcef/releases
 
